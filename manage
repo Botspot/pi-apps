@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#$1 is name of software, like Arduino
+#$2 is install/uninstall
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+if [ -z "$1" ];then
+  error "You need to specify which app, and which action to apply to it. (install/uninstall)"
+elif [ ! -d "${DIRECTORY}/apps/$1" ];then
+  error "${DIRECTORY}/apps/$1 does not exist!"
+fi
+
+if [ "$2" == 'install' ];then
+  #ensure an install script is not already running
+  if ps -C install ;then       
+    echo "An install script is already running.
+Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
+    --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
+    --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
+    while ps -C install ;do sleep 1; done
+  fi
+  
+  #if already installed then ask for confirmation
+  if [ "$(cat "${DIRECTORY}/data/apps/${1}" )" == 'installed' ];then
+    yad --text="$1 is already installed. Are you sure you want to install it again?" \
+    --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+    --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
+  fi
+  
+  lxterminal --title="Installing $1" -e "
+    cd $HOME
+    echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+    if \"${DIRECTORY}/apps/${1}/install\" ; then
+      echo 'installed' > \"${DIRECTORY}/data/apps/${1}\"
+      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    else
+      echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+      echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    fi"
+  #wait until script is done before this command exits
+  sleep 2
+  while ps -C install >/dev/null;do sleep 1; done
+elif [ "$2" == 'uninstall' ];then
+  #ensure an uninstall script is not already running
+  if ps -C install ;then       
+    echo "An uninstall script is already running.
+Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
+    --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
+    --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
+    while ps -C uninstall ;do sleep 1; done
+  fi
+  
+  #if already uninstalled then ask for confirmation
+  if [ "$(cat "${DIRECTORY}/data/apps/${1}" )" == 'uninstalled' ];then
+    yad --text="$1 is already uninstalled. Are you sure you want to uninstall it again?" \
+    --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+    --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
+  fi
+  
+  lxterminal --title="Uninstalling $1" -e "
+    cd $HOME
+    echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+    if \"${DIRECTORY}/apps/${1}/uninstall\" ; then
+      echo 'uninstalled' > \"${DIRECTORY}/data/apps/${1}\"
+      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    else
+      echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+      echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    fi"
+  #wait until script is done before this command exits
+  sleep 2
+  while ps -C uninstall >/dev/null;do sleep 1; done
+else
+  error "Did not understand $2. It must be either "\'"install"\'" or "\'"uninstall"\'"."
+fi

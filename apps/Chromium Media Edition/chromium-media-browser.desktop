@@ -1,0 +1,27 @@
+[Desktop Entry]
+Version=1.0
+Name=Chromium (Media Edition)
+GenericName=Web Browser (Media Edition)
+Comment=Access the Internet
+Exec=chromium-browser %U --user-agent="Mozilla/5.0 (X11; CrOS armv7l 12371.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=chromium-browser
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml_xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+Actions=NewWindow;Incognito;TempProfile;
+X-AppInstall-Package=chromium-browser
+
+[Desktop Action NewWindow]
+Name=Open a New Window (Media Edition)
+Exec=chromium-browser --user-agent="Mozilla/5.0 (X11; CrOS armv7l 12371.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"
+
+[Desktop Action Incognito]
+Name=Open a New Window in incognito mode (Media Edition)
+Exec=chromium-browser --incognito --user-agent="Mozilla/5.0 (X11; CrOS armv7l 12371.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"
+
+[Desktop Action TempProfile]
+Name=Open a New Window with a temporary profile (Media Edition)
+Exec=chromium-browser --temp-profile --user-agent="Mozilla/5.0 (X11; CrOS armv7l 12371.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"

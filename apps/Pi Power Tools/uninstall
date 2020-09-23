@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+rm -rf ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old || error "failed on rm step 1!"
+rm -f ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop  || error "failed on rm step 2!"

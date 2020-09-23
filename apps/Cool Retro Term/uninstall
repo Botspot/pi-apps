@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf ~/.cache/cool-retro-term
+rm -rf ~/cool-retro-term
+rm -f ~/.local/share/applications/crt.desktop
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+rm -rf ~/.local/share/cool-retro-term ~/cool-retro-term

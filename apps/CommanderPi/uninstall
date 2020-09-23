@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+rm -rf ~/CommanderPi || error "failed to remove commanderpi folder!"
+sudo rm -f /usr/share/applications/commanderpi.desktop /home/pi/Desktop/commanderpi.desktop || error "failed to remove menu button!"

@@ -1,0 +1,14 @@
+Play Widevine-protected video in Chromium.
+This adds the ChromeOS DRM video decoding library to Chromium, and a ChromeOS user-agent. Websites you browse will think your Pi is a Chromebook!
+This works on these websites:
+• Netflix
+• Hulu
+• Amazon Prime
+• Disney+
+• HBO
+• Spotify
+• Pandora
+• Hoopla
+• MUBI
+• BritBox
+• Bell Satellite TV

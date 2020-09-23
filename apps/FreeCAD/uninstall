@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+sudo rm -f $(cat ~/freecad-build/install_manifest.txt) /home/pi/.local/share/applications/org.freecadweb.FreeCAD.desktop || error "failed to remove every installed file!"
+
+rm -rf ~/freecad-build /home/pi/FreeCAD-0.18.4 || error "failed to remove both installation folders!"

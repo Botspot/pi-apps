@@ -1,0 +1,5 @@
+Takes a screenshot of the framebuffer.
+Useful for overlay applications, like Minecraft or VLC, as this will capture them properly.
+
+Run in a terminal: raspi2png
+The resulting image will be saved to /home/pi/snapshot.png

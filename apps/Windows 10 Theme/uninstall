@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+
+~/Windows-10/uninstall | error "failed to uninstall!"
+rm -rf ~/Windows-10

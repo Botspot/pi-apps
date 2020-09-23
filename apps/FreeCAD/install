@@ -1,0 +1,39 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+echo -e '\e[103m\e[30mThis will take more than 1 hour to compile. It will max out the CPU the whole time. Continue? [Y/n]\e[39m\e[49m'
+read answer
+if [ "$answer" == 'n' ];then
+  exit 0
+fi
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/pkg-install" "cmake build-essential libtool lsb-release swig libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-graph-dev libboost-iostreams-dev libboost-program-options-dev libboost-python-dev libboost-regex-dev libboost-serialization-dev libboost-signals-dev libboost-thread-dev libcoin-dev libeigen3-dev libgts-bin libgts-dev libkdtree++-dev libmedc-dev libopencv-dev libproj-dev libvtk6-dev libx11-dev libxerces-c-dev libzipios++-dev qt4-dev-tools libqt4-dev libqt4-opengl-dev libqtwebkit-dev libshiboken-dev libpyside-dev pyside-tools python-dev python-matplotlib python-pivy python-ply python-pyside libocct*-dev occt-draw libocct-data-exchange-dev libocct-draw-dev libocct-visualization-dev libsimage-dev doxygen libcoin-doc dh-exec libspnav-dev" "$(dirname "$0")" || exit 1
+
+wget https://github.com/FreeCAD/FreeCAD/archive/0.18.4.zip || error "failed to download ZIP file!"
+
+#ensure there's no directory in there already
+rm -rf ~/FreeCAD-0.18.4 ~/freecad-build 2>/dev/null
+
+unzip 0.18.4.zip || error "failed to extract ZIP file!"
+
+rm 0.18.4.zip || error "failed to delete ZIP file!"
+
+mkdir freecad-build || error "failed to create folder freecad-build!"
+
+cd freecad-build || error "failed to enter directory freecad-build!"
+
+cmake -DPYTHON_EXECUTABLE=/usr/bin/python2.7 -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 -DPYTHON_LIBRARY=/usr/lib/arm-linux-gnueabihf/libpython2.7.so  -DPYTHON_PACKAGES_PATH=/usr/local/lib/python2.7/dist-packages/  ../FreeCAD-0.18.4/  || error "failed to generate make file!"
+
+make -j8 || error "failed to compile!"
+
+sudo make install || error "sudo make install failed!"
+
+if [ ! -z "$(cat "${DIRECTORY}/installed-packages" | grep 'qt4-dev-tools')" ];then
+  sudo apt purge -y qt4-dev-tools qt4-designer || error "purging qt4-dev-tools failed!"
+fi
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

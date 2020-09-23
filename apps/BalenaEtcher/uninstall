@@ -1,0 +1,10 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+
+sudo apt purge -y balena-etcher-electron  || error "failed to purge the deb file!"

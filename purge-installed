@@ -1,0 +1,75 @@
+#!/bin/bash
+
+#$1 is the path to the program folder being installed. For example, /home/pi/pi-apps/apps/Arduino
+#Example usage: ~/pi-apps/uninstall-installed ~/pi-apps/apps/Arduino
+
+PRG_DIR="$1"
+
+if [ -z "$PRG_DIR" ];then
+  echo -e "\e[91mNo program directory specified!\e[39m"
+  exitcode=1
+elif [ ! -d "$PRG_DIR" ];then
+  echo -e "\e[91m$PRG_DIR does not exist!\e[39m"
+  exitcode=1
+elif [ -z "$(echo "$PRG_DIR" | grep "pi-apps/apps")" ];then
+  echo -e "\e[33mWarning: That program directory ($PRG_DIR) is located outside of pi-apps.\e[39m"
+fi
+
+if [ ! -z $exitcode ];then
+  echo -e "\e[91mExiting now.\e[39m"
+  exit $exit
+fi
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+echo "Running purge-installed..."
+PKG_LIST="$(cat "$PRG_DIR/installed-packages")"
+
+if [ ! -f "$PRG_DIR/installed-packages" ];then
+  echo -e "\e[33mDoes $PRG_DIR/installed-packages exist?\e[39m"
+  exit 0
+fi
+
+if [ -z "$PRG_DIR/installed-packages" ];then
+  echo "Nothing to purge. Exiting now."
+  exit 0
+fi
+
+output="$(sudo apt purge -y $PKG_LIST 2>&1)"
+exitcode=$?
+errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+  echo -e "\e[91mFailed to uninstall the packages!\e[39m"
+  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  exit 1
+fi
+
+#ensure all packages are really purged
+INSTALL_LIST=''
+for i in $PKG_LIST
+do
+  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
+  if [ "" != "$PKG_OK" ]; then
+    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
+  fi
+done
+sudo apt purge -y $INSTALL_LIST 2>/dev/null
+
+#ensure all packages are really purged
+INSTALL_LIST=''
+for i in $PKG_LIST
+do
+  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
+  if [ "" != "$PKG_OK" ]; then
+    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
+  fi
+done
+if [ ! -z "$INSTALL_LIST" ];then
+  error "\e[91mAPT did not exit with an error, but these packages are still installed somehow: $INSTALL_LIST\e[39m"
+else
+  echo -e "\e[32mAll packages were purged succesfully.\e[39m"
+  rm "$PRG_DIR/installed-packages"
+fi

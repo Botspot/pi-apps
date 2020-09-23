@@ -1,0 +1,9 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+sudo rm /usr/lib/chromium-browser/libwidevinecdm.so || error "failed to delete libwidevinecdm.so!"
+sudo rm /usr/share/applications/chromium-media-browser.desktop || error "failed to delete menu button!"

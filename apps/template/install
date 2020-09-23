@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+# Get dependencies
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+#"${DIRECTORY}/pkg-install" "" "$(dirname "$0")" || exit 1
+read enter

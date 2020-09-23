@@ -1,0 +1,26 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+
+wget -O ~/Cura-mb-master-armhf-20200902.AppImage https://www.dropbox.com/sh/s43vqzmi4d2bqe2/AAB-hPdiTvoExJx0kjuSx8C1a/Linux-armhf/Cura-mb-master-armhf-20200902.AppImage?dl=0 || error "Failed to download!"
+
+chmod +x ~/Cura-mb-master-armhf-20200902.AppImage
+
+echo "[Desktop Entry]
+Name=Ultimaker Cura
+GenericName=3D Printing Software
+Comment=Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
+Exec=bash -c 'sudo modprobe fuse; ~/Cura-mb-master-armhf-20200902.AppImage'
+Icon=cura-icon
+Terminal=false
+Type=Application
+MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
+Categories=Graphics;Education;Development;Science;
+Keywords=3D;Printing;
+StartupNotify=true" >> ~/.local/share/applications/cura.desktop || error "Failed to create menu button!"
+
+sudo cp "$(dirname $0)/cura-icon.png" /usr/share/icons/hicolor/128x128/apps/ || error "Failed to copy icon!"

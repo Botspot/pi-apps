@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+rm ~/.local/share/applications/cura.desktop
+rm ~/Cura-mb-master-armhf-20200902.AppImage || error "failed to remove the AppImage!"
+rm -rf  ~/.cache/cura
+#gio trash ~/.config/cura

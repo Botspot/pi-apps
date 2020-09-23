@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/pkg-install" "libpng12-dev" "$(dirname "$0")" || exit 1
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+git clone https://github.com/AndrewFromMelbourne/raspi2png || error "failed to clone repository!"
+
+cd raspi2png || error "failed to enter directory!"
+
+make || error "failed to compile!"
+sudo make install || error "sudo make install failed!"
+
+cd ..
+rm -rf raspi2png || error "failed to delete directory!"

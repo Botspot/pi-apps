@@ -1,0 +1,8 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+sudo rm /usr/bin/raspi2png

@@ -1,0 +1,73 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+echo "$DIRECTORY"
+while true;do
+
+  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+  #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
+  #echo -e "$APPS\n"
+
+
+  APPS="$(echo "$APPS" | tr '\n' '|')"
+
+  PREIFS="$IFS"
+  IFS=$"|"
+  LIST=''
+  for i in $APPS
+  do
+    
+    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/apps/${i}" || echo "none").png")
+${DIRECTORY}/apps/${i}/icon-24.png
+$i
+"\("$(cat "${DIRECTORY}/data/apps/${i}" || echo "Unknown state")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"
+  done
+  IFS="$PREIFS"
+  LIST="$(echo -e "$LIST")"
+  #echo "$LIST"
+  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=300 --height=300 --no-headers \
+    --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+    --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
+    --button=Install!"${DIRECTORY}/icons/install.png":4 \
+    --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
+    --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
+    2>/dev/null)"
+
+  button=$? #get exit code to determine which button was pressed
+  echo "Button: ${button}"
+  if [ $button -eq 252 ];then #if window manager x was pressed
+    exit 0
+  fi
+
+  echo "Output: ${output}EOO"
+
+  case $button in
+
+    1)
+      echo "Error"
+      exit 1
+      ;;
+
+    0)
+      echo "Details"
+      text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
+Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo "unavailable")
+$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)")"
+      echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
+        --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+        --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+        --button=Install!"${DIRECTORY}/icons/install.png":4 \
+        --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
+        --button=Back!"${DIRECTORY}/icons/back.png":0
+      ;;
+
+    2)
+      echo "Uninstall"
+      "${DIRECTORY}/manage" "$output" uninstall
+      ;;
+    4)
+      echo "Install"
+      "${DIRECTORY}/manage" "$output" install
+      ;;
+  esac
+done

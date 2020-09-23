@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#$1 is a quotation-marked, space-seperated list of package names.
+#$2 is the path to the program folder being installed. For example, /home/pi/pi-apps/apps/Arduino
+#Example usage: ~/pi-apps/pkg-install "gparted buffer expect" ~/pi-apps/apps/Arduino
+
+PKG_LIST="$1"
+PRG_DIR="$2"
+
+if [ -z "$PKG_LIST" ];then
+  echo -e "\e[91mNo packages were specified!\e[39m"
+  exit=1
+fi
+
+if [ -z "$PRG_DIR" ];then
+  echo -e "\e[91mNo program directory specified!\e[39m"
+  exit=1
+elif [ ! -d "$PRG_DIR" ];then
+  echo -e "\e[91m$PRG_DIR does not exist!\e[39m"
+  exit=1
+elif [ -z "$(echo "$PRG_DIR" | grep "pi-apps/apps")" ];then
+  echo -e "\e[33mWarning: That program directory ($PRG_DIR) is located outside of pi-apps.\e[39m"
+fi
+
+if [ ! -z $exit ];then
+  echo -e '$1 is a quotation-marked, space-seperated list of package names.\n$2 is the path to the program folder being installed.\nExample usage: ~/pi-apps/pkg-install '\"'gparted buffer expect'\"' ~/pi-apps/apps/Arduino'
+  echo -e "\e[91mExiting now.\e[39m"
+  exit 1
+fi
+
+if [ "$PRG_DIR" == "*/" ]; then # ensure there is no trailing slash
+  PRG_DIR=${PRG_DIR: :-1}
+fi
+
+echo "Running pkg-install..."
+
+output="$(sudo apt update 2>&1)"
+exitcode=$?
+
+#inform user packages are upgradeable
+if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
+  echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade -y\e[0m."
+fi
+
+#exit on apt error
+errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+  echo -e "\e[91mFailed to run \e[4msudo apt update\e[0m\e[39m!"
+  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  exit 1
+fi
+
+for i in $PKG_LIST
+do
+  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
+  if [ "" == "$PKG_OK" ]; then
+    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
+  fi
+done
+
+#save that list of installed packages in the program directory for future removal
+echo $INSTALL_LIST >> "$PRG_DIR/installed-packages"
+
+if [ ! -z "$INSTALL_LIST" ];then
+  echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
+  output="$(sudo apt-get install -y $INSTALL_LIST 2>&1)"
+  exitcode=$?
+  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+    echo -e "\e[91mFailed to install the packages!\e[39m"
+    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+    exit 1
+  fi
+  #re-check package list. This time it should be blank.
+  INSTALL_LIST=''
+  for i in $PKG_LIST
+  do
+    PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
+    if [ "" == "$PKG_OK" ]; then
+      INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
+    fi
+  done
+  
+  if [ ! -z $INSTALL_LIST ];then
+    echo -e "\e[91mAPT did not exit with an error, but these packages failed to install somehow: $INSTALL_LIST\e[39m"
+    exit 1
+  else
+    echo -e "\e[32mAll packages were installed succesfully.\e[39m"
+  fi
+else
+  echo -e "\e[32mNo new packages to install. Nothing to do!\e[39m"
+fi
