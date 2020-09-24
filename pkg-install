@@ -1,38 +1,41 @@
 #!/bin/bash
 
 #$1 is a quotation-marked, space-seperated list of package names.
-#$2 is the path to the program folder being installed. For example, /home/pi/pi-apps/apps/Arduino
+#$2 is the path to the program folder being installed.
 #Example usage: ~/pi-apps/pkg-install "gparted buffer expect" ~/pi-apps/apps/Arduino
 
 PKG_LIST="$1"
-PRG_DIR="$2"
+PRG="$(echo "$2" | tr '/' '\n' | tail -1)"
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+echo "Running pkg-install..."
 
 if [ -z "$PKG_LIST" ];then
   echo -e "\e[91mNo packages were specified!\e[39m"
-  exit=1
+  exit=yes
 fi
 
-if [ -z "$PRG_DIR" ];then
+if [ -z "$PRG" ];then
   echo -e "\e[91mNo program directory specified!\e[39m"
-  exit=1
-elif [ ! -d "$PRG_DIR" ];then
-  echo -e "\e[91m$PRG_DIR does not exist!\e[39m"
-  exit=1
-elif [ -z "$(echo "$PRG_DIR" | grep "pi-apps/apps")" ];then
-  echo -e "\e[33mWarning: That program directory ($PRG_DIR) is located outside of pi-apps.\e[39m"
+  exitcode=1
+elif [ ! -d "$2" ];then
+  echo -e "\e[91m$2 does not exist!\e[39m"
+  exitcode=1
+elif [ -z "$(echo "$2" | grep "pi-apps/apps")" ];then
+  echo -e "\e[33mWarning: That program directory ($PRG) is located outside of pi-apps.\e[39m"
 fi
 
-if [ ! -z $exit ];then
+if [ ! -z $exitcode ];then
   echo -e '$1 is a quotation-marked, space-seperated list of package names.\n$2 is the path to the program folder being installed.\nExample usage: ~/pi-apps/pkg-install '\"'gparted buffer expect'\"' ~/pi-apps/apps/Arduino'
   echo -e "\e[91mExiting now.\e[39m"
   exit 1
 fi
-
-if [ "$PRG_DIR" == "*/" ]; then # ensure there is no trailing slash
-  PRG_DIR=${PRG_DIR: :-1}
-fi
-
-echo "Running pkg-install..."
 
 output="$(sudo apt update 2>&1)"
 exitcode=$?
@@ -59,7 +62,7 @@ do
 done
 
 #save that list of installed packages in the program directory for future removal
-echo $INSTALL_LIST >> "$PRG_DIR/installed-packages"
+echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
 
 if [ ! -z "$INSTALL_LIST" ];then
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
@@ -75,7 +78,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   INSTALL_LIST=''
   for i in $PKG_LIST
   do
-    PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
+    PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null | grep "install ok installed")"
     if [ "" == "$PKG_OK" ]; then
       INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
     fi

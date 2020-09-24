@@ -15,7 +15,9 @@ wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download
 
 rm -f /tmp/cookies.txt  || echo "Warning: failed to remove cookies.txt."
 
-unzip ~/freecad-precompiled.zip || error "Failed to extract archive!"
+rm -rf freecad-build FreeCAD-0.18.4 || error "Failed to delete freecad-build and FreeCAD-0.18.4 folders!"
+
+unzip -q ~/freecad-precompiled.zip || error "Failed to extract archive!"
 rm -f ~/freecad-precompiled.zip || error "Failed to delete archive!"
 
 cd freecad-build || error "Failed to enter directory!"

@@ -11,15 +11,15 @@ while true;do
   APPS="$(echo "$APPS" | tr '\n' '|')"
 
   PREIFS="$IFS"
-  IFS=$"|"
+  IFS="|"
   LIST=''
   for i in $APPS
   do
     
-    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/apps/${i}" || echo "none").png")
+    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
-"\("$(cat "${DIRECTORY}/data/apps/${i}" || echo "Unknown state")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "Unknown state")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
   done
   IFS="$PREIFS"
@@ -50,7 +50,20 @@ $i
 
     0)
       echo "Details"
+      
+      info="$(if [ -f "${DIRECTORY}/data/status/${output}" ];then
+          echo -n "Current status: "
+          cat "${DIRECTORY}/data/status/${output}"
+        fi
+        
+        if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+          echo -n "This app installed these packages: "
+          cat "${DIRECTORY}/data/installed-packages/${output}" | tr '\n' ' '
+        fi
+      )"
+      
       text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
+$info
 Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo "unavailable")
 $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)")"
       echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
@@ -63,11 +76,11 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
 
     2)
       echo "Uninstall"
-      "${DIRECTORY}/manage" "$output" uninstall
+      "${DIRECTORY}/manage" uninstall "$output"
       ;;
     4)
       echo "Install"
-      "${DIRECTORY}/manage" "$output" install
+      "${DIRECTORY}/manage" install "$output"
       ;;
   esac
 done

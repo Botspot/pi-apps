@@ -19,7 +19,7 @@ wget https://github.com/FreeCAD/FreeCAD/archive/0.18.4.zip || error "failed to d
 #ensure there's no directory in there already
 rm -rf ~/FreeCAD-0.18.4 ~/freecad-build 2>/dev/null
 
-unzip 0.18.4.zip || error "failed to extract ZIP file!"
+unzip -q 0.18.4.zip || error "failed to extract ZIP file!"
 
 rm 0.18.4.zip || error "failed to delete ZIP file!"
 

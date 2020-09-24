@@ -3,36 +3,38 @@
 #$1 is the path to the program folder being installed. For example, /home/pi/pi-apps/apps/Arduino
 #Example usage: ~/pi-apps/uninstall-installed ~/pi-apps/apps/Arduino
 
-PRG_DIR="$1"
+PRG="$(echo "$1" | tr '/' '\n' | tail -1)"
 
-if [ -z "$PRG_DIR" ];then
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+if [ -z "$PRG" ];then
   echo -e "\e[91mNo program directory specified!\e[39m"
   exitcode=1
-elif [ ! -d "$PRG_DIR" ];then
-  echo -e "\e[91m$PRG_DIR does not exist!\e[39m"
+elif [ ! -d "$1" ];then
+  echo -e "\e[91m$1 does not exist!\e[39m"
   exitcode=1
-elif [ -z "$(echo "$PRG_DIR" | grep "pi-apps/apps")" ];then
-  echo -e "\e[33mWarning: That program directory ($PRG_DIR) is located outside of pi-apps.\e[39m"
+elif [ -z "$(echo "$1" | grep "pi-apps/apps")" ];then
+  echo -e "\e[33mWarning: That program directory ($1) is located outside of pi-apps.\e[39m"
 fi
 
 if [ ! -z $exitcode ];then
   echo -e "\e[91mExiting now.\e[39m"
-  exit $exit
+  exit 1
 fi
 
 function error {
-  echo -e "\e[31m$1\e[39m"
+  echo -e "\e[91m$1\e[39m"
   exit 1
 }
 echo "Running purge-installed..."
-PKG_LIST="$(cat "$PRG_DIR/installed-packages")"
+PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${PRG}")"
 
-if [ ! -f "$PRG_DIR/installed-packages" ];then
-  echo -e "\e[33mDoes $PRG_DIR/installed-packages exist?\e[39m"
+if [ ! -f "${DIRECTORY}/data/installed-packages/${PRG}" ];then
+  echo -e "\e[33mDoes ${DIRECTORY}/data/installed-packages/${PRG} exist?\e[39m"
   exit 0
 fi
 
-if [ -z "$PRG_DIR/installed-packages" ];then
+if [ -z "${DIRECTORY}/data/installed-packages/${PRG}" ];then
   echo "Nothing to purge. Exiting now."
   exit 0
 fi
@@ -71,5 +73,5 @@ if [ ! -z "$INSTALL_LIST" ];then
   error "\e[91mAPT did not exit with an error, but these packages are still installed somehow: $INSTALL_LIST\e[39m"
 else
   echo -e "\e[32mAll packages were purged succesfully.\e[39m"
-  rm "$PRG_DIR/installed-packages"
+  gio trash "${DIRECTORY}/data/installed-packages/${PRG}"
 fi

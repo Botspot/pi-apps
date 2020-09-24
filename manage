@@ -1,54 +1,67 @@
 #!/bin/bash
 
-#$1 is name of software, like Arduino
-#$2 is install/uninstall
+#$1 is an action, like install
+#$2 is app name, like Arduino
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
-  echo -e "\e[31m$1\e[39m"
+  echo -e "\e[91m$1\e[39m"
   exit 1
 }
 
 if [ -z "$1" ];then
-  error "You need to specify which app, and which action to apply to it. (install/uninstall)"
-elif [ ! -d "${DIRECTORY}/apps/$1" ];then
-  error "${DIRECTORY}/apps/$1 does not exist!"
+  error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
-if [ "$2" == 'install' ];then
+if [ "$1" == 'install' ];then
+  #for this operation, a program name must be specified.
+  if [ -z "$2" ];then
+    error "For this operation, you must specify which app to operate on."
+  elif [ ! -d "${DIRECTORY}/apps/$2" ];then
+    error "${DIRECTORY}/apps/$2 does not exist!"
+  fi
+  #INSTALL
   #ensure an install script is not already running
   if ps -C install ;then       
     echo "An install script is already running.
-Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
+Pi-Apps will wait until that one finishes before installing $2." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
     --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
     while ps -C install ;do sleep 1; done
   fi
   
   #if already installed then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/apps/${1}" )" == 'installed' ];then
-    yad --text="$1 is already installed. Are you sure you want to install it again?" \
+  if [ "$(cat "${DIRECTORY}/data/status/${2}" )" == 'installed' ];then
+    yad --text="$2 is already installed. Are you sure you want to install it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
-  lxterminal --title="Installing $1" -e "
+  lxterminal --title="Installing $2" -e "
     cd $HOME
-    echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
-    if \"${DIRECTORY}/apps/${1}/install\" ; then
-      echo 'installed' > \"${DIRECTORY}/data/apps/${1}\"
+    echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
+    if \"${DIRECTORY}/apps/${2}/install\" ; then
+      echo 'installed' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
       read enter #technically you could press Enter to exit.
     else
-      echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+      echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
       read enter #technically you could press Enter to exit.
     fi"
   #wait until script is done before this command exits
   sleep 2
   while ps -C install >/dev/null;do sleep 1; done
-elif [ "$2" == 'uninstall' ];then
+  
+elif [ "$1" == 'uninstall' ];then
+  #for this operation, a program name must be specified.
+  if [ -z "$2" ];then
+    error "For this operation, you must specify which app to operate on."
+  elif [ ! -d "${DIRECTORY}/apps/$2" ];then
+    error "${DIRECTORY}/apps/$2 does not exist!"
+  fi
+  #UNINSTALL
   #ensure an uninstall script is not already running
   if ps -C install ;then       
     echo "An uninstall script is already running.
@@ -59,27 +72,115 @@ Pi-Apps will wait until that one finishes before starting this one." | yad --tex
   fi
   
   #if already uninstalled then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/apps/${1}" )" == 'uninstalled' ];then
-    yad --text="$1 is already uninstalled. Are you sure you want to uninstall it again?" \
+  if [ "$(cat "${DIRECTORY}/data/status/${2}" )" == 'uninstalled' ];then
+    yad --text="$2 is already uninstalled. Are you sure you want to uninstall it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
-  lxterminal --title="Uninstalling $1" -e "
+  lxterminal --title="Uninstalling $2" -e "
     cd $HOME
-    echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
-    if \"${DIRECTORY}/apps/${1}/uninstall\" ; then
-      echo 'uninstalled' > \"${DIRECTORY}/data/apps/${1}\"
+    echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
+    if \"${DIRECTORY}/apps/${2}/uninstall\" ; then
+      echo 'uninstalled' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
       read enter #technically you could press Enter to exit.
     else
-      echo 'corrupted' > \"${DIRECTORY}/data/apps/${1}\"
+      echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
       read enter #technically you could press Enter to exit.
     fi"
   #wait until script is done before this command exits
   sleep 2
   while ps -C uninstall >/dev/null;do sleep 1; done
+elif [ "$1" == 'update' ];then
+  #for this operation, a program name must be specified.
+  if [ -z "$2" ];then
+    error "For this operation, you must specify which app to operate on."
+  fi
+  #UPDATE
+  
+  rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
+  git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  
+  newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+  oldhash=$(find "${DIRECTORY}/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+  
+  echo -e "newhash: $newhash\noldhash: $oldhash"
+  
+  if [ "$newhash" == "$oldhash" ];then
+    echo "$2 is identical to the online version. Nothing to do!"
+    exit 0
+  else
+    echo "$2 is not identical to the online version. Reinstalling..."
+  fi
+  #else
+  #if installed already
+  if [ "$(cat "${DIRECTORY}/data/status/${2}")" == 'installed' ];then
+    installback=yes
+    #uninstall it using a recursive script instance
+    "${DIRECTORY}/manage" uninstall "$2"
+  else
+    installback=no
+  fi
+  
+  #move old program to trash
+  gio trash "${DIRECTORY}/apps/${2}"
+  
+  #copy new version to apps/
+  cp -rf "${DIRECTORY}/update/pi-apps/apps/${2}" "${DIRECTORY}/apps/${2}"
+  
+  if [ "$installback" == 'yes' ];then
+    echo "$2 was originally installed before updating. Reinstalling the new version now."
+    #install it using a recursive script instance
+    "${DIRECTORY}/manage" install "$2"
+  fi
+elif [ "$1" == 'check-all' ];then
+  #for this operation, a program name cannot be specified.
+  #CHECK-ALL
+  
+  rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
+  git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  
+  updatable=''
+  echo "app list: $(echo "$(ls "${DIRECTORY}/update/pi-apps/apps")" | grep -v 'template')"
+
+  PREIFS="$IFS"
+  IFS="|"
+  newapps="$(echo "$(ls "${DIRECTORY}/update/pi-apps/apps")" | grep -v 'template' | tr '\n' '|')"
+  for newapp in $newapps
+  do
+    echo "newapp: $newapp"
+    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${newapp}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    oldhash=$(find "${DIRECTORY}/apps/${newapp}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    echo -e "newhash: $newhash\noldhash: $oldhash"
+    
+    if [ "$newhash" == "$oldhash" ];then
+      echo "${newapp} is identical to the online version. Nothing to do!"
+    else
+      echo "${newapp} is not identical to the online version. Adding to updatable list..."
+      updatable="${updatable}|${newapp}"
+    fi
+  done
+  #remove initial '|' character
+  updatable="${updatable:1}"
+  
+  IFS="$PREIFS"
+  echo -e "These apps can be updated:\n${updatable}"
+elif [ "$1" == 'update-all' ];then
+  #for this operation, a program name cannot be specified.
+  PREIFS="$IFS"
+  IFS='|'
+  updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
+  echo "Updatable: ${updatable}EOU"
+  for updateapp in $updatable
+  do
+    echo "updating $updateapp"
+    #update it using a recursive script instance
+    echo "${DIRECTORY}/manage update $updateapp"
+    "${DIRECTORY}/manage" update "$updateapp"
+  done 
+  IFS="$PREIFS"
 else
-  error "Did not understand $2. It must be either "\'"install"\'" or "\'"uninstall"\'"."
+  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"update"\'", or "\'"check-all"\'"."
 fi

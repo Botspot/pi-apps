@@ -1,0 +1,43 @@
+Python-powered GUI for OMXPlayer with YouTube functionality.
+To run: Menu -> Sound & Video -> TBOPlayer
+To run in a terminal: python /opt/tboplayer/tboplayer.py
+
+Buttons:
+• ADD - duplicates the Track>Add menu item
+• ADD DIR - duplicates the Track>Add Dir menu item
+• EDIT - duplicates the Track>Edit menu item
+• OPEN/SAVE/CLEAR LIST - duplicates the Playlist>Open,Save,Clear menu item
+• PLAY/PAUSE - play the selected track or pause if playing
+• STOP - stop playing, operational only during playing
+• PREVIOUS - play previous track, operational only after played some track
+• NEXT - play next track, up to mode that you set
+• - VOL + - minus/plus volume control
+• Playlist - can be clicked over to play a track, and can be used to add tracks by 'drag and dropping' files over
+• Progress bar - show/Seek position
+• Resize video - at the bottom right side of the video progress bar, allows resizing video
+
+Menus:
+• Track - add tracks (for selecting multiple tracks, hold ctrl when clicking) or directories, edit or remove tracks (or URLs) from the current playlist
+• Playlist - save the current playlist or open a saved one or load youtube playlist
+• OMX - display the track information for the last played track
+• Options - see below:
+
+Options:
+• Audio Output - play sound to hdmi, local, both or ALSA device.
+• Mode - play the Single selected track, Repeat the single track, rotate around the Playlist starting from the selected track, randomly play a track from the Playlist.
+• Initial directory for tracks - where Add Track starts looking.
+• Initial directory for playlists - where Open Playlist starts looking
+• Enable subtitles - download and use subtitles from streamming services
+• OMXPlayer location - path to omxplayer binary
+• OMXplayer options - add your own (no validation so be careful)
+• Download from Youtube - defines whether to download video and audio or audio only from Youtube (other online video services will always be asked for "video and audio")
+• Download actual media URL [when] - defines when to extract the actual media from the given URL, either upon adding the URL or when playing it
+• Youtube media quality - lets you choose among "small", "medium" and "high" qualities (Youtube only feature)
+• youtube-dl location - path to youtube-dl binary
+• Interface language - change GUI active language, requires restart
+• Start/End track paused - pauses the track both in the beginning and in the end of the track
+• Autoplay at start up - if TBOPlayer has just been opened and has some file in the playlist, automatically start playing the first file in the list
+• Keep youtube-dl up-to-date - upon start, check if there is a newer version of youtube-dl, and if there is, install it
+• Forbid windowed mode - if enabled will make videos always show in full screen, disabling the video window mode and video progress bar - may be useful if you're using tboplayer through a remote desktop
+• Find lyrics - if enabled, TBOPlayer will try to fetch lyrics for playing track - defaults to off - more details below
+• Debug - prints some debug text to the command line/log file (requires you to close and restart tboplayer)

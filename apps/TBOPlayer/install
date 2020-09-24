@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+# Get dependencies
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+"${DIRECTORY}/pkg-install" "python-pip python-gobject-2 python-dbus python-tk python-gtk2 python-requests tkdnd" "$(dirname "$0")" || exit 1
+
+cd ~ && wget https://github.com/KenT2/tboplayer/tarball/py2_version -O - | tar xz || error "Failed to download!"
+cd KenT2-tboplayer-* && chmod +x setup.sh && ./setup.sh || error "failed to run setup.sh!"
