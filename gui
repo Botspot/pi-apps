@@ -16,13 +16,14 @@ while true;do
   for i in $APPS
   do
     
-    LIST="${LIST}$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
+    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 "\("$(cat "${DIRECTORY}/data/status/${i}" || echo "Unknown state")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
   done
   IFS="$PREIFS"
+  LIST="$(echo -e "$LIST")"
   #echo "$LIST"
   output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=300 --height=300 --no-headers \
     --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
