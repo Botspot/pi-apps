@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#has newline chars to display properly
+packagelist="$(echo "yad" | tr ' ' '\n')"
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+echo -e "$packagelist" | zenity --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
+	--list --text=" These packages are required but not installed.   \n Install them now?" \
+	--ok-label=Yes --cancel-label=No \
+	--column=foo --hide-header 2>/dev/null
+button=$?
+
+#echo $button
+if [ ! $button -eq 0 ];then
+  echo "User declined."
+  exit 1
+fi
+#else
+lxterminal --title="Installing $packagelist" -e "sudo apt install -y $PKG_LIST;echo -e '\nInstallation finished.\nClosing in 5 seconds.';sleep 5"
+
+echo "Creating menu button..."
+echo -n '' > ${HOME}/.local/share/applications/pi-apps.desktop
+echo "[Desktop Entry]
+Name=Pi Apps
+Comment=Raspberry Pi App Store for open source projects
+Exec=${DIRECTORY}/gui
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+Categories=Utility;" >> ${HOME}/.local/share/applications/pi-apps.desktop

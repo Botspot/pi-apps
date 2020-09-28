@@ -1,0 +1,123 @@
+#!/bin/bash
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#generate app update status info
+updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
+
+#if check-all succeeded to download the repo to the update folder
+if [ -d "${DIRECTORY}/update" ];then
+  PREIFS="$IFS"
+  IFS="|"
+  
+  mainfiles="$(echo -e "$(ls -p "${DIRECTORY}/update/pi-apps")\n$(ls -p "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
+  for file in $mainfiles
+  do
+    newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    oldhash=$(cat "${DIRECTORY}/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    #echo -e "newhash: $newhash\noldhash: $oldhash"
+    
+    if [ "$newhash" == "$oldhash" ];then
+      echo -e "${file} is identical\e[90m to the online version. Nothing to do!\e[39m"
+    else
+      if [ ! -f "${DIRECTORY}/${file}" ];then
+        echo -e "\e[97m${file} does not exist locally.\e[39m Adding to updatable list."
+        #in this case, add to updatable list
+        mainupdate="${mainupdate}|${file}"
+      elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
+        echo -e "\e[97m${file} only exists locally.\e[39m Will not add to updatable list."
+        #in this case, do not add to updatable list
+      else
+        echo -e "\e[97m${file} exists in both locations, but online version is newer\e[39m. Adding to updatable list."
+        #in this case, add to updatable list
+        mainupdate="${mainupdate}|${file}"
+      fi
+      
+    fi
+  done
+  IFS="$PREIFS"
+  
+  #remove initial '|' character
+  mainupdate="${mainupdate:1}"
+else
+  error "${DIRECTORY}/update does not exist. Most likely there is no Internet connection."
+fi
+
+LIST=''
+
+PREIFS="$IFS"
+IFS="|"
+for i in $updatable
+do
+  LIST="${LIST}${DIRECTORY}/update/pi-apps/apps/${i}/icon-24.png
+$i "\("$([ $(cat "${DIRECTORY}/data/update-status/${i}") == 'new' ]&&echo 'new ')app"\)"
+"
+done
+for i in $mainupdate
+do
+  LIST="${LIST}$(if [ "$(file -b --mime-type "${DIRECTORY}/${i}")" == 'text/x-shellscript' ];then
+  #if updatable file in question is a shell script, then display shellscript icon.
+  echo "${DIRECTORY}/icons/shellscript.png"
+else
+  #otherwise display txt icon.
+  echo "${DIRECTORY}/icons/txt.png"
+fi)
+$i "\("file"\)"
+"
+done
+IFS="$PREIFS"
+
+if [ -z "$LIST" ];then
+  echo -e '\e[92mNothing to update. Nothing to do!\e[39m'
+  exit 0
+fi
+LIST="${LIST::-1}"
+#echo "List: ${LIST}EOL"
+
+echo -e "$LIST" | yad --center --title='Pi-Apps' --width=300 --height=300 --no-headers \
+  --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+  --text='Updates available:' \
+  --column=:IMG --column=Name \
+  --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+  --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
+  2>/dev/null
+
+button=$? #get exit code to determine which button was pressed
+echo "Button: ${button}"
+[ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
+
+
+PREIFS="$IFS"
+IFS="|"
+for i in $updatable
+do
+  "${DIRECTORY}/manage" update "$i" nofetch
+  echo -e "\e[92m${i} was updated successfully.\e[39m"
+done
+
+for i in $mainupdate
+do
+  #move old program to trash
+  gio trash "${DIRECTORY}/${i}" 2>/dev/null
+  
+  #failsafe
+  [ -f "${DIRECTORY}/${i}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
+  
+  #copy new version to apps/
+  cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${i}!"
+  
+  echo -e "\e[92m${i} was updated successfully.\e[39m"
+done
+IFS="$PREIFS"
+
+#.git folder
+#move old .git folder to trash
+gio trash "${DIRECTORY}/.git" 2>/dev/null
+cp -f "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
+
+

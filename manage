@@ -15,13 +15,13 @@ if [ -z "$1" ];then
 fi
 
 if [ "$1" == 'install' ];then
+  #INSTALL
   #for this operation, a program name must be specified.
   if [ -z "$2" ];then
     error "For this operation, you must specify which app to operate on."
   elif [ ! -d "${DIRECTORY}/apps/$2" ];then
     error "${DIRECTORY}/apps/$2 does not exist!"
   fi
-  #INSTALL
   #ensure an install script is not already running
   if ps -C install ;then       
     echo "An install script is already running.
@@ -43,8 +43,8 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
     echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
     if \"${DIRECTORY}/apps/${2}/install\" ; then
       echo 'installed' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
-      read enter #technically you could press Enter to exit.
+      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClosing in 10 seconds.'
+      sleep 10
     else
       echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
@@ -55,15 +55,15 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
   while ps -C install >/dev/null;do sleep 1; done
   
 elif [ "$1" == 'uninstall' ];then
+  #UNINSTALL
   #for this operation, a program name must be specified.
   if [ -z "$2" ];then
     error "For this operation, you must specify which app to operate on."
   elif [ ! -d "${DIRECTORY}/apps/$2" ];then
     error "${DIRECTORY}/apps/$2 does not exist!"
   fi
-  #UNINSTALL
   #ensure an uninstall script is not already running
-  if ps -C install ;then       
+  if ps -C uninstall ;then       
     echo "An uninstall script is already running.
 Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
@@ -83,8 +83,8 @@ Pi-Apps will wait until that one finishes before starting this one." | yad --tex
     echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
     if \"${DIRECTORY}/apps/${2}/uninstall\" ; then
       echo 'uninstalled' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClose this window to exit.'
-      read enter #technically you could press Enter to exit.
+      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClosing in 10 seconds..'
+      sleep 10
     else
       echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
       echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
@@ -94,14 +94,19 @@ Pi-Apps will wait until that one finishes before starting this one." | yad --tex
   sleep 2
   while ps -C uninstall >/dev/null;do sleep 1; done
 elif [ "$1" == 'update' ];then
+  #UPDATE
   #for this operation, a program name must be specified.
   if [ -z "$2" ];then
     error "For this operation, you must specify which app to operate on."
   fi
-  #UPDATE
   
-  rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-  git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  #HIDDEN FEATURE - if $3 equals nofetch, then don't download github repo. Useful for updating multiple apps at maximum speed
+  if [ "$3" == 'nofetch' ] && [ -d "${DIRECTORY}/update" ];then
+    true
+  else
+    rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
+    git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  fi
   
   newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
   oldhash=$(find "${DIRECTORY}/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
@@ -125,7 +130,10 @@ elif [ "$1" == 'update' ];then
   fi
   
   #move old program to trash
-  gio trash "${DIRECTORY}/apps/${2}"
+  gio trash "${DIRECTORY}/apps/${2}" 2>/dev/null
+  
+  #failsafe
+  [ -d "${DIRECTORY}/apps/${2}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
   
   #copy new version to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${2}" "${DIRECTORY}/apps/${2}"
@@ -135,39 +143,56 @@ elif [ "$1" == 'update' ];then
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$2"
   fi
+  echo -e '\e[92m${2} was updated successfully.\e[39m'
 elif [ "$1" == 'check-all' ];then
-  #for this operation, a program name cannot be specified.
   #CHECK-ALL
+  #for this operation, a program name cannot be specified.
   
   rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
   git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
   
   updatable=''
-  echo "app list: $(echo "$(ls "${DIRECTORY}/update/pi-apps/apps")" | grep -v 'template')"
 
   PREIFS="$IFS"
   IFS="|"
-  newapps="$(echo "$(ls "${DIRECTORY}/update/pi-apps/apps")" | grep -v 'template' | tr '\n' '|')"
+  newapps="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | grep -v 'template' | sort | uniq | tr '\n' '|')"
   for newapp in $newapps
   do
-    echo "newapp: $newapp"
-    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${newapp}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    oldhash=$(find "${DIRECTORY}/apps/${newapp}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    echo -e "newhash: $newhash\noldhash: $oldhash"
+    #echo "newapp: $newapp"
+    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    oldhash=$(find "${DIRECTORY}/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    #echo -e "newhash: $newhash\noldhash: $oldhash"
     
     if [ "$newhash" == "$oldhash" ];then
-      echo "${newapp} is identical to the online version. Nothing to do!"
+      echo -e "${newapp} is identical\e[90m to the online version. Nothing to do!\e[39m"
+      echo 'latest' > "${DIRECTORY}/data/update-status/${newapp}"
     else
-      echo "${newapp} is not identical to the online version. Adding to updatable list..."
-      updatable="${updatable}|${newapp}"
+      if [ ! -d "${DIRECTORY}/apps/${newapp}" ];then
+        echo -e "\e[97m${newapp} does not exist locally.\e[39m Adding to updatable list."
+        echo 'new' > "${DIRECTORY}/data/update-status/${newapp}"
+        #in this case, add to updatable list
+        updatable="${updatable}|${newapp}"
+      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${newapp}" ];then
+        echo -e "\e[97m${newapp} only exists locally.\e[39m Will not add to updatable list."
+        echo 'local' > "${DIRECTORY}/data/update-status/${newapp}"
+        #in this case, do not add to updatable list
+      else
+        echo -e "\e[97m${newapp} exists in both locations, but online version is newer\e[39m. Adding to updatable list."
+        echo 'updatable' > "${DIRECTORY}/data/update-status/${newapp}"
+        #in this case, add to updatable list
+        updatable="${updatable}|${newapp}"
+      fi
+      
     fi
-  done
+  done 
+  IFS="$PREIFS"
+  
   #remove initial '|' character
   updatable="${updatable:1}"
   
-  IFS="$PREIFS"
-  echo -e "These apps can be updated:\n${updatable}"
+  echo -e "\e[97mThese apps can be updated:\n${updatable}"
 elif [ "$1" == 'update-all' ];then
+  #UPDATE-ALL
   #for this operation, a program name cannot be specified.
   PREIFS="$IFS"
   IFS='|'
@@ -178,9 +203,10 @@ elif [ "$1" == 'update-all' ];then
     echo "updating $updateapp"
     #update it using a recursive script instance
     echo "${DIRECTORY}/manage update $updateapp"
-    "${DIRECTORY}/manage" update "$updateapp"
+    "${DIRECTORY}/manage" update "$updateapp" || exit 1
   done 
   IFS="$PREIFS"
+  echo -e '\e[92mOperation completed successfully!\e[39m'
 else
-  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"update"\'", or "\'"check-all"\'"."
+  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"update"\'", "\'"check-all"\'", or "\'"update-all"\'"."
 fi
