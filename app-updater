@@ -118,6 +118,6 @@ IFS="$PREIFS"
 #.git folder
 #move old .git folder to trash
 gio trash "${DIRECTORY}/.git" 2>/dev/null
-cp -f "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
+cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
 
 
