@@ -14,6 +14,8 @@ if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
+mkdir -p "${DIRECTORY}/data/status"
+
 if [ "$1" == 'install' ];then
   #INSTALL
   #for this operation, a program name must be specified.

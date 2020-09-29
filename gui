@@ -1,6 +1,18 @@
 #!/bin/bash
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
-echo "$DIRECTORY"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+[ -z $(yad --help) ] && error "YAD needs to be installed to run pi-apps."
+
+#check for updates in background
+"${DIRECTORY}/updater" &
+
+mkdir -p "${DIRECTORY}/data/installed-packages" "${DIRECTORY}/data/status"
+
 while true;do
 
   APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
@@ -25,7 +37,7 @@ $i
   IFS="$PREIFS"
   LIST="$(echo -e "$LIST")"
   #echo "$LIST"
-  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=300 --height=300 --no-headers \
+  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
     --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
     --button=Install!"${DIRECTORY}/icons/install.png":4 \
@@ -47,7 +59,6 @@ $i
       echo "Error"
       exit 1
       ;;
-
     0)
       echo "Details"
       
@@ -73,7 +84,6 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
         --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
         --button=Back!"${DIRECTORY}/icons/back.png":0
       ;;
-
     2)
       echo "Uninstall"
       "${DIRECTORY}/manage" uninstall "$output"
@@ -82,5 +92,8 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
       echo "Install"
       "${DIRECTORY}/manage" install "$output"
       ;;
+    *)
+    error "Unknown button: $button"
+    ;;
   esac
 done

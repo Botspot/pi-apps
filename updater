@@ -7,6 +7,18 @@ function error {
   exit 1
 }
 
+#if updates not checked for today, then check for updates now
+if [ -f "${DIRECTORY}/data/last-update-check" ] && [ "$(date +%j)" == "$(cat "${DIRECTORY}/data/last-update-check")" ];then
+  echo "Already checked for updates today, so no need to check again.
+To forcibly check for updates now, either delete ${DIRECTORY}/data/last-update-check,
+or press any key within the next 20 seconds."
+  read -n 1 -t 20 || exit 0
+  echo ''
+fi
+
+#write today's date to file. Format is "number of days since jan 1"
+echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
+
 #generate app update status info
 updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
 
@@ -79,11 +91,11 @@ fi
 LIST="${LIST::-1}"
 #echo "List: ${LIST}EOL"
 
-echo -e "$LIST" | yad --center --title='Pi-Apps' --width=300 --height=300 --no-headers \
+echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --text='Updates available:' \
   --column=:IMG --column=Name \
-  --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+  --button='Later'!"${DIRECTORY}/icons/exit.png"!'Remind me tomorrow':1 \
   --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
   2>/dev/null
 
