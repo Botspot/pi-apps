@@ -6,10 +6,10 @@ function error {
   exit 1
 }
 
-[ -z $(yad --help) ] && error "YAD needs to be installed to run pi-apps."
+[ -z "$(yad --help)" ] && error "YAD needs to be installed to run pi-apps."
 
 #check for updates in background
-"${DIRECTORY}/updater" &
+"${DIRECTORY}/updater" 1>/dev/null  &
 
 mkdir -p "${DIRECTORY}/data/installed-packages" "${DIRECTORY}/data/status"
 
@@ -31,7 +31,7 @@ while true;do
     LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
-"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "Unknown state")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "probably uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
   done
   IFS="$PREIFS"

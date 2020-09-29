@@ -28,6 +28,8 @@ Terminal=false
 Type=Application
 Categories=Utility;" >> ${HOME}/.local/share/applications/pi-apps.desktop
 
+echo "Adding Desktop shortcut..."
+
 cp -f ${HOME}/.local/share/applications/pi-apps.desktop ${HOME}/Desktop/pi-apps.desktop
 
 echo "Installation complete."
