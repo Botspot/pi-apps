@@ -1,7 +1,7 @@
-# pi-apps
+# pi-apps ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-There is an abundance of open-source, community-developed software for Raspberry Pi, but very few people know about them. This app store aims to change that, showcasing everyone's hard work.
+There are an abundance of open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. This app store aims to improve the situation.
 
 ### To install:
 ```
