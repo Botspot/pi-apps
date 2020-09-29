@@ -1,7 +1,7 @@
 # pi-apps
 ## Raspberry Pi App Store for Open Source Projects
 
-There is an abundance of open-source, community-developed software for Raspberry Pi, but very few people know about them. This app store aims to change that, functioning as a software catalog, and as an easy way to install/uninstall apps.
+There is an abundance of open-source, community-developed software for Raspberry Pi, but very few people know about them. This app store aims to change that, showcasing everyone's hard work.
 
 ### To install:
 ```
