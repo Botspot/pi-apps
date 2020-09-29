@@ -1,0 +1,105 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#start on this step:
+step=2
+
+name=myapp
+
+while true;do
+  case $step in
+    1)
+      echo "Welcome to the Create App wizard!
+With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list." | yad --text-info --fontname=12 --wrap --show-uri \
+        --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
+        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
+      step=2
+      ;;
+    2)
+      if [ ! -z "$name" ];then
+        namelocked='yes'
+      fi
+      output="$(yad --form \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
+        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website")" \
+        --field="Icon:":FL --file-filter "Graphics Files | *.png *.svg *.jpg *.jpeg" "$icon" \
+        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || echo 'Short description on this first line. This will be the tooltip.
+Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
+Describe how to use this app, and any outstanding features it has.
+Here'\''s a bulletpoint if you need it: ∙ <- '\('ツ'\)'
+And no, the happy face above will be just fine when you erase him. Don'\''t worry.')" \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null)"
+      button=$? #get exit code to determine which button was pressed
+      
+      echo "$button"
+      
+      output="$(echo "$output" | tr '|' '\n' )"
+      
+      if [ $button == 0 ];then
+        #next
+        name="$(echo "$output" | sed -n '1p')"
+        website="$(echo "$output" | sed -n '2p')"
+        icon="$(echo "$output" | sed -n '3p')"
+        description="$(echo -e "$(echo "$output" | sed -n '4p')")"
+        #name field must be populated
+        if [ ! -z "$name" ];then
+          #check if name is a duplicate
+          if [ -z "$(ls "${DIRECTORY}/apps" | grep -x "$name")" ] || [ ! -z $namelocked ];then
+            #create app folder
+            mkdir -p "${DIRECTORY}/apps/${name}" || error "failed to create ${DIRECTORY}/apps/${name}!"
+            namelocked='yes'
+            
+            #if website field is populated
+            if [ ! -z "$website" ];then
+              echo "$website" > "${DIRECTORY}/apps/${name}/website"
+            fi
+            
+            #if icon field is populated and if file exists
+            if [ ! -z "$icon" ] && [ -f "$icon" ];then
+              #scale it to 24x24
+              convert "$(echo "$output" | sed -n '3p')" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
+              #scale it to 64x64
+              convert "$(echo "$output" | sed -n '3p')" -resize x64 "${DIRECTORY}/apps/${name}/icon-64.png"
+            fi
+            
+            #if description field is populated
+            if [ ! -z "$description" ];then
+              echo "$description" > "${DIRECTORY}/apps/${name}/description"
+            fi
+            
+            step=3
+          else
+            echo 'That app name already exists!'
+            yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
+            --text="That app name already exists!" \
+            --button=OK:0
+          fi
+        else
+          echo 'Name of app may not be left blank!'
+          yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
+            --text="Name of app may not be left blank!" \
+            --button=OK:0
+        fi
+      elif [ $button == 2 ];then
+        #previous - don't save changes
+        step=1
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+    *)
+      error "Unknown step ${step}!"
+      ;;
+  esac
+done
