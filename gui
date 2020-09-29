@@ -37,27 +37,33 @@ $i
   IFS="$PREIFS"
   LIST="$(echo -e "$LIST")"
   #echo "$LIST"
-  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
-    --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-    --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
-    --button=Install!"${DIRECTORY}/icons/install.png":4 \
-    --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
-    --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
-    2>/dev/null)"
+  if [ -z "$output" ];then
+    
+    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
+      --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+      --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
+      --button=Install!"${DIRECTORY}/icons/install.png":4 \
+      --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
+      --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
+      2>/dev/null)"
 
-  button=$? #get exit code to determine which button was pressed
-  echo "Button: ${button}"
-  if [ $button -eq 252 ];then #if window manager x was pressed
-    exit 0
+    button=$? #get exit code to determine which button was pressed
+    echo "Button: ${button}"
+    if [ $button -eq 252 ];then #if window manager x was pressed
+      exit 0
+    fi
+
+    echo "Output: ${output}EOO"
+  else
+    #if output is not empty then assume button pressed was Details
+    button=0
   fi
-
-  echo "Output: ${output}EOO"
-
+  
   case $button in
 
     1)
-      echo "Error"
-      exit 1
+      echo "User exited."
+      exit 0
       ;;
     0)
       echo "Details"
@@ -77,20 +83,100 @@ $i
 $info
 Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo "unavailable")
 $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)")"
+      
+      whichbutton="$(
+      if [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
+        echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
+      elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
+        echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+      else
+        #if status is corrupted or unknown
+        echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
+      fi
+      )"
+      
       echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
         --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
-        --button=Install!"${DIRECTORY}/icons/install.png":4 \
-        --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
+        $whichbutton \
+        --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
+        --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
         --button=Back!"${DIRECTORY}/icons/back.png":0
+      button=$? #get exit code to determine which button was pressed
+      echo "Button: ${button}"
+      
+      if [ $button == 0 ];then
+        echo 'Back' #do nothing, as user requested to go back
+      elif [ $button == 4 ];then
+        #install
+        "${DIRECTORY}/manage" install "$output"
+      elif [ $button == 2 ];then
+        #uninstall
+        "${DIRECTORY}/manage" uninstall "$output"
+      elif [ $button == 6 ];then
+        echo 'previous app'
+        
+        #convert $output into number, then subtract 1 from it
+        
+        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+        
+        number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+        
+        lastline="$(echo "$lsoutput" | wc -l)"
+        
+        if [ $(($number - 1)) -lt '1' ];then
+          newnumber=$lastline
+        else
+          newnumber=$(($number - 1))
+        fi
+        
+        output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+        
+        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+        
+      elif [ $button == 8 ];then
+        echo 'next app'
+        
+        #convert $output into number, then add 1 to it
+        
+        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+        
+        number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+        
+        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+        
+        lastline="$(echo "$lsoutput" | wc -l)"
+        
+        if [ $(($number + 1)) -gt $lastline ];then
+          newnumber=1
+        else
+          newnumber=$(($number + 1))
+        fi
+        
+        output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+        
+        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+        
+      else
+        echo 'unknown button. Going back.'
+        #clear output var to prompt main window to open next
+        output=''
+      fi
+      
       ;;
     2)
       echo "Uninstall"
       "${DIRECTORY}/manage" uninstall "$output"
+      
+      #clear output var to prompt main window to open next
+      output=''
       ;;
     4)
       echo "Install"
       "${DIRECTORY}/manage" install "$output"
+      
+      #clear output var to prompt main window to open next
+      output=''
       ;;
     *)
     error "Unknown button: $button"
