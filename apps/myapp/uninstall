@@ -1,0 +1,10 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+#if your app installs any packages, keep this command here so those packages will be removed.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

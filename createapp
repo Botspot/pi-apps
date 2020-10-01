@@ -7,8 +7,7 @@ function error {
 }
 
 #start on this step:
-step=2
-
+step=3
 name=myapp
 
 while true;do
@@ -28,6 +27,7 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       fi
       output="$(yad --form \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --text="Step ${step}: enter some information. Only name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
         --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website")" \
         --field="Icon:":FL --file-filter "Graphics Files | *.png *.svg *.jpg *.jpeg" "$icon" \
@@ -35,7 +35,7 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
 Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
 Describe how to use this app, and any outstanding features it has.
 Here'\''s a bulletpoint if you need it: ∙ <- '\('ツ'\)'
-And no, the happy face above will be just fine when you erase him. Don'\''t worry.')" \
+And yes, the happy face above will be just fine when you erase him. Don'\''t worry.')" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
@@ -62,37 +62,145 @@ And no, the happy face above will be just fine when you erase him. Don'\''t worr
             #if website field is populated
             if [ ! -z "$website" ];then
               echo "$website" > "${DIRECTORY}/apps/${name}/website"
+              echo "Created ${DIRECTORY}/apps/${name}/website"
             fi
             
             #if icon field is populated and if file exists
             if [ ! -z "$icon" ] && [ -f "$icon" ];then
               #scale it to 24x24
               convert "$(echo "$output" | sed -n '3p')" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
+              echo "Created ${DIRECTORY}/apps/${name}/icon-24.png"
               #scale it to 64x64
               convert "$(echo "$output" | sed -n '3p')" -resize x64 "${DIRECTORY}/apps/${name}/icon-64.png"
+              echo "Created ${DIRECTORY}/apps/${name}/icon-64.png"
             fi
             
             #if description field is populated
             if [ ! -z "$description" ];then
               echo "$description" > "${DIRECTORY}/apps/${name}/description"
+              echo "Created ${DIRECTORY}/apps/${name}/description"
             fi
             
             step=3
           else
             echo 'That app name already exists!'
             yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
-            --text="That app name already exists!" \
+            --text="That app name already exists!" --timeout=10 \
             --button=OK:0
           fi
         else
           echo 'Name of app may not be left blank!'
           yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
-            --text="Name of app may not be left blank!" \
+            --text="Name of app may not be left blank!" --timeout=10 \
             --button=OK:0
         fi
       elif [ $button == 2 ];then
         #previous - don't save changes
         step=1
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+    3)
+      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+      
+      #find the best text editor
+      if [ -f /usr/bin/geany ];then
+        geany "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Geany
+      elif [ -f /usr/bin/mousepad ];then
+        mousepad "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Mousepad
+      elif [ -f /usr/bin/leafpad ];then
+        leafpad "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Leafpad
+      elif [ -f /bin/nano ];then
+        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Nano
+      else
+        echo "No text editors found!"
+      fi
+      
+      #continually save work
+      
+      "${DIRECTORY}/binaries/xdotool" search --name geany
+      exit 0
+      #(while true;do "${DIRECTORY}/binaries/xdotool" getwindowname "$windowname" ctrl+s;sleep 1;done) &
+      pid=$!
+      echo "pid is $pid"
+      #kill $pid
+      
+      output="$(yad --form --on-top \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --text='Now it'\''s time to make your install script. This will be executed anytime somebody clicks the Install button.
+A text editor should have openened and you can create your install script.' \
+        --field="Run script":FBTN "lxterminal --title="\""Running install script of $name"\"" -e "\""${DIRECTORY}/apps/${name}/install;echo 'Closing in 10 seconds.';sleep 10"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""${DIRECTORY}/binaries/shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null)"
+      button=$? #get exit code to determine which button was pressed
+      
+      #kill ctrl+s loop
+      kill $pid
+      
+      if [ $button == 0 ];then
+        #next - save changes
+        step=4
+      elif [ $button == 2 ];then
+        #previous - save changes
+        step=2
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+    4)
+      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+      
+      #find the best text editor
+      if [ -f /usr/bin/geany ];then
+        geany "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Geany
+      elif [ -f /usr/bin/mousepad ];then
+        mousepad "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Mousepad
+      elif [ -f /usr/bin/leafpad ];then
+        leafpad "${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Leafpad
+      elif [ -f /bin/nano ];then
+        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/uninstall" &
+        windowname=Nano
+      else
+        echo "No text editors found!"
+      fi
+      
+      #continually save work
+      (while true;do "${DIRECTORY}/binaries/xdotool" getwindowname "$windowname" ctrl+s;sleep 1;done) &
+      pid=$!
+      echo "pid is $pid"
+      #kill $pid
+      
+      output="$(yad --form --on-top \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --text='Now it'\''s time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
+A text editor should have openened... Never mind, you know what to do.' \
+        --field="Run script":FBTN "lxterminal --title="\""Running uninstall script of $name"\"" -e "\""${DIRECTORY}/apps/${name}/uninstall;echo 'Closing in 10 seconds.';sleep 10"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""${DIRECTORY}/binaries/shellcheck ${DIRECTORY}/apps/${name}/sinstall;echo 'Press Enter to exit.';read enter"\" \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null)"
+      button=$? #get exit code to determine which button was pressed
+      
+      #kill ctrl+s loop 
+      kill $pid
+      
+      
+      if [ $button == 0 ];then
+        step=5
+      elif [ $button == 2 ];then
+        step=3
       else
         #like clicking the X or something 
         exit 0

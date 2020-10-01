@@ -107,6 +107,8 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
       
       if [ $button == 0 ];then
         echo 'Back' #do nothing, as user requested to go back
+        #clear app var
+        output=''
       elif [ $button == 4 ];then
         #install
         "${DIRECTORY}/manage" install "$output"
