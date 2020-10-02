@@ -3,6 +3,9 @@
 
 There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve that, functioning as a software catalog and standardizing installation.
 
+**Please note that Pi-Apps is very new and is a work in progress. It has not been officially released yet, and is not ready for regular users. That being said, if you are brave enough to try it, go ahead!**
+**Also, please don't advertize Pi-Apps on public forums. It's not ready for prime time, may contain serious bugs, and Botspot has chosen to not release it yet.**
+
 ### To install Pi Apps:
 ```
 git clone https://github.com/Botspot/pi-apps
