@@ -7,8 +7,8 @@ function error {
 }
 
 #start on this step:
-step=6
-name=myapp
+#step=6
+#name=myapp
 
 while true;do
   case $step in
