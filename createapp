@@ -7,7 +7,7 @@ function error {
 }
 
 #start on this step:
-step=3
+step=6
 name=myapp
 
 while true;do
@@ -107,43 +107,27 @@ And yes, the happy face above will be just fine when you erase him. Don'\''t wor
       
       #find the best text editor
       if [ -f /usr/bin/geany ];then
-        geany "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Geany
+        geany "${DIRECTORY}/apps/${name}/install" &
       elif [ -f /usr/bin/mousepad ];then
-        mousepad "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Mousepad
+        mousepad "${DIRECTORY}/apps/${name}/install" &
       elif [ -f /usr/bin/leafpad ];then
-        leafpad "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Leafpad
+        leafpad "${DIRECTORY}/apps/${name}/install" &
       elif [ -f /bin/nano ];then
-        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Nano
+        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/install" &
       else
         echo "No text editors found!"
       fi
-      
-      #continually save work
-      
-      "${DIRECTORY}/binaries/xdotool" search --name geany
-      exit 0
-      #(while true;do "${DIRECTORY}/binaries/xdotool" getwindowname "$windowname" ctrl+s;sleep 1;done) &
-      pid=$!
-      echo "pid is $pid"
-      #kill $pid
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text='Now it'\''s time to make your install script. This will be executed anytime somebody clicks the Install button.
 A text editor should have openened and you can create your install script.' \
-        --field="Run script":FBTN "lxterminal --title="\""Running install script of $name"\"" -e "\""${DIRECTORY}/apps/${name}/install;echo 'Closing in 10 seconds.';sleep 10"\" \
+        --field="Run script":FBTN "lxterminal --title="\""Running install script of $name"\"" -e "\""cd $HOME;${DIRECTORY}/apps/${name}/install;echo 'Closing in 10 seconds.';sleep 10"\" \
         --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""${DIRECTORY}/binaries/shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
       button=$? #get exit code to determine which button was pressed
-      
-      #kill ctrl+s loop
-      kill $pid
       
       if [ $button == 0 ];then
         #next - save changes
@@ -162,45 +146,82 @@ A text editor should have openened and you can create your install script.' \
       #find the best text editor
       if [ -f /usr/bin/geany ];then
         geany "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Geany
       elif [ -f /usr/bin/mousepad ];then
         mousepad "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Mousepad
       elif [ -f /usr/bin/leafpad ];then
         leafpad "${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Leafpad
       elif [ -f /bin/nano ];then
         lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/uninstall" &
-        windowname=Nano
       else
         echo "No text editors found!"
       fi
-      
-      #continually save work
-      (while true;do "${DIRECTORY}/binaries/xdotool" getwindowname "$windowname" ctrl+s;sleep 1;done) &
-      pid=$!
-      echo "pid is $pid"
-      #kill $pid
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text='Now it'\''s time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
 A text editor should have openened... Never mind, you know what to do.' \
-        --field="Run script":FBTN "lxterminal --title="\""Running uninstall script of $name"\"" -e "\""${DIRECTORY}/apps/${name}/uninstall;echo 'Closing in 10 seconds.';sleep 10"\" \
-        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""${DIRECTORY}/binaries/shellcheck ${DIRECTORY}/apps/${name}/sinstall;echo 'Press Enter to exit.';read enter"\" \
+        --field="Run script":FBTN "lxterminal --title="\""Running uninstall script of $name"\"" -e "\""cd $HOME;${DIRECTORY}/apps/${name}/uninstall;echo 'Closing in 10 seconds.';sleep 10"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""${DIRECTORY}/binaries/shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
       button=$? #get exit code to determine which button was pressed
       
-      #kill ctrl+s loop 
-      kill $pid
-      
-      
       if [ $button == 0 ];then
         step=5
       elif [ $button == 2 ];then
         step=3
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+    5)
+      LIST="${DIRECTORY}/icons/uninstalled.png
+${DIRECTORY}/apps/${name}/icon-24.png
+$name
+"\("uninstalled"\)" $(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)"
+      
+      echo -e "$LIST" | yad --list \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --text='Make sure everything looks right.
+Here'\''s what it will look like in the app list:' \
+        --column=:IMG --column=:IMG --column=Name --column=tip:HD --tooltip-column=4 --no-headers \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null
+      button=$? #get exit code to determine which button was pressed
+      
+      if [ $button == 0 ];then
+        step=6
+      elif [ $button == 2 ];then
+        step=4
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+    6)
+           
+      text="$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)
+Current status: uninstalled
+Website: $(cat "${DIRECTORY}/apps/${name}/website" || echo "unavailable")
+$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)")"
+      
+      echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+        --text='Make sure everything looks right.
+Here'\''s a preview of the Details window:' \
+        --image="${DIRECTORY}/apps/${name}/icon-64.png" --image-on-top \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null
+      button=$? #get exit code to determine which button was pressed
+      
+      if [ $button == 0 ];then
+        step=7
+      elif [ $button == 2 ];then
+        step=5
       else
         #like clicking the X or something 
         exit 0

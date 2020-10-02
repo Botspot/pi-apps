@@ -6,8 +6,6 @@ function error {
   exit 1
 }
 
-false || error 'testing 1 2 3'
-
 #use the error function often!
 #If a certain command is necessary for installation to continue, then add this to the end of it:
 # || error 'reason'

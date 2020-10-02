@@ -13,6 +13,11 @@ function error {
 
 mkdir -p "${DIRECTORY}/data/installed-packages" "${DIRECTORY}/data/status"
 
+#Variable 1 is used to view the details of the specefied app
+if [ ! -z "$1" ];then
+  output="$1"
+fi
+
 while true;do
 
   APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
@@ -31,13 +36,18 @@ while true;do
     LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
-"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "probably uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
   done
   IFS="$PREIFS"
   LIST="$(echo -e "$LIST")"
   #echo "$LIST"
-  if [ -z "$output" ];then
+  
+  #if output is not empty then assume button pressed was Details
+  button=0
+  
+  while [ -z "$output" ]
+  do
     
     output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
       --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -54,10 +64,16 @@ $i
     fi
 
     echo "Output: ${output}EOO"
-  else
-    #if output is not empty then assume button pressed was Details
-    button=0
+  
+  if [ -z "$output" ];then
+    echo "output variable empty!"
+    yad --center --title='Pi-Apps' --width=310 \
+      --window-icon="${DIRECTORY}/icons/logo.png" \
+      --text="Mind reading is not supported.
+(You didn"\'"t select an App)" \
+      --button=OK:0
   fi
+  done
   
   case $button in
 
@@ -68,10 +84,8 @@ $i
     0)
       echo "Details"
       
-      info="$(if [ -f "${DIRECTORY}/data/status/${output}" ];then
-          echo -n "Current status: "
-          cat "${DIRECTORY}/data/status/${output}"
-        fi
+      info="$(echo -n "Current status: "
+          cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled'
         
         if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
           echo -n "This app installed these packages: "
@@ -84,13 +98,17 @@ $info
 Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo "unavailable")
 $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)")"
       
+      #if already installed then no need to provide install button. And vice versa.
       whichbutton="$(
-      if [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
+      if [ -f "${DIRECTORY}/data/status/${output}" ];then
+        #Taking a chance here. If status file is nonexistent, assume uninstalled.
+        echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+      elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
         echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
       elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
         echo "--button=Install!${DIRECTORY}/icons/install.png:4"
       else
-        #if status is corrupted or unknown
+        #if status is corrupted or unknown, then show both buttons
         echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
       fi
       )"
