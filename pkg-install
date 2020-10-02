@@ -61,8 +61,6 @@ do
   fi
 done
 
-mkdir 
-
 #save that list of installed packages in the program directory for future removal
 mkdir -p "${DIRECTORY}/data/installed-packages"
 echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
