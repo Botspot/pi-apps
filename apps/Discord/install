@@ -1,0 +1,37 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+cd ~/Downloads
+#Download from github
+wget https://github.com/SpacingBat3/nativefier-discord-arm/raw/master/assets/discord-linux-armv7l.tar.gz || error 'Failed to download files!'
+#Delete tar.gz and move to /usr/bin
+tar -xf discord-linux-armv7l.tar.gz || error 'Failed to extract program!'
+rm discord-linux-armv7l.tar.gz
+sudo mv discord-linux-armv7l /usr/bin/ || error 'Failed to move folder!'
+
+#Create desktop shortcut
+echo "[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=Discord
+Exec=/usr/bin/discord-linux-armv7l/discord
+Icon=/home/pi/pi-apps/apps/Discord/icon-64.png
+Categories=Network;Chat;VideoConference;WebApp;Internet
+Comment=Your place to talk!
+Comment[pl]=Twoje miejsce do rozmów!
+GenericName=Network Messenger
+GenericName[pl]=Kommunikator internetowy" > /usr/bin/discord-linux-armv7l/discord.desktop
+
+sudo chmod +x /usr/bin/discord-linux-armv7l/discord.desktop
+
+#menu button
+sudo cp -a /usr/bin/discord-linux-armv7l/discord.desktop ~/.local/share/applications
+
+#desktop shortcut
+sudo cp -a /usr/bin/discord-linux-armv7l/discord.desktop ~/Desktop/
