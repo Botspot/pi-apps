@@ -227,6 +227,15 @@ Here'\''s a preview of the Details window:' \
         exit 0
       fi
       ;;
+    7)
+      echo "Done!
+To add your app to the Pi-Apps official repository, just open an issue for Botspot (the developer or Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \
+        --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
+        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --button=Previous!"${DIRECTORY}/icons/exit.png":0 \
+        --button=Close!"${DIRECTORY}/icons/forward.png":1 || exit 0
+      step=6
+      ;;
     *)
       error "Unknown step ${step}!"
       ;;
