@@ -56,23 +56,23 @@ $i
       --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
       --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
       2>/dev/null)"
-
+    
     button=$? #get exit code to determine which button was pressed
     echo "Button: ${button}"
     if [ $button -eq 252 ];then #if window manager x was pressed
       exit 0
     fi
-
+    
     echo "Output: ${output}EOO"
-  
-  if [ -z "$output" ];then
-    echo "output variable empty!"
-    yad --center --title='Pi-Apps' --width=310 \
-      --window-icon="${DIRECTORY}/icons/logo.png" \
-      --text="Mind reading is not supported.
-(You didn"\'"t select an App)" \
-      --button=OK:0
-  fi
+    
+    if [ -z "$output" ];then
+      echo "output variable empty!"
+      yad --center --title='Pi-Apps' --width=310 \
+        --window-icon="${DIRECTORY}/icons/logo.png" \
+        --text="Mind reading is not supported.
+  (You didn"\'"t select an App)" \
+        --button=OK:0
+    fi
   done
   
   case $button in
