@@ -10,7 +10,12 @@ function error {
 #step=1
 #name=myapp
 
-if [ -z "$step" ];then
+#you can specify a preexisting app with variable 1
+if [ ! -z "$1" ];then
+  name="$1"
+  step=2
+else
+  name=''
   step=1
 fi
 
@@ -26,15 +31,26 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       step=2
       ;;
     2)
+      
       if [ ! -z "$name" ];then
         namelocked='yes'
+        echo 'name field is already filled. Making it read-only.'
       fi
+      
+      if [ -f "${DIRECTORY}/apps/$name/icon-64.png" ];then
+        echo "icon already exists. Making icon field read-only."
+        iconfield="--field=Icon::RO apps/$name/icon-64.png"
+      else
+        echo 'icon does not exist.'
+        iconfield="--field=Icon::FL $HOME"
+      fi
+      
       output="$(yad --form \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
         --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website")" \
-        --field="Icon:":FL --file-filter "Graphics Files | *.png *.svg *.jpg *.jpeg" "$icon" \
+        $iconfield \
         --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || echo 'Short description on this first line. This will be the tooltip.
 Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
 Describe how to use this app, and any outstanding features it has.
@@ -233,11 +249,12 @@ Here'\''s a preview of the Details window:' \
       ;;
     7)
       echo "Done!
+You app is located at ${DIRECTORY}/apps/${name}
 To add your app to the Pi-Apps official repository, just open an issue for Botspot (the developer or Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
         --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
-        --button=Previous!"${DIRECTORY}/icons/exit.png":0 \
-        --button=Close!"${DIRECTORY}/icons/forward.png":1 || exit 0
+        --button=Previous!"${DIRECTORY}/icons/back.png":0 \
+        --button=Close!"${DIRECTORY}/icons/exit.png":1 || exit 0
       step=6
       ;;
     *)

@@ -100,7 +100,10 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
       
       #if already installed then no need to provide install button. And vice versa.
       whichbutton="$(
-      if [ -f "${DIRECTORY}/data/status/${output}" ];then
+      if [ -f "${DIRECTORY}/data/settings/show-edit-button" ];then
+        echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
+      fi
+      if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
         #Taking a chance here. If status file is nonexistent, assume uninstalled.
         echo "--button=Install!${DIRECTORY}/icons/install.png:4"
       elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
@@ -176,7 +179,9 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
         output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
         
         echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-        
+      elif [ $button == 10 ];then
+        echo "edit $output"
+        "${DIRECTORY}/createapp" "$output"
       else
         echo 'unknown button. Going back.'
         #clear output var to prompt main window to open next

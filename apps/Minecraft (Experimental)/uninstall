@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+sudo rm ~/.local/share/applications/minecraft.desktop
+sudo rm -r ~/.minecraft
+sudo rm -r ~/Minecraft
+sudo rm -r ~/lwjgl2arm32
+sudo rm -r ~/lwjgl3arm32
+sudo rm -r ~/lwjgl3arm64
+sudo rm -r ~/lwjgl2arm64
+sudo rm -r /usr/share/minecraftjava/

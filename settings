@@ -1,0 +1,69 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#ensure settings dir exists
+mkdir -p "${DIRECTORY}/data/settings"
+
+settings='show-edit-button
+update-always
+reinstall-after-update
+'
+
+tooltips='When viewing an App'\''s details, display an Edit button. Beware that updating will revert your edits.
+Instead of checking for updates once a day, do an update check every time you launch Pi-Apps.
+Before an update, the app will be uninstalled. If the app was installed oiginally, then install the new version automatically.
+'
+line=1
+for i in $settings
+do
+  if [ -f "${DIRECTORY}/data/settings/${i}" ];then
+    truefalse='true'
+  else
+    truefalse='false'
+  fi
+  LIST="${LIST}${truefalse}
+$(echo "$settings" | sed -n "${line}p" )
+$(echo "$tooltips" | sed -n "${line}p" )
+"
+  line=$((line+1))
+done
+LIST="${LIST::-1}"
+#echo "LIST: ${LIST}EOL"
+
+output="$(echo -e "$LIST" | yad --center --title='Pi-Apps Settings' --width=310 --height=300 --no-headers \
+  --list --checklist --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+  --column=:CHK --column=Name --column=tip:HD --tooltip-column=3 --print-column=2 \
+  --button='Create App':"${DIRECTORY}/createapp" \
+  --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+  --button=Save!"${DIRECTORY}/icons/check.png":0 \
+  2>/dev/null)"
+
+button=$? #get exit code to determine which button was pressed
+#exit if save was not clicked
+[ $button -ne 0 ]&&exit 0
+
+#reformat output var. Only lists items that have been enabled.
+output="$(echo "$output" | sed '/^$/d')
+"
+
+echo "Output: ${output}EOO"
+
+for i in $settings
+do
+  #if output matches current setting
+  if [ ! -z "$(echo "$output" | grep -x "$i")" ];then
+    echo "$i is enabled"
+    #create file
+    echo '' > "${DIRECTORY}/data/settings/${i}"
+  else
+    echo "$i is disabled"
+    #delete file
+    rm -f "${DIRECTORY}/data/settings/${i}"
+  fi
+done
+
