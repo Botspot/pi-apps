@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+false || error 'testing 1 2 3'
+
+#use the error function often!
+#If a certain command is necessary for installation to continue, then add this to the end of it:
+# || error 'reason'
+#example below:
+curl -sSL https://git.io/JfAPE | bash || error 'Failed to install piKiss!'
