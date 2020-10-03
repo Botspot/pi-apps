@@ -8,9 +8,10 @@ function error {
 }
 
 #if updates not checked for today, then check for updates now
-if [ -f "${DIRECTORY}/data/last-update-check" ] && [ "$(date +%j)" == "$(cat "${DIRECTORY}/data/last-update-check")" ];then
+if [ ! -f "${DIRECTORY}/data/settings/update-always" ] && [ -f "${DIRECTORY}/data/last-update-check" ] && [ "$(date +%j)" == "$(cat "${DIRECTORY}/data/last-update-check")" ];then
   echo "Already checked for updates today, so no need to check again.
 To forcibly check for updates now, either delete ${DIRECTORY}/data/last-update-check,
+enable 'update-always' in Settings,
 or press any key within the next 20 seconds."
   read -n 1 -t 20 || exit 0
   echo ''
@@ -91,11 +92,17 @@ fi
 LIST="${LIST::-1}"
 #echo "List: ${LIST}EOL"
 
+if [ -f "${DIRECTORY}/data/settings/update-always" ];then
+  latertooltip='Remind me next time Pi-Apps is launched'
+else
+  latertooltip='Remind me tomorrow'
+fi
+
 echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --text='Updates available:' \
   --column=:IMG --column=Name \
-  --button='Later'!"${DIRECTORY}/icons/exit.png"!'Remind me tomorrow':1 \
+  --button='Later'!"${DIRECTORY}/icons/exit.png"!"$latertooltip":1 \
   --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
   2>/dev/null
 
