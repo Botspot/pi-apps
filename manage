@@ -140,7 +140,7 @@ elif [ "$1" == 'update' ];then
   #copy new version to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${2}" "${DIRECTORY}/apps/${2}"
   
-  if [ "$installback" == 'yes' ];then
+  if [ "$installback" == 'yes' ] && [ -f "${DIRECTORY}/data/settings/reinstall-after-update" ];then
     echo "$2 was originally installed before updating. Reinstalling the new version now."
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$2"
@@ -157,7 +157,7 @@ elif [ "$1" == 'check-all' ];then
 
   PREIFS="$IFS"
   IFS="|"
-  newapps="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | grep -v 'template' | sort | uniq | tr '\n' '|')"
+  newapps="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq | tr '\n' '|')"
   for newapp in $newapps
   do
     #echo "newapp: $newapp"
