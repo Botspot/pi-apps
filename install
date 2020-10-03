@@ -8,10 +8,10 @@ function error {
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
-  zenity --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
-	  --list --text="YAD is required but not installed.   \n Install now?" \
-	  --ok-label=Yes --cancel-label=No \
-	  --column=foo --hide-header 2>/dev/null || error "User declined."
+  zenity --question --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
+	  --text="YAD is required but not installed. Install now?" \
+	  --ok-label=Yes --cancel-label=No --ellipsize --icon-name='' \
+	  2>/dev/null || error "User declined."
 
 
   lxterminal --title="Installing YAD" -e "sudo apt install -y yad;echo -e '\nClosing in 5 seconds.';sleep 5"
