@@ -6,6 +6,6 @@ function error {
   exit 1
 }
 
-sudo rm -rf /usr/bin/discord-linux-armv7l/
+sudo rm -rf /usr/share/discord-linux-armv7l/
 sudo rm -f ~/Desktop/discord.desktop
 sudo rm -f ~/.local/share/applications/discord.desktop
