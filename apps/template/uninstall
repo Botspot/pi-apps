@@ -2,7 +2,7 @@
 
 DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
 function error {
-  echo -e "\e[31m$1\e[39m"
+  echo -e "\\e[31m$1\\e[39m"
   exit 1
 }
 
