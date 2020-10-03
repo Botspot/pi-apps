@@ -7,7 +7,25 @@ function error {
 }
 
 #ensure settings dir exists
-mkdir -p "${DIRECTORY}/data/settings"
+if [ ! -d "${DIRECTORY}/data/settings" ];then
+  echo "creating settings directory"
+  mkdir -p "${DIRECTORY}/data/settings"
+  #create default files inside
+  echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
+fi
+
+if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
+  echo "Creating Settings menu button"
+  echo "[Desktop Entry]
+Name=Pi Apps Settings
+Comment=Configure Pi-Apps or create an App
+Exec=${DIRECTORY}/settings
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+  
+fi
 
 settings='show-edit-button
 update-always
@@ -15,8 +33,8 @@ reinstall-after-update
 '
 
 tooltips='When viewing an App'\''s details, display an Edit button. Beware that updating will revert your edits.
-Instead of checking for updates once a day, do an update check every time you launch Pi-Apps.
-Before an update, the app will be uninstalled. If the app was installed oiginally, then install the new version automatically.
+Instead of checking for updates once a day, do an update check every time Pi-Apps is launched.
+If the app was installed prior to updating, then automatically install it back after updating it.
 '
 line=1
 for i in $settings
@@ -38,7 +56,7 @@ LIST="${LIST::-1}"
 output="$(echo -e "$LIST" | yad --center --title='Pi-Apps Settings' --width=310 --height=300 --no-headers \
   --list --checklist --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --column=:CHK --column=Name --column=tip:HD --tooltip-column=3 --print-column=2 \
-  --button='Create App':"${DIRECTORY}/createapp" \
+  --button='new app'!"${DIRECTORY}/icons/create.png":"${DIRECTORY}/createapp" \
   --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
   --button=Save!"${DIRECTORY}/icons/check.png":0 \
   2>/dev/null)"
