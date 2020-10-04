@@ -18,7 +18,6 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
 fi
 
 echo "Creating menu button..."
-echo -n '' > ${HOME}/.local/share/applications/pi-apps.desktop
 echo "[Desktop Entry]
 Name=Pi Apps
 Comment=Raspberry Pi App Store for open source projects
@@ -26,11 +25,20 @@ Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Utility;" >> ${HOME}/.local/share/applications/pi-apps.desktop
+Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
 
 echo "Adding Desktop shortcut..."
-
 cp -f ${HOME}/.local/share/applications/pi-apps.desktop ${HOME}/Desktop/pi-apps.desktop
+
+echo "Creating Settings menu button..."
+echo "[Desktop Entry]
+Name=Pi Apps Settings
+Comment=Configure Pi-Apps or create an App
+Exec=${DIRECTORY}/settings
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
 echo "Installation complete."
 
