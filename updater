@@ -28,8 +28,18 @@ if [ -d "${DIRECTORY}/update" ];then
   PREIFS="$IFS"
   IFS="|"
   
-  mainfiles="$(echo -e "$(ls -p "${DIRECTORY}/update/pi-apps")\n$(ls -p "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
-  for file in $mainfiles
+  #mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
+  
+  #list all files in update folder
+  cd "${DIRECTORY}/update/pi-apps"
+  updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+  
+  #list all files in main folder
+  cd "${DIRECTORY}"
+  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+  
+  mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq | tr '\n' '|')"
+  for file in $mergedfiles
   do
     newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
     oldhash=$(cat "${DIRECTORY}/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
