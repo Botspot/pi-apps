@@ -6,7 +6,7 @@ function error {
 }
 DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
 
-wget -O ~/Cura-mb-master-armhf-20200902.AppImage https://www.dropbox.com/sh/s43vqzmi4d2bqe2/AAB-hPdiTvoExJx0kjuSx8C1a/Linux-armhf/Cura-mb-master-armhf-20200902.AppImage?dl=0 || error "Failed to download!"
+wget -O ~/Cura-mb-master-armhf-20200902.AppImage https://github.com/smartavionics/Cura/releases/download/20200922/Cura-mb-master-armhf-20200922.AppImage || error "Failed to download!"
 
 chmod +x ~/Cura-mb-master-armhf-20200902.AppImage
 
