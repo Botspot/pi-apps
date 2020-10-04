@@ -6,10 +6,6 @@ function error {
   exit 1
 }
 
-#start on this step:
-#step=1
-#name=myapp
-
 #you can specify a preexisting app with variable 1
 if [ ! -z "$1" ];then
   name="$1"
@@ -18,6 +14,11 @@ else
   name=''
   step=1
 fi
+
+#start on this step:
+#step=2
+#start with this app name:
+#name='Chromium Media Edition'
 
 while true;do
   case $step in
@@ -37,20 +38,22 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
         echo 'name field is already filled. Making it read-only.'
       fi
       
-      if [ -f "${DIRECTORY}/apps/$name/icon-64.png" ];then
+      if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
         echo "icon already exists. Making icon field read-only."
-        iconfield="--field=Icon::RO apps/$name/icon-64.png"
+        iconfield="--field=Icon::RO"
+        iconpath="apps/${name}/icon-64.png"
       else
         echo 'icon does not exist.'
         iconfield="--field=Icon::FL $HOME"
+        iconpath="${HOME}/"
       fi
       
       output="$(yad --form \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
-        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website")" \
-        $iconfield \
+        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" || echo '')" \
+        "$iconfield" "$iconpath" \
         --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || echo 'Short description on this first line. This will be the tooltip.
 Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
 Describe how to use this app, and any outstanding features it has.
@@ -62,7 +65,7 @@ And yes, the happy face above will be just fine when you erase him. Don'\''t wor
       button=$? #get exit code to determine which button was pressed
       
       echo "$button"
-      
+      echo "Output: ${output}EOO"
       output="$(echo "$output" | tr '|' '\n' )"
       
       if [ $button == 0 ];then
