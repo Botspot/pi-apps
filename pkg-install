@@ -53,22 +53,18 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   exit 1
 fi
 
-for i in $PKG_LIST
-do
-  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
-  if [ "" == "$PKG_OK" ]; then
-    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
-  fi
-done
-
-#save that list of installed packages in the program directory for future removal
-mkdir -p "${DIRECTORY}/data/installed-packages"
-echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
+INSTALL_LIST="$(sudo apt-get install --dry-run $PKG_LIST | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
 
 if [ ! -z "$INSTALL_LIST" ];then
+  #save that list of installed packages in the program directory for future removal
+  mkdir -p "${DIRECTORY}/data/installed-packages"
+  echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
+  
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
   output="$(sudo apt-get install -y $INSTALL_LIST 2>&1)"
   exitcode=$?
+  echo "Output was: ${output}EOO"
+  
   errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
@@ -76,14 +72,16 @@ if [ ! -z "$INSTALL_LIST" ];then
     exit 1
   fi
   #re-check package list. This time it should be blank.
-  INSTALL_LIST=''
-  for i in $PKG_LIST
-  do
-    PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null | grep "install ok installed")"
-    if [ "" == "$PKG_OK" ]; then
-      INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
-    fi
-  done
+  #INSTALL_LIST=''
+  #for i in $PKG_LIST
+  #do
+  #  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null | grep "install ok installed")"
+  #  if [ "" == "$PKG_OK" ]; then
+  #    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
+  #  fi
+  #done
+  INSTALL_LIST="$(sudo apt-get install --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+  
   
   if [ ! -z $INSTALL_LIST ];then
     echo -e "\e[91mAPT did not exit with an error, but these packages failed to install somehow: $INSTALL_LIST\e[39m"

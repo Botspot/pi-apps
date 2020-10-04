@@ -39,7 +39,10 @@ if [ -z "${DIRECTORY}/data/installed-packages/${PRG}" ];then
   exit 0
 fi
 
-output="$(sudo apt purge -y $PKG_LIST 2>&1)"
+PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+echo "These packages will be purged: $PURGE_LIST"
+
+output="$(sudo apt purge -y $PURGE_LIST 2>&1)"
 exitcode=$?
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
 sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
@@ -50,27 +53,10 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
 fi
 
 #ensure all packages are really purged
-INSTALL_LIST=''
-for i in $PKG_LIST
-do
-  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
-  if [ "" != "$PKG_OK" ]; then
-    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
-  fi
-done
-sudo apt purge -y $INSTALL_LIST 2>/dev/null
+PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
 
-#ensure all packages are really purged
-INSTALL_LIST=''
-for i in $PKG_LIST
-do
-  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null |grep "install ok installed")"
-  if [ "" != "$PKG_OK" ]; then
-    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
-  fi
-done
-if [ ! -z "$INSTALL_LIST" ];then
-  error "\e[91mAPT did not exit with an error, but these packages are still installed somehow: $INSTALL_LIST\e[39m"
+if [ ! -z "$PURGE_LIST" ];then
+  error "APT did not exit with an error, but these packages are still installed somehow: $PURGE_LIST"
 else
   echo -e "\e[32mAll packages were purged succesfully.\e[39m"
   gio trash "${DIRECTORY}/data/installed-packages/${PRG}"
