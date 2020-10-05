@@ -6,7 +6,7 @@ function error {
 }
 
 DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
-rm ~/.local/share/applications/cura.desktop
-rm ~/Cura-mb-master-armhf-20200902.AppImage || error "failed to remove the AppImage!"
+rm -f ~/.local/share/applications/cura.desktop
+rm -f ~/Cura-mb-master-armhf-20200902.AppImage
 rm -rf  ~/.cache/cura
 #gio trash ~/.config/cura
