@@ -30,8 +30,22 @@ cd
 
 sudo chmod +x ~/.local/share/applications/minecraft.desktop
 
-#Edit launcher profile
-echo ''
-echo 'This step requires manual work'
-echo 'The luancher will now open. Please log in to the launcher with your MC account and follow the instructions at https://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz'
+mkdir -p ~/.minecraft
+echo '{
+  "profiles": {
+    "(Default)": {
+      "name": "(Default)",
+      "javaArgs": "-Dorg.lwjgl.librarypath=/home/pi/lwjgl3arm32 -Xmx1G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M"
+    }
+  },
+  "selectedProfile": "(Default)",
+  "clientToken": "c4a6f915-4d47-47bf-a8f4-746090e7e576",
+  "authenticationDatabase": {},
+  "launcherVersion": {
+    "name": "1.6.93",
+    "format": 21,
+    "profilesFormat": 1
+  }
+}' > /home/pi/.minecraft/launcher_profiles.json
+
 java -jar /usr/share/minecraftjava/launcher.jar
