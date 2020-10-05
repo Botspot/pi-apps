@@ -137,6 +137,8 @@ do
   #failsafe
   [ -f "${DIRECTORY}/${i}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
   
+  mkdir -p "$(dirname "${DIRECTORY}/${i}")"
+  
   #copy new version to apps/
   cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${i}!"
   
