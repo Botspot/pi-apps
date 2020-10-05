@@ -12,7 +12,13 @@ function error {
 #example below:
 
 #Download java and launcher
-mkdir ~/Minecraft && cd ~/Minecraft && wget https://www.dropbox.com/s/2602i5d0h4kteex/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to download launcher!'
+rm -rf ~/Minecraft
+
+mkdir ~/Minecraft || error "Failed to create the directory!"
+cd ~/Minecraft || error "Failed to enter the directory!"
+wget https://www.dropbox.com/s/2602i5d0h4kteex/setupMC.sh  || error 'Failed to download launcher!'
+chmod +x setupMC.sh || error "failed to mark as executable!"
+./setupMC.sh
 
 #Move launcher to /usr/share/
 sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraftjava/launcher.jar 
