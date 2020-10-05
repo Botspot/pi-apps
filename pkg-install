@@ -53,7 +53,7 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   exit 1
 fi
 
-INSTALL_LIST="$(sudo apt-get install --dry-run $PKG_LIST | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+INSTALL_LIST="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
 
 if [ ! -z "$INSTALL_LIST" ];then
   #save that list of installed packages in the program directory for future removal
@@ -80,7 +80,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   #    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
   #  fi
   #done
-  INSTALL_LIST="$(sudo apt-get install --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+  INSTALL_LIST="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
   
   
   if [ ! -z $INSTALL_LIST ];then
