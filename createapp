@@ -39,22 +39,20 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       fi
       
       if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
-        echo "icon already exists. Making icon field read-only."
         iconfield="--field=Icon::RO"
         iconpath="apps/${name}/icon-64.png"
       else
-        echo 'icon does not exist.'
-        iconfield="--field=Icon::FL $HOME"
-        iconpath="${HOME}/"
+        iconfield="--field=Icon::FL"
+        iconpath="${HOME}/bla"
       fi
       
       output="$(yad --form \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
-        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" || echo '')" \
-        "$iconfield" "$iconpath" \
-        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || echo 'Short description on this first line. This will be the tooltip.
+        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
+        "$iconfield" "$iconpath" --file-filter="Graphics Files | *.png *.svg *.jpg *.jpeg" \
+        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || echo 'Short description on this first line. This will be the tooltip.
 Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
 Describe how to use this app, and any outstanding features it has.
 Here'\''s a bulletpoint if you need it: ∙ <- '\('ツ'\)'
