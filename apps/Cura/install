@@ -1,10 +1,11 @@
 #!/bin/bash
 
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
 function error {
-  echo -e "\e[31m$1\e[39m"
+  echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
 
 wget -O ~/Cura-mb-master-armhf-20200902.AppImage https://github.com/smartavionics/Cura/releases/download/20200922/Cura-mb-master-armhf-20200922.AppImage || error "Failed to download!"
 
