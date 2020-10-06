@@ -144,7 +144,7 @@ And yes, the happy face above will be just fine when you erase him. Don'\''t wor
         --text='Now it'\''s time to make your install script. This will be executed anytime somebody clicks the Install button.
 A text editor should have openened and you can create your install script.' \
         --field="Run script":FBTN "lxterminal --title="\""Running install script of $name"\"" -e "\""cd $HOME;${DIRECTORY}/apps/${name}/install;echo 'Closing in 10 seconds.';sleep 10"\" \
-        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""sudo apt install -y shellcheck && shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""[ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck &>/dev/null;shellcheck ${DIRECTORY}/apps/${name}/install;echo 'Press Enter to exit.';read enter"\" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
@@ -182,7 +182,7 @@ A text editor should have openened and you can create your install script.' \
         --text='Now it'\''s time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
 A text editor should have openened... Never mind, you know what to do.' \
         --field="Run script":FBTN "lxterminal --title="\""Running uninstall script of $name"\"" -e "\""cd $HOME;${DIRECTORY}/apps/${name}/uninstall;echo 'Closing in 10 seconds.';sleep 10"\" \
-        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""sudo apt install -y shellcheck && shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""[ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck &>/dev/null;shellcheck ${DIRECTORY}/apps/${name}/uninstall;echo 'Press Enter to exit.';read enter"\" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
