@@ -1,0 +1,91 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd $HOME
+if [ -d box86 ];then
+  echo -n "Box86 already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
+  read answer
+  if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
+    echo "OK, using your pre-existing version of box86. Be warned though: It may be out of date and may not run Zoom successfully!"
+    #don't do anything, don't download & compile box86
+    compile=0
+  else
+    #user confirmed removal
+    compile=1
+  fi
+else
+  compile=1
+  #box86 does not exist beforehand, so compile
+fi
+
+if [ $compile == 1 ];then
+  rm -rf box86
+  git clone https://github.com/ptitSeb/box86 || error 'Failed to clone repository!'
+  cd box86 || error 'Failed to enter repository!'
+  mkdir build || error 'Failed to make build directory!'
+  cd build || error 'Failed to enter build directory!'
+  cmake .. -DRPI4=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake!'
+  echo "Compiling box86..."
+  make -j24 || error 'Failed to compile!'
+fi
+
+cd $HOME
+
+if [ -d "${HOME}/zoom" ];then
+  echo -n "${HOME}/zoom already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
+  read answer
+  if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
+    dlzoom=0
+  else
+    dlzoom=1
+  fi
+else
+  dlzoom=1
+fi
+if [ $dlzoom == 1 ];then
+  echo "Downloading Zoom..."
+  rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
+  wget 'https://zoom.us/client/latest/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
+  tar -xf ~/zoom_i686.tar.xz || error 'Failed to extract Zoom i686!'
+  rm -f ~/zoom_i686.tar.xz #who cares if this fails
+fi
+
+cd box86/build
+echo "Installing box86 on your system..."
+sudo make install || error 'Failed to run sudo make install!'
+
+
+
+echo "Restarting systemd-binfmt service..."
+sudo systemctl restart systemd-binfmt #if this fails, no big deal.
+
+if [ ! -f /usr/local/bin/box86 ];then
+  error "Box86 should be installed by now, but /usr/local/bin/box86 does not exist!"
+fi
+
+# Get dependencies
+cd $HOME
+"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 cmake" "$(dirname "$0")" || exit 1
+
+echo "Creating Application Menu button..."
+#create menu button
+echo "[Desktop Entry]
+Name=Zoom
+Exec=lxterminal --title 'Close this window to exit Zoom' -e 'box86 zoom;read enter'
+Icon=${DIRECTORY}/apps/Zoom/icon-64.png
+Path=${HOME}/zoom/
+Type=Application
+Comment=i386 version of software platform used for teleconferencing using Box86
+Categories=Network;" > ~/.local/share/applications/zoom.desktop
+
+echo "Installation complete!"
+
+
+
+
