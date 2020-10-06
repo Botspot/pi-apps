@@ -91,4 +91,5 @@ if [ ! -z "$INSTALL_LIST" ];then
   fi
 else
   echo -e "\e[32mNo new packages to install. Nothing to do!\e[39m"
+  echo '' >> "${DIRECTORY}/data/installed-packages/${PRG}"
 fi
