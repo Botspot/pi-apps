@@ -39,13 +39,22 @@ if [ -z "${DIRECTORY}/data/installed-packages/${PRG}" ];then
   exit 0
 fi
 
-PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+#remove residual packages
+sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+
+PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
 echo "These packages will be purged: $PURGE_LIST"
 
-output="$(sudo apt purge -y $PKG_LIST 2>&1)"
-exitcode=$?
+if [ "$(cat "${DIRECTORY}/data/settings/Debug mode")" == 'Yes' ];then
+  #debug mode
+  output="$(sudo apt purge -y $PKG_LIST 1>&2)"
+  exitcode=$?
+else
+  #normal mode
+  output="$(sudo apt purge -y $PKG_LIST 2>&1)"
+  exitcode=$?
+fi
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
-sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
 if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   echo -e "\e[91mFailed to uninstall the packages!\e[39m"
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"

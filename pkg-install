@@ -53,6 +53,9 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   exit 1
 fi
 
+#remove residual packages
+sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+
 output="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
 echo "output: $output"
 
@@ -64,7 +67,7 @@ if [ ! -z "$errors" ];then
   exit 1
 fi
 
-INSTALL_LIST="$(echo "$output" | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+INSTALL_LIST="$(echo "$output" | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
 
 if [ ! -z "$INSTALL_LIST" ];then
   #save that list of installed packages in the program directory for future removal
@@ -72,9 +75,17 @@ if [ ! -z "$INSTALL_LIST" ];then
   echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
   
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
-  output="$(sudo apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
-  exitcode=$?
-  #echo -e "Output was: ${output}\nEOO"
+  
+  if [ "$(cat "${DIRECTORY}/data/settings/Debug mode")" == 'Yes' ];then
+    #debug mode
+    output="$(sudo apt-get install -y --no-install-recommends $PKG_LIST 1>&2)"
+    exitcode=$?
+  else
+    #normal mode
+    output="$(sudo apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
+    exitcode=$?
+  fi
+  echo 'Apt finished.'
   
   errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
@@ -91,7 +102,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   #    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
   #  fi
   #done
-  INSTALL_LIST="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+  INSTALL_LIST="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
   
   
   if [ ! -z $INSTALL_LIST ];then
