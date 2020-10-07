@@ -49,4 +49,6 @@ echo '{
   }
 }' > /home/pi/.minecraft/launcher_profiles.json
 
+sudo update-java-alternatives -s java-1.11.0-openjdk-armhf
+
 java -jar /usr/share/minecraftjava/launcher.jar
