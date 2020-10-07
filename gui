@@ -23,8 +23,12 @@ while true;do
   APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
   #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
   #echo -e "$APPS\n"
-
-
+  
+  #shuffle the list if enabled
+  if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
+    APPS="$(echo "$APPS" | shuf)"
+  fi
+  
   APPS="$(echo "$APPS" | tr '\n' '|')"
 
   PREIFS="$IFS"
@@ -100,7 +104,7 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
       
       #if already installed then no need to provide install button. And vice versa.
       whichbutton="$(
-      if [ -f "${DIRECTORY}/data/settings/show-edit-button" ];then
+      if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
         echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
       fi
       if [ ! -f "${DIRECTORY}/data/status/${output}" ];then

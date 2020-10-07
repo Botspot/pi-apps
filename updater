@@ -7,12 +7,39 @@ function error {
   exit 1
 }
 
-#if updates not checked for today, then check for updates now
-if [ ! -f "${DIRECTORY}/data/settings/update-always" ] && [ -f "${DIRECTORY}/data/last-update-check" ] && [ "$(date +%j)" == "$(cat "${DIRECTORY}/data/last-update-check")" ];then
-  echo "Already checked for updates today, so no need to check again.
-To forcibly check for updates now, either delete ${DIRECTORY}/data/last-update-check,
-enable 'update-always' in Settings,
-or press any key within the next 20 seconds."
+lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check")"
+if [ -z $lastupdatecheck ];then
+  echo "Warning: ${DIRECTORY}/data/last-update-check does not exist!"
+  lastupdatecheck=0
+fi
+
+updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+
+#allowed values: Always, Daily, Weekly, Never
+if [ "$updateinterval" == 'Never' ];then
+  nocheck=1
+  echo ''
+elif [ "$updateinterval" == 'Daily' ];then
+  #if updates checked today, don't check
+  if [ "$(date +%j)" == "$lastupdatecheck" ];then
+    nocheck=1
+  fi
+elif [ "$updateinterval" == 'Weekly' ];then
+  #if updates checked less than 7 days ago, don't check
+  if [ "$(date +%j)" -le "$((lastupdatecheck + 7))" ];then
+    nocheck=1
+  fi
+elif [ "$updateinterval" == 'Always' ];then
+  echo "Checking for updates now..."
+elif [ -z "$updateinterval" ];then
+  echo "Something isn"\'" right. Does ${DIRECTORY}/data/settings/Check for updates exist?"
+else
+  echo "Warning: Unrecognized update interval!"
+fi
+
+if [ $nocheck == 1 ];then
+  echo "Won"\'"t check for updates today, because of the update interval is set to $updateinterval in Settings.
+  To forcibly check for updates now, press any key within the next 20 seconds."
   read -n 1 -t 20 || exit 0
   echo ''
 fi

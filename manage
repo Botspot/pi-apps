@@ -140,7 +140,7 @@ elif [ "$1" == 'update' ];then
   #copy new version to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${2}" "${DIRECTORY}/apps/${2}"
   
-  if [ "$installback" == 'yes' ] && [ -f "${DIRECTORY}/data/settings/reinstall-after-update" ];then
+  if [ "$installback" == 'yes' ] && [ "$(cat "${DIRECTORY}/data/settings/Reinstall after update")" != 'No' ];then
     echo "$2 was originally installed before updating. Reinstalling the new version now."
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$2"

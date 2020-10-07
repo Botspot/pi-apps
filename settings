@@ -6,82 +6,117 @@ function error {
   exit 1
 }
 
-#ensure settings dir exists
-if [ ! -d "${DIRECTORY}/data/settings" ];then
-  echo "creating settings directory"
-  mkdir -p "${DIRECTORY}/data/settings"
-  #create default files inside
-  echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
-fi
-
-if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
-  echo "Creating Settings menu button"
-  echo "[Desktop Entry]
-Name=Pi Apps Settings
-Comment=Configure Pi-Apps or create an App
-Exec=${DIRECTORY}/settings
-Icon=${DIRECTORY}/icons/logo.png
-Terminal=false
-Type=Application
-Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
-  
-fi
-
-settings='show-edit-button
-update-always
-reinstall-after-update
-'
-
-tooltips='When viewing an App'\''s details, display an Edit button. Beware that updating will revert your edits.
-Instead of checking for updates once a day, do an update check every time Pi-Apps is launched.
-If the app was installed prior to updating, then automatically install it back after updating it.
-'
-line=1
-for i in $settings
-do
-  if [ -f "${DIRECTORY}/data/settings/${i}" ];then
-    truefalse='true'
-  else
-    truefalse='false'
+exitloop=''
+while [ -z $exitloop ];do
+  #ensure settings dir exists
+  if [ ! -d "${DIRECTORY}/data/settings" ];then
+    echo "creating settings directory"
+    mkdir -p "${DIRECTORY}/data/settings"
+    #create default files inside
+    echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
   fi
-  LIST="${LIST}${truefalse}
-$(echo "$settings" | sed -n "${line}p" )
-$(echo "$tooltips" | sed -n "${line}p" )
-"
-  line=$((line+1))
+
+  #$1 is usually left blank. If it equals 'reset', then the settings will be reset and then the script will exit.
+  if [ "$1" == 'reset' ];then
+    #set default settings, if they don't exist
+    settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+    PREIFS="$IFS"
+    IFS='|'
+    for name in $settings
+    do
+      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    done
+    IFS="$PREIFS"
+    exit 0
+  fi
+
+  if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
+    echo "Creating Settings menu button"
+    echo "[Desktop Entry]
+  Name=Pi Apps Settings
+  Comment=Configure Pi-Apps or create an App
+  Exec=${DIRECTORY}/settings
+  Icon=${DIRECTORY}/icons/logo.png
+  Terminal=false
+  Type=Application
+  Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+    
+  fi
+
+  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+  yadparams=''
+  PREIFS="$IFS"
+  IFS='|'
+  for name in $settings
+  do
+    params="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#')"
+    
+    #create file if necessary
+    if [ ! -f "${DIRECTORY}/data/settings/${name}" ];then
+      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    fi
+    #get current setting
+    curval="$(cat "${DIRECTORY}/data/settings/${name}")"
+    
+    #order params, with selected option first
+    params="$(echo "$params" | grep -x "$curval")
+$(echo "$params" | grep -v "$curval")"
+    
+    params="$(echo "$params" | tr '\n' '!')"
+    params="${params::-1}"
+    
+    tooltip="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep '#')"
+    tooltip="${tooltip:1}"
+    #echo "Params of ${name}: ${params}"
+    #echo "Tooltip of ${name}: ${tooltip}"
+    
+    yadparams="${yadparams}
+--field=${name}::CB
+${params}"
+  done
+  IFS="$PREIFS"
+
+  yadparams="$(echo "$yadparams" | tr ' ' '-')"
+  echo "$yadparams"
+
+  output="$(yad --center --title='Pi-Apps Settings' --width=310 --height=300 \
+    --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+    $yadparams \
+    --field='New App'!"${DIRECTORY}/icons/create.png":FBTN "${DIRECTORY}/createapp" \
+    --button='Reset'!"${DIRECTORY}/icons/backup.png"!'Reset all settings to their defaults':2 \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+    --button=Save!"${DIRECTORY}/icons/check.png":0 \
+    2>/dev/null)"
+
+  button=$? #get exit code to determine which button was pressed
+  #exit if save was not clicked
+  [ $button -ne 0 ]&&[ $button -ne 2 ]&&exit 0
+
+  if [ $button -eq 2 ];then
+    output=''
+    "${0}" reset
+  else
+    exitloop=yes
+  fi
 done
-LIST="${LIST::-1}"
-#echo "LIST: ${LIST}EOL"
-
-output="$(echo -e "$LIST" | yad --center --title='Pi-Apps Settings' --width=310 --height=300 --no-headers \
-  --list --checklist --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-  --column=:CHK --column=Name --column=tip:HD --tooltip-column=3 --print-column=2 \
-  --button='new app'!"${DIRECTORY}/icons/create.png":"${DIRECTORY}/createapp" \
-  --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
-  --button=Save!"${DIRECTORY}/icons/check.png":0 \
-  2>/dev/null)"
-
-button=$? #get exit code to determine which button was pressed
-#exit if save was not clicked
-[ $button -ne 0 ]&&exit 0
-
-#reformat output var. Only lists items that have been enabled.
-output="$(echo "$output" | sed '/^$/d')
-"
 
 echo "Output: ${output}EOO"
 
-for i in $settings
+settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+PREIFS="$IFS"
+IFS='|'
+settingnumber=1
+for name in $settings
 do
-  #if output matches current setting
-  if [ ! -z "$(echo "$output" | grep -x "$i")" ];then
-    echo "$i is enabled"
-    #create file
-    echo '' > "${DIRECTORY}/data/settings/${i}"
-  else
-    echo "$i is disabled"
-    #delete file
-    rm -f "${DIRECTORY}/data/settings/${i}"
-  fi
+  curval="$(echo "$output" | sed -n "${settingnumber}p")"
+  
+  echo "Setting '$name' to '$curval'"
+  echo "$curval" > "${DIRECTORY}/data/settings/${name}"
+  
+  settingnumber=$((settingnumber + 1))
 done
+IFS="$PREIFS"
+
+
+
 

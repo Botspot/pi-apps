@@ -123,18 +123,14 @@ Do you want to edit ${name}?" --timeout=10 \
       ;;
     3)
       cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+      
       #find the best text editor
-      if [ -f /usr/bin/geany ];then
-        geany "${DIRECTORY}/apps/${name}/install" &
-      elif [ -f /usr/bin/mousepad ];then
-        mousepad "${DIRECTORY}/apps/${name}/install" &
-      elif [ -f /usr/bin/leafpad ];then
-        leafpad "${DIRECTORY}/apps/${name}/install" &
-      elif [ -f /bin/nano ];then
-        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/install" &
-      else
-        echo "No text editors found!"
+      preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+      if [ -z "$preferrededitor" ];then
+        preferrededitor=geany
       fi
+      
+      "$preferrededitor" "${DIRECTORY}/apps/${name}/install"
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
@@ -162,17 +158,12 @@ A text editor should have openened and you can create your install script.' \
       cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       
       #find the best text editor
-      if [ -f /usr/bin/geany ];then
-        geany "${DIRECTORY}/apps/${name}/uninstall" &
-      elif [ -f /usr/bin/mousepad ];then
-        mousepad "${DIRECTORY}/apps/${name}/uninstall" &
-      elif [ -f /usr/bin/leafpad ];then
-        leafpad "${DIRECTORY}/apps/${name}/uninstall" &
-      elif [ -f /bin/nano ];then
-        lxterminal --title=Nano -e "nano ${DIRECTORY}/apps/${name}/uninstall" &
-      else
-        echo "No text editors found!"
+      preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+      if [ -z "$preferrededitor" ];then
+        preferrededitor=geany
       fi
+      
+      "$preferrededitor" "${DIRECTORY}/apps/${name}/uninstall"
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
