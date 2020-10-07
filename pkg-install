@@ -53,7 +53,18 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   exit 1
 fi
 
-INSTALL_LIST="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+output="$(sudo apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
+echo "output: $output"
+
+errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+
+if [ ! -z "$errors" ];then
+  echo -e "\e[91mFailed to check which packages whould be installed!\e[39m"
+  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  exit 1
+fi
+
+INSTALL_LIST="$(echo "$output" | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
 
 if [ ! -z "$INSTALL_LIST" ];then
   #save that list of installed packages in the program directory for future removal
@@ -61,9 +72,9 @@ if [ ! -z "$INSTALL_LIST" ];then
   echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
   
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
-  output="$(sudo apt-get install -y --no-install-recommends $INSTALL_LIST 2>&1)"
+  output="$(sudo apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
   exitcode=$?
-  echo "Output was: ${output}EOO"
+  #echo -e "Output was: ${output}\nEOO"
   
   errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
