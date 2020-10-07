@@ -130,7 +130,7 @@ Do you want to edit ${name}?" --timeout=10 \
         preferrededitor=geany
       fi
       
-      "$preferrededitor" "${DIRECTORY}/apps/${name}/install"
+      "$preferrededitor" "${DIRECTORY}/apps/${name}/install" &
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
@@ -163,7 +163,7 @@ A text editor should have openened and you can create your install script.' \
         preferrededitor=geany
       fi
       
-      "$preferrededitor" "${DIRECTORY}/apps/${name}/uninstall"
+      "$preferrededitor" "${DIRECTORY}/apps/${name}/uninstall" &
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
