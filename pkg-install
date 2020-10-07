@@ -61,7 +61,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
   
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
-  output="$(sudo apt-get install -y $INSTALL_LIST 2>&1)"
+  output="$(sudo apt-get install -y --no-install-recommends $INSTALL_LIST 2>&1)"
   exitcode=$?
   echo "Output was: ${output}EOO"
   
