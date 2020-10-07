@@ -44,7 +44,7 @@ if [ $dlzoom == 1 ];then
 fi
 
 if [ $compile == 1 ];then
-  git trash ~/box86
+  gio trash ~/box86
   git clone https://github.com/ptitSeb/box86 || error 'Failed to clone repository!'
   cd box86 || error 'Failed to enter repository!'
   mkdir build || error 'Failed to make build directory!'
