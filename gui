@@ -183,9 +183,8 @@ $(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description una
         echo "edit $output"
         "${DIRECTORY}/createapp" "$output"
       else
-        echo 'unknown button. Going back.'
-        #clear output var to prompt main window to open next
-        output=''
+        echo 'unknown button. Exiting now.'
+        exit 0
       fi
       
       ;;
