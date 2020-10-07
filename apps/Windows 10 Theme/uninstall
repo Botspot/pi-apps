@@ -8,4 +8,4 @@ function error {
 }
 
 ~/Windows-10/uninstall | error "failed to uninstall!"
-rm -rf ~/Windows-10
+git trash ~/Windows-10
