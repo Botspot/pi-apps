@@ -10,8 +10,8 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "xcompmgr tint2 gtk2-engines-murrine" "$(dirname "$0")" || exit 1
 
-rm -rf ~/Windows-10
-
-git clone https://github.com/Botspot/Windows-10 || error "failed to dowload github repository!"
+if [ ! -d ~/Windows-10 ];then 
+  git clone https://github.com/Botspot/Windows-10 || error "failed to download github repository!"
+fi
 
 ~/Windows-10/install || error "failed to install!"

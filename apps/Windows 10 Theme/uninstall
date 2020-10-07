@@ -8,4 +8,4 @@ function error {
 }
 
 ~/Windows-10/uninstall | error "failed to uninstall!"
-git trash ~/Windows-10
+#gio trash ~/Windows-10
