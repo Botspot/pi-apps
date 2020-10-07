@@ -32,6 +32,7 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       step=2
       ;;
     2)
+      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       
       if [ ! -z "$name" ];then
         namelocked='yes'
@@ -46,17 +47,14 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
         iconpath="${HOME}/bla"
       fi
       
+      
       output="$(yad --form \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
         --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
-        "$iconfield" "$iconpath" --file-filter="Graphics Files | *.png *.svg *.jpg *.jpeg" \
-        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || echo 'Short description on this first line. This will be the tooltip.
-Be sure to mention HOW TO RUN this app, both from the menu and from a terminal.
-Describe how to use this app, and any outstanding features it has.
-Here'\''s a bulletpoint if you need it: ∙ <- '\('ツ'\)'
-And yes, the happy face above will be just fine when you erase him. Don'\''t worry.')" \
+        "$iconfield" "$iconpath" \
+        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || cat "${DIRECTORY}/apps/template/description")" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
@@ -106,8 +104,9 @@ And yes, the happy face above will be just fine when you erase him. Don'\''t wor
           else
             echo 'That app name already exists!'
             yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
-            --text="That app name already exists!" --timeout=10 \
-            --button=OK:0
+            --text="That app name already exists!
+Do you want to edit ${name}?" --timeout=10 \
+            --button="Edit ${name}!${DIRECTORY}/icons/edit.png":0 --button="Oops, go back!${DIRECTORY}/icons/back.png":1 || name=''
           fi
         else
           echo 'Name of app may not be left blank!'
@@ -125,7 +124,6 @@ And yes, the happy face above will be just fine when you erase him. Don'\''t wor
       ;;
     3)
       cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
-      
       #find the best text editor
       if [ -f /usr/bin/geany ];then
         geany "${DIRECTORY}/apps/${name}/install" &
