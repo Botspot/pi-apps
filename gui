@@ -88,19 +88,20 @@ $i
     0)
       echo "Details"
       
-      info="$(echo -n "Current status: "
-          cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled'
-        
-        if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
-          echo -n "This app installed these packages: "
-          cat "${DIRECTORY}/data/installed-packages/${output}" | tr '\n' ' '
-        fi
-      )"
+      if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+        installedpackages="
+This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
+      else
+        installedpackages=''
+      fi
+      
+      description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')"
       
       text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
-$info
-Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo "unavailable")
-$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)")"
+Current status: $(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')
+Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')
+$(echo "$description" | grep -v "$(echo "$description" | head -n1)")
+$installedpackages"
       
       #if already installed then no need to provide install button. And vice versa.
       whichbutton="$(
