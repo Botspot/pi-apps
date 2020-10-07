@@ -24,19 +24,6 @@ else
   #box86 does not exist beforehand, so compile
 fi
 
-if [ $compile == 1 ];then
-  rm -rf box86
-  git clone https://github.com/ptitSeb/box86 || error 'Failed to clone repository!'
-  cd box86 || error 'Failed to enter repository!'
-  mkdir build || error 'Failed to make build directory!'
-  cd build || error 'Failed to enter build directory!'
-  cmake .. -DRPI4=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake!'
-  echo "Compiling box86..."
-  make -j24 || error 'Failed to compile!'
-fi
-
-cd $HOME
-
 if [ -d "${HOME}/zoom" ];then
   echo -n "${HOME}/zoom already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
   read answer
@@ -56,11 +43,22 @@ if [ $dlzoom == 1 ];then
   rm -f ~/zoom_i686.tar.xz #who cares if this fails
 fi
 
-cd box86/build
-echo "Installing box86 on your system..."
-sudo make install || error 'Failed to run sudo make install!'
-
-
+if [ $compile == 1 ];then
+  git trash ~/box86
+  git clone https://github.com/ptitSeb/box86 || error 'Failed to clone repository!'
+  cd box86 || error 'Failed to enter repository!'
+  mkdir build || error 'Failed to make build directory!'
+  cd build || error 'Failed to enter build directory!'
+  cmake .. -DRPI4=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake!'
+  
+  echo "Compiling box86..."
+  make -j24 || error 'Failed to compile!'
+  
+  echo "Installing box86 on your system..."
+  sudo make install || error 'Failed to run sudo make install!'
+  cd $HOME
+fi
+cd $HOME
 
 echo "Restarting systemd-binfmt service..."
 sudo systemctl restart systemd-binfmt #if this fails, no big deal.
@@ -74,7 +72,6 @@ cd $HOME
 "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 cmake" "$(dirname "$0")" || exit 1
 
 echo "Creating Application Menu button..."
-#create menu button
 echo "[Desktop Entry]
 Name=Zoom
 Exec=lxterminal --title 'Close this window to exit Zoom' -e 'box86 zoom;read enter'
