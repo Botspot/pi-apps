@@ -32,7 +32,6 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       step=2
       ;;
     2)
-      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       
       if [ ! -z "$name" ];then
         namelocked='yes'
