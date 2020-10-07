@@ -1,7 +1,8 @@
 Play Widevine-protected video in Chromium.
 This adds the ChromeOS DRM video decoding library to Chromium, and a ChromeOS user-agent. Websites you browse will think your Pi is a Chromebook!
-How to use: Menu -> Internet -> Chromium Media Edition.
-For non-DRM websites, it's advisable to use the original Chromium launcher.
+To run: Menu -> Internet -> Chromium Media Edition.
+To test DRM: https://bitmovin.com/demos/drm
+For non-DRM websites, you should use the original Chromium launcher.
 This works on these websites:
 • Netflix
 • Hulu
