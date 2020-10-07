@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\e[31m$1\e[39m"
+  exit 1
+}
+
+#Reruns the script for uninstall
+cd
+git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
+cd RetroPie-Setup
+chmod +x retropie_setup.sh
+
+#Prompts for input
+echo 'In the following menu, please press "Uninstall Retropie". NOTE: Make sure to keep the packages that were there before the retropie install.'
+read -p 'Press [Enter] to open the retropie menu.'
+sudo ./retropie_setup.sh
+
+#if your app installs any packages, keep this command here so those packages will be removed.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
