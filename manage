@@ -113,7 +113,11 @@ elif [ "$1" == 'update' ];then
   newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
   oldhash=$(find "${DIRECTORY}/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
   
-  echo -e "newhash: $newhash\noldhash: $oldhash"
+  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${2}/install" | awk '{print $1}')
+  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${2}/install" | awk '{print $1}')
+  
+  #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
+  #echo -e "newhash: $newhash\noldhash: $oldhash"
   
   if [ "$newhash" == "$oldhash" ];then
     echo "$2 is identical to the online version. Nothing to do!"
@@ -122,13 +126,15 @@ elif [ "$1" == 'update' ];then
     echo "$2 is not identical to the online version. Reinstalling..."
   fi
   #else
-  #if installed already
-  if [ "$(cat "${DIRECTORY}/data/status/${2}")" == 'installed' ];then
-    installback=yes
-    #uninstall it using a recursive script instance
-    "${DIRECTORY}/manage" uninstall "$2"
-  else
-    installback=no
+  installback=no
+  #if install was changed
+  if [ ! "$newinstallhash" == "$oldinstallhash" ];then
+    #if installed already
+    if [ "$(cat "${DIRECTORY}/data/status/${2}")" == 'installed' ];then
+      installback=yes
+      #uninstall it using a recursive script instance
+      "${DIRECTORY}/manage" uninstall "$2"   
+    fi
   fi
   
   #move old program to trash
@@ -145,7 +151,7 @@ elif [ "$1" == 'update' ];then
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$2"
   fi
-  echo -e '\e[92m${2} was updated successfully.\e[39m'
+  echo -e "\e[92m${2} was updated successfully.\e[39m"
 elif [ "$1" == 'check-all' ];then
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
