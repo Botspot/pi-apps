@@ -20,7 +20,7 @@ output="$(yad --form --center --width=400 --separator='\n' \
   --title="Email Checker Settings" --window-icon="$(dirname "$0")/icon-64.png" \
   --field='IMAP Server:' 'Outlook: outlook.office365.com  Gmail: imap.gmail.com' \
   --field='Email:' 'user@example.com' \
-  --field='Password::HD' '' \
+  --field='Password::H' '' \
   --field='Folder:' 'Inbox' \
   --field='Check interval::NUM' '60!10..240!10' \
   --button=OK!${DIRECTORY}/icons/check.png:0)"
