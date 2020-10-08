@@ -13,8 +13,8 @@ function error {
 #example below:
 
 # Get dependencies
-#"${DIRECTORY}/pkg-install" "zenity python3-pip" "$(dirname "$0")" || exit 1
-#sudo pip3 install imapclient || error "Failed to install imapclient!"
+"${DIRECTORY}/pkg-install" "zenity python3-pip yad" "$(dirname "$0")" || exit 1
+sudo pip3 install imapclient || error "Failed to install imapclient!"
 
 output="$(yad --form --center --width=400 --separator='\n' \
   --title="Email Checker Settings" --window-icon="$(dirname "$0")/icon-64.png" \
