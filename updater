@@ -129,17 +129,11 @@ fi
 LIST="${LIST::-1}"
 #echo "List: ${LIST}EOL"
 
-if [ -f "${DIRECTORY}/data/settings/update-always" ];then
-  latertooltip='Remind me next time Pi-Apps is launched'
-else
-  latertooltip='Remind me tomorrow'
-fi
-
 echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --text='Updates available:' \
   --column=:IMG --column=Name \
-  --button='Later'!"${DIRECTORY}/icons/exit.png"!"$latertooltip":1 \
+  --button='Later'!"${DIRECTORY}/icons/exit.png"!"$Remind me later":1 \
   --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
   2>/dev/null
 
