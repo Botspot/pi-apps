@@ -18,20 +18,21 @@ function error {
 
 output="$(yad --form --center --width=400 --separator='\n' \
   --title="Email Checker Settings" --window-icon="$(dirname "$0")/icon-64.png" \
-  --field='IMAP Server:' 'outlook.office365.com' \
-  --field='Email:' 'j.allen.marchand@outlook.com' \
-  --field='Password:' '' \
+  --field='IMAP Server:' 'Outlook: outlook.office365.com  Gmail: imap.gmail.com' \
+  --field='Email:' 'user@example.com' \
+  --field='Password::HD' '' \
   --field='Folder:' 'Inbox' \
-  --field='Check interval: (seconds)' '60' \
+  --field='Check interval::NUM' '60!10..240!10' \
   --button=OK!${DIRECTORY}/icons/check.png:0)"
 button=$?
 [ $button -ne 0 ]&&error "User exited."
 
 echo "Output: ${output}EOO"
+exit 0
 
 if [ -d ~/raspi-email-checker ];then
   gio trash ~/raspi-email-checker
-  echo -e "\\e[91mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
+  echo -e "\\e[33mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
 The checkmail.py script inside may contain a password!\\e[39m"
 fi
 
@@ -63,3 +64,4 @@ Hidden=false
 Icon=$(dirname "$0")/icon-64.png
 NoDisplay=false" > ~/.config/autostart/checkmail.desktop
 
+lxterminal --title='Running Email Checker (checkmail.py)' -e "echo -e 'If checkmail.py throws errors, you may have entered invalid information.\nUse this opportunity to test it out.\n From now on, checkmail.py will be run on every boot.' ; sudo python ${HOME}/raspi-email-checker/checkmail.py" &

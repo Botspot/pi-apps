@@ -9,7 +9,7 @@ function error {
 
 if [ -d ~/raspi-email-checker ];then
   gio trash ~/raspi-email-checker
-  echo -e "\\e[91mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
+  echo -e "\\e[33mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
 The checkmail.py script inside may contain a password!\\e[39m"
 fi
 
