@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+if [ -d ~/raspi-email-checker ];then
+  gio trash ~/raspi-email-checker
+  echo -e "\\e[91mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
+The checkmail.py script inside may contain a password!\\e[39m"
+fi
+
+rm -f ~/.config/autostart/checkmail.desktop
+
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
