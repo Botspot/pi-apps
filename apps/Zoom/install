@@ -42,6 +42,9 @@ fi
 cd $HOME
 "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 cmake pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 
+#refresh lib list
+sudo ldconfig
+
 if [ $dlzoom == 1 ];then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
