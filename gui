@@ -13,21 +13,28 @@ function error {
 
 mkdir -p "${DIRECTORY}/data/installed-packages" "${DIRECTORY}/data/status"
 
+#create hidelist file if nonexistent
+if [ ! -f "${DIRECTORY}/data/hidelist" ];then
+  echo 'template' > "${DIRECTORY}/data/hidelist"
+fi
+
 #Variable 1 is used to view the details of the specefied app
 if [ ! -z "$1" ];then
   output="$1"
 fi
 
 while true;do
-
-  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+  #get list of apps ----------------------------------- and exclude apps mentioned in hidelist file
+  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
   #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
-  #echo -e "$APPS\n"
+  
   
   #shuffle the list if enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
   fi
+  
+  echo -e "$APPS\n"
   
   APPS="$(echo "$APPS" | tr '\n' '|')"
 
@@ -146,7 +153,7 @@ $installedpackages"
         
         #convert $output into number, then subtract 1 from it
         
-        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
         
         number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
         
@@ -167,7 +174,7 @@ $installedpackages"
         
         #convert $output into number, then add 1 to it
         
-        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -v 'template')"
+        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
         
         number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
         
