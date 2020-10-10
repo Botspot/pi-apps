@@ -12,7 +12,7 @@ if [ -d box86 ];then
   echo -n "Box86 already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
   read answer
   if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
-    echo -e "OK, using your pre-existing version of box86. Be warned though: It may be out of date and \e[1m\e[97mmay not run Zoom successfully!\e[0m"
+    echo -e "OK, using your pre-existing version of box86.\nBe warned though: It may be out of date and \e[1m\e[97mmay not run Zoom successfully!\e[0m"
     #don't do anything, don't download & compile box86
     compile=0
   else
@@ -54,10 +54,16 @@ if [ $dlzoom == 1 ];then
 fi
 
 echo 'Creating launcher script'
-echo "#!/bin/bash
+echo '#!/bin/bash
+echo -e "\e[102m\e[30mLaunching pulseaudio.\e[0m"
 pulseaudio &
+pulsepid=$!
+trap "kill $pulsepid" EXIT
+echo "the pulsepid is $pulsepid"
+sleep 2
 cd ${HOME}/zoom/
-box86 zoom" > "${HOME}/zoom/runzoom.sh"
+echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
+box86 zoom' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
 
 if [ $compile == 1 ];then
