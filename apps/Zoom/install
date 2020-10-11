@@ -8,21 +8,30 @@ function error {
 }
 
 cd $HOME
+
+#if box86 folder exists
 if [ -d box86 ];then
-  echo -n "Box86 already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
-  read answer
-  if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
-    echo -e "OK, using your pre-existing version of box86.\nBe warned though: It may be out of date and \e[1m\e[97mmay not run Zoom successfully!\e[0m"
-    #don't do anything, don't download & compile box86
-    compile=0
+  # if OS is not twisteros, then ask
+  if [ ! -f /usr/local/bin/twistver ];then
+    echo -n "Box86 already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
+    read answer
+    if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
+      echo -e "OK, using your pre-existing version of box86.\nBe warned though: It may be out of date and \e[1m\e[97mmay not run Zoom successfully!\e[0m"
+      #os is not twister, and box86 exists, but user declined overwrite
+      compile=0
+    else
+      #not twisteros, box86 does exist, and user confirmed overwrite
+      compile=1
+    fi
   else
-    #user confirmed removal
-    compile=1
+    #os is twisteros and box86 folder exists: don't even ask, grayduck says the answer is NO
+    compile=0
   fi
 else
+  #os may or may not be twisteros, but box86 does not exist
   compile=1
-  #box86 does not exist beforehand, so compile
 fi
+
 
 echo ''
 
