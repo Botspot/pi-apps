@@ -14,8 +14,11 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
 	  2>/dev/null || error "User declined."
 
 
-  lxterminal --title="Installing YAD" -e "sudo apt install -y yad;sudo rm /usr/share/applications/yad-icon-browser.desktop;echo -e '\nClosing in 5 seconds.';sleep 5"
+  sudo apt install -y yad
 fi
+
+#remove annoying YAD icon browser launcher
+sudo rm /usr/share/applications/yad-icon-browser.desktop
 
 echo "Creating menu button..."
 echo "[Desktop Entry]
@@ -39,6 +42,20 @@ Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+
+#hide template file by default
+echo "template" > "${DIRECTORY}/data/hidelist"
+
+#hide duplicates if running in twisteros
+if [ -f /usr/local/bin/twistver ];then
+  echo "BalenaEtcher
+Chromium Media Edition
+CommanderPi
+Discord
+piKiss
+Retropie
+Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
+fi
 
 echo "Installation complete."
 
