@@ -240,7 +240,7 @@ Here'\''s a preview of the Details window:' \
       ;;
     7)
       echo "Done!
-You app is located at <u>${DIRECTORY}/apps/${name}</u>
+You app is located at ${DIRECTORY}/apps/${name}
 To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue for Botspot (the developer of Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
         --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
