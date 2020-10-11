@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "xcompmgr tint2 gtk2-engines-murrine" "$(dirname "$0")" || exit 1
+
+if [ ! -d ~/Windows-10 ];then 
+  git clone https://github.com/Botspot/Windows-10 || error "failed to download github repository!"
+fi
+
+~/Windows-10/install || error "failed to install!"
