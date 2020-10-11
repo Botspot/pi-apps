@@ -14,11 +14,8 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
 	  2>/dev/null || error "User declined."
 
 
-  lxterminal --title="Installing YAD" -e "sudo apt install -y yad;echo -e '\nClosing in 5 seconds.';sleep 5"
+  lxterminal --title="Installing YAD" -e "sudo apt install -y yad;sudo rm /usr/share/applications/yad-icon-browser.desktop;echo -e '\nClosing in 5 seconds.';sleep 5"
 fi
-
-#remove auto-created yad icon browser launcher
-sudo rm /usr/share/applications/yad-icon-browser.desktop
 
 echo "Creating menu button..."
 echo "[Desktop Entry]
