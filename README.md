@@ -71,10 +71,10 @@ Note that if an app is up-to-date, no files will be moved around.
    - `data/` This folder holds all local data that should not be overwritten by updates.
      - `settings/`This stores the current settings saved by the 'Pi-Apps Settings' window. Each file contains one setting. For example, the file `settings/Preferred text editor` contains "geany" by default.
      - `status/` This folder stores all installation information for all apps.
-     If you install Zoom, then the `status/Zoom` file will be created, containing "installed". Installed apps will have this status icon in the app list: ![installed](https://github.com/Botspot/pi-apps/blob/master/icons/installed.png?raw=true)
-     If installation was unsuccessful, then the file will contain "corrupted". The corresponding icon looks like: ![corrupted](https://github.com/Botspot/pi-apps/blob/master/icons/corrupted.png?raw=true)
-     If the app has been uninstalled successfully, the icon is ![uninstalled](https://github.com/Botspot/pi-apps/blob/master/icons/uninstalled.png?raw=true)
-     If the app has never been installed or uninstalled, then its `status` file will not exist. The icon for that is: ![none](https://github.com/Botspot/pi-apps/blob/master/icons/none.png?raw=true). Notice the slight amount of red in the center. That's how you can tell the difference.
+     If you install Zoom, then the `status/Zoom` file will be created, containing "installed". Installed apps will have this status icon in the app list: ![installed](https://github.com/Botspot/pi-apps/blob/master/icons/installed.png?raw=true)  
+     If installation was unsuccessful, then the file will contain "corrupted". The corresponding icon looks like: ![corrupted](https://github.com/Botspot/pi-apps/blob/master/icons/corrupted.png?raw=true)  
+     If the app has been uninstalled successfully, the icon is ![uninstalled](https://github.com/Botspot/pi-apps/blob/master/icons/uninstalled.png?raw=true)  
+     If the app has never been installed or uninstalled, then its `status` file will not exist. The icon for that is: ![none](https://github.com/Botspot/pi-apps/blob/master/icons/none.png?raw=true). Notice the slight amount of red in the center. That's how you can tell the difference.  
      - `update-status/` This folder keeps track of which apps can be updated. Each file's name is of an app, so `update-status/Zoom` stores the update status of the Zoom app. This folder is refreshed whenever `~/pi-apps/manage check-all` is run.
      "latest" means that app is up to date.
      "new" means that app is new from the repository. (in other words, it does not exist locally)
@@ -93,7 +93,7 @@ Note that if an app is up-to-date, no files will be moved around.
      ```
      Now, the next time Settings is opened, you will see:  
      ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)
-     What's the point? Basically, it allows for a more elegant way to add new settings. It is a lot harder to mess up with this approach than manually editing a bash script.
+     What's the point? Basically, it allows for a more elegant way to add new settings. With this approach, it's a lot harder to screw up than with manually editing a bash script.
    - `icons/` This stores all the icons that are embedded into various dialogs.
        - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
    - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
@@ -101,7 +101,7 @@ Note that if an app is up-to-date, no files will be moved around.
 ### Q&A with Botspot
  - Why did you develop Pi-Apps?  
 > For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.  
-> The repositories don't have them, and usually they aren't advertised very well, so how will people find them?  
+> The repositories don't host them, and they usually aren't advertised very well, so how will people find them?  
 > Most people never find them.  
 > One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
 > (Which would you rather do - click a shiny Install button, or manually type 11 commands?)
