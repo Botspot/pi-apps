@@ -133,7 +133,7 @@ echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-h
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --text='Updates available:' \
   --column=:IMG --column=Name \
-  --button='Later'!"${DIRECTORY}/icons/exit.png"!"$Remind me later":1 \
+  --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
   --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
   2>/dev/null
 
@@ -171,5 +171,10 @@ IFS="$PREIFS"
 #move old .git folder to trash
 gio trash "${DIRECTORY}/.git" 2>/dev/null
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
+
+#Minecraft was renamed to Minecraft Java
+gio trash "${DIRECTORY}/apps/Minecraft"
+mv "${DIRECTORY}/data/status/Minecraft" "${DIRECTORY}/data/status/Minecraft Java"
+
 
 
