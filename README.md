@@ -100,10 +100,10 @@ Note that if an app is up-to-date, no files will be moved around.
 
 ### Q&A with Botspot
  - Why did you develop Pi-Apps?  
-> For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.
-> The repositories don't have them, and usually they aren't advertised very well, so how will people find them?
-> Most people never find them.
-> One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.
-> (Which would you rather do - click a shiny Install button, or manually type 11 commands, and hope it compiles OK?)
+> For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.  
+> The repositories don't have them, and usually they aren't advertised very well, so how will people find them?  
+> Most people never find them.  
+> One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
+> (Which would you rather do - click a shiny Install button, or manually type 11 commands?)
  - How long did it take to program this?  
 > About two weeks of nearly non-stop coding. It was fun, but excruciating at the same time.
