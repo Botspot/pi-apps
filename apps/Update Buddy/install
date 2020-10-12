@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "yad" "$(dirname "$0")" || exit 1
+git clone https://github.com/Botspot/update-buddy || error 'Failed to clone example.com repository!'
+mkdir -p ~/.config/autostart
+echo "[Desktop Entry]
+Name=Update Buddy
+Exec=$HOME/update-buddy/onstartup.sh
+Type=Application
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false" > ~/.config/autostart/update-buddy.desktop
+
+#first time run
+$HOME/update-buddy/onstartup.sh
