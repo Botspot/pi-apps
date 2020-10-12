@@ -111,3 +111,4 @@ Categories=Network;" > ~/.local/share/applications/zoom.desktop
 
 echo "Installation complete!"
 
+systemctl --user disable pulseaudio.service pulseaudio.socket
