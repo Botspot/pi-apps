@@ -53,8 +53,10 @@ Note that if an app is up-to-date, no files will be moved around.
 ### Directory tree
  - `/home/pi/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
-   - `createapp` GUI script - this is run when you click "Create App" in Settings.
-   - `gui` The main GUI window. This script  is responsible for displaying the app list and the Details page.
+   - `createapp` GUI script - this is run when you click "Create App" in Settings.  
+   ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)
+   - `gui` The main GUI window. This script  is responsible for displaying the App list and the Details page.
+   ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)
    - `install` This script is used to install Pi-Apps. Adds a couple menu launchers, and makes sure YAD is installed.
    - `manage` This script handles installing, uninstalling, and updating Apps. It does not check or update any files outside the `apps/` directory.
    - `pi-apps.desktop` This file is a .desktop launcher, exactly the same as the main Pi-Apps launcher in Menu.
@@ -62,8 +64,9 @@ Note that if an app is up-to-date, no files will be moved around.
    - `purge-installed` This does exactly the opposite of `pkg-install` This script is run when an App is being uninstalled. Purge-installed will uninstall all packages the app installed.
    - `README.md` You are reading this file right now!
    - `settings` This GUI script is executed when you launch 'Pi-Apps Settings' from the Menu.
+   ![settings](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)
    - `uninstall` Uninstalls Pi-Apps and removes the menu launchers. Asks permission to uninstall YAD.
-   - `updater` This GUI script is executed every time  the `gui` script is launched. Updater first compares today's date against the `last-update-check` file. If it's time to check for updates, `updater` first checks for App updates, then checks for other files /folders that have been modified or created. If anything can be updated, a dialog will open and ask permission to update:  
+   - `updater` This GUI script is executed every time  the `gui` script is launched. Updater first compares today's date against the `last-update-check` file. If it's time to check for updates, `updater` first checks for App updates, then checks for other files/folders that have been modified or created. If anything can be updated, a dialog will open and ask permission to update:  
    ![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)
    - `data/` This folder holds all local data that should not be overwritten by updates.
      - `settings/`This stores the current settings saved by the 'Pi-Apps Settings' window. Each file contains one setting. For example, the file `settings/Preferred text editor` contains "geany" by default.
@@ -77,7 +80,7 @@ Note that if an app is up-to-date, no files will be moved around.
      "new" means that app is new from the repository. (in other words, it does not exist locally)
      "local" means that app does not exist on the repository.
      "updatable" means the repository's version and the local version don't match.
-     -  `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
+     - `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
      For example, if Pi Power Tools installs `xserver-xephyr` and `expect`, then the `installed-packages/Pi Power Tools` file will contain "xserver-xephyr expect".
      - `hidelist` This file contains app names that should be hidden from the app list. `template` should always be there. If your Pi runs TwisterOS, then `hidelist` will contain several more app names, like balenaEtcher, for example.
      - `last-update-check` This contains a date in numeric form. (Jan. 1 would be `1`, Dec. 31 would be `365`.) The `updater` script uses this file to keep track of when updates were last checked.
@@ -93,5 +96,14 @@ Note that if an app is up-to-date, no files will be moved around.
      What's the point? Basically, it allows for a more elegant way to add new settings. It is a lot harder to mess up with this approach than manually editing a bash script.
    - `icons/` This stores all the icons that are embedded into various dialogs.
        - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
-   - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new versions into the main `pi-apps/` directory during an update.
+   - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
 
+### Q&A with Botspot
+ - Why did you develop Pi-Apps?  
+> For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.
+> The repositories don't have them, and usually they aren't advertised very well, so how will people find them?
+> Most people never find them.
+> One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.
+> (Which would you rather do - click a shiny Install button, or manually type 11 commands, and hope it compiles OK?)
+ - How long did it take to program this?  
+> About two weeks of nearly non-stop coding. It was fun, but excruciating at the same time.
