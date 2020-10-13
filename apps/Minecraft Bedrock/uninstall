@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\\e[31m$1\\e[39m"
+  exit 1
+}
+
+#Uninstall app
+flatpak uninstall -y io.mrarm.mcpelauncher
+
+#Remove flatpak
+sudo apt purge flatpak -y
+
+#Remove install folder
+sudo rm -r /home/pi/.var/app/io.mrarm.mcpelauncher/
