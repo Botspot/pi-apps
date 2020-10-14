@@ -43,6 +43,8 @@ Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
+mkdir -p "${DIRECTORY}/data"
+
 #hide template file by default
 echo "template" > "${DIRECTORY}/data/hidelist"
 
