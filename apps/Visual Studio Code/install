@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd ~/Downloads
+
+arch=''
+
+while [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ]
+do
+  echo -n "Which type of Visual Studio Code do you want? [armhf/arm64] "
+  arch=''
+  read arch
+  if [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ];then
+    echo -e "\\e[91mDid not understand '$arch'. Try again.\\e[39m"
+  fi
+done
+
+if [ "$arch" == 'armhf' ];then
+  wget https://aka.ms/linux-armhf-deb || error 'Failed to download linux-armhf-deb!'
+  sudo dpkg -i linux-armhf-deb || error 'Failed to install linux-armhf-deb!'
+  rm -f linux-armhf-deb
+  cd 
+elif [ "$arch" == 'arm64' ];then
+  wget https://aka.ms/linux-arm64-deb || error 'Failed to download linux-arm64-deb!'
+  sudo dpkg -i linux-arm64-deb || error 'Failed to install linux-arm64-deb!'
+  rm -f linux-arm64-deb
+  cd
+fi
+
