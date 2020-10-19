@@ -16,6 +16,7 @@ fi
 
 echo "Removing menu button..."
 rm -f ${HOME}/.local/share/applications/pi-apps.desktop
+rm -f ${HOME}/.local/share/applications/pi-apps-settings.desktop
 rm -f ${HOME}/Desktop/pi-apps.desktop
 
 echo -e "\e[32mUninstallation complete.
