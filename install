@@ -21,6 +21,7 @@ fi
 sudo rm /usr/share/applications/yad-icon-browser.desktop
 
 echo "Creating menu button..."
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=Pi Apps
 Comment=Raspberry Pi App Store for open source projects
