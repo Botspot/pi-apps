@@ -7,7 +7,7 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "curl libx11-6 libxext6 libegl1-mesa zlib1g libstdc++6 libgl1-mesa-dri libasound2 libpulse0 libcom-err2 libgmp10 libp11-kit0" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "curl libx11-6 libxext6 libegl1-mesa zlib1g libstdc++6 libgl1-mesa-dri libasound2 libcom-err2 libgmp10 libp11-kit0" "$(dirname "$0")" || exit 1
 
 #Download file
 cd ~
