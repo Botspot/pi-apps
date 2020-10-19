@@ -22,7 +22,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=/home/pi/pi-apps/apps/Minecraft Bedrock/icon-64.png
-Exec=GALLIUM_HUD=simple,fps /usr/bin/MCBedrock.AppImage
+Exec=/usr/bin/MCBedrock.AppImage GALLIUM_HUD=simple,fps
 Categories=Game;
 Terminal=false
 StartupNotify=true' > /home/pi/.local/share/applications/minecraftbedrock.desktop
