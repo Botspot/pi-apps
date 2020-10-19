@@ -7,13 +7,13 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "curl libx11-6 libxext6 libegl1-mesa zlib1g libstdc++6 libgl1-mesa-dri libasound2 libcom-err2 libgmp10 libp11-kit0" "$(dirname "$0")" || exit 1
 
-#Add flathub as a source
-sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-#Install through flatpak
-flatpak install -y flathub io.mrarm.mcpelauncher || error 'Failed to install launcher!'
+#Download file
+cd ~
+curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/appimage/Minecraft_Bedrock_Launcher-armhf.0.0.540.AppImage --output MCBedrock.AppImage
+chmod +x MCBedrock.AppImage
+sudo mv MCBedrock.AppImage /usr/bin/MCBedrock.AppImage
 
 #Make Desktop file
 echo '[Desktop Entry]
@@ -21,9 +21,9 @@ Version=1.1
 Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
-Icon=/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/io.mrarm.mcpelauncher.svg
-Exec=/usr/bin/flatpak run --branch=stable --arch=arm --command=mcpelauncher-ui-qt io.mrarm.mcpelauncher
-Categories=Game;' > /home/pi/.local/share/applications/minecraftbedrock.desktop
-
-#echo 'Please please reboot your pi to finish installation'
+Icon=/home/pi/pi-apps/apps/Minecraft Bedrock/icon-64.png
+Exec=/usr/bin/MCBedrock.AppImage
+Categories=Game;
+Terminal=false
+StartupNotify=true' > /home/pi/.local/share/applications/minecraftbedrock.desktop
 
