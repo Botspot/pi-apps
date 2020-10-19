@@ -60,5 +60,8 @@ Retropie
 Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
 fi
 
+echo "Resetting settings"
+"${DIRECTORY}/settings" reset
+
 echo "Installation complete."
 
