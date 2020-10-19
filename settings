@@ -16,9 +16,25 @@ while [ -z $exitloop ];do
     echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
   fi
 
-  #$1 is usually left blank. If it equals 'reset', then the settings will be reset and then the script will exit.
+  #$1 is usually left blank. If it equals 'reset', then empty settings will be created and then the script will exit.
   if [ "$1" == 'reset' ];then
     #set default settings, if they don't exist
+    settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+    PREIFS="$IFS"
+    IFS='|'
+    for name in $settings
+    do
+      if [ ! -f "${DIRECTORY}/data/settings/${name}" ];then
+        cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+      fi
+    done
+    IFS="$PREIFS"
+    exit 0
+  fi
+  
+  #$1 is usually left blank. If it equals 'revert', then overwrite all settings with the defaults and then the script will exit.
+  if [ "$1" == 'revert' ];then
+    #overwrite all settings with the defaults
     settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
     PREIFS="$IFS"
     IFS='|'
@@ -29,6 +45,7 @@ while [ -z $exitloop ];do
     IFS="$PREIFS"
     exit 0
   fi
+  
 
   if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
     echo "Creating Settings menu button"
@@ -94,7 +111,7 @@ ${params}"
 
   if [ $button -eq 2 ];then
     output=''
-    "${0}" reset
+    "${0}" revert
   else
     exitloop=yes
   fi
