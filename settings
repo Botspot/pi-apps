@@ -24,7 +24,7 @@ while [ -z $exitloop ];do
     IFS='|'
     for name in $settings
     do
-      if [ ! -f "${DIRECTORY}/data/settings/${name}" ];then
+      if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
         cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
       fi
     done
@@ -62,14 +62,17 @@ while [ -z $exitloop ];do
 
   settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
   yadparams=''
+  tooltips=''
   PREIFS="$IFS"
   IFS='|'
+  i=0
   for name in $settings
   do
+    i=$((i+2))
     params="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#')"
     
     #create file if necessary
-    if [ ! -f "${DIRECTORY}/data/settings/${name}" ];then
+    if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
       cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
     fi
     #get current setting
@@ -88,22 +91,27 @@ $(echo "$params" | grep -v "$curval")"
     #echo "Tooltip of ${name}: ${tooltip}"
     
     yadparams="${yadparams}
---field=${name}::CB
+--field=:CB
 ${params}"
+    tooltips="${tooltips}
+--field=${name}:!!${tooltip}:BTN
+''"
   done
   IFS="$PREIFS"
-
-  yadparams="$(echo "$yadparams" | tr ' ' '-')"
-  echo "$yadparams"
-
+  
+  #replace all space ' ' characters with a special kind of space: a punctuation space ( ). This way, bash won't split the strings into separate words.
+  yadparams="$(echo "$yadparams" | sed 's/ / /g')"
+  tooltips="$(echo "$tooltips" | sed 's/ / /g')"
+  
   output="$(yad --center --title='Pi-Apps Settings' --width=310 --height=300 \
-    --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-    $yadparams \
+    --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" --columns=2 \
+    $tooltips \
     --field='New App'!"${DIRECTORY}/icons/create.png":FBTN "${DIRECTORY}/createapp" \
+    $yadparams \
     --button='Reset'!"${DIRECTORY}/icons/backup.png"!'Reset all settings to their defaults':2 \
     --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
     --button=Save!"${DIRECTORY}/icons/check.png":0 \
-    2>/dev/null)"
+    )"
 
   button=$? #get exit code to determine which button was pressed
   #exit if save was not clicked
