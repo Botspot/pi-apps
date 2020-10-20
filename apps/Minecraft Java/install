@@ -12,8 +12,7 @@ function error {
 # || error 'reason'
 #example below:
 
-echo 'WARNING: This install script is only compatiable with 32-bit OSes for the time being. Please press [Enter] to continue.'
-read -p
+read -p 'WARNING: This install script is only compatiable with 32-bit OSes for the time being. Please press [Enter] to continue.'
 
 #Download java and launcher
 mkdir ~/Minecraft && cd ~/Minecraft && wget https://www.dropbox.com/s/2602i5d0h4kteex/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
