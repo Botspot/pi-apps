@@ -1,4 +1,6 @@
 #!/bin/bash
+# Install script written by RaspberryPiNews on YT
+# Original program made by ChristopherHX on Github
 
 DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
 function error {

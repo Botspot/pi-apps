@@ -1,4 +1,6 @@
 #!/bin/bash
+# Install script written by RaspberryPiNews on YT
+# Original program made by rpiMike on the Raspberry Pi Forums
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
