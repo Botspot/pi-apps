@@ -107,7 +107,7 @@ elif [ "$1" == 'update' ];then
     true
   else
     rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+    git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
   newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
@@ -156,39 +156,66 @@ elif [ "$1" == 'check-all' ];then
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
   
+  #hidden flag: if $2 is 'installedonly', then only check for updates for those apps that are installed
+  if [ "$2" == 'installedonly' ];then
+    installedonly=1
+  else
+    installedonly=0
+  fi
+  
+  #generate entire app list, combine local apps and online apps to one list
+  applist="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq)"
+  if [ $installedonly == 1 ];then
+    #installedonly flag enabled. Remove apps that are uninstalled
+    echo "installedonly flag set to 1" 1>&2
+    PREIFS="$IFS"
+    IFS=$'\n'
+    for app in $applist
+    do
+      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'uninstalled' ];then
+        #if app is uninstalled, then remove it from the list.
+        applist="$(echo "$applist" | grep -vx "$app")"
+        echo "Removing ${app} from list because it is uninstalled." 1>&2
+      fi
+    done
+    IFS="$PREIFS"
+  fi
+  
+  applist="$(echo "$applist" | tr '\n' '|')"
+  
+  #echo "App list: $applist" 1>&2
+  
   rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-  git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   
   updatable=''
-
   PREIFS="$IFS"
   IFS="|"
-  newapps="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq | tr '\n' '|')"
-  for newapp in $newapps
+  for app in $applist
   do
-    #echo "newapp: $newapp"
-    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    oldhash=$(find "${DIRECTORY}/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    #echo -e "newhash: $newhash\noldhash: $oldhash"
+    #echo "app: $app"
+    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${app}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    oldhash=$(find "${DIRECTORY}/apps/${app}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+    #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
     
     if [ "$newhash" == "$oldhash" ];then
-      echo -e "${newapp} is identical\e[90m to the online version. Nothing to do!\e[39m"
-      echo 'latest' > "${DIRECTORY}/data/update-status/${newapp}"
+      echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
+      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
     else
-      if [ ! -d "${DIRECTORY}/apps/${newapp}" ];then
-        echo -e "\e[97m${newapp} does not exist locally.\e[39m Adding to updatable list."
-        echo 'new' > "${DIRECTORY}/data/update-status/${newapp}"
+      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+        echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
+        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
-        updatable="${updatable}|${newapp}"
-      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${newapp}" ];then
-        echo -e "\e[97m${newapp} only exists locally.\e[39m Will not add to updatable list."
-        echo 'local' > "${DIRECTORY}/data/update-status/${newapp}"
+        updatable="${updatable}|${app}"
+      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+        echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
+        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, do not add to updatable list
       else
-        echo -e "\e[97m${newapp} exists in both locations, but online version is newer\e[39m. Adding to updatable list."
-        echo 'updatable' > "${DIRECTORY}/data/update-status/${newapp}"
+        echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
+        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
-        updatable="${updatable}|${newapp}"
+        updatable="${updatable}|${app}"
       fi
       
     fi
