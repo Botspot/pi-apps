@@ -1,0 +1,107 @@
+#!/bin/bash
+
+#this generates a yad-friendly app list. This is run every time the gui script is executed.
+#if this script detects nothing has changed since last run, then it will echo back the app list that was generated last time.
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m" 1>&2
+  exit 1
+}
+
+#these directories are checked for changes
+checkdirs="${DIRECTORY}/apps
+${DIRECTORY}/data/settings
+${DIRECTORY}/data/status"
+
+mkdir -p "${DIRECTORY}/data/preload"
+
+mktimestamps() {
+  timestamps=''
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for dir in $checkdirs
+  do
+    timestamps="$timestamps
+${dir}/$(ls -t "$dir" | head -n1)
+$(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
+  done
+  IFS="$PREIFS"
+  #remove first empty newline
+  timestamps="${timestamps:1}"
+}
+
+reloadlist=0
+
+if [ -f "${DIRECTORY}/data/preload/timestamps" ];then
+  #get modified timestamps for directories
+  mktimestamps
+  
+  if [ "$timestamps" == "$(cat "${DIRECTORY}/data/preload/timestamps")" ];then
+    #if current timestamps and saved timestamps match, then don't reload the list
+    reloadlist=0
+    echo "Timestamps match." 1>&2
+  else
+    #timestamps don't match, so reload the list
+    reloadlist=1
+    echo "Timestamps don"\'"t match" 1>&2
+  fi
+else
+  #timestamp file not found
+  reloadlist=1
+fi
+
+if [ ! -f "${DIRECTORY}/data/preload/LIST" ];then
+  reloadlist=1
+  echo "list file does not exist." 1>&2
+fi
+
+if [ $reloadlist == 1 ];then
+  echo "Generating list..." 1>&2
+  #get list of apps ----------------------------------- and exclude apps mentioned in hidelist file
+  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
+  #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
+  
+  
+  #shuffle the list if enabled
+  if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
+    APPS="$(echo "$APPS" | shuf)"
+  fi
+  
+  APPS="$(echo "$APPS" | tr '\n' '|')"
+  
+  PREIFS="$IFS"
+  IFS="|"
+  LIST=''
+  for i in $APPS
+  do
+
+  LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
+${DIRECTORY}/apps/${i}/icon-24.png
+$i
+"\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"
+  done
+  IFS="$PREIFS"
+  LIST="$(echo -e "$LIST")"
+  
+  #save entire list string to file for future use
+  echo "$LIST" > "${DIRECTORY}/data/preload/LIST"
+  export CACHED_LIST="$LIST"
+  
+  #save timestamps to file too
+  mktimestamps
+  echo "$timestamps" > "${DIRECTORY}/data/preload/timestamps"
+else
+  if [ -z "$CACHED_LIST" ];then
+    echo "Reading list file..." 1>&2
+    LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
+    export CACHED_LIST="$LIST"
+  else
+    echo "Reading list variable..." 1>&2
+    LIST="$CACHED_LIST"
+  fi
+fi
+
+echo "$LIST"
