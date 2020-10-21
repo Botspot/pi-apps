@@ -42,6 +42,7 @@ fi
 installedonly="$1"
 if [ "$installedonly" == 'installedonly' ];then
   nocheck=0 #forcibly check, even if time interval doesn't call for it
+  sleep 1m #wait a minute, this is so the system will have booted all the way for an internet connection
 fi
 
 if [ $nocheck == 1 ];then
