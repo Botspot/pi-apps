@@ -26,9 +26,9 @@ echo "[Desktop Entry]
 Name=Cordless
 Exec=${HOME}/go/bin/cordless
 Path=${HOME}/go/bin/
-Icon=terminal
+Icon=${DIRECTORY}/apps/Cordless/icon-64.png
 Type=Application
-Comment=Cordless is a custom Discord client that aims to have a low memory footprint and be aimed at power-users.
+Comment=Terminal Discord client - for power-users and low memory consumption.
 Categories=Network
 Terminal=true
 X-KeepTerminal=true" > ~/.local/share/applications/cordless.desktop
