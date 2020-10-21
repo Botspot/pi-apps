@@ -115,6 +115,11 @@ Do you want to edit ${name}?" --timeout=10 \
             --text="Name of app may not be left blank!" --timeout=10 \
             --button=OK:0
         fi
+        
+        #if Save was clicked then exit now
+        if [ $button == 4 ];then
+          exit 0
+        fi
       elif [ $button == 2 ];then
         #previous - don't save changes
         step=1
