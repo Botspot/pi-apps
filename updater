@@ -57,7 +57,7 @@ echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
 #generate app update status info
 updatable="$("${DIRECTORY}/manage" check-all $installedonly | tail -1)"
 echo "updatable: $updatable"
-exit 0
+
 #if check-all succeeded to download the repo to the update folder
 if [ -d "${DIRECTORY}/update" ];then
   PREIFS="$IFS"
