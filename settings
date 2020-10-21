@@ -65,10 +65,8 @@ while [ -z $exitloop ];do
   tooltips=''
   PREIFS="$IFS"
   IFS='|'
-  i=0
   for name in $settings
   do
-    i=$((i+2))
     params="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#')"
     
     #create file if necessary
@@ -130,7 +128,7 @@ echo "Output: ${output}EOO"
 settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
 PREIFS="$IFS"
 IFS='|'
-settingnumber=1
+settingnumber=8
 for name in $settings
 do
   curval="$(echo "$output" | sed -n "${settingnumber}p")"
