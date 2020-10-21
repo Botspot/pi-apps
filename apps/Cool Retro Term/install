@@ -17,6 +17,8 @@ cd cool-retro-term || error "failed on cd step!"
 qmake || error "failed on qmake step!"
 make -j8 || error "failed on make step!"
 
+cp -rf qmltermwidget/src/qmldir qmltermwidget/lib/kb-layouts qmltermwidget/lib/color-schemes qmltermwidget/src/QMLTermScrollbar.qml qmltermwidget/QMLTermWidget
+
 echo "[Desktop Entry]
 Comment=Use the command line the old way
 Exec=/home/pi/cool-retro-term/cool-retro-term
