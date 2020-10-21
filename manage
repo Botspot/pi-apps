@@ -163,6 +163,9 @@ elif [ "$1" == 'check-all' ];then
     installedonly=0
   fi
   
+  rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
+  
   #generate entire app list, combine local apps and online apps to one list
   applist="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq)"
   if [ $installedonly == 1 ];then
@@ -184,9 +187,6 @@ elif [ "$1" == 'check-all' ];then
   applist="$(echo "$applist" | tr '\n' '|')"
   
   #echo "App list: $applist" 1>&2
-  
-  rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   
   updatable=''
   PREIFS="$IFS"
