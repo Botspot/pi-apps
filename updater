@@ -15,6 +15,7 @@ fi
 
 updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
 
+nocheck=0
 #allowed values: Always, Daily, Weekly, Never
 if [ "$updateinterval" == 'Never' ];then
   nocheck=1
@@ -37,6 +38,12 @@ else
   echo "Warning: Unrecognized update interval!"
 fi
 
+#hidden flag: if $1 is 'installedonly', then check for updates only for those apps that are installed.
+installedonly="$1"
+if [ "$installedonly" == 'installedonly' ];then
+  nocheck=0 #forcibly check, even if time interval doesn't call for it
+fi
+
 if [ $nocheck == 1 ];then
   echo "Won"\'"t check for updates today, because of the update interval is set to $updateinterval in Settings.
   To forcibly check for updates now, press any key within the next 20 seconds."
@@ -48,8 +55,9 @@ fi
 echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
 
 #generate app update status info
-updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
-
+updatable="$("${DIRECTORY}/manage" check-all $installedonly | tail -1)"
+echo "updatable: $updatable"
+exit 0
 #if check-all succeeded to download the repo to the update folder
 if [ -d "${DIRECTORY}/update" ];then
   PREIFS="$IFS"
@@ -58,7 +66,7 @@ if [ -d "${DIRECTORY}/update" ];then
   #mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
   
   #list all files in update folder
-  cd "${DIRECTORY}/update/pi-apps"
+  cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
   updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
   
   #list all files in main folder
