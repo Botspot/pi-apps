@@ -18,7 +18,7 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
 fi
 
 #remove annoying YAD icon browser launcher
-sudo rm /usr/share/applications/yad-icon-browser.desktop
+sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 echo "Creating menu button..."
 mkdir -p ~/.local/share/applications
@@ -44,7 +44,22 @@ Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
+echo "Creating autostarted updater..."
+mkdir -p ~/.config/autostart
+echo "[Desktop Entry]
+Name=Pi Apps Updater
+Exec=${DIRECTORY}/updater installedonly
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
+
 mkdir -p "${DIRECTORY}/data"
+cd "${DIRECTORY}/data"
+mkdir -p installed-packages preload settings status update-status
+cd $HOME
 
 #hide template file by default
 echo "template" > "${DIRECTORY}/data/hidelist"
@@ -60,7 +75,7 @@ Retropie
 Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
 fi
 
-echo "Resetting settings"
+echo "Creating settings if they don"\'"t exist..."
 "${DIRECTORY}/settings" reset
 
 echo "Installation complete."
