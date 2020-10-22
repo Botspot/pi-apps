@@ -1,16 +1,15 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve that, functioning as a software catalog and standardizing installation.
+There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
 
-**Pi-Apps is very new and is a work in progress.** Please [report](https://github.com/Botspot/pi-apps/issues/new) any errors you encounter.
-
+**Pi-Apps is very new and is a work in progress.** Please [report](https://github.com/Botspot/pi-apps/issues/new) any errors you encounter. [Donations](https://paypal.me/josephmarchand), anyone?  
 ### To install Pi Apps
 ```
 git clone https://github.com/Botspot/pi-apps
 /home/pi/pi-apps/install
 ```
-The install script ensures YAD is installed and creates a menu button. Nothing is modified outside your home directory.
+The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ### To run Pi Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 ### Basic usage
@@ -61,6 +60,7 @@ Note that if an app is up-to-date, no files will be moved around.
    - `manage` This script handles installing, uninstalling, and updating Apps. It does not check or update any files outside the `apps/` directory.
    - `pi-apps.desktop` This file is a .desktop launcher, exactly the same as the main Pi-Apps launcher in Menu.
    - `pkg-install` If an App requires some `apt` packages in order to run, its `install` script will run `pkg-install`. Pkg-install records which app installed what (in the installed-packages folder BTW), so when you uninstall an App, those packages will be removed.
+   - `preload` This script generates the app list for the `gui` script. If no files have been modified since last launch, `preload` won't regenerate the app list, but instead will return a previously saved version of the list. This approach reduces Pi-Apps's launch time by around 1 second.
    - `purge-installed` This does exactly the opposite of `pkg-install` This script is run when an App is being uninstalled. Purge-installed will uninstall all packages the app installed.
    - `README.md` You are reading this file right now!
    - `settings` This GUI script is executed when you launch 'Pi-Apps Settings' from the Menu.
@@ -80,6 +80,10 @@ Note that if an app is up-to-date, no files will be moved around.
      "new" means that app is new from the repository. (in other words, it does not exist locally)
      "local" means that app does not exist on the repository.
      "updatable" means the repository's version and the local version don't match.
+     - `preload/` This directory is used by the `preload` script to improve Pi-Apps' launch time.
+       - `timestamps` This file stores timestamps for the most recently modified app, the most recently modified setting, and the most rencently modified status file.
+       If any of these entries don't match when `preload` is called, then the app list will be regenerated.
+       - `LIST` This file holds the app list. The entire file's contents is piped into the YAD dialog box.
      - `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
      For example, if Pi Power Tools installs `xserver-xephyr` and `expect`, then the `installed-packages/Pi Power Tools` file will contain "xserver-xephyr expect".
      - `hidelist` This file contains app names that should be hidden from the app list. `template` should always be there. If your Pi runs TwisterOS, then `hidelist` will contain several more app names, like balenaEtcher, for example.
