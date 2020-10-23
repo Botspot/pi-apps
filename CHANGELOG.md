@@ -49,6 +49,9 @@ Add Boxy SVG and Sonic Pi.
 10/15  
 Fix update buddy, zoom now disables pulseaudio autostart, and   
   
+10/18  
+Leepspvideo posted [this video](https://www.youtube.com/watch?v=zxyWQ3FV98I) featuring Pi-Apps. As a result, 3000+ people have installed Pi-Apps.  
+  
 10/19  
 Add Visual Studio Code and fix a couple bugs.  
   
@@ -57,3 +60,6 @@ Add Cordless Discord app, and enable preloading.
   
 10/21  
 Fix Cool-Retro-Term install bug, and enable autostarted updater.  
+
+10/22  
+ETA Prime posted [this video](https://www.youtube.com/watch?v=oqNWJ52DLes) featuring Pi-Apps. As a result, 2000+ more people have installed Pi-Apps.  
