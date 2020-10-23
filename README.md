@@ -3,7 +3,6 @@
 
 There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
 
-**Pi-Apps is very new and is a work in progress.** Please [report](https://github.com/Botspot/pi-apps/issues/new) any errors you encounter. [Donations](https://paypal.me/josephmarchand), anyone?  
 ### To install Pi Apps
 ```
 git clone https://github.com/Botspot/pi-apps
@@ -12,6 +11,12 @@ git clone https://github.com/Botspot/pi-apps
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ### To run Pi Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
+### Useful links
+- [Send Botspot a donation](https://paypal.me/josephmarchand)
+- [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
+- [Report an error](https://github.com/Botspot/pi-apps/issues/new)
+- [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+- [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
