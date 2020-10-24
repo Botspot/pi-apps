@@ -76,7 +76,7 @@ Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
 fi
 
 echo "Creating settings if they don"\'"t exist..."
-"${DIRECTORY}/settings" reset
+"${DIRECTORY}/settings" refresh
 
 echo "Installation complete."
 
