@@ -7,32 +7,48 @@ function error {
   exit 1
 }
 
-cd ~/Downloads
-#Download from github
-wget https://github.com/SpacingBat3/nativefier-discord-arm/raw/master/assets/discord-linux-armv7l.tar.gz || error 'Failed to download files!'
-#Delete tar.gz and move to /usr/share
-tar -xf discord-linux-armv7l.tar.gz || error 'Failed to extract program!'
-rm discord-linux-armv7l.tar.gz
-sudo mv discord-linux-armv7l /usr/share/ || error 'Failed to move folder!'
+arch=''
+while [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ]
+do
+  echo -n "Which type of Discord do you want? [armhf/arm64] "
+  arch=''
+  read arch
+  if [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ];then
+    echo -e "\\e[91mDid not understand '$arch'. Try again.\\e[39m"
+  fi
+done
+
+#maker and enter discord-electron folder
+gio trash ~/discord-electron
+mkdir ~/discord-electron
+cd ~/discord-electron || error "Failed to enter discord-electron folder!"
+
+if [ "$arch" == 'armhf' ];then
+  #Download from github
+  wget https://github.com/SpacingBat3/discord-electron/releases/download/0.2.0/linux-armv7l.tar.gz || error 'Failed to download archive!'
+  
+  tar -xf linux-armv7l.tar.gz || error 'Failed to extract archive!'
+  rm -f linux-armv7l.tar.gz
+elif [ "$arch" == 'armhf' ];then
+  #Download from github
+  wget https://github.com/SpacingBat3/discord-electron/releases/download/0.2.0/linux-arm64.tar.gz || error 'Failed to download archive!'
+  
+  tar -xf linux-arm64.tar.gz || error 'Failed to extract archive!'
+  rm -f linux-armv7l.tar.gz
+fi
+
+cd $HOME
 
 #Create desktop shortcut
 echo "[Desktop Entry]
-Version=1.0
+StartupNotify=true
 Terminal=false
 Type=Application
 Name=Discord
-Exec=/usr/share/discord-linux-armv7l/discord
+Exec=${HOME}/discord-electron/discord-electron
 Icon=/home/pi/pi-apps/apps/Discord/icon-64.png
 Categories=Network;Chat;VideoConference;WebApp;Internet
 Comment=Your place to talk!
-Comment[pl]=Twoje miejsce do rozmów!
-GenericName=Network Messenger
-GenericName[pl]=Kommunikator internetowy" > /usr/share/discord-linux-armv7l/discord.desktop
+GenericName=Network Messenger" > ~/.local/share/applications/discord.desktop
 
-sudo chmod +x /usr/share/discord-linux-armv7l/discord.desktop
 
-#menu button
-sudo cp -a /usr/share/discord-linux-armv7l/discord.desktop ~/.local/share/applications
-
-#desktop shortcut
-sudo cp -a /usr/share/discord-linux-armv7l/discord.desktop ~/Desktop/
