@@ -15,9 +15,9 @@ function error {
   "${DIRECTORY}/install"
 fi) &
 
-#create hidelist file if nonexistent
-(if [ ! -f "${DIRECTORY}/data/hidelist" ];then
-  echo 'template' > "${DIRECTORY}/data/hidelist"
+#refresh settings if analytics file missing
+(if [ ! -f "${DIRECTORY}/data/settings/Enable analytics" ];then
+  "${DIRECTORY}/settings" refresh
 fi) &
 
 #Variable 1 is used to view the details of the specified app
