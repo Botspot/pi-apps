@@ -16,8 +16,8 @@ while [ -z $exitloop ];do
     echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
   fi
 
-  #$1 is usually left blank. If it equals 'reset', then empty settings will be created and then the script will exit.
-  if [ "$1" == 'reset' ];then
+  #$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
+  if [ "$1" == 'refresh' ];then
     #set default settings, if they don't exist
     settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
     PREIFS="$IFS"
@@ -83,8 +83,8 @@ $(echo "$params" | grep -v "$curval")"
     params="$(echo "$params" | tr '\n' '!')"
     params="${params::-1}"
     
-    tooltip="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep '#')"
-    tooltip="${tooltip:1}"
+    tooltip="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep '^#' | tr -d '#' | tr '\n' '\r')"
+    tooltip="${tooltip::-1}"
     #echo "Params of ${name}: ${params}"
     #echo "Tooltip of ${name}: ${tooltip}"
     
@@ -123,12 +123,17 @@ ${params}"
   fi
 done
 
+#remove empty lines from $output
+output="$(echo "$output" | sed -r '/^\s*$/d')"
+
 echo "Output: ${output}EOO"
 
 settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+
+settingnumber=1
+
 PREIFS="$IFS"
 IFS='|'
-settingnumber=8
 for name in $settings
 do
   curval="$(echo "$output" | sed -n "${settingnumber}p")"
