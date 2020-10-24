@@ -11,7 +11,7 @@ function error {
 
 wget https://sonic-pi.net/files/releases/v3.2.2/sonic-pi_3.2.2_4_armhf.deb || error "Failed to download deb file!"
 
-sudo apt install -y --no-install-recommends sonic-pi_3.2.2_4_armhf.deb || error "Failed to install Sonic Pi package!"
+sudo apt install -y --no-install-recommends ./sonic-pi_3.2.2_4_armhf.deb || error "Failed to install Sonic Pi package!"
 
 rm -f sonic-pi_3.2.2_4_armhf.deb
 
