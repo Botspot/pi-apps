@@ -31,6 +31,8 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 - If you click **New App** in Settings, you can easily create your own Apps with a wizard-style sequence of windows.  
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
+### Donations raised so far:
+**$0**
 ### Terminal usage
  - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases a dialog will appear to ask you a question.
    - To **install** an app, run this:
@@ -103,8 +105,10 @@ Note that if an app is up-to-date, no files will be moved around.
      Now, the next time Settings is opened, you will see:  
      ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)
      What's the point? Basically, it allows for a more elegant way to add new settings. With this approach, it's a lot harder to screw up than with manually editing a bash script.
+     - `git_url` This simple file stores this link: https://github.com/Botspot/pi-apps
+     If you fork this repository and make changes, you will want Pi-Apps checking for updates from your repository, not this main one. Simply change the URL in this file to switch to your repository.
    - `icons/` This stores all the icons that are embedded into various dialogs.
-       - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
+     - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
    - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
 
 ### Q&A with Botspot
