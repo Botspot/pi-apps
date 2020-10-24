@@ -40,6 +40,17 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
+  #analytics
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+    #this is used to let Botspot see the daily installs for each app.
+    #Botspot created an individual bitly link for each app. When you install an app, the cooresponding bit.ly link is "clicked" by a headless chromium-browser instance.
+    #Chromium accesses the bit.ly link, then exits.
+    #Allowing analytics does not identify you, or any personal information about you. Botspot can only see the number of "clicks" per day, as well as the top 10 countries of origin.
+    
+    bitlylink="https://bit.ly/pi-apps-install-$(echo "$2" | tr -d ' ' | sed 's/[^a-zA-Z]//g')"
+    chromium-browser --headless "$bitlylink" &>/dev/null &
+  fi
+  
   lxterminal --title="Installing $2" -e "
     cd $HOME
     echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
