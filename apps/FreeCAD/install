@@ -37,4 +37,3 @@ sudo make install || error "sudo make install failed!"
 if [ ! -z "$(cat "${DIRECTORY}/installed-packages" | grep 'qt4-dev-tools')" ];then
   sudo apt purge -y qt4-dev-tools qt4-designer || error "purging qt4-dev-tools failed!"
 fi
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
