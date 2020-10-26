@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-rm -rf  ~/discord-electron
+gio trash ~/electron-discord-webapp
 rm -f ~/.local/share/applications/discord.desktop
