@@ -112,7 +112,7 @@ Categories=Network;" > ~/.local/share/applications/zoom.desktop
 echo "Installation complete!"
 
 #disable pulseaudio autostart
-systemctl --user disable pulseaudio.service pulseaudio.socket
+systemctl --user mask pulseaudio.service pulseaudio.socket
 sudo rm /etc/xdg/autostart/pulseaudio.desktop
 sudo bash -c "echo 'autospawn = no
 daemon-binary = /bin/true' > /etc/pulse/client.conf"
