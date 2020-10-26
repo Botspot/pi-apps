@@ -115,7 +115,7 @@ echo "Installation complete!"
 systemctl --user disable pulseaudio.service pulseaudio.socket
 sudo rm /etc/xdg/autostart/pulseaudio.desktop
 sudo bash -c "echo 'autospawn = no
-daemon-binary = /bin/true' >> /etc/pulse/client.conf"
+daemon-binary = /bin/true' > /etc/pulse/client.conf"
 
 
 
