@@ -8,9 +8,11 @@ function error {
 }
 
 if [ -d ~/box86 ];then
-  echo "box86 already exists on your system. Moving the old version to Trash..."
+  echo -e "\e[33mbox86 already exists on your system. Moving the old version to Trash...\e[39m"
   gio trash ~/box86
 fi
+
+"${DIRECTORY}/pkg-install" "cmake" "$(dirname "$0")" || exit 1
 
 git clone https://github.com/ptitSeb/box86 || error "failed to download repo!"
 cd box86 || error "failed to enter directory!"
