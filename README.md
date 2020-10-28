@@ -12,6 +12,7 @@ The install script ensures YAD is installed, creates two menu buttons, and an au
 ### To run Pi Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 ### Useful links
+- [Pi-Apps Discord server](https://discord.gg/PCgG2v)
 - [Send Botspot a donation](https://paypal.me/josephmarchand)
 - [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
