@@ -7,18 +7,37 @@ function error {
   exit 1
 }
 
-git clone https://github.com/SpacingBat3/electron-discord-webapp || error "Failed to download repo!"
+arch=''
+while [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ]
+do
+  echo -n "Which type of Discord do you want? [armhf/arm64] "
+  arch=''
+  read arch
+  if [ "$arch" != 'armhf' ] && [ "$arch" != 'arm64' ];then
+    echo -e "\\e[91mDid not understand '$arch'. Try again.\\e[39m"
+  fi
+done
 
-if [ ! -f /usr/bin/npm ];then
-  echo "npm is not installed. Installing npm now..."
-  "${DIRECTORY}/pkg-install" "npm" "$(dirname "$0")" || exit 1
-  echo "Updating npm to latest version..."
-  sudo npm install -g npm || error "failed to update npm to latest version!"
+#maker and enter discord-electron folder
+gio trash ~/discord-electron
+mkdir ~/discord-electron
+cd ~/discord-electron || error "Failed to enter discord-electron folder!"
+
+if [ "$arch" == 'armhf' ];then
+  #Download from github
+  wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v0.1.1/linux-armv7l.tar.gz || error 'Failed to download archive!'
+  
+  tar -xf linux-armv7l.tar.gz --strip 1 || error 'Failed to extract archive!'
+  rm -f linux-armv7l.tar.gz
+elif [ "$arch" == 'arm64' ];then
+  #Download from github
+  wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v0.1.1/linux-aarch64.tar.gz || error 'Failed to download archive!'
+  
+  tar -xf linux-aarch64.tar.gz --strip 1 || error 'Failed to extract archive!'
+  rm -f linux-aarch64.tar.gz
 fi
 
-cd electron-discord-webapp
-
-npm install
+cd $HOME
 
 #Create desktop shortcut
 echo "[Desktop Entry]
@@ -26,11 +45,10 @@ StartupNotify=true
 Terminal=false
 Type=Application
 Name=Discord
-Path=$HOME/electron-discord-webapp
-Exec=npm start
+Path=$HOME/discord-electron
+Exec=$HOME/discord-electron/discord
 Icon=/home/pi/pi-apps/apps/Discord/icon-64.png
 Categories=Network;Chat;VideoConference;WebApp;Internet
 Comment=Your place to talk!
 GenericName=Network Messenger" > ~/.local/share/applications/discord.desktop
-
 
