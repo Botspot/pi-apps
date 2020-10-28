@@ -66,6 +66,7 @@ echo "template" > "${DIRECTORY}/data/hidelist"
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ];then
+  echo "TwisterOS detected. Hiding some apps that already exist on TwisterOS by default..."
   echo "BalenaEtcher
 Chromium Media Edition
 CommanderPi
