@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+rm -f ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb
+# Get dependencies
+wget https://github.com/futurejones/balena-etcher-arm/releases/download/v1.5.63/balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb || error "Failed to download!"
+
+sudo apt install -y ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb  || error "failed to install deb file!"
+rm -f ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb
