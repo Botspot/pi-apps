@@ -10,14 +10,24 @@ function error {
   exit 1
 }
 
-#these directories are checked for changes
-checkdirs="${DIRECTORY}/apps
-${DIRECTORY}/data/settings
-${DIRECTORY}/data/status"
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ ! -z "$(file "$(readlink -f "${mntpnt}/sbin/init")" | grep 64)" ];then
+  arch=64
+elif [ ! -z "$(file "$(readlink -f "${mntpnt}/sbin/init")" | grep 32)" ];then
+  arch=32
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+
 
 mkdir -p "${DIRECTORY}/data/preload"
 
 mktimestamps() {
+  #these directories are checked for changes
+  checkdirs="${DIRECTORY}/apps
+${DIRECTORY}/data/settings
+${DIRECTORY}/data/status"
+  
   timestamps=''
   PREIFS="$IFS"
   IFS=$'\n'
@@ -53,8 +63,8 @@ else
 fi
 
 if [ ! -f "${DIRECTORY}/data/preload/LIST" ];then
-  reloadlist=1
   echo "list file does not exist." 1>&2
+  reloadlist=1
 fi
 
 if [ $reloadlist == 1 ];then
@@ -63,21 +73,31 @@ if [ $reloadlist == 1 ];then
   APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
   #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
   
+  #remove apps that are not compatible with OS architecture
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for i in $APPS
+  do
+    #if install script doesn't exist -------------------- and if os-specific install script doesn't exist, then...
+    if [ ! -f "${DIRECTORY}/apps/${i}/install" ] && [ ! -f "${DIRECTORY}/apps/${i}/install-${arch}" ];then
+      #...remove the app from the list
+      echo "Removing $i from the list because it is not compatible with your ${arch}-bit OS." 1>&2
+      APPS="$(echo "$APPS" | grep -vx "$i")"
+    fi
+  done
+  IFS="$PREIFS"
   
   #shuffle the list if enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
   fi
   
-  APPS="$(echo "$APPS" | tr '\n' '|')"
-  
   PREIFS="$IFS"
-  IFS="|"
+  IFS=$'\n'
   LIST=''
   for i in $APPS
   do
-
-  LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
+    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
@@ -103,5 +123,15 @@ else
     LIST="$CACHED_LIST"
   fi
 fi
+
+(#put icons in cache
+PREIFS="$IFS"
+IFS=$'\n'
+for icon in $(echo "$LIST" | grep icon-24)
+do
+  cat "$icon" 1>/dev/null
+  #echo "Putting $icon in cache..." 1>&2
+done
+IFS="$PREIFS" ) &
 
 echo "$LIST"
