@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget https://downloads.arduino.cc/arduino-1.8.13-linuxaarch64.tar.xz || error "failed to download!"
+
+xz -d arduino-1.8.13-linuxaarch64.tar.xz || error "failed to extract with xz!"
+tar -xf arduino-1.8.13-linuxaarch64.tar.xz || error "failed to extract with tar!"
+arduino-1.8.13/install.sh || error "failed to run install as non-root user!"
+sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
+
+rm /home/pi/Desktop/arduino-arduinoide.desktop || error "failed delete desktop shortcut!"
+rm arduino-1.8.13-linuxarm.tar || error "failed delete archives!"
