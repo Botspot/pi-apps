@@ -11,5 +11,6 @@ rm -f ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb
 # Get dependencies
 wget https://github.com/futurejones/balena-etcher-arm/releases/download/v1.5.63/balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb || error "File download failed!"
 
-sudo apt install -y --fix-broken ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb  || error "failed to install deb file!"
-rm -f ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb
+sudo apt install -y --fix-broken ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb  || error "failed to install deb file!"
+rm -f ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb
+exit 0
