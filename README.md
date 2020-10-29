@@ -18,9 +18,6 @@ Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
-### To-do
-- [] Make app reviews system
-- [x] Make 32-bit and 64-bit install scripts
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
@@ -35,6 +32,9 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 - If you click **New App** in Settings, you can easily create your own Apps with a wizard-style sequence of windows.  
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
+### To-do
+- [x] Make app creation system (completed with the `createapp` script)
+- [x] Make 32-bit and 64-bit install scripts
 ### Donations raised so far:
 **$0**
 ### Terminal usage
