@@ -25,6 +25,6 @@ NoDisplay=false" > ~/.config/autostart/update-buddy.desktop
 chmod +x $HOME/update-buddy/onstartup.sh
 
 #first time run
-$HOME/update-buddy/onstartup.sh
+$HOME/update-buddy/onstartup.sh &
 
 
