@@ -56,7 +56,11 @@ fi
 echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
 
 #generate app update status info
-updatable="$("${DIRECTORY}/manage" check-all $installedonly | tail -1)"
+updatable="$("${DIRECTORY}/manage" check-all $installedonly)"
+[ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
+
+#shorten to last line
+updatable="$(echo "$updatable" | tail -1)"
 echo "updatable: $updatable"
 
 #if check-all succeeded to download the repo to the update folder
