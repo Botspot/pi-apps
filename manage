@@ -265,6 +265,10 @@ elif [ "$1" == 'check-all' ];then
   #remove initial '|' character
   updatable="${updatable:1}"
   
+  if [ -z "$updatable" ];then
+    updatable='.'
+  fi
+  
   echo -e "\e[97mThese apps can be updated:\n${updatable}"
 elif [ "$1" == 'update-all' ];then
   #UPDATE-ALL

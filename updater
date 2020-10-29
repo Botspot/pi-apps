@@ -61,6 +61,10 @@ updatable="$("${DIRECTORY}/manage" check-all $installedonly)"
 
 #shorten to last line
 updatable="$(echo "$updatable" | tail -1)"
+if [ "$updatable" == '.' ];then
+  updatable=''
+fi
+
 echo "updatable: $updatable"
 
 #if check-all succeeded to download the repo to the update folder
