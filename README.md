@@ -18,6 +18,9 @@ Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
+### To-do
+- [] Make app reviews system
+- [x] Make 32-bit and 64-bit install scripts
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
