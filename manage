@@ -17,9 +17,9 @@ fi
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "${mntpnt}/sbin/init")" | grep 64)" ];then
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
   arch=64
-elif [ ! -z "$(file "$(readlink -f "${mntpnt}/sbin/init")" | grep 32)" ];then
+elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
   arch=32
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
@@ -61,12 +61,12 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
   fi
   
   #determine which script to run
-  if [ -f "${DIRECTORY}/apps/${2}/install" ];then
-    installscript="${DIRECTORY}/apps/${2}/install"
+  if [ -f "${DIRECTORY}/apps/${2}/install-32" ] && [ $arch == 32 ];then
+    installscript="${DIRECTORY}/apps/${2}/install-32"
   elif [ -f "${DIRECTORY}/apps/${2}/install-64" ] && [ $arch == 64 ];then
     installscript="${DIRECTORY}/apps/${2}/install-64"
-  elif [ -f "${DIRECTORY}/apps/${2}/install-32" ] && [ $arch == 32 ];then
-    installscript="${DIRECTORY}/apps/${2}/install-32"
+  elif [ -f "${DIRECTORY}/apps/${2}/install" ];then
+    installscript="${DIRECTORY}/apps/${2}/install"
   else
     error "It appears $2 does not have an install-${arch} script suitable for your ${arch}-bit OS."
   fi
@@ -144,12 +144,13 @@ elif [ "$1" == 'update' ];then
   oldhash=$(find "${DIRECTORY}/apps/${2}" -type f -print0 | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
   
   #detect which installation script exists and get the hash for that one
-  if [ -f "${DIRECTORY}/update/pi-apps/apps/${2}/install" ];then
-    scriptname='install'
-  elif [ -f "${DIRECTORY}/update/pi-apps/apps/${2}/install-32" ];then
+  
+  if [ -f "${DIRECTORY}/update/pi-apps/apps/${2}/install-32" ];then
     scriptname='install-32'
   elif [ -f "${DIRECTORY}/update/pi-apps/apps/${2}/install-64" ];then
     scriptname='install-64'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/${2}/install" ];then
+    scriptname='install'
   else
     error "No install script found for the $2 app! Please report this to Botspot."
   fi
