@@ -36,7 +36,7 @@ while true;do
   
   while [ -z "$output" ];do
     
-    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
+    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
       --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
       --button=Install!"${DIRECTORY}/icons/install.png":4 \
