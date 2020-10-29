@@ -34,7 +34,7 @@ if [ "$1" == 'install' ];then
     error "${DIRECTORY}/apps/$2 does not exist!"
   fi
   #ensure an install script is not already running
-  if ps -C install || ps -C install-32 || ps -C install-64;then       
+  if ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;then       
     echo "An install script is already running.
 Pi-Apps will wait until that one finishes before installing $2." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
@@ -84,7 +84,7 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
     fi"
   #wait until script is done before this command exits
   sleep 2
-  while ps -C install >/dev/null;do sleep 1; done
+  while ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;do sleep 1; done
   
 elif [ "$1" == 'uninstall' ];then
   #UNINSTALL
