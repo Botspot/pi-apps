@@ -17,6 +17,7 @@ Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 - [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+- [RaspberryPiNews Pi-apps guide](https://www.youtube.com/watch?v=oiHTmwWGZPU)
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 ### Basic usage
 - This is the **main window**:  
