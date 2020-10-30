@@ -13,7 +13,7 @@ mkdir ~/discord-electron
 cd ~/discord-electron || error "Failed to enter discord-electron folder!"
 
 #Download from github
-wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v0.1.1/linux-armv7l.tar.gz || error 'Failed to download archive!'
+wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v0.1.4/electron-discord-webapp-0.1.4-armv7l.tar.gz || error 'Failed to download archive!'
 
 tar -xf linux-armv7l.tar.gz --strip 1 || error 'Failed to extract archive!'
 rm -f linux-armv7l.tar.gz
@@ -27,7 +27,7 @@ Terminal=false
 Type=Application
 Name=Discord
 Path=$HOME/discord-electron
-Exec=$HOME/discord-electron/discord
+Exec=$HOME/discord-electron/electron-discord-webapp
 Icon=/home/pi/pi-apps/apps/Discord/icon-64.png
 Categories=Network;Chat;VideoConference;WebApp;Internet
 Comment=Your place to talk!
