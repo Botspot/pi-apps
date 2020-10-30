@@ -15,8 +15,8 @@ cd ~/discord-electron || error "Failed to enter discord-electron folder!"
 #Download from github
 wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v0.1.4/electron-discord-webapp-0.1.4-armv7l.tar.gz || error 'Failed to download archive!'
 
-tar -xf linux-armv7l.tar.gz --strip 1 || error 'Failed to extract archive!'
-rm -f linux-armv7l.tar.gz
+tar -xf electron-discord-webapp-0.1.4-armv7l.tar.gz --strip 1 || error 'Failed to extract archive!'
+rm -f electron-discord-webapp-0.1.4-armv7l.tar.gz
 
 cd $HOME
 
