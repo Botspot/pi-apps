@@ -63,15 +63,18 @@ Pi-Apps will wait until that one finishes before installing $2." | yad --text-in
   #determine which script to run
   if [ -f "${DIRECTORY}/apps/${2}/install-32" ] && [ $arch == 32 ];then
     installscript="${DIRECTORY}/apps/${2}/install-32"
+    scriptname='install-32'
   elif [ -f "${DIRECTORY}/apps/${2}/install-64" ] && [ $arch == 64 ];then
     installscript="${DIRECTORY}/apps/${2}/install-64"
+    scriptname='install-64'
   elif [ -f "${DIRECTORY}/apps/${2}/install" ];then
     installscript="${DIRECTORY}/apps/${2}/install"
+    scriptname='install'
   else
     error "It appears $2 does not have an install-${arch} script suitable for your ${arch}-bit OS."
   fi
   
-  lxterminal --title="Installing $2 ${arch}-bit" -e "
+  lxterminal --title="Installing $2 with $scriptname script" -e "
     cd $HOME
     echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
     if \"$installscript\" ; then
