@@ -33,6 +33,7 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
 ### To-do
+- [ ] Add Pi-Apps to all TwisterOS installs
 - [x] Make app creation system (completed with the `createapp` script)
 - [x] Make 32-bit and 64-bit install scripts
 ### Donations raised so far:
