@@ -8,6 +8,3 @@ function error {
 
 #Remove app
 sudo rm /usr/bin/MCBedrock.AppImage
-
-#Remove install folder
-sudo rm -r /home/pi/.local/share/mcpelauncher/
