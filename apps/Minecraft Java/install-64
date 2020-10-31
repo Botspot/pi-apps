@@ -30,7 +30,7 @@ echo '{
     "(Default)": {
       "name": "(Default)",
       "javaDir": "/opt/jdk/jdk1.8.0_251/bin/java",
-      "javaArgs": "-Dorg.lwjgl.librarypath=/home/pi/lwjgl3arm64 -Xmx1G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M"
+      "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm64 -Xmx1G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M"
     }
   },
   "selectedProfile": "(Default)",
@@ -41,7 +41,7 @@ echo '{
     "format": 21,
     "profilesFormat": 1
   }
-}' > /home/pi/.minecraft/launcher_profiles.json
+}' > $HOME/.minecraft/launcher_profiles.json
 
 echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher'
 echo 'NOTE: You can only play versions 1.13 and higher with your current config. To use lower versions, please follow the instructions at https://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz'
