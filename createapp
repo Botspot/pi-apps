@@ -119,12 +119,37 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
             
             #if icon field is populated and if file exists
             if [ ! -z "$icon" ] && [ -f "$icon" ];then
-              #scale it to 24x24
-              convert "$(echo "$output" | sed -n '3p')" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
-              echo "Created ${DIRECTORY}/apps/${name}/icon-24.png"
-              #scale it to 64x64
-              convert "$(echo "$output" | sed -n '3p')" -resize x64 "${DIRECTORY}/apps/${name}/icon-64.png"
-              echo "Created ${DIRECTORY}/apps/${name}/icon-64.png"
+              #ensure imagemagick is installed
+              if [ ! -f /usr/bin/convert ];then
+                yad --text="To resize the images, imagemagick must be installed.
+Install now?" \
+                --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+                --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+                button=$?
+                if [ $button == 0 ];then
+                  sudo apt install -y --no-install-recommends imagemagick || icon=''
+                else
+                  #clear the icon var to disable the icon
+                  icon=''
+                fi
+              fi
+              #if icon var not empty
+              if [ ! -z "$icon" ];then
+                #scale it to 24x24
+                convert "$icon" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
+                if [ -f "${DIRECTORY}/apps/${name}/icon-24.png" ];then
+                  echo "Created ${DIRECTORY}/apps/${name}/icon-24.png from $icon"
+                else
+                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-24.png from $icon! Most likely you need to install imagemagick."
+                fi
+                #scale it to 64x64
+                convert "$icon" -resize 64x64 "${DIRECTORY}/apps/${name}/icon-64.png"
+                if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
+                  echo "Created ${DIRECTORY}/apps/${name}/icon-64.png from $icon"
+                else
+                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-64.png from $icon! Most likely you need to install imagemagick."
+                fi
+              fi
             fi
             
             #if description field is populated
