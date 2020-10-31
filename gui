@@ -25,6 +25,33 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
+install() {
+  x-terminal-emulator --title="Installing $output" -e "
+    cd $HOME
+    if \"${DIRECTORY}/manage\" install \"$output\" ; then
+      echo 'Closing in 10 seconds...'
+      sleep 10
+    else
+      echo '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    fi"
+  sleep 1
+  while ps -C manage >/dev/null;do sleep 0.1; done
+}
+
+uninstall() {
+  x-terminal-emulator --title="Uninstalling $output" -e "
+    cd $HOME
+    if \"${DIRECTORY}/manage\" uninstall \"$output\" ; then
+      echo 'Closing in 10 seconds...'
+      sleep 10
+    else
+      echo '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      read enter #technically you could press Enter to exit.
+    fi"
+  sleep 1
+  while ps -C manage >/dev/null;do sleep 0.1; done
+}
 
 while true;do
   LIST="$("${DIRECTORY}/preload")"
@@ -120,10 +147,10 @@ $installedpackages"
         output=''
       elif [ $button == 4 ];then
         #install
-        "${DIRECTORY}/manage" install "$output"
+        install
       elif [ $button == 2 ];then
         #uninstall
-        "${DIRECTORY}/manage" uninstall "$output"
+        uninstall
       elif [ $button == 6 ];then
         echo 'previous app'
         
@@ -178,15 +205,15 @@ $installedpackages"
       ;;
     2)
       echo "Uninstall"
-      "${DIRECTORY}/manage" uninstall "$output"
-      
+      uninstall
+      sleep 1
+      while ps -C manage >/dev/null;do sleep 0.1; done
       #clear output var to prompt main window to open next
       output=''
       ;;
     4)
       echo "Install"
-      "${DIRECTORY}/manage" install "$output"
-      
+      install
       #clear output var to prompt main window to open next
       output=''
       ;;

@@ -158,32 +158,29 @@ button=$? #get exit code to determine which button was pressed
 echo "Button: ${button}"
 [ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
 
+x-terminal-emulator --title="Installing $output" -e "
+  PREIFS=\"$IFS\"
+  IFS='|'
+  for i in $updatable
+  do
+    \"${DIRECTORY}/manage\" update \"$i\" nofetch
+    echo -e \"\e[92m${i} was updated successfully.\e[39m\"
+  done
 
-PREIFS="$IFS"
-IFS="|"
-for i in $updatable
-do
-  "${DIRECTORY}/manage" update "$i" nofetch
-  echo -e "\e[92m${i} was updated successfully.\e[39m"
-done
-
-for i in $mainupdate
-do
-  #move old program to trash
-  gio trash "${DIRECTORY}/${i}" 2>/dev/null
-  
-  #failsafe
-  [ -f "${DIRECTORY}/${i}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
-  
-  mkdir -p "$(dirname "${DIRECTORY}/${i}")"
-  
-  #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${i}!"
-  
-  echo -e "\e[92m${i} was updated successfully.\e[39m"
-done
-IFS="$PREIFS"
-
+  for i in $mainupdate
+  do
+    #move old program to trash
+    gio trash \"${DIRECTORY}/${i}\" 2>/dev/null
+    
+    mkdir -p \"$(dirname \"${DIRECTORY}/${i}\")\"
+    
+    #copy new version to apps/
+    cp -f \"${DIRECTORY}/update/pi-apps/${i}\" \"${DIRECTORY}/${i}\" || error \"Failed to copy ${DIRECTORY}/update/pi-apps/${i}!\"
+    
+    echo -e \"\e[92m${i} was updated successfully.\e[39m\"
+  done
+  IFS=\"$PREIFS\"
+"
 #.git folder
 #move old .git folder to trash
 gio trash "${DIRECTORY}/.git" 2>/dev/null
