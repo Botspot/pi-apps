@@ -37,6 +37,20 @@ if [ ! -z $exitcode ];then
   exit 1
 fi
 
+echo -n "Waiting until APT locks are released... "
+while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
+  sleep 1
+done
+while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
+  sleep 1
+done
+if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
+    sleep 1
+  done
+fi
+echo "Done"
+
 output="$(sudo LANG=C apt update 2>&1)"
 exitcode=$?
 
