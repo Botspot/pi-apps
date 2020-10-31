@@ -206,8 +206,6 @@ $installedpackages"
     2)
       echo "Uninstall"
       uninstall
-      sleep 1
-      while ps -C manage >/dev/null;do sleep 0.1; done
       #clear output var to prompt main window to open next
       output=''
       ;;
