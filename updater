@@ -160,10 +160,10 @@ echo "Button: ${button}"
 
 
 lxterminal --title='Updating apps...' -e '
+DIRECTORY="'"$DIRECTORY"'"
+mainupdate="'"$mainupdate"'"
+updatable="'"$updatable"'"
 trap "sleep infinity" EXIT
-DIRECTORY="'${DIRECTORY}'"
-mainupdate="'$mainupdate'"
-updatable="'$updatable'"
 PREIFS="$IFS"
 IFS="|"
 for i in $updatable
