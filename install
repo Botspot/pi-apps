@@ -8,13 +8,16 @@ function error {
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
-  zenity --question --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
-	  --text="YAD is required but not installed. Install now?" \
-	  --ok-label=Yes --cancel-label=No --ellipsize --icon-name='' \
-	  2>/dev/null || error "User declined."
-
-
-  sudo apt install -y yad
+  echo -n "YAD is required but not installed. Install now? [Y/n] "
+  read answer
+  if [ "$answer" == n ];then
+    error "User declined."
+  fi
+  if [ -f /usr/bin/apt ];then
+    sudo apt install -y yad
+  elif [ -f /usr/bin/pacman ];then
+    sudo pacman -S yad
+  fi
 fi
 
 #remove annoying YAD icon browser launcher
@@ -73,6 +76,7 @@ Box86
 Discord
 piKiss
 Retropie
+Scrcpy
 Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
 fi
 
