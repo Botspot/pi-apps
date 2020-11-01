@@ -262,10 +262,10 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
           --text="Now it"\'"s time to make your install-32 and install-64 scripts.
 One of these scripts will be executed when somebody clicks you app"\'"s Install button.
 Two text editors should have openened and you can create your scripts." \
-          --field="Run install-32 script":FBTN "lxterminal --title="\""Running install-32 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-32';echo 'Closing in 10 seconds.';sleep 10"\" \
-          --field="Shellcheck install-32"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-32';echo 'Press Enter to exit.';read enter"\" \
-          --field="Run install-64 script":FBTN "lxterminal --title="\""Running install-64 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-64';echo 'Closing in 10 seconds.';sleep 10"\" \
-          --field="Shellcheck install-64"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-64';echo 'Press Enter to exit.';read enter"\" \
+          --field="Run install-32 script":FBTN "x-terminal-emulator --title="\""Running install-32 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-32';echo 'Closing in 10 seconds.';sleep 10"\" \
+          --field="Shellcheck install-32"!!'Having problems? This utility helps you locate syntax errors.':FBTN "x-terminal-emulator --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-32';echo 'Press Enter to exit.';read enter"\" \
+          --field="Run install-64 script":FBTN "x-terminal-emulator --title="\""Running install-64 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-64';echo 'Closing in 10 seconds.';sleep 10"\" \
+          --field="Shellcheck install-64"!!'Having problems? This utility helps you locate syntax errors.':FBTN "x-terminal-emulator --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-64';echo 'Press Enter to exit.';read enter"\" \
           --button=Previous!"${DIRECTORY}/icons/back.png":2 \
           --button=Next!"${DIRECTORY}/icons/forward.png":0 \
           2>/dev/null)"
