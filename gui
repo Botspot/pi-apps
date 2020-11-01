@@ -27,26 +27,34 @@ fi
 
 install() {
   x-terminal-emulator --title="Installing $app" -e '
+    bash -c '\''
+    PATH="'"$PATH"'"
     if "'"${DIRECTORY}/manage"'" install "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
       echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
-    fi'
+    fi
+    '\''
+    '
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
 
 uninstall() {
   x-terminal-emulator --title="Uninstalling $app" -e '
+    bash -c '\''
+    PATH="'"$PATH"'"
     if "'"${DIRECTORY}/manage"'" uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
       echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
-    fi'
+    fi
+    '\''
+    '
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
