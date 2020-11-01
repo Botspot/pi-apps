@@ -49,7 +49,7 @@ if [ "$1" == 'install' ];then
 Pi-Apps will wait until that one finishes before installing $app." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
     --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C install ;do sleep 1; done
+    while ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;do sleep 1; done
   fi
   
   #if already installed then ask for confirmation
@@ -110,7 +110,7 @@ elif [ "$1" == 'uninstall' ];then
 Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
     --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C uninstall ;do sleep 1; done
+    while ps -C uninstall &>/dev/null;do sleep 1; done
   fi
   
   #if already uninstalled then ask for confirmation
