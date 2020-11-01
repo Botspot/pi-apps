@@ -158,38 +158,33 @@ button=$? #get exit code to determine which button was pressed
 echo "Button: ${button}"
 [ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
 
-updatable="$(echo "$updatable" | tr '|' '!')"
-mainupdate="$(echo "$mainupdate" | tr '|' '!')"
 
-lxterminal --title="Updating Pi-Apps..." -e "
-  trap 'sleep 30' EXIT
-  PREIFS=\"$IFS\"
-  IFS='!'
-  for i in $updatable
-  do
-    \"${DIRECTORY}/manage\" update \"$i\" nofetch
-    echo -e \"\e[92m${i} was updated successfully.\e[39m\"
-  done
+lxterminal --title='Updating apps...' -e '
+trap "sleep infinity" EXIT
+PREIFS="$IFS"
+IFS="|"
+for i in '$updatable'
+do
+  "${DIRECTORY}/manage" update "$i" nofetch
+  echo -e "\e[92m${i} was updated successfully.\e[39m"
+done
 
-  for i in $mainupdate
-  do
-    #move old program to trash
-    gio trash \"${DIRECTORY}/${i}\" 2>/dev/null
-    
-    mkdir -p \"$(dirname "${DIRECTORY}/${i}")\"
-    
-    #copy new version to apps/
-    cp -f \"${DIRECTORY}/update/pi-apps/${i}\" \"${DIRECTORY}/${i}\"
-    
-    echo -e \"\e[92m${i} was updated successfully.\e[39m\"
-  done
-  IFS=\"$PREIFS\"
+for i in '$mainupdate'
+do
+  mkdir -p "$(dirname "'${DIRECTORY}'/${i}")"
   
-  #move old .git folder to trash
-  gio trash \"${DIRECTORY}/.git\" 2>/dev/null
-  #copy new .git folder
-  cp -rf \"${DIRECTORY}/update/pi-apps/.git\" \"${DIRECTORY}/.git\"
-"
+  #copy new version to apps/
+  cp -f "'${DIRECTORY}'/update/pi-apps/${i}" "'${DIRECTORY}'/${i}" || error \"Failed to copy '${DIRECTORY}'/update/pi-apps/"${i}"!
+  
+  echo -e "\e[92m${i} was updated successfully.\e[39m"
+done
+IFS="$PREIFS"
+'
+
+#.git folder
+#move old .git folder to trash
+gio trash "${DIRECTORY}/.git" 2>/dev/null
+cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
 
 sleep 1
 while ps -C manage >/dev/null;do sleep 0.1; done
