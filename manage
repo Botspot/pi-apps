@@ -27,7 +27,7 @@ fi
 
 dirhash() {
   #find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0
-  echo "Hashing this dir: $1" 1>&2
+  #echo "Hashing this dir: $1" 1>&2
   #------ hash every file in the folder ---------------- and add to it the filesystem list ------ hash it again
   hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
   echo "$hash"
