@@ -26,31 +26,29 @@ if [ ! -z "$1" ];then
 fi
 
 install() {
-  x-terminal-emulator --title="Installing $output" -e "
-    cd $HOME
-    if \"${DIRECTORY}/manage\" install \"$output\" ; then
-      echo 'Closing in 10 seconds...'
-      sleep 10
+  x-terminal-emulator --title="Installing $app" -e '
+    if "'"${DIRECTORY}/manage"'" install "'"$app"'" ; then
+      echo -e "\nClosing in 30 seconds."
+      sleep 30
     else
-      echo '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
-    fi"
+    fi'
   sleep 1
-  while ps -C manage >/dev/null;do sleep 0.1; done
+  while ps -C manage &>/dev/null;do sleep 0.1; done
 }
 
 uninstall() {
-  x-terminal-emulator --title="Uninstalling $output" -e "
-    cd $HOME
-    if \"${DIRECTORY}/manage\" uninstall \"$output\" ; then
-      echo 'Closing in 10 seconds...'
-      sleep 10
+  x-terminal-emulator --title="Uninstalling $app" -e '
+    if "'"${DIRECTORY}/manage"'" uninstall "'"$app"'" ; then
+      echo -e "\nClosing in 30 seconds."
+      sleep 30
     else
-      echo '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
+      echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
-    fi"
+    fi'
   sleep 1
-  while ps -C manage >/dev/null;do sleep 0.1; done
+  while ps -C manage &>/dev/null;do sleep 0.1; done
 }
 
 while true;do
@@ -146,10 +144,10 @@ $installedpackages"
         #clear app var
         output=''
       elif [ $button == 4 ];then
-        #install
+        app="$output"
         install
       elif [ $button == 2 ];then
-        #uninstall
+        app="$output"
         uninstall
       elif [ $button == 6 ];then
         echo 'previous app'
@@ -201,16 +199,15 @@ $installedpackages"
         echo 'unknown button. Exiting now.'
         exit 0
       fi
-      
       ;;
     2)
-      echo "Uninstall"
+      app="$output"
       uninstall
       #clear output var to prompt main window to open next
       output=''
       ;;
     4)
-      echo "Install"
+      app="$output"
       install
       #clear output var to prompt main window to open next
       output=''
