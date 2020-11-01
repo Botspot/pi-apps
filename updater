@@ -159,11 +159,11 @@ echo "Button: ${button}"
 [ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
 
 
-lxterminal --title='Updating apps...' -e '
+x-terminal-emulator --title='Updating apps...' -e '
 DIRECTORY="'"$DIRECTORY"'"
 mainupdate="'"$mainupdate"'"
 updatable="'"$updatable"'"
-trap "sleep infinity" EXIT
+trap "sleep 10" EXIT
 PREIFS="$IFS"
 IFS="|"
 for i in $updatable
@@ -182,6 +182,7 @@ do
   echo -e "\e[92m${i} was updated successfully.\e[39m"
 done
 IFS="$PREIFS"
+echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
 '
 
 #.git folder
