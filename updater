@@ -160,6 +160,7 @@ echo "Button: ${button}"
 
 
 x-terminal-emulator --title='Updating apps...' -e '
+bash -c '\''
 DIRECTORY="'"$DIRECTORY"'"
 mainupdate="'"$mainupdate"'"
 updatable="'"$updatable"'"
@@ -183,6 +184,7 @@ do
 done
 IFS="$PREIFS"
 echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+'\''
 '
 
 #.git folder
@@ -191,7 +193,10 @@ gio trash "${DIRECTORY}/.git" 2>/dev/null
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
 
 sleep 1
-while ps -C manage >/dev/null;do sleep 0.1; done
+while ps -C manage &>/dev/null
+do
+  sleep 0.1
+done
 
 yad --text="Please close all instances of Pi-Apps to apply the update." \
   --text-align=center --center --title='Pi-Apps update complete' --window-icon="${DIRECTORY}/icons/logo.png" \
