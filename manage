@@ -105,7 +105,7 @@ elif [ "$1" == 'uninstall' ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
   #ensure an uninstall script is not already running
-  if ps -C uninstall ;then       
+  if ps -C uninstall &>/dev/null;then       
     echo "An uninstall script is already running.
 Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
