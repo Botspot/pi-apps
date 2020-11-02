@@ -8,3 +8,5 @@ function error {
 }
 
 sudo apt purge -y balena-etcher-electron  || error "failed to purge the deb file!"
+rm -f ./etcher_1.5.109_armhf.deb
+exit 0

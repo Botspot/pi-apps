@@ -7,9 +7,10 @@ function error {
   exit 1
 }
 
-rm -f ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb
-# Get dependencies
-wget https://github.com/futurejones/balena-etcher-arm/releases/download/v1.5.63/balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb || error "Failed to download!"
+rm -f ./etcher_1.5.109_armhf.deb
 
-sudo apt install -y ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb  || error "failed to install deb file!"
-rm -f ./balena-etcher-electron_1.5.63_Raspbian_Buster_armhf.deb
+wget https://github.com/Itai-Nelken/Etcher-arm-32-64/raw/main/etcher_1.5.109_armhf.deb || error "Failed to download!"
+
+sudo apt install -y --fix-broken ./etcher_1.5.109_armhf.deb  || error "failed to install deb file!"
+rm -f ./etcher_1.5.109_armhf.deb
+exit 0

@@ -7,10 +7,10 @@ function error {
   exit 1
 }
 
-rm -f ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb
-# Get dependencies
-wget https://github.com/futurejones/balena-etcher-arm/releases/download/v1.5.63/balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb || error "File download failed!"
+rm -f ./balena-etcher-1.5.109_arm64.deb
 
-sudo apt install -y --fix-broken ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb  || error "failed to install deb file!"
-rm -f ./balena-etcher-electron_1.5.63+a1558116_ubuntu_19.10_arm64.deb
+wget https://github.com/Itai-Nelken/Etcher-arm-32-64/blob/main/balena-etcher-1.5.109_arm64.deb || error "Failed to download!"
+
+sudo apt install -y --fix-broken ./balena-etcher-1.5.109_arm64.deb  || error "failed to install deb file!"
+rm -f ./balena-etcher-1.5.109_arm64.deb
 exit 0
