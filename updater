@@ -158,6 +158,8 @@ button=$? #get exit code to determine which button was pressed
 echo "Button: ${button}"
 [ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
 
+PREIFS="$IFS"
+IFS="|"
 for i in $mainupdate
 do
   mkdir -p "$(dirname "${DIRECTORY}/${i}")"
@@ -167,25 +169,25 @@ do
   
   echo -e "\e[92m${i} was updated successfully.\e[39m"
 done
-
-x-terminal-emulator --title='Updating apps...' -e '
-  bash -c '\''
-    DIRECTORY="'"$DIRECTORY"'"
-    mainupdate="'"$mainupdate"'"
-    updatable="'"$updatable"'"
-    trap "sleep 10" EXIT
-    PREIFS="$IFS"
-    IFS="|"
-    for i in $updatable
-    do
-      "${DIRECTORY}/manage" update "$i" nofetch
-      echo -e "\e[92m${i} was updated successfully.\e[39m"
-    done
-    IFS="$PREIFS"
-    echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-  '\''
-'
-
+IFS="$PREIFS"
+if [ ! -z "$updatable" ];then
+  x-terminal-emulator --title='Updating apps...' -e '
+    bash -c '\''
+      DIRECTORY="'"$DIRECTORY"'"
+      updatable="'"$updatable"'"
+      trap "sleep 10" EXIT
+      PREIFS="$IFS"
+      IFS="|"
+      for i in $updatable
+      do
+        "${DIRECTORY}/manage" update "$i" nofetch
+        echo -e "\e[92m${i} was updated successfully.\e[39m"
+      done
+      IFS="$PREIFS"
+      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+    '\''
+  '
+fi
 #.git folder
 #move old .git folder to trash
 gio trash "${DIRECTORY}/.git" 2>/dev/null
@@ -197,7 +199,8 @@ do
   sleep 0.1
 done
 
-yad --text="Please close all instances of Pi-Apps to apply the update." \
+yad --text="Updates complete.
+Please close all instances of Pi-Apps to apply the update." \
   --text-align=center --center --title='Pi-Apps update complete' --window-icon="${DIRECTORY}/icons/logo.png" \
   --button=OK!"${DIRECTORY}/icons/check.png":0
 exit 0
