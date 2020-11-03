@@ -296,7 +296,6 @@ A text editor should have openened and you can create your install script." \
       fi
       ;;
     4)
-      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       
       #find the best text editor
       preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
