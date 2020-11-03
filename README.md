@@ -12,7 +12,7 @@ The install script ensures YAD is installed, creates two menu buttons, and an au
 ### To run Pi Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 ### Useful links
-- [Pi-Apps Discord server](https://discord.gg/PCgG2v)
+- [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/PCgG2v)
 - [Send Botspot a donation](https://paypal.me/josephmarchand)
 - [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
@@ -34,10 +34,12 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
 ### To-do
-- [ ] Add Pi-Apps to Twister OS
-- [x] Make app creation system. (completed with the `createapp` script)
-- [x] Make 32-bit and 64-bit install scripts.
-- [ ] Allow multiple apps to be installed simultaneously.
+
+- [x] Make app creation system. (completed with the `createapp` script)  
+- [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
+- [x] Make 32-bit and 64-bit install scripts.  
+- [ ] Allow multiple apps to be selected from the app list and be installed simultaneously.  
+
 ### Donations raised so far:
 **$0**
 ### Terminal usage
