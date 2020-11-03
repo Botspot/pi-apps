@@ -63,3 +63,9 @@ Fix Cool-Retro-Term install bug, and enable autostarted updater.
 
 10/22  
 ETA Prime posted [this video](https://www.youtube.com/watch?v=oqNWJ52DLes) featuring Pi-Apps. As a result, 2000+ more people have installed Pi-Apps.  
+
+10/31  
+Reached 20,000 total downloads
+
+11/02  
+Pi-Apps added to TwisterOS with the 1.8.5 patch
