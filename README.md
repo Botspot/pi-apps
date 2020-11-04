@@ -45,28 +45,28 @@ It helps you select an icon, create & debug install/uninstall scripts, write a d
 ### Terminal usage
  - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases a dialog will appear to ask you a question.
    - To **install** an app, run this:
-`/home/pi/pi-apps/manage install Zoom`
+`~/pi-apps/manage install Zoom`
    - To **uninstall** an app:
-`/home/pi/pi-apps/manage uninstall Zoom`
+`~/pi-apps/manage uninstall Zoom`
    - To **update** a single app:  
-`/home/pi/pi-apps/manage update Zoom`
+`~/pi-apps/manage update Zoom`
 Note that if an app is up-to-date, no files will be moved around.
    - To **check** all apps for updates:  
- `/home/pi/pi-apps/manage check-all`
+ `~/pi-apps/manage check-all`
  This command will return a list of updatable apps, separated by the `|` character.
    - To **update all** apps:
-  `/home/pi/pi-apps/manage update-all`
+  `~/pi-apps/manage update-all`
  - To **list** all apps:
- `ls /home/pi/pi-apps/apps`
+ `ls ~/pi-apps/apps`
  Note that this will also list the `template` app, which contains the default install & uninstall scripts. Please don't try to install it.
 ### How it works
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
- - Each App is stored in its own separate directory. `/home/pi/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `/home/pi/pi-apps/apps/Zoom/`.
+ - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
  - Because of the contained nature of each app folder, it's really easy to 'package' your own apps: just put the folder in a ZIP file and send it to friends. (or upload it as a [new issue](https://github.com/Botspot/pi-apps/issues/new) so your app can be added to Pi-Apps)
  - When you click Install, the selected App's `install` script is executed.
  - When you click Uninstall, the selected App's `uninstall` script is executed.
 ### Directory tree
- - `/home/pi/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
+ - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
    - `createapp` GUI script - this is run when you click "Create App" in Settings.  
    ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)
