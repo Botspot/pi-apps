@@ -13,7 +13,6 @@ The install script ensures YAD is installed, creates two menu buttons, and an au
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 ### Useful links
 - [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
-- [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
 - [Send Botspot a donation](https://paypal.me/josephmarchand)
 - [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
@@ -120,6 +119,13 @@ Note that if an app is up-to-date, no files will be moved around.
    - `icons/` This stores all the icons that are embedded into various dialogs.
      - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
    - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
+### Badge
+If your application is on Pi-Apps, please consider adding this pretty badge to your README:  
+[![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
+Embed code:
+```
+[![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
+```
 
 ### Q&A with Botspot
  - Why did you develop Pi-Apps?  
