@@ -92,7 +92,7 @@ Pi-Apps will wait until that one finishes before installing $app." | yad --text-
     echo -en "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
     exit 0
   else
-    echo -en "\n\e[41m\e[30mFailed to install ${app}!\e[39m\e[49m"
+    echo -en "\n\e[41m\e[30mFailed to install ${app} with $scriptname script!\e[39m\e[49m"
     exit 1
   fi
 elif [ "$1" == 'uninstall' ];then
