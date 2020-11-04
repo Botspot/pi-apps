@@ -6,7 +6,7 @@ There are many open-source, community-developed software projects for Raspberry 
 ### To install Pi Apps
 ```
 git clone https://github.com/Botspot/pi-apps
-/home/pi/pi-apps/install
+~/pi-apps/install
 ```
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ### To run Pi Apps
