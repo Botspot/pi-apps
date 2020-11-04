@@ -122,7 +122,7 @@ Note that if an app is up-to-date, no files will be moved around.
 ### Badge
 If your application is on Pi-Apps, please consider adding this pretty badge to your README:  
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
-Embed code:
+Embed code:  
 ```
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
 ```
