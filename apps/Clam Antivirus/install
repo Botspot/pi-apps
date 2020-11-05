@@ -13,12 +13,13 @@ function error {
 # "${DIRECTORY}/pkg-install" "clamav" "$(dirname "$0")" || exit 1
 
 wget https://bitbucket.org/davem_/clamtk-gtk3/downloads/clamtk_6.06-1_all.deb
-sudo apt install clamtk_6.06-1_all.deb -y
-sudo rm clamtk_6.06-1_all.deb
+sudo apt install --fix-broken ./clamtk_6.06-1_all.deb -y
+rm clamtk_6.06-1_all.deb
 
-if [ -f /usr/local/bin/twistver ];then
+#if thunar file manager installed then also install clamtk thunar extension
+if [ -f /usr/bin/thunar ];then
   wget https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
-  sudo apt install thunar-sendto-clamtk_0.06-1_all.deb -y
-  sudo rm thunar-sendto-clamtk_0.06-1_all.deb
+  sudo apt install ./thunar-sendto-clamtk_0.06-1_all.deb -y
+  rm ./thunar-sendto-clamtk_0.06-1_all.deb
 fi
-
+exit 0
