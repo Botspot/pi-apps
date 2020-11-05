@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#ClamAV install script by RPN News
+
+#Define error function
+DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
+function error {
+  echo -e "\\e[31m$1\\e[39m"
+  exit 1
+}
+
+# Get package clamav
+# "${DIRECTORY}/pkg-install" "clamav" "$(dirname "$0")" || exit 1
+
+wget https://bitbucket.org/davem_/clamtk-gtk3/downloads/clamtk_6.06-1_all.deb
+sudo apt install clamtk_6.06-1_all.deb -y
+sudo rm clamtk_6.06-1_all.deb
+
+if [ -f /usr/local/bin/twistver ];then
+  wget https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
+  sudo apt install thunar-sendto-clamtk_0.06-1_all.deb -y
+  sudo rm thunar-sendto-clamtk_0.06-1_all.deb
+fi
+
