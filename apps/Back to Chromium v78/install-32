@@ -15,6 +15,7 @@ if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
   done
 fi
 
+rm -rf ~/chromium78 &>/dev/null
 git clone https://github.com/Botspot/chromium78 || error "Failed to clone repository!"
 
 #extract chromium-browser binary
@@ -32,6 +33,6 @@ echo "Fixing Chromium profile..."
 rm ~/'.config/chromium/Default/Web Data' &>/dev/null
 
 echo 'Removing $HOME/chromium78'
-gio trash ~/chromium78
+rm -rf ~/chromium78
 
 exit 0
