@@ -79,12 +79,12 @@ uninstall() {
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
 
+motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
+
 while true;do
   LIST="$("${DIRECTORY}/preload")"
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
-  
-  motd="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
   
   #if output is not empty then assume button pressed was Details
   button=0
