@@ -64,12 +64,15 @@ while true;do
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
+  motd="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
+  
   #if output is not empty then assume button pressed was Details
   button=0
   
   while [ -z "$output" ];do
     
     output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
+      --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
       --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
       --button=Install!"${DIRECTORY}/icons/install.png":4 \
