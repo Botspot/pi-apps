@@ -7,4 +7,5 @@ function error {
   exit 1
 }
 
-rm '~/.fonts/Noto Color Emoji.ttf' '~/.fonts/Segoe UI.ttf'
+rm "$HOME/.fonts/Noto Color Emoji.ttf" "$HOME/.fonts/Segoe UI.ttf"
+
