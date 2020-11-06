@@ -33,8 +33,24 @@ dirhash() {
   echo "$hash"
   echo "$hash" 1>&2
 }
-
-if [ "$1" == 'install' ];then
+if [ "$1" == 'multi-install' ];then
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $2
+  do
+    "${DIRECTORY}/manage" install "$app"
+  done
+  IFS="$PREIFS"
+elif [ "$1" == 'multi-uninstall' ];then
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $2
+  do
+    "${DIRECTORY}/manage" uninstall "$app"
+  done
+  IFS="$PREIFS"
+  
+elif [ "$1" == 'install' ];then
   #INSTALL
   #for this operation, a program name must be specified.
   app="$2"
@@ -89,10 +105,10 @@ Pi-Apps will wait until that one finishes before installing $app." | yad --text-
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
   if "$installscript" ; then
     echo 'installed' > "${DIRECTORY}/data/status/${app}"
-    echo -en "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
+    echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
     exit 0
   else
-    echo -en "\n\e[41m\e[30mFailed to install ${app} with $scriptname script!\e[39m\e[49m"
+    echo -e "\n\e[41m\e[30mFailed to install ${app} with $scriptname script!\e[39m\e[49m"
     exit 1
   fi
 elif [ "$1" == 'uninstall' ];then
@@ -125,10 +141,10 @@ Pi-Apps will wait until that one finishes before starting this one." | yad --tex
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
   if "${DIRECTORY}/apps/${app}/uninstall" ; then
     echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-    echo -en "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m"
+    echo -e "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m"
     exit 0
   else
-    echo -en "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m"
+    echo -e "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m"
     exit 1
   fi
 elif [ "$1" == 'update' ];then
@@ -181,7 +197,7 @@ elif [ "$1" == 'update' ];then
     if [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'installed' ];then
       installback=yes
       #uninstall it using a recursive script instance
-      "${DIRECTORY}/manage" uninstall "$app"   
+      "${DIRECTORY}/manage" uninstall "$app"
     fi
   fi
   

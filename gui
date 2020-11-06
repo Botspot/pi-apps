@@ -26,10 +26,20 @@ if [ ! -z "$1" ];then
 fi
 
 install() {
-  x-terminal-emulator --title="Installing $app" -e '
+  app="$1"
+  #terminal title text
+  linecount="$(echo "$app" | wc -l)"
+  if [ $linecount -eq 1 ];then
+    title="$app"
+  elif [ $linecount -le 4 ];then
+    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  else
+    title="several apps"
+  fi
+  x-terminal-emulator --title="Installing $title" -e '
     bash -c '\''
     PATH="'"$PATH"'"
-    if "'"${DIRECTORY}/manage"'" install "'"$app"'" ; then
+    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -43,10 +53,20 @@ install() {
 }
 
 uninstall() {
-  x-terminal-emulator --title="Uninstalling $app" -e '
+  app="$1"
+  #terminal title text
+  linecount="$(echo "$app" | wc -l)"
+  if [ $linecount -eq 1 ];then
+    title="$app"
+  elif [ $linecount -le 4 ];then
+    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  else
+    title="several apps"
+  fi
+  x-terminal-emulator --title="Uninstalling $title" -e '
     bash -c '\''
     PATH="'"$PATH"'"
-    if "'"${DIRECTORY}/manage"'" uninstall "'"$app"'" ; then
+    if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -73,7 +93,7 @@ while true;do
     
     output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
       --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
-      --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+      --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
       --button=Install!"${DIRECTORY}/icons/install.png":4 \
       --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
@@ -85,7 +105,7 @@ while true;do
     if [ $button -eq 252 ];then #if window manager x was pressed
       exit 0
     fi
-    
+    output="$(echo "$output" | sed '/^$/d')"
     echo "Output: ${output}EOO"
     
     if [ -z "$output" ];then
@@ -106,7 +126,7 @@ while true;do
       ;;
     0)
       echo "Details"
-      
+      output="$(echo "$output" | head -n1)"
       if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
         installedpackages="
 This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
@@ -156,10 +176,10 @@ $installedpackages"
         output=''
       elif [ $button == 4 ];then
         app="$output"
-        install
+        install "$app"
       elif [ $button == 2 ];then
         app="$output"
-        uninstall
+        uninstall "$app"
       elif [ $button == 6 ];then
         echo 'previous app'
         
@@ -212,14 +232,12 @@ $installedpackages"
       fi
       ;;
     2)
-      app="$output"
-      uninstall
+      uninstall "$output"
       #clear output var to prompt main window to open next
       output=''
       ;;
     4)
-      app="$output"
-      install
+      install "$output"
       #clear output var to prompt main window to open next
       output=''
       ;;
