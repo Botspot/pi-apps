@@ -3,6 +3,8 @@
  
 There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
 
+Pi-Apps is 100% free & open source.
+
 ### To install Pi Apps
 ```
 git clone https://github.com/Botspot/pi-apps
@@ -40,8 +42,12 @@ It helps you select an icon, create & debug install/uninstall scripts, write a d
 - [x] Make 32-bit and 64-bit install scripts.  
 - [ ] Allow multiple apps to be selected from the app list and be installed simultaneously.  
 
-### Donations raised so far:
-**$0**
+### How it works
+ - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
+ - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
+ - Because of the contained nature of each app folder, it's really easy to 'package' your own apps: just put the folder in a ZIP file and send it to friends. (or upload it as a [new issue](https://github.com/Botspot/pi-apps/issues/new) so your app can be added to Pi-Apps)
+ - When you click Install, the selected App's `install` script is executed.
+ - When you click Uninstall, the selected App's `uninstall` script is executed.
 ### Terminal usage
  - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases a dialog will appear to ask you a question.
    - To **install** an app, run this:
@@ -58,13 +64,19 @@ Note that if an app is up-to-date, no files will be moved around.
   `~/pi-apps/manage update-all`
  - To **list** all apps:
  `ls ~/pi-apps/apps`
- Note that this will also list the `template` app, which contains the default install & uninstall scripts. Please don't try to install it.
-### How it works
- - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
- - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
- - Because of the contained nature of each app folder, it's really easy to 'package' your own apps: just put the folder in a ZIP file and send it to friends. (or upload it as a [new issue](https://github.com/Botspot/pi-apps/issues/new) so your app can be added to Pi-Apps)
- - When you click Install, the selected App's `install` script is executed.
- - When you click Uninstall, the selected App's `uninstall` script is executed.
+ Note that this will also list the `template` app, which contains the default install & uninstall scripts.
+### App folder:
+Each app folder contains some of these files:
+ - `credits` Contains credits for the app. This file may mention who created the app originally, who compiled it, who submitted it to Pi-Apps, etc. Few apps use this file.
+ - `description` This stores the app's description. If you hover your mouse over an app in the app list, it will display a tooltip derived from the first line of this file.
+ - `icon-24.png` This is a 24x24 pixel icon that is displayed in the app list.
+ - `icon-64.png` This is a 64x64 pixel icon that is displayed in the Details page.
+ - `install` If the app installs correctly on both 32bit and 64bit, and it only needs one install script for either CPU type, one single install script is used.
+ - `install-32` This script installs an app on 32bit OS'es, and is 32bit-specific.
+ - `install-64` This script installs an app on 64bit OS'es, and is 64bit-specific.
+Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it's for 32bit OS'es only and will hide that app on 64bit installations.
+ - `uninstall` This script uninstalls the app. It must undo all changes made during install, but with one exception: **It must not permanently delete any user-generated confg!** [We don't want people's Minecraft worlds being deleted during an update.](https://github.com/Botspot/pi-apps/issues/44)
+ 
 ### Directory tree
  - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
