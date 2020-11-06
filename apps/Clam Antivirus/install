@@ -10,7 +10,7 @@ function error {
 }
 
 # Get package clamav
-# "${DIRECTORY}/pkg-install" "clamav clamtk" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "clamav clamtk" "$(dirname "$0")" || exit 1
 
 wget https://bitbucket.org/davem_/clamtk-gtk3/downloads/clamtk_6.06-1_all.deb
 sudo apt install --fix-broken ./clamtk_6.06-1_all.deb -y
