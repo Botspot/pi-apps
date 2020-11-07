@@ -1,0 +1,17 @@
+Widevine DRM support for chromium-browser v84
+This adds the ChromeOS DRM video decoding library to Chromium, and sets a ChromeOS user-agent. Websites you browse will think your Pi is a Chromebook!
+To run: Menu -> Internet -> Chromium Widevine.
+To test DRM: https://bitmovin.com/demos/drm
+For normal browsing, it's advisable to use the standard Chromium launcher.
+This works on these websites:
+• Netflix
+• Hulu
+• Amazon Prime
+• Disney+
+• HBO
+• Spotify
+• Pandora
+• Hoopla
+• MUBI
+• BritBox
+• Bell Satellite TV
