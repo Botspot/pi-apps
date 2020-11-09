@@ -243,7 +243,7 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
         scriptname='install-64'
         "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
       elif [ "$compatibility" == "64 32" ];then
-      scriptname='' #this symbolizes that 2 scripts will be made
+        scriptname='' #this symbolizes that 2 scripts will be made
         "$preferrededitor" "${DIRECTORY}/apps/${name}/install-64" &
         "$preferrededitor" "${DIRECTORY}/apps/${name}/install-32" &
       elif [ "$compatibility" == "6432" ];then
