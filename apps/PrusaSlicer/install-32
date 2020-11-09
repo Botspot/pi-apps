@@ -1,0 +1,30 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev" "$(dirname "$0")" || exit 1
+
+wget 'https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/2.3.0-alpha3/PrusaSlicer-2.3.0-alpha3-armhf.AppImage' -O ~/PrusaSlicer.AppImage || error "Failed to download appimage!"
+
+mkdir ~/prusa-slicer
+
+chmod +x ~/PrusaSlicer.AppImage || error "Failed to mark as executable!"
+
+echo "[Desktop Entry]
+Name=PrusaSlicer
+GenericName=3D Printing Software
+Comment=PrusaSlicer converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
+Exec=bash -c 'sudo modprobe fuse; ~/PrusaSlicer.AppImage'
+Icon=$(dirname $0)/icon-64.png
+Terminal=false
+Type=Application
+MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
+Categories=Graphics;Education;Development;Science;
+Keywords=3D;Printing;
+StartupNotify=true" > ~/.local/share/applications/PrusaSlicer.desktop || error "Failed to create menu button!"
