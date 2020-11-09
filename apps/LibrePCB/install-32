@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || exit 1
+
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+flatpak install -y librepcb
+
+echo "[Desktop Entry]
+Version=1.0
+Terminal=false
+Icon=$(dirname "$0")/icon-64.png
+Type=LibrePCB
+Categories=Development;Electronics;
+Exec=flatpak run org.librepcb.LibrePCB
+Keywords=pcb;circuit;board;Projectmanager;
+Name=KiCad
+Comment=Electronic Design Automation suite" > ~/.local/share/applications/librepcb.desktop || error "Failed to create menu button!"
+
