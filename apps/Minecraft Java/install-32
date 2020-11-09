@@ -13,7 +13,7 @@ function error {
 #example below:
 
 #Download java and launcher
-mkdir ~/Minecraft && cd ~/Minecraft && wget https://www.dropbox.com/s/2602i5d0h4kteex/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
+mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/mikehooper/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
 
 #Move launcher to /usr/share/
 sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraftjava/launcher.jar
