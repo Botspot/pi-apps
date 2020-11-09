@@ -51,6 +51,8 @@ if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
 fi
 echo "Done"
 
+DEBIAN_FRONTEND=noninteractive
+
 output="$(sudo LANG=C apt update 2>&1)"
 exitcode=$?
 
