@@ -11,19 +11,20 @@ function error {
 #check for updates in background
 ("${DIRECTORY}/updater" 1>/dev/null) &
 
-(if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
-  "${DIRECTORY}/install"
-fi) &
-
-#refresh settings if analytics file missing
-(if [ ! -f "${DIRECTORY}/data/settings/Enable analytics" ];then
-  "${DIRECTORY}/settings" refresh
-fi) &
-
 #Variable 1 is used to view the details of the specified app
 if [ ! -z "$1" ];then
   output="$1"
 fi
+
+#hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
+(if [ -f /usr/local/bin/twistver ];then
+  echo -e "Chromium Widevine\nBack to Chromium v78" >> "${DIRECTORY}/data/hidelist"
+fi
+
+#prettify hidelist file
+hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*$/d')"
+echo "$hidelist" > "${DIRECTORY}/data/hidelist"
+) &
 
 install() {
   app="$1"
