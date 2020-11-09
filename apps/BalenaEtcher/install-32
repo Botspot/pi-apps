@@ -9,8 +9,8 @@ function error {
 
 rm -f ./etcher_1.5.109_armhf.deb
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/raw/main/etcher_1.5.109_armhf.deb || error "Failed to download!"
+wget https://github.com/Itai-Nelken/Etcher-arm-32-64/raw/main/etcher_1.5.109_armhf.deb -O ~/etcher.deb || error "Failed to download!"
 
-sudo apt install -y --fix-broken ./etcher_1.5.109_armhf.deb  || error "failed to install deb file!"
-rm -f ./etcher_1.5.109_armhf.deb
+sudo apt install -y --fix-broken ~/etcher.deb  || error "failed to install deb file!"
+rm -f ~/etcher.deb
 exit 0
