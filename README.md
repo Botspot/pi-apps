@@ -37,10 +37,10 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
 ### To-do
 
-- [x] Make app creation system. (completed with the `createapp` script)  
+- [X] Make app creation system. (completed with the `createapp` script)  
 - [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
-- [x] Make 32-bit and 64-bit install scripts.  
-- [ ] Allow multiple apps to be selected from the app list and be installed simultaneously.  
+- [X] Make 32-bit and 64-bit install scripts.  
+- [X] Allow multiple apps to be selected from the app list and be installed simultaneously.  
 
 ### How it works
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
