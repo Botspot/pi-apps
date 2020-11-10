@@ -1,6 +1,5 @@
 3/20  
-Initial idea of an app store.  
-https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455  
+Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455  
   
 9/20  
 Development begins.  
@@ -12,7 +11,7 @@ Initial upload to github, including these apps: Arduino, BalenaEtcher, Chromium 
 Many bugs fixed, createapp added, and add TBOPlayer app.  
   
 10/2  
-More bug fixes & improvements; add Discord and Minecraft Java apps.  
+More bug fixes & improvements; add Discord, Minecraft Java, and piKiss apps.  
   
 10/3  
 Add some more icons, add conky app.  
@@ -64,8 +63,26 @@ Fix Cool-Retro-Term install bug, and enable autostarted updater.
 10/22  
 ETA Prime posted [this video](https://www.youtube.com/watch?v=oqNWJ52DLes) featuring Pi-Apps. As a result, 2000+ more people have installed Pi-Apps.  
 
-10/31  
-Reached 20,000 total downloads
+10/26
+Add Box86 app and also mask pulseaudio.service for Zoom
 
-11/02  
+10/31  
+Reached 20,000 total downloads and added Scrcpy app
+
+11/2  
 Pi-Apps added to TwisterOS with the 1.8.5 patch
+
+11/3  
+Add Speedtest-CLI app  
+
+11/4  
+Add Clam Antivirus & USBImager apps along with README badge  
+
+11/5
+Add Back to Chromium 78 app and eDEX-UI  
+
+11/6
+Add Chromium Widevine for v84 and also enable multiselecting apps to install/uninstall with Ctrl + Click  
+
+11/9  
+Add LibrePCB and PrusaSlicer apps  
