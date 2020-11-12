@@ -51,7 +51,7 @@ echo "Creating autostarted updater..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
 Name=Pi Apps Updater
-Exec=${DIRECTORY}/updater installedonly
+Exec=${DIRECTORY}/updater onboot
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application

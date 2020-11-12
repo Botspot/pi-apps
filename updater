@@ -38,9 +38,10 @@ else
   echo "Warning: Unrecognized update interval!"
 fi
 
-#hidden flag: if $1 is 'installedonly', then check for updates only for those apps that are installed.
-installedonly="$1"
-if [ "$installedonly" == 'installedonly' ];then
+#hidden flag: if $1 is 'onboot', then check for updates only for those apps that are installed.
+onboot="$1"
+if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
+  onboot='onboot'
   nocheck=0 #forcibly check, even if time interval doesn't call for it
   sleep 1m #wait a minute, this is so the system will have booted all the way for an internet connection
 fi
@@ -56,7 +57,7 @@ fi
 echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
 
 #generate app update status info
-updatable="$("${DIRECTORY}/manage" check-all $installedonly)"
+updatable="$("${DIRECTORY}/manage" check-all)"
 [ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
 
 #shorten to last line
