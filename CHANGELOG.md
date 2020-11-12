@@ -70,7 +70,7 @@ Add Box86 app and also mask pulseaudio.service for Zoom
 Reached 20,000 total downloads and added Scrcpy app
 
 11/2  
-Pi-Apps added to TwisterOS with the 1.8.5 patch
+Pi-Apps added to [TwisterOS](https://twisteros.com/) with the 1.8.5 patch
 
 11/3  
 Add Speedtest-CLI app  
@@ -78,10 +78,10 @@ Add Speedtest-CLI app
 11/4  
 Add Clam Antivirus & USBImager apps along with README badge  
 
-11/5
+11/5  
 Add Back to Chromium 78 app and eDEX-UI  
 
-11/6
+11/6  
 Add Chromium Widevine for v84 and also enable multiselecting apps to install/uninstall with Ctrl + Click  
 
 11/9  
