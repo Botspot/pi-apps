@@ -86,3 +86,6 @@ Add Chromium Widevine for v84 and also enable multiselecting apps to install/uni
 
 11/9  
 Add LibrePCB and PrusaSlicer apps  
+
+11/13  
+Add Tor Browser app  
