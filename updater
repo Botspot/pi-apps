@@ -38,11 +38,15 @@ else
   echo "Warning: Unrecognized update interval!"
 fi
 
+#fix for new years day
+if [ "$lastupdatecheck" -gt "$(date +%j)" ];then
+  nocheck=0
+fi
+
 #hidden flag: if $1 is 'onboot', then check for updates only for those apps that are installed.
 onboot="$1"
 if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
   onboot='onboot'
-  nocheck=0 #forcibly check, even if time interval doesn't call for it
   sleep 1m #wait a minute, this is so the system will have booted all the way for an internet connection
 fi
 

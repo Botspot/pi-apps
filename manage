@@ -301,6 +301,9 @@ elif [ "$1" == 'update-all' ];then
   PREIFS="$IFS"
   IFS='|'
   updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
+  if [ "$updatable" == '.' ];then
+    updatable=''
+  fi
   echo "Updatable: ${updatable}EOU"
   for updateapp in $updatable
   do
