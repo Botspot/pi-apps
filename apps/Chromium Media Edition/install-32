@@ -7,8 +7,10 @@ function error {
   exit 1
 }
 
-#curl -fsSL https://pi.vpetkov.net -o ventz-media-pi || error "Failed to download the script!"
-#sh ventz-media-pi || error "Failed to run the script!"
+echo "Chromium Media Edition no longer works with Chromium v84!.
+But won't worry, I (Botspot) worked out the solution first: Chromium Widevine. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290443
+Please install the Chromium Widevine app instead of this.
 
-sudo cp "$(dirname "$0")/chromium-media-browser.desktop" /usr/share/applications/ || error "failed to create menu button!"
-sudo cp "$(dirname "$0")/libwidevinecdm.so" /usr/lib/chromium-browser/ || error "Failed to copy libwidevinecdm.so!"
+Thank you for using Pi-Apps,
+Botspot"
+exit 1
