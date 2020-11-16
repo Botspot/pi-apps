@@ -82,7 +82,7 @@ Pi-Apps will wait until that one finishes before installing $app." | yad --text-
     #Chromium accesses the bit.ly link, then exits.
     #Allowing analytics does not identify you, or any personal information about you. Botspot can only see the number of "clicks" per day, as well as the top 10 countries of origin.
     
-    bitlylink="https://bit.ly/pi-apps-install-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z]//g')"
+    bitlylink="https://bit.ly/pi-apps-install-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
     chromium-browser --headless "$bitlylink" &>/dev/null &
   fi
   
