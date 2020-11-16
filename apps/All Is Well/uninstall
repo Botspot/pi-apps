@@ -1,0 +1,5 @@
+#! /bin/bash
+# This is the uninstall script for the All Is Well script
+rm ~/.local/share/applications/aiw.desktop
+rm -r ~/AIW
+exit 0
