@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo "Chromium Media Edition no longer works with Chromium v84!.
+But won't worry, I (Botspot) worked out the solution first: Chromium Widevine. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290443
+Please install the Chromium Widevine app instead of this.
+
+Thank you for using Pi-Apps,
+Botspot"
+exit 1

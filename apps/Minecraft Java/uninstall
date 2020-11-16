@@ -7,8 +7,7 @@ function error {
   exit 1
 }
 
-sudo rm -f ~/.local/share/applications/minecraft.desktop
-sudo rm -rf ~/.minecraft
+rm -f ~/.local/share/applications/minecraft.desktop
 sudo rm -rf ~/Minecraft
 sudo rm -rf ~/lwjgl2arm32
 sudo rm -rf ~/lwjgl3arm32

@@ -8,19 +8,23 @@ function error {
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
-  zenity --question --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
-	  --text="YAD is required but not installed. Install now?" \
-	  --ok-label=Yes --cancel-label=No --ellipsize --icon-name='' \
-	  2>/dev/null || error "User declined."
-
-
-  sudo apt install -y yad
+  echo -n "YAD is required but not installed. Install now? [Y/n] "
+  read answer
+  if [ "$answer" == n ];then
+    error "User declined."
+  fi
+  if [ -f /usr/bin/apt ];then
+    sudo apt install -y yad
+  elif [ -f /usr/bin/pacman ];then
+    sudo pacman -S yad
+  fi
 fi
 
 #remove annoying YAD icon browser launcher
-sudo rm /usr/share/applications/yad-icon-browser.desktop
+sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 echo "Creating menu button..."
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=Pi Apps
 Comment=Raspberry Pi App Store for open source projects
@@ -43,7 +47,22 @@ Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
+echo "Creating autostarted updater..."
+mkdir -p ~/.config/autostart
+echo "[Desktop Entry]
+Name=Pi Apps Updater
+Exec=${DIRECTORY}/updater onboot
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
+
 mkdir -p "${DIRECTORY}/data"
+cd "${DIRECTORY}/data"
+mkdir -p installed-packages preload settings status update-status
+cd $HOME
 
 #hide template file by default
 echo "template" > "${DIRECTORY}/data/hidelist"
@@ -53,11 +72,21 @@ if [ -f /usr/local/bin/twistver ];then
   echo "BalenaEtcher
 Chromium Media Edition
 CommanderPi
+Box86
 Discord
 piKiss
 Retropie
-Windows 10 Theme" >> "${DIRECTORY}/data/hidelist"
+Scrcpy
+Windows 10 Theme
+Chromium Widevine
+Back to Chromium v78" >> "${DIRECTORY}/data/hidelist"
 fi
+
+echo "Creating settings if they don"\'"t exist..."
+"${DIRECTORY}/settings" refresh
+
+echo "Preloading app list..."
+"${DIRECTORY}/preload" &>/dev/null
 
 echo "Installation complete."
 

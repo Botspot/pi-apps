@@ -42,18 +42,13 @@ fi
 #remove residual packages
 sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
 
-PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
+PURGE_LIST="$(sudo LANG=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
 echo "These packages will be purged: $PURGE_LIST"
 
-if [ "$(cat "${DIRECTORY}/data/settings/Debug mode")" == 'Yes' ];then
-  #debug mode
-  output="$(sudo apt purge -y $PKG_LIST 1>&2)"
-  exitcode=$?
-else
-  #normal mode
-  output="$(sudo apt purge -y $PKG_LIST 2>&1)"
-  exitcode=$?
-fi
+#normal mode
+output="$(sudo LANG=C apt purge -y $PKG_LIST 2>&1)"
+exitcode=$?
+
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
 if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   echo -e "\e[91mFailed to uninstall the packages!\e[39m"
@@ -62,7 +57,7 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
 fi
 
 #ensure all packages are really purged
-PURGE_LIST="$(sudo apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
+PURGE_LIST="$(sudo LANG=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ')"
 
 if [ ! -z "$PURGE_LIST" ];then
   error "APT did not exit with an error, but these packages are still installed somehow: $PURGE_LIST"

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd ~
+mkdir speedtest
+wget https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-aarch64-linux.tgz -O ~/speedtest.tgz|| error 'Failed to download!'
+cd speedtest
+tar -xvzf ~/speedtest.tgz || error "failed to extract files!"
+cd $HOME
+rm ~/speedtest.tgz
+
+echo "Creating shortcut..."
+echo "[Desktop Entry]
+Type=Application
+Name=Run Speedtest
+Comment=CLI internet speed test
+Exec=bash -c $HOME'/speedtest/speedtest;echo -e "\Close this window to exit.";sleep infinity'
+Icon=$HOME/pi-apps/apps/SpeedTest-CLI/icon-64.png
+Categories=Network;WebBrowser;
+Path=$HOME/speedtest
+Terminal=true
+StartupNotify=false" > ~/.local/share/applications/speedtest.desktop || error "failed to create menu shortcut!"

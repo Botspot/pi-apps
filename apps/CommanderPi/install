@@ -11,6 +11,6 @@ function error {
 "${DIRECTORY}/pkg-install" "python3-tk python3-pil python3-pil.imagetk" "$(dirname "$0")" || exit 1
 
 git clone https://github.com/Jack477/CommanderPi || error "failed to download repository!"
-cd /home/pi/CommanderPi || error "failed to enter repository!"
+cd CommanderPi || error "failed to enter repository!"
 chmod +x install.sh || error "failed to mark install.sh as executable!"
 ./install.sh || error "failed to run install.sh!"

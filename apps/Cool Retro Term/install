@@ -17,14 +17,16 @@ cd cool-retro-term || error "failed on cd step!"
 qmake || error "failed on qmake step!"
 make -j8 || error "failed on make step!"
 
+cp -rf qmltermwidget/src/qmldir qmltermwidget/lib/kb-layouts qmltermwidget/lib/color-schemes qmltermwidget/src/QMLTermScrollbar.qml qmltermwidget/QMLTermWidget
+
 echo "[Desktop Entry]
 Comment=Use the command line the old way
-Exec=/home/pi/cool-retro-term/cool-retro-term
+Exec=$HOME/cool-retro-term/cool-retro-term
 GenericName=Terminal emulator
-Icon=/home/pi/cool-retro-term/app/icons/64x64/cool-retro-term.png
+Icon=$HOME/cool-retro-term/app/icons/64x64/cool-retro-term.png
 Name=Cool Retro Term
 Categories=GTK;System;TerminalEmulator;
 StartupNotify=true
 Terminal=false
 Type=Application
-Keywords=shell;prompt;command;commandline;console;command line;execute;" >> /home/pi/.local/share/applications/crt.desktop
+Keywords=shell;prompt;command;commandline;console;command line;execute;" > ~/.local/share/applications/crt.desktop

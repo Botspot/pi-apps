@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-~/Windows-10/uninstall | error "failed to uninstall!"
+~/Windows-10/uninstall || error "failed to uninstall!"
 #gio trash ~/Windows-10

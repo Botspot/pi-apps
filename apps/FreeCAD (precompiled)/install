@@ -22,5 +22,3 @@ rm -f ~/freecad-precompiled.zip || error "Failed to delete archive!"
 
 cd freecad-build || error "Failed to enter directory!"
 sudo make install || error "sudo make install failed!"
-
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

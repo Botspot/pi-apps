@@ -28,7 +28,6 @@ button=$?
 [ $button -ne 0 ]&&error "User exited."
 
 echo "Output: ${output}EOO"
-exit 0
 
 if [ -d ~/raspi-email-checker ];then
   gio trash ~/raspi-email-checker
@@ -64,4 +63,4 @@ Hidden=false
 Icon=$(dirname "$0")/icon-64.png
 NoDisplay=false" > ~/.config/autostart/checkmail.desktop
 
-lxterminal --title='Running Email Checker (checkmail.py)' -e "echo -e 'If checkmail.py throws errors, you may have entered invalid information.\nUse this opportunity to test it out.\n From now on, checkmail.py will be run on every boot.' ; sudo python ${HOME}/raspi-email-checker/checkmail.py" &
+lxterminal --title='Running Email Checker (checkmail.py)' -e "echo -e 'If checkmail.py throws errors, you may have entered invalid information.\nUse this opportunity to test it out.\nFrom now on, checkmail.py will be run on every boot.' ; sudo python ${HOME}/raspi-email-checker/checkmail.py ; sleep infinity" &

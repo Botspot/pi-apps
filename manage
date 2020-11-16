@@ -16,89 +16,142 @@ fi
 
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 
-if [ "$1" == 'install' ];then
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
+  arch=64
+elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+  arch=32
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+
+dirhash() {
+  #find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0
+  #echo "Hashing this dir: $1" 1>&2
+  #------ hash every file in the folder ---------------- and add to it the filesystem list ------ hash it again
+  hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
+  echo "$hash"
+  echo "$hash" 1>&2
+}
+if [ "$1" == 'multi-install' ];then
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $2
+  do
+    "${DIRECTORY}/manage" install "$app"
+  done
+  IFS="$PREIFS"
+elif [ "$1" == 'multi-uninstall' ];then
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $2
+  do
+    "${DIRECTORY}/manage" uninstall "$app"
+  done
+  IFS="$PREIFS"
+  
+elif [ "$1" == 'install' ];then
   #INSTALL
   #for this operation, a program name must be specified.
-  if [ -z "$2" ];then
+  app="$2"
+  if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
-  elif [ ! -d "${DIRECTORY}/apps/$2" ];then
-    error "${DIRECTORY}/apps/$2 does not exist!"
+  elif [ ! -d "${DIRECTORY}/apps/$app" ];then
+    error "${DIRECTORY}/apps/$app does not exist!"
   fi
   #ensure an install script is not already running
-  if ps -C install ;then       
+  if ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;then       
     echo "An install script is already running.
-Pi-Apps will wait until that one finishes before installing $2." | yad --text-info \
+Pi-Apps will wait until that one finishes before installing $app." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
     --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C install ;do sleep 1; done
+    while ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;do sleep 1; done
   fi
   
   #if already installed then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${2}" )" == 'installed' ];then
-    yad --text="$2 is already installed. Are you sure you want to install it again?" \
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" )" == 'installed' ];then
+    yad --text="$app is already installed. Are you sure you want to install it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
-  lxterminal --title="Installing $2" -e "
-    cd $HOME
-    echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
-    if \"${DIRECTORY}/apps/${2}/install\" ; then
-      echo 'installed' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClosing in 10 seconds.'
-      sleep 10
-    else
-      echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
-      read enter #technically you could press Enter to exit.
-    fi"
-  #wait until script is done before this command exits
-  sleep 2
-  while ps -C install >/dev/null;do sleep 1; done
+  #analytics
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+    #this is used to let Botspot see the daily installs for each app.
+    #Botspot created an individual bitly link for each app. When you install an app, the cooresponding bit.ly link is "clicked" by a headless chromium-browser instance.
+    #Chromium accesses the bit.ly link, then exits.
+    #Allowing analytics does not identify you, or any personal information about you. Botspot can only see the number of "clicks" per day, as well as the top 10 countries of origin.
+    
+    bitlylink="https://bit.ly/pi-apps-install-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z]//g')"
+    chromium-browser --headless "$bitlylink" &>/dev/null &
+  fi
   
+  #determine which script to run
+  if [ -f "${DIRECTORY}/apps/${app}/install-32" ] && [ $arch == 32 ];then
+    installscript="${DIRECTORY}/apps/${app}/install-32"
+    scriptname='install-32'
+  elif [ -f "${DIRECTORY}/apps/${app}/install-64" ] && [ $arch == 64 ];then
+    installscript="${DIRECTORY}/apps/${app}/install-64"
+    scriptname='install-64'
+  elif [ -f "${DIRECTORY}/apps/${app}/install" ];then
+    installscript="${DIRECTORY}/apps/${app}/install"
+    scriptname='install'
+  else
+    error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
+  fi
+  
+  echo -e "\e[96mInstalling $app with $scriptname script\e[39m"
+  cd $HOME
+  echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
+  if "$installscript" ; then
+    echo 'installed' > "${DIRECTORY}/data/status/${app}"
+    echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
+    exit 0
+  else
+    echo -e "\n\e[41m\e[30mFailed to install ${app} with $scriptname script!\e[39m\e[49m"
+    exit 1
+  fi
 elif [ "$1" == 'uninstall' ];then
   #UNINSTALL
   #for this operation, a program name must be specified.
-  if [ -z "$2" ];then
+  app="$2"
+  if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
-  elif [ ! -d "${DIRECTORY}/apps/$2" ];then
-    error "${DIRECTORY}/apps/$2 does not exist!"
+  elif [ ! -d "${DIRECTORY}/apps/$app" ];then
+    error "${DIRECTORY}/apps/$app does not exist!"
   fi
   #ensure an uninstall script is not already running
-  if ps -C uninstall ;then       
+  if ps -C uninstall &>/dev/null;then       
     echo "An uninstall script is already running.
 Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
     --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
     --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C uninstall ;do sleep 1; done
+    while ps -C uninstall &>/dev/null;do sleep 1; done
   fi
   
   #if already uninstalled then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${2}" )" == 'uninstalled' ];then
-    yad --text="$2 is already uninstalled. Are you sure you want to uninstall it again?" \
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" )" == 'uninstalled' ];then
+    yad --text="$app is already uninstalled. Are you sure you want to uninstall it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
-  lxterminal --title="Uninstalling $2" -e "
-    cd $HOME
-    echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
-    if \"${DIRECTORY}/apps/${2}/uninstall\" ; then
-      echo 'uninstalled' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[42m\e[30mCommand succeeded.\e[39m\e[49m\nClosing in 10 seconds..'
-      sleep 10
-    else
-      echo 'corrupted' > \"${DIRECTORY}/data/status/${2}\"
-      echo -en '\n\e[41m\e[30mCommand failed!\e[39m\e[49m\nClose this window to exit.'
-      read enter #technically you could press Enter to exit.
-    fi"
-  #wait until script is done before this command exits
-  sleep 2
-  while ps -C uninstall >/dev/null;do sleep 1; done
+  echo -e "\e[96mUninstalling $app\e[39m"
+  cd $HOME
+  echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
+  if "${DIRECTORY}/apps/${app}/uninstall" ; then
+    echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+    echo -e "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m"
+    exit 0
+  else
+    echo -e "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m"
+    exit 1
+  fi
 elif [ "$1" == 'update' ];then
   #UPDATE
   #for this operation, a program name must be specified.
-  if [ -z "$2" ];then
+  app="$2"
+  if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
   fi
   
@@ -107,88 +160,127 @@ elif [ "$1" == 'update' ];then
     true
   else
     rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+    git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
-  newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-  oldhash=$(find "${DIRECTORY}/apps/${2}" -type f -print0  | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+  newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
+  oldhash="$(dirhash "${DIRECTORY}/apps/${app}")"
   
-  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${2}/install" | awk '{print $1}')
-  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${2}/install" | awk '{print $1}')
+  #detect which installation script exists and get the hash for that one
+  
+  if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-32" ];then
+    scriptname='install-32'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-64" ];then
+    scriptname='install-64'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ];then
+    scriptname='install'
+  else
+    error "No install script found for the $app app! Please report this to Botspot."
+  fi
+  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" | awk '{print $1}')
+  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" | awk '{print $1}')
   
   #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
   #echo -e "newhash: $newhash\noldhash: $oldhash"
   
   if [ "$newhash" == "$oldhash" ];then
-    echo "$2 is identical to the online version. Nothing to do!"
+    echo "$app is identical to the online version. Nothing to do!"
     exit 0
   else
-    echo "$2 is not identical to the online version. Reinstalling..."
+    echo "$app is not identical to the online version. Reinstalling..."
   fi
   #else
   installback=no
   #if install was changed
   if [ ! "$newinstallhash" == "$oldinstallhash" ];then
     #if installed already
-    if [ "$(cat "${DIRECTORY}/data/status/${2}")" == 'installed' ];then
+    if [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'installed' ];then
       installback=yes
       #uninstall it using a recursive script instance
-      "${DIRECTORY}/manage" uninstall "$2"   
+      "${DIRECTORY}/manage" uninstall "$app"
     fi
   fi
   
   #move old program to trash
-  gio trash "${DIRECTORY}/apps/${2}" 2>/dev/null
+  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
   
   #failsafe
-  [ -d "${DIRECTORY}/apps/${2}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
+  [ -d "${DIRECTORY}/apps/${app}" ] && error "${DIRECTORY}/apps/${app} still exists, despite trying to delete it!"
   
   #copy new version to apps/
-  cp -rf "${DIRECTORY}/update/pi-apps/apps/${2}" "${DIRECTORY}/apps/${2}"
+  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   
   if [ "$installback" == 'yes' ] && [ "$(cat "${DIRECTORY}/data/settings/Reinstall after update")" != 'No' ];then
-    echo "$2 was originally installed before updating. Reinstalling the new version now."
+    echo "$app was originally installed before updating. Reinstalling the new version now."
     #install it using a recursive script instance
-    "${DIRECTORY}/manage" install "$2"
+    "${DIRECTORY}/manage" install "$app"
   fi
-  echo -e "\e[92m${2} was updated successfully.\e[39m"
+  echo -e "\e[92m${app} was updated successfully.\e[39m"
 elif [ "$1" == 'check-all' ];then
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
   
+  #hidden flag: if $2 is 'installedonly', then only check for updates for those apps that are installed
+  if [ "$2" == 'installedonly' ];then
+    installedonly=1
+  else
+    installedonly=0
+  fi
+  
   rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-  git clone https://github.com/Botspot/pi-apps || error "failed to clone repository!"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
+  
+  #generate entire app list, combine local apps and online apps to one list
+  applist="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq)"
+  
+  #installedonly flag enabled. Remove apps that are uninstalled
+  if [ $installedonly == 1 ];then
+    echo "installedonly flag set to 1" 1>&2
+    PREIFS="$IFS"
+    IFS=$'\n'
+    for app in $applist
+    do
+      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'uninstalled' ];then
+        #if app is uninstalled, then remove it from the list.
+        applist="$(echo "$applist" | grep -vx "$app")"
+        echo "Removing ${app} from list because it is uninstalled." 1>&2
+      fi
+    done
+    IFS="$PREIFS"
+  fi
+  
+  applist="$(echo "$applist" | tr '\n' '|')"
+  
+  #echo "App list: $applist" 1>&2
   
   updatable=''
-
   PREIFS="$IFS"
   IFS="|"
-  newapps="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq | tr '\n' '|')"
-  for newapp in $newapps
+  for app in $applist
   do
-    #echo "newapp: $newapp"
-    newhash=$(find "${DIRECTORY}/update/pi-apps/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    oldhash=$(find "${DIRECTORY}/apps/${newapp}" -type f -print0 2>/dev/null | xargs -0 sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    #echo -e "newhash: $newhash\noldhash: $oldhash"
+    #echo "app: $app"
+    newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
+    oldhash="$(dirhash "${DIRECTORY}/apps/${app}")"
+    #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
     
     if [ "$newhash" == "$oldhash" ];then
-      echo -e "${newapp} is identical\e[90m to the online version. Nothing to do!\e[39m"
-      echo 'latest' > "${DIRECTORY}/data/update-status/${newapp}"
+      echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
+      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
     else
-      if [ ! -d "${DIRECTORY}/apps/${newapp}" ];then
-        echo -e "\e[97m${newapp} does not exist locally.\e[39m Adding to updatable list."
-        echo 'new' > "${DIRECTORY}/data/update-status/${newapp}"
+      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+        echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
+        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
-        updatable="${updatable}|${newapp}"
-      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${newapp}" ];then
-        echo -e "\e[97m${newapp} only exists locally.\e[39m Will not add to updatable list."
-        echo 'local' > "${DIRECTORY}/data/update-status/${newapp}"
+        updatable="${updatable}|${app}"
+      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+        echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
+        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, do not add to updatable list
       else
-        echo -e "\e[97m${newapp} exists in both locations, but online version is newer\e[39m. Adding to updatable list."
-        echo 'updatable' > "${DIRECTORY}/data/update-status/${newapp}"
+        echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
+        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
-        updatable="${updatable}|${newapp}"
+        updatable="${updatable}|${app}"
       fi
       
     fi
@@ -198,6 +290,10 @@ elif [ "$1" == 'check-all' ];then
   #remove initial '|' character
   updatable="${updatable:1}"
   
+  if [ -z "$updatable" ];then
+    updatable='.'
+  fi
+  
   echo -e "\e[97mThese apps can be updated:\n${updatable}"
 elif [ "$1" == 'update-all' ];then
   #UPDATE-ALL
@@ -205,6 +301,9 @@ elif [ "$1" == 'update-all' ];then
   PREIFS="$IFS"
   IFS='|'
   updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
+  if [ "$updatable" == '.' ];then
+    updatable=''
+  fi
   echo "Updatable: ${updatable}EOU"
   for updateapp in $updatable
   do
@@ -216,5 +315,5 @@ elif [ "$1" == 'update-all' ];then
   IFS="$PREIFS"
   echo -e '\e[92mOperation completed successfully!\e[39m'
 else
-  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"update"\'", "\'"check-all"\'", or "\'"update-all"\'"."
+  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"multi-install"\'", "\'"multi-uninstall"\'", "\'"update"\'", "\'"check-all"\'", or "\'"update-all"\'"."
 fi

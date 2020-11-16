@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+rm -rf ~/chromium-v84-widevine &>/dev/null
+
+git clone https://github.com/Botspot/chromium-v84-widevine || error 'Failed to clone example.com repository!'
+
+echo "[Desktop Entry]
+Version=1.0
+Name=Chromium Widevine
+GenericName=Web Browser
+Comment=Play Netflix & Spotify on Chromium v84
+Exec=chromium-browser --user-agent="\""Mozilla/5.0 (X11; CrOS armv7l 13099.85.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.110 Safari/537.36"\"" %U
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=$(dirname "$0")/icon-64.png
+Categories=Network;WebBrowser;
+StartupNotify=true" > ~/.local/share/applications/widevine-chromium.desktop
+
+sudo cp -a ~/chromium-v84-widevine/WidevineCdm /opt
+
+rm -rf ~/chromium-v84-widevine

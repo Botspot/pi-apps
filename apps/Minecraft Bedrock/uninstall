@@ -6,11 +6,5 @@ function error {
   exit 1
 }
 
-#Uninstall app
-flatpak uninstall -y io.mrarm.mcpelauncher
-
-#Remove flatpak
-sudo apt purge flatpak -y
-
-#Remove install folder
-sudo rm -r /home/pi/.var/app/io.mrarm.mcpelauncher/
+#Remove app
+sudo rm /usr/bin/MCBedrock.AppImage

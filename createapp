@@ -16,6 +16,9 @@ else
   step=1
 fi
 
+#Sets the height of all dialog windows
+windowheight=400
+
 #start on this step:
 #step=3
 #start with this app name:
@@ -27,10 +30,10 @@ while true;do
       echo "Welcome to the Create App wizard!
 With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list." | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
-      step=2
+      step=$((step+1))
       ;;
     2)
       
@@ -47,13 +50,31 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
         iconpath="${HOME}/bla"
       fi
       
+      #if install script already exists, grey out compatibility line
+      compatibilityentry="--field=Compatibility::CB"
+      compatibilitypreset="64bit and 32bit!32bit only!64bit only"
+      if [ ! -z "$name" ];then
+      compatibilityentry="--field=Compatibility::RO"
+        if [ -f "${DIRECTORY}/apps/${name}/install" ];then
+          compatibilitypreset="64bit and 32bit"
+        elif [ -f "${DIRECTORY}/apps/${name}/install-64" ] && [ -f "${DIRECTORY}/apps/${name}/install-32" ];then
+          compatibilitypreset="64bit and 32bit"
+        elif [ -f "${DIRECTORY}/apps/${name}/install-64" ];then
+          compatibilitypreset="64bit only"
+        elif [ -f "${DIRECTORY}/apps/${name}/install-32" ];then
+          compatibilitypreset="32bit only"
+        else
+          compatibilityentry="--field=Compatibility::CB"
+        fi
+      fi
       
       output="$(yad --form \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
-        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
         "$iconfield" "$iconpath" \
+        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
+        "$compatibilityentry" "$compatibilitypreset" \
         --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || cat "${DIRECTORY}/apps/template/description")" \
         $([ ! -z $editing ]&&echo "--button=Save!${DIRECTORY}/icons/save.png:4") \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
@@ -65,12 +86,23 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       echo "Output: ${output}EOO"
       output="$(echo "$output" | tr '|' '\n' )"
       
+      # if ------ next -- or -------- save ----- was clicked
       if [ $button == 0 ] || [ $button == 4 ];then
-        #next
         name="$(echo "$output" | sed -n '1p')"
-        website="$(echo "$output" | sed -n '2p')"
-        icon="$(echo "$output" | sed -n '3p')"
-        description="$(echo -e "$(echo "$output" | sed -n '4p')")"
+        icon="$(echo "$output" | sed -n '2p')"
+        website="$(echo "$output" | sed -n '3p')"
+        compatibility="$(echo "$output" | sed -n '4p')"
+        description="$(echo -e "$(echo "$output" | sed -n '5p')")"
+        
+        #convert compatibility var into machine-readable
+        if [ "$compatibility" == "64bit and 32bit" ];then
+          compatibility='64 32'
+        elif [ "$compatibility" == "32bit only" ];then
+          compatibility='32'
+        elif [ "$compatibility" == "64bit only" ];then
+          compatibility='64'
+        fi
+        
         #name field must be populated
         if [ ! -z "$name" ];then
           #check if name is a duplicate
@@ -87,12 +119,37 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
             
             #if icon field is populated and if file exists
             if [ ! -z "$icon" ] && [ -f "$icon" ];then
-              #scale it to 24x24
-              convert "$(echo "$output" | sed -n '3p')" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
-              echo "Created ${DIRECTORY}/apps/${name}/icon-24.png"
-              #scale it to 64x64
-              convert "$(echo "$output" | sed -n '3p')" -resize x64 "${DIRECTORY}/apps/${name}/icon-64.png"
-              echo "Created ${DIRECTORY}/apps/${name}/icon-64.png"
+              #ensure imagemagick is installed
+              if [ ! -f /usr/bin/convert ];then
+                yad --text="To resize the images, imagemagick must be installed.
+Install now?" \
+                --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+                --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+                button=$?
+                if [ $button == 0 ];then
+                  sudo apt install -y --no-install-recommends imagemagick || icon=''
+                else
+                  #clear the icon var to disable the icon
+                  icon=''
+                fi
+              fi
+              #if icon var not empty
+              if [ ! -z "$icon" ];then
+                #scale it to 24x24
+                convert "$icon" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
+                if [ -f "${DIRECTORY}/apps/${name}/icon-24.png" ];then
+                  echo "Created ${DIRECTORY}/apps/${name}/icon-24.png from $icon"
+                else
+                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-24.png from $icon! Most likely you need to install imagemagick."
+                fi
+                #scale it to 64x64
+                convert "$icon" -resize 64x64 "${DIRECTORY}/apps/${name}/icon-64.png"
+                if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
+                  echo "Created ${DIRECTORY}/apps/${name}/icon-64.png from $icon"
+                else
+                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-64.png from $icon! Most likely you need to install imagemagick."
+                fi
+              fi
             fi
             
             #if description field is populated
@@ -101,7 +158,7 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
               echo "Created ${DIRECTORY}/apps/${name}/description"
             fi
             
-            step=3
+            step=$((step+1))
           else
             echo 'That app name already exists!'
             yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
@@ -115,16 +172,62 @@ Do you want to edit ${name}?" --timeout=10 \
             --text="Name of app may not be left blank!" --timeout=10 \
             --button=OK:0
         fi
+        
+        #if Save was clicked then exit now
+        if [ $button == 4 ];then
+          exit 0
+        fi
       elif [ $button == 2 ];then
         #previous - don't save changes
-        step=1
+        step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
       fi
       ;;
     3)
-      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+      #create install script
+      if [ "$compatibility" == "64 32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-64" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install" ];then
+        #ask if two install scripts are necessary, of if both architectures can share 1 script
+        echo "In the previous page, you said this app is compatible with 64bit and 32bit.
+Do you want two install scripts, one for 32bit and the other for 64bit?
+Or do you want one combined install script?" | yad --text-info --fontname=12 --wrap --show-uri \
+          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+          --button="Previous!${DIRECTORY}/icons/back.png":1 \
+          --button='2 scripts':2 \
+          --button='1 script':0
+        
+        button=$? #get exit code to determine which button was pressed
+        
+        if [ $button == 1 ];then
+          step=$((step-1))
+          continue
+        fi
+        
+        if [ ! $button == 0 ] && [ ! $button == 2 ];then
+          exit 0
+        fi
+        
+        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+        if [ $button == 0 ];then
+          #button clicked: '1 script'
+          true #do nothing as template has install script by default
+          compatibility=6432 #change compatibility var to show that only an install script will be created
+        elif [ $button == 2 ];then
+          cp -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-64"
+          mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-32"
+        fi
+      elif [ "$compatibility" == "32" ];then
+        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+        mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-32"
+      elif [ "$compatibility" == "64" ];then
+        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+        mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-64"
+      fi
+      
+      if [ ! -f "${DIRECTORY}/apps/${name}/install-64" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install" ];then
+        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
+      fi
       
       #find the best text editor
       preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
@@ -132,32 +235,67 @@ Do you want to edit ${name}?" --timeout=10 \
         preferrededitor=geany
       fi
       
-      "$preferrededitor" "${DIRECTORY}/apps/${name}/install" &
+      #open the correct file
+      if [ "$compatibility" == "32" ];then
+        scriptname='install-32'
+        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+      elif [ "$compatibility" == "64" ];then
+        scriptname='install-64'
+        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+      elif [ "$compatibility" == "64 32" ];then
+        scriptname='' #this symbolizes that 2 scripts will be made
+        "$preferrededitor" "${DIRECTORY}/apps/${name}/install-64" &
+        "$preferrededitor" "${DIRECTORY}/apps/${name}/install-32" &
+      elif [ "$compatibility" == "6432" ];then
+        scriptname='install'
+        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+      fi
       
-      output="$(yad --form --on-top \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
-        --text='Now it'\''s time to make your install script. This will be executed anytime somebody clicks the Install button.
-A text editor should have openened and you can create your install script.' \
-        --field="Run script":FBTN "lxterminal --title="\""Running install script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install';echo 'Closing in 10 seconds.';sleep 10"\" \
-        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""[ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck;shellcheck $'${DIRECTORY}/apps/${name}/install';echo 'Press Enter to exit.';read enter"\" \
-        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
-        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
-        2>/dev/null)"
-      button=$? #get exit code to determine which button was pressed
+      #install shellcheck if not installed
+      [ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck
+      
+      #if creating 2 scripts
+      if [ -z "$scriptname" ];then
+        #if creating 2 scripts
+        output="$(yad --form --on-top \
+          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+          --text="Now it"\'"s time to make your install-32 and install-64 scripts.
+One of these scripts will be executed when somebody clicks you app"\'"s Install button.
+Two text editors should have openened and you can create your scripts." \
+          --field="Run install-32 script":FBTN "x-terminal-emulator --title="\""Running install-32 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-32';echo 'Closing in 10 seconds.';sleep 10"\" \
+          --field="Shellcheck install-32"!!'Having problems? This utility helps you locate syntax errors.':FBTN "x-terminal-emulator --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-32';echo 'Press Enter to exit.';read enter"\" \
+          --field="Run install-64 script":FBTN "x-terminal-emulator --title="\""Running install-64 script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-64';echo 'Closing in 10 seconds.';sleep 10"\" \
+          --field="Shellcheck install-64"!!'Having problems? This utility helps you locate syntax errors.':FBTN "x-terminal-emulator --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/install-64';echo 'Press Enter to exit.';read enter"\" \
+          --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+          --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+          2>/dev/null)"
+        button=$? #get exit code to determine which button was pressed
+      else
+        #if creating 1 script
+        output="$(yad --form --on-top \
+          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+          --text="Now it"\'"s time to make your ${scriptname} script. This will be executed anytime somebody clicks the Install button.
+A text editor should have openened and you can create your install script." \
+          --field="Run script":FBTN "lxterminal --title="\""Running ${scriptname} script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/${scriptname}';echo 'Closing in 10 seconds.';sleep 10"\" \
+          --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/${scriptname}';echo 'Press Enter to exit.';read enter"\" \
+          --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+          --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+          2>/dev/null)"
+        button=$? #get exit code to determine which button was pressed
+      fi
       
       if [ $button == 0 ];then
         #next - save changes
-        step=4
+        step=$((step+1))
       elif [ $button == 2 ];then
         #previous - save changes
-        step=2
+        step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
       fi
       ;;
     4)
-      cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       
       #find the best text editor
       preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
@@ -167,21 +305,24 @@ A text editor should have openened and you can create your install script.' \
       
       "$preferrededitor" "${DIRECTORY}/apps/${name}/uninstall" &
       
+      #install shellcheck if not installed
+      [ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck
+      
       output="$(yad --form --on-top \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
         --text='Now it'\''s time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
 A text editor should have openened... Never mind, you know what to do.' \
         --field="Run script":FBTN "lxterminal --title="\""Running uninstall script of $name"\"" -e "\""cd $HOME;$'${DIRECTORY}/apps/${name}/uninstall';echo 'Closing in 10 seconds.';sleep 10"\" \
-        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""[ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck;shellcheck $'${DIRECTORY}/apps/${name}/uninstall';echo 'Press Enter to exit.';read enter"\" \
+        --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "lxterminal --title="\""Shellcheck"\"" -e "\""shellcheck $'${DIRECTORY}/apps/${name}/uninstall';echo 'Press Enter to exit.';read enter"\" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
       button=$? #get exit code to determine which button was pressed
       
       if [ $button == 0 ];then
-        step=5
+        step=$((step+1))
       elif [ $button == 2 ];then
-        step=3
+        step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
@@ -194,7 +335,7 @@ $name
 "\("uninstalled"\)" $(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)"
       
       echo -e "$LIST" | yad --list \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
         --text='Make sure everything looks right.
 Here'\''s what it will look like in the app list:' \
         --column=:IMG --column=:IMG --column=Name --column=tip:HD --tooltip-column=4 --no-headers \
@@ -204,9 +345,9 @@ Here'\''s what it will look like in the app list:' \
       button=$? #get exit code to determine which button was pressed
       
       if [ $button == 0 ];then
-        step=6
+        step=$((step+1))
       elif [ $button == 2 ];then
-        step=4
+        step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
@@ -220,7 +361,7 @@ Website: $(cat "${DIRECTORY}/apps/${name}/website" || echo "unavailable")
 $(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)")"
       
       echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=400 \
         --text='Make sure everything looks right.
 Here'\''s a preview of the Details window:' \
         --image="${DIRECTORY}/apps/${name}/icon-64.png" --image-on-top \
@@ -230,9 +371,9 @@ Here'\''s a preview of the Details window:' \
       button=$? #get exit code to determine which button was pressed
       
       if [ $button == 0 ];then
-        step=7
+        step=$((step+1))
       elif [ $button == 2 ];then
-        step=5
+        step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
@@ -243,10 +384,10 @@ Here'\''s a preview of the Details window:' \
 You app is located at ${DIRECTORY}/apps/${name}
 To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue for Botspot (the developer of Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=300 \
+        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
         --button=Previous!"${DIRECTORY}/icons/back.png":0 \
         --button=Close!"${DIRECTORY}/icons/exit.png":1 || exit 0
-      step=6
+      step=$((step-1))
       ;;
     *)
       error "Unknown step ${step}!"

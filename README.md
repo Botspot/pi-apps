@@ -1,18 +1,26 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
+ 
+There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
 
-There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve that, functioning as a software catalog and standardizing installation.
-
-**Pi-Apps is very new and is a work in progress.** Please [report](https://github.com/Botspot/pi-apps/issues/new) any errors you encounter.
+Pi-Apps is 100% free & open source.
 
 ### To install Pi Apps
 ```
 git clone https://github.com/Botspot/pi-apps
-/home/pi/pi-apps/install
+~/pi-apps/install
 ```
-The install script ensures YAD is installed and creates a menu button. Nothing is modified outside your home directory.
+The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ### To run Pi Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
+### Useful links
+- [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
+- [Send Botspot a donation](https://paypal.me/josephmarchand)
+- [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
+- [Report an error](https://github.com/Botspot/pi-apps/issues/new)
+- [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+- [RaspberryPiNews Pi-apps guide](https://www.youtube.com/watch?v=oiHTmwWGZPU)
+- [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
@@ -27,31 +35,50 @@ Unless you have a very good reason not to, clicking 'Update now' is strongly rec
 - If you click **New App** in Settings, you can easily create your own Apps with a wizard-style sequence of windows.  
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
-### Terminal usage
- - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases a dialog will appear to ask you a question.
-   - To **install** an app, run this:
-`/home/pi/pi-apps/manage install Zoom`
-   - To **uninstall** an app:
-`/home/pi/pi-apps/manage uninstall Zoom`
-   - To **update** a single app:  
-`/home/pi/pi-apps/manage update Zoom`
-Note that if an app is up-to-date, no files will be moved around.
-   - To **check** all apps for updates:  
- `/home/pi/pi-apps/manage check-all`
- This command will return a list of updatable apps, separated by the `|` character.
-   - To **update all** apps:
-  `/home/pi/pi-apps/manage update-all`
- - To **list** all apps:
- `ls /home/pi/pi-apps/apps`
- Note that this will also list the `template` app, which contains the default install & uninstall scripts. Please don't try to install it.
+### To-do
+
+- [X] Make app creation system. (completed with the `createapp` script)  
+- [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
+- [X] Make 32-bit and 64-bit install scripts.  
+- [X] Allow multiple apps to be selected from the app list and be installed simultaneously.  
+
 ### How it works
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
- - Each App is stored in its own separate directory. `/home/pi/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `/home/pi/pi-apps/apps/Zoom/`.
+ - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
  - Because of the contained nature of each app folder, it's really easy to 'package' your own apps: just put the folder in a ZIP file and send it to friends. (or upload it as a [new issue](https://github.com/Botspot/pi-apps/issues/new) so your app can be added to Pi-Apps)
  - When you click Install, the selected App's `install` script is executed.
  - When you click Uninstall, the selected App's `uninstall` script is executed.
+### Terminal usage
+ - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases a dialog will appear to ask you a question.
+   - To **install** an app, run this:
+`~/pi-apps/manage install Zoom`
+   - To **uninstall** an app:
+`~/pi-apps/manage uninstall Zoom`
+   - To **update** a single app:  
+`~/pi-apps/manage update Zoom`
+Note that if an app is up-to-date, no files will be moved around.
+   - To **check** all apps for updates:  
+ `~/pi-apps/manage check-all`
+ This command will return a list of updatable apps, separated by the `|` character.
+   - To **update all** apps:
+  `~/pi-apps/manage update-all`
+ - To **list** all apps:
+ `ls ~/pi-apps/apps`
+ Note that this will also list the `template` app, which contains the default install & uninstall scripts.
+### App folder:
+Each app folder contains some of these files:
+ - `credits` Contains credits for the app. This file may mention who created the app originally, who compiled it, who submitted it to Pi-Apps, etc. Few apps use this file.
+ - `description` This stores the app's description. If you hover your mouse over an app in the app list, it will display a tooltip derived from the first line of this file.
+ - `icon-24.png` This is a 24x24 pixel icon that is displayed in the app list.
+ - `icon-64.png` This is a 64x64 pixel icon that is displayed in the Details page.
+ - `install` If the app installs correctly on both 32bit and 64bit, and it only needs one install script for either CPU type, one single install script is used.
+ - `install-32` This script installs an app on 32bit OS'es, and is 32bit-specific.
+ - `install-64` This script installs an app on 64bit OS'es, and is 64bit-specific.
+Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it's for 32bit OS'es only and will hide that app on 64bit installations.
+ - `uninstall` This script uninstalls the app. It must undo all changes made during install, but with one exception: **It must not permanently delete any user-generated confg!** [We don't want people's Minecraft worlds being deleted during an update.](https://github.com/Botspot/pi-apps/issues/44)
+ 
 ### Directory tree
- - `/home/pi/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
+ - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
    - `createapp` GUI script - this is run when you click "Create App" in Settings.  
    ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)
@@ -61,6 +88,7 @@ Note that if an app is up-to-date, no files will be moved around.
    - `manage` This script handles installing, uninstalling, and updating Apps. It does not check or update any files outside the `apps/` directory.
    - `pi-apps.desktop` This file is a .desktop launcher, exactly the same as the main Pi-Apps launcher in Menu.
    - `pkg-install` If an App requires some `apt` packages in order to run, its `install` script will run `pkg-install`. Pkg-install records which app installed what (in the installed-packages folder BTW), so when you uninstall an App, those packages will be removed.
+   - `preload` This script generates the app list for the `gui` script. If no files have been modified since last launch, `preload` won't regenerate the app list, but instead will return a previously saved version of the list. This approach reduces Pi-Apps's launch time by around 1 second.
    - `purge-installed` This does exactly the opposite of `pkg-install` This script is run when an App is being uninstalled. Purge-installed will uninstall all packages the app installed.
    - `README.md` You are reading this file right now!
    - `settings` This GUI script is executed when you launch 'Pi-Apps Settings' from the Menu.
@@ -80,6 +108,10 @@ Note that if an app is up-to-date, no files will be moved around.
      "new" means that app is new from the repository. (in other words, it does not exist locally)
      "local" means that app does not exist on the repository.
      "updatable" means the repository's version and the local version don't match.
+     - `preload/` This directory is used by the `preload` script to improve Pi-Apps' launch time.
+       - `timestamps` This file stores timestamps for the most recently modified app, the most recently modified setting, and the most rencently modified status file.
+       If any of these entries don't match when `preload` is called, then the app list will be regenerated.
+       - `LIST` This file holds the app list. The entire file's contents is piped into the YAD dialog box.
      - `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
      For example, if Pi Power Tools installs `xserver-xephyr` and `expect`, then the `installed-packages/Pi Power Tools` file will contain "xserver-xephyr expect".
      - `hidelist` This file contains app names that should be hidden from the app list. `template` should always be there. If your Pi runs TwisterOS, then `hidelist` will contain several more app names, like balenaEtcher, for example.
@@ -94,9 +126,18 @@ Note that if an app is up-to-date, no files will be moved around.
      Now, the next time Settings is opened, you will see:  
      ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)
      What's the point? Basically, it allows for a more elegant way to add new settings. With this approach, it's a lot harder to screw up than with manually editing a bash script.
+     - `git_url` This simple file stores this link: https://github.com/Botspot/pi-apps
+     If you fork this repository and make changes, you will want Pi-Apps checking for updates from your repository, not this main one. Simply change the URL in this file to switch to your repository.
    - `icons/` This stores all the icons that are embedded into various dialogs.
-       - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
+     - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
    - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time you check for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
+### Badge
+If your application is on Pi-Apps, please consider adding this pretty badge to your README:  
+[![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
+Embed code:  
+```
+[![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)
+```
 
 ### Q&A with Botspot
  - Why did you develop Pi-Apps?  

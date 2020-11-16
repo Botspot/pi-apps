@@ -9,71 +9,104 @@ function error {
 [ -z "$(yad --help)" ] && error "YAD needs to be installed to run pi-apps."
 
 #check for updates in background
-"${DIRECTORY}/updater" 1>/dev/null  &
+("${DIRECTORY}/updater" 1>/dev/null) &
 
-mkdir -p "${DIRECTORY}/data/installed-packages" "${DIRECTORY}/data/status"
-
-#create hidelist file if nonexistent
-if [ ! -f "${DIRECTORY}/data/hidelist" ];then
-  echo 'template' > "${DIRECTORY}/data/hidelist"
-fi
-
-#Variable 1 is used to view the details of the specefied app
+#Variable 1 is used to view the details of the specified app
 if [ ! -z "$1" ];then
   output="$1"
 fi
 
-while true;do
-  #get list of apps ----------------------------------- and exclude apps mentioned in hidelist file
-  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
-  #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
-  
-  
-  #shuffle the list if enabled
-  if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
-    APPS="$(echo "$APPS" | shuf)"
-  fi
-  
-  echo -e "$APPS\n"
-  
-  APPS="$(echo "$APPS" | tr '\n' '|')"
+#hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
+(#prettify hidelist file
+hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*$/d')"
+echo "$hidelist" > "${DIRECTORY}/data/hidelist"
+) &
 
-  PREIFS="$IFS"
-  IFS="|"
-  LIST=''
-  for i in $APPS
-  do
-    
-    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" || echo "none").png")
-${DIRECTORY}/apps/${i}/icon-24.png
-$i
-"\("$(cat "${DIRECTORY}/data/status/${i}" || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
-"
-  done
-  IFS="$PREIFS"
-  LIST="$(echo -e "$LIST")"
+(if cat '/home/pi/.config/autostart/pi-apps-updater.desktop' | grep -q installedonly ;then
+  "${DIRECTORY}/install"
+fi) &
+
+install() {
+  app="$1"
+  #terminal title text
+  linecount="$(echo "$app" | wc -l)"
+  if [ $linecount -eq 1 ];then
+    title="$app"
+  elif [ $linecount -le 4 ];then
+    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  else
+    title="several apps"
+  fi
+  x-terminal-emulator --title="Installing $title" -e '
+    bash -c '\''
+    PATH="'"$PATH"'"
+    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
+      echo -e "\nClosing in 30 seconds."
+      sleep 30
+    else
+      echo -e "\nClose this window to exit."
+      read enter #technically you could press Enter to exit.
+    fi
+    '\''
+    '
+  sleep 1
+  while ps -C manage &>/dev/null;do sleep 0.1; done
+}
+
+uninstall() {
+  app="$1"
+  #terminal title text
+  linecount="$(echo "$app" | wc -l)"
+  if [ $linecount -eq 1 ];then
+    title="$app"
+  elif [ $linecount -le 4 ];then
+    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  else
+    title="several apps"
+  fi
+  x-terminal-emulator --title="Uninstalling $title" -e '
+    bash -c '\''
+    PATH="'"$PATH"'"
+    if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
+      echo -e "\nClosing in 30 seconds."
+      sleep 30
+    else
+      echo -e "\nClose this window to exit."
+      read enter #technically you could press Enter to exit.
+    fi
+    '\''
+    '
+  sleep 1
+  while ps -C manage &>/dev/null;do sleep 0.1; done
+}
+
+motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
+
+while true;do
+  LIST="$("${DIRECTORY}/preload")"
+  #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
   #if output is not empty then assume button pressed was Details
   button=0
   
-  while [ -z "$output" ]
-  do
+  while [ -z "$output" ];do
     
-    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
-      --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
+      --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+      --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
       --button=Install!"${DIRECTORY}/icons/install.png":4 \
       --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
       --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
-      2>/dev/null)"
+      )"
     
     button=$? #get exit code to determine which button was pressed
     echo "Button: ${button}"
     if [ $button -eq 252 ];then #if window manager x was pressed
       exit 0
     fi
-    
+    output="$(echo "$output" | sed '/^$/d')"
     echo "Output: ${output}EOO"
     
     if [ -z "$output" ];then
@@ -94,7 +127,7 @@ $i
       ;;
     0)
       echo "Details"
-      
+      output="$(echo "$output" | head -n1)"
       if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
         installedpackages="
 This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
@@ -143,11 +176,11 @@ $installedpackages"
         #clear app var
         output=''
       elif [ $button == 4 ];then
-        #install
-        "${DIRECTORY}/manage" install "$output"
+        app="$output"
+        install "$app"
       elif [ $button == 2 ];then
-        #uninstall
-        "${DIRECTORY}/manage" uninstall "$output"
+        app="$output"
+        uninstall "$app"
       elif [ $button == 6 ];then
         echo 'previous app'
         
@@ -198,19 +231,14 @@ $installedpackages"
         echo 'unknown button. Exiting now.'
         exit 0
       fi
-      
       ;;
     2)
-      echo "Uninstall"
-      "${DIRECTORY}/manage" uninstall "$output"
-      
+      uninstall "$output"
       #clear output var to prompt main window to open next
       output=''
       ;;
     4)
-      echo "Install"
-      "${DIRECTORY}/manage" install "$output"
-      
+      install "$output"
       #clear output var to prompt main window to open next
       output=''
       ;;

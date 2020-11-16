@@ -15,6 +15,7 @@ fi
 
 updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
 
+nocheck=0
 #allowed values: Always, Daily, Weekly, Never
 if [ "$updateinterval" == 'Never' ];then
   nocheck=1
@@ -37,6 +38,18 @@ else
   echo "Warning: Unrecognized update interval!"
 fi
 
+#fix for new years day
+if [ "$lastupdatecheck" -gt "$(date +%j)" ];then
+  nocheck=0
+fi
+
+#hidden flag: if $1 is 'onboot', then check for updates only for those apps that are installed.
+onboot="$1"
+if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
+  onboot='onboot'
+  sleep 1m #wait a minute, this is so the system will have booted all the way for an internet connection
+fi
+
 if [ $nocheck == 1 ];then
   echo "Won"\'"t check for updates today, because of the update interval is set to $updateinterval in Settings.
   To forcibly check for updates now, press any key within the next 20 seconds."
@@ -48,7 +61,16 @@ fi
 echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
 
 #generate app update status info
-updatable="$("${DIRECTORY}/manage" check-all | tail -1)"
+updatable="$("${DIRECTORY}/manage" check-all)"
+[ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
+
+#shorten to last line
+updatable="$(echo "$updatable" | tail -1)"
+if [ "$updatable" == '.' ];then
+  updatable=''
+fi
+
+echo "updatable: $updatable"
 
 #if check-all succeeded to download the repo to the update folder
 if [ -d "${DIRECTORY}/update" ];then
@@ -58,7 +80,7 @@ if [ -d "${DIRECTORY}/update" ];then
   #mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
   
   #list all files in update folder
-  cd "${DIRECTORY}/update/pi-apps"
+  cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
   updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
   
   #list all files in main folder
@@ -141,40 +163,49 @@ button=$? #get exit code to determine which button was pressed
 echo "Button: ${button}"
 [ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
 
-
 PREIFS="$IFS"
 IFS="|"
-for i in $updatable
-do
-  "${DIRECTORY}/manage" update "$i" nofetch
-  echo -e "\e[92m${i} was updated successfully.\e[39m"
-done
-
 for i in $mainupdate
 do
-  #move old program to trash
-  gio trash "${DIRECTORY}/${i}" 2>/dev/null
-  
-  #failsafe
-  [ -f "${DIRECTORY}/${i}" ] && error "${DIRECTORY}/apps/${2} still exists, despite trying to delete it!"
-  
   mkdir -p "$(dirname "${DIRECTORY}/${i}")"
   
   #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${i}!"
+  cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || echo "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${i}\e[39m!"
   
   echo -e "\e[92m${i} was updated successfully.\e[39m"
 done
 IFS="$PREIFS"
-
+if [ ! -z "$updatable" ];then
+  x-terminal-emulator --title='Updating apps...' -e '
+    bash -c '\''
+      DIRECTORY="'"$DIRECTORY"'"
+      updatable="'"$updatable"'"
+      trap "sleep 10" EXIT
+      PREIFS="$IFS"
+      IFS="|"
+      for i in $updatable
+      do
+        "${DIRECTORY}/manage" update "$i" nofetch
+        echo -e "\e[92m${i} was updated successfully.\e[39m"
+      done
+      IFS="$PREIFS"
+      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+    '\''
+  '
+fi
 #.git folder
 #move old .git folder to trash
 gio trash "${DIRECTORY}/.git" 2>/dev/null
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
 
-#Minecraft was renamed to Minecraft Java
-gio trash "${DIRECTORY}/apps/Minecraft"
-mv "${DIRECTORY}/data/status/Minecraft" "${DIRECTORY}/data/status/Minecraft Java"
+sleep 1
+while ps -C manage &>/dev/null
+do
+  sleep 0.1
+done
 
-
-
+yad --text="Updates complete.
+Please close all instances of Pi-Apps to apply the update." \
+  --text-align=center --center --title='Pi-Apps update complete' --window-icon="${DIRECTORY}/icons/logo.png" \
+  --button=OK!"${DIRECTORY}/icons/check.png":0
+exit 0

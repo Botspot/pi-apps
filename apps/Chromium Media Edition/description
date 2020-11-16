@@ -1,17 +1,4 @@
-Play Widevine-protected video in Chromium.
-This adds the ChromeOS DRM video decoding library to Chromium, and a ChromeOS user-agent. Websites you browse will think your Pi is a Chromebook!
-To run: Menu -> Internet -> Chromium Media Edition.
-To test DRM: https://bitmovin.com/demos/drm
-For non-DRM websites, you should use the original Chromium launcher.
-This works on these websites:
-• Netflix
-• Hulu
-• Amazon Prime
-• Disney+
-• HBO
-• Spotify
-• Pandora
-• Hoopla
-• MUBI
-• BritBox
-• Bell Satellite TV
+Chromium Media Edition no longer works with Chromium v84!.
+But won't worry, I (Botspot) worked out the solution first: Chromium Widevine. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290443
+
+Please install the Chromium Widevine app instead of this.
