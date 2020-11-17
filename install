@@ -8,10 +8,10 @@ function error {
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
-  echo -n "YAD is required but not installed. Install now? [Y/n] "
+  echo -n "YAD is required but not installed. Install it now? [Y/n] "
   read answer
   if [ "$answer" == n ];then
-    error "User declined."
+    error "User declined YAD install."
   fi
   if [ -f /usr/bin/apt ];then
     sudo apt install -y yad
@@ -47,7 +47,7 @@ Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
-echo "Creating autostarted updater..."
+echo "Creating autoupdater..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
 Name=Pi Apps Updater
