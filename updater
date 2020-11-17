@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#This file runs after networktarget in systemd at boot.
+
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
