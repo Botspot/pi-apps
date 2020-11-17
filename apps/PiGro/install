@@ -1,0 +1,30 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+git clone https://github.com/actionschnitzel/PiGro-Aid- || error "Failed to clone repository!"
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "neofetch" "$(dirname "$0")" || exit 1
+
+cd PiGro-Aid- || error "Failed to enter directory!"
+
+chmod +x install.sh
+chmod +x start.sh
+chmod +x scripts/raspiconfiginstall.sh
+chmod +x scripts/autoremove.sh
+chmod +x scripts/addunsignedrepo.sh
+chmod +x scripts/update.sh
+chmod +x scripts/upgrade.sh
+chmod +x scripts/lxappearance.sh
+chmod +x scripts/rmlxde.sh
+chmod +x scripts/terminal.sh
+chmod +x scripts/xfce4fix.sh
+chmod +x scripts/uninstall.sh
+cp pigro.desktop  ~/Desktop
+cp pigro.desktop ~/.local/share/applications/
