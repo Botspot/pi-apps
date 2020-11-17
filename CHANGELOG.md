@@ -89,3 +89,12 @@ Add LibrePCB and PrusaSlicer apps
 
 11/13  
 Add Tor Browser app  
+
+11/14  
+Chromium Media deprecated
+
+11/16  
+Add All Is Well app
+
+11/17  
+Add PiGro app
