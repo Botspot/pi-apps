@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "firefox-esr" "$(dirname "$0")" || exit 1
+
+wget https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_armv7.deb || error 'Failed to download browsh!'
+sudo dpkg -i browsh_1.6.4_linux_armv7.deb || error 'Failed to install browsh!' 
+rm browsh_1.6.4_linux_armv7.deb 
+echo "[Desktop Entry]
+Version=1.1
+Type=Application
+Name=Browsh
+Comment=The modern text-based terminal browser.
+Icon=$(dirname "$0")/icon-64.png
+Exec=browsh
+Terminal=true
+Categories=Network;" > ~/.local/share/applications/browsh.desktop
+

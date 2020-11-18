@@ -1,0 +1,7 @@
+The modern text-based terminal browser.
+Browsh is a modern text-based browser for the terminal. It renders anything that a modern browser can; HTML5, CSS3, JS, video and even WebGL. Its main purpose is to be run on a remote server and accessed via SSH/Mosh or the in-browser HTML service in order to significantly reduce bandwidth and thus both increase browsing speeds and decrease bandwidth costs.
+
+To run: Menu -> Internet -> Browsh
+To run in a terminal: browsh
+
+NOTE: This will also install firefox-esr
