@@ -7,8 +7,11 @@ function error {
   exit 1
 }
 
-echo "moving box86 to trash."
+echo "Uninstalling box86 from system."
+cd ~/box86/build
+sudo make uninstall
+cd $HOME
+
+echo "moving box86 folder to trash."
 gio trash ~/box86
 
-echo "Deleting box86."
-sudo rm -f /usr/local/bin/box86
