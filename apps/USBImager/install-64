@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-cd ~/Downloads || error "Failed to change directory to /home/pi!"
+cd ~/Downloads || error "Failed to change directory to $HOME/Downloads!"
 git clone https://gitlab.com/bztsrc/usbimager.git
 cd usbimager/src/
 make deb
