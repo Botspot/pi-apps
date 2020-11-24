@@ -22,7 +22,7 @@ hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*
 echo "$hidelist" > "${DIRECTORY}/data/hidelist"
 ) &
 
-(if cat '/home/pi/.config/autostart/pi-apps-updater.desktop' | grep -q installedonly ;then
+(if cat '~/.config/autostart/pi-apps-updater.desktop' | grep -q installedonly ;then
   "${DIRECTORY}/install"
 fi) &
 
