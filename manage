@@ -59,14 +59,6 @@ elif [ "$1" == 'install' ];then
   elif [ ! -d "${DIRECTORY}/apps/$app" ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
-  #ensure an install script is not already running
-  if ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;then       
-    echo "An install script is already running.
-Pi-Apps will wait until that one finishes before installing $app." | yad --text-info \
-    --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
-    --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C install &>/dev/null || ps -C install-32 &>/dev/null || ps -C install-64 &>/dev/null;do sleep 1; done
-  fi
   
   #if already installed then ask for confirmation
   if [ "$(cat "${DIRECTORY}/data/status/${app}" )" == 'installed' ];then
@@ -119,14 +111,6 @@ elif [ "$1" == 'uninstall' ];then
     error "For this operation, you must specify which app to operate on."
   elif [ ! -d "${DIRECTORY}/apps/$app" ];then
     error "${DIRECTORY}/apps/$app does not exist!"
-  fi
-  #ensure an uninstall script is not already running
-  if ps -C uninstall &>/dev/null;then       
-    echo "An uninstall script is already running.
-Pi-Apps will wait until that one finishes before starting this one." | yad --text-info \
-    --title="Waiting" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=500 --height=100 \
-    --button=OK!"${DIRECTORY}/icons/check.png":0 --fontname=12 --timeout=10 --timeout-indicator=top
-    while ps -C uninstall &>/dev/null;do sleep 1; done
   fi
   
   #if already uninstalled then ask for confirmation
