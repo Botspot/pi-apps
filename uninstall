@@ -11,14 +11,14 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
   zenity --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
 	  --list --text="Do you want to uninstall YAD?" \
 	  --ok-label=Yes --cancel-label=No \
-	  --column=foo --hide-header 2>/dev/null && lxterminal --title="Uninstalling YAD" -e "sudo apt purge -y yad;echo -e '\nClosing in 5 seconds.';sleep 5"
+	  --column=foo --hide-header 2>/dev/null && "${DIRECTORY}/etc/terminal-run" "sudo apt purge -y yad;echo -e '\nClosing in 5 seconds.';sleep 5" "Uninstalling YAD"
 fi
 
 echo "Removing menu button..."
-rm -f ${HOME}/.local/share/applications/pi-apps.desktop
-rm -f ${HOME}/.local/share/applications/pi-apps-settings.desktop
-rm -f ${HOME}/.config/autostart/pi-apps-updater.desktop
-rm -f ${HOME}/Desktop/pi-apps.desktop
+rm -f ~/.local/share/applications/pi-apps.desktop
+rm -f ~/.local/share/applications/pi-apps-settings.desktop
+rm -f ~/.config/autostart/pi-apps-updater.desktop
+rm -f ~/Desktop/pi-apps.desktop
 
 echo -e "\e[32mUninstallation complete.
 \e[97mIf Pi-apps didn"\'"t work for you, \e[4m\e[21m\e[5mPLEASE\e[0m\e[97m consider submitting a \e[1mbug report\e[0m!
