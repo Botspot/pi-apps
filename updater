@@ -176,22 +176,20 @@ do
 done
 IFS="$PREIFS"
 if [ ! -z "$updatable" ];then
-  x-terminal-emulator --title='Updating apps...' -e '
-    bash -c '\''
-      DIRECTORY="'"$DIRECTORY"'"
-      updatable="'"$updatable"'"
-      trap "sleep 10" EXIT
-      PREIFS="$IFS"
-      IFS="|"
-      for i in $updatable
-      do
-        "${DIRECTORY}/manage" update "$i" nofetch
-        echo -e "\e[92m${i} was updated successfully.\e[39m"
-      done
-      IFS="$PREIFS"
-      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-    '\''
-  '
+  "${DIRECTORY}/etc/terminal-run" '
+    DIRECTORY="'"$DIRECTORY"'"
+    updatable="'"$updatable"'"
+    trap "sleep 10" EXIT
+    PREIFS="$IFS"
+    IFS="|"
+    for i in $updatable
+    do
+      "${DIRECTORY}/manage" update "$i" nofetch
+      echo -e "\e[92m${i} was updated successfully.\e[39m"
+    done
+    IFS="$PREIFS"
+    echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+  ' 'Updating apps...'
 fi
 #.git folder
 #move old .git folder to trash

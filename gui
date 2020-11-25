@@ -22,7 +22,7 @@ hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*
 echo "$hidelist" > "${DIRECTORY}/data/hidelist"
 ) &
 
-(if cat '~/.config/autostart/pi-apps-updater.desktop' | grep -q installedonly ;then
+(if cat ~/.config/autostart/pi-apps-updater.desktop | grep -q installedonly ;then
   "${DIRECTORY}/install"
 fi) &
 
@@ -31,15 +31,13 @@ install() {
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
-    title="$app"
+    title="Installing $app"
   elif [ $linecount -le 4 ];then
-    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+    title="Installing $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
   else
-    title="several apps"
+    title="Installing several apps"
   fi
-  x-terminal-emulator --title="Installing $title" -e '
-    bash -c '\''
-    PATH="'"$PATH"'"
+  "${DIRECTORY}/etc/terminal-run" '
     if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
@@ -47,8 +45,7 @@ install() {
       echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
     fi
-    '\''
-    '
+    '  "$title"
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
@@ -58,15 +55,13 @@ uninstall() {
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
-    title="$app"
+    title="Uninstalling $app"
   elif [ $linecount -le 4 ];then
-    title="$(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+    title="Uninstalling $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
   else
-    title="several apps"
+    title="Uninstalling several apps"
   fi
-  x-terminal-emulator --title="Uninstalling $title" -e '
-    bash -c '\''
-    PATH="'"$PATH"'"
+  "${DIRECTORY}/etc/terminal-run" '
     if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
@@ -74,8 +69,7 @@ uninstall() {
       echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
     fi
-    '\''
-    '
+    ' "$title"
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
