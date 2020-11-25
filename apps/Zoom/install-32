@@ -102,12 +102,13 @@ sudo systemctl restart systemd-binfmt #if this fails, no big deal.
 echo "Creating Application Menu button..."
 echo "[Desktop Entry]
 Name=Zoom
-Exec=lxterminal --title 'Close this window to exit Zoom' -e "\""$HOME/zoom/runzoom.sh"\""
+Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh"\"" 'Close this window to exit Zoom'
 Icon=${DIRECTORY}/apps/Zoom/icon-64.png
 Path=${HOME}/zoom/
 Type=Application
 Comment=i386 version of software platform used for teleconferencing using Box86
-Categories=Network;" > ~/.local/share/applications/zoom.desktop
+Categories=Network;
+StartupNotify=true" > ~/.local/share/applications/zoom.desktop
 
 echo "Installation complete!"
 
