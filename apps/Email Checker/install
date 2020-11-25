@@ -63,4 +63,4 @@ Hidden=false
 Icon=$(dirname "$0")/icon-64.png
 NoDisplay=false" > ~/.config/autostart/checkmail.desktop
 
-lxterminal --title='Running Email Checker (checkmail.py)' -e "echo -e 'If checkmail.py throws errors, you may have entered invalid information.\nUse this opportunity to test it out.\nFrom now on, checkmail.py will be run on every boot.' ; sudo python ${HOME}/raspi-email-checker/checkmail.py ; sleep infinity" &
+"${DIRECTORY}/etc/terminal-run" "echo -e 'If checkmail.py throws errors, you may have entered invalid information.\nUse this opportunity to test it out.\nFrom now on, checkmail.py will be run on every boot.' ; sudo python ${HOME}/raspi-email-checker/checkmail.py ; sleep infinity" 'Running Email Checker (checkmail.py)' &
