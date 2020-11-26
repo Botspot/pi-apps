@@ -28,9 +28,10 @@ while true;do
   case $step in
     1)
       echo "Welcome to the Create App wizard!
-With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list." | yad --text-info --fontname=12 --wrap --show-uri \
+With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list.
+This wizard will save your work as you go." | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$((windowheight-100)) \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
       step=$((step+1))
@@ -69,13 +70,14 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
       fi
       
       output="$(yad --form \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$((windowheight+200)) \
         --text="Step ${step}: enter some information. The name field is mandatory." \
         --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
         "$iconfield" "$iconpath" \
         --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
         "$compatibilityentry" "$compatibilitypreset" \
         --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || cat "${DIRECTORY}/apps/template/description")" \
+        --field="Credits:":TXT "$(cat "${DIRECTORY}/apps/${name}/credits" || cat "${DIRECTORY}/apps/template/credits")" \
         $([ ! -z $editing ]&&echo "--button=Save!${DIRECTORY}/icons/save.png:4") \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
@@ -93,6 +95,7 @@ With a few simple steps, your project can take advantage of Pi-Apps"\'" features
         website="$(echo "$output" | sed -n '3p')"
         compatibility="$(echo "$output" | sed -n '4p')"
         description="$(echo -e "$(echo "$output" | sed -n '5p')")"
+        credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
         
         #convert compatibility var into machine-readable
         if [ "$compatibility" == "64bit and 32bit" ];then
@@ -156,6 +159,15 @@ Install now?" \
             if [ ! -z "$description" ];then
               echo "$description" > "${DIRECTORY}/apps/${name}/description"
               echo "Created ${DIRECTORY}/apps/${name}/description"
+            fi
+            
+            #if credits field is populated
+            if [ ! -z "$credits" ];then
+              echo "$credits" > "${DIRECTORY}/apps/${name}/credits"
+              echo "Created ${DIRECTORY}/apps/${name}/credits"
+            elif [ -z "$credits" ] && [ -f "${DIRECTORY}/apps/${name}/credits" ] ;then
+              #clear credits if the user wanted them cleared.
+              echo '' > "${DIRECTORY}/apps/${name}/credits"
             fi
             
             step=$((step+1))
