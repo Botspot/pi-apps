@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#if your app installs any packages, keep this command here so those packages will be removed.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
+ar x steam.deb
+filelist="$(tar tf data.tar.xz | sed "s/^.//g")"
+
+IFS=$'\n'
+for file in $filelist
+do
+  if [ -f "$file" ];then
+    echo "Deleting $file"
+    sudo rm "$file"
+  fi
+done
+
+rm -f steam.deb control.tar.gz debian-binary data.tar.xz /home/pi/Desktop/steam.desktop
+
+rm -rf ~/.steam ~/.local/share/Steam
+exit 0

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
+
+if [ "$(cat "$DIRECTORY/data/status/Box86")" != 'installed' ];then
+  echo 'Installing box86 first...'
+  "$DIRECTORY/manage" install Box86
+fi
+
+echo "Downloading steam.deb"
+wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
+echo "Extracting steam.deb"
+ar x steam.deb
+echo "Installing files..."
+sudo tar xf data.tar.xz -C /
+echo "Edited steam script to run on Raspberry Pi..."
+sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+echo "Cleaning up..."
+rm steam.deb control.tar.gz debian-binary data.tar.xz
+exit 0
