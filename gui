@@ -118,7 +118,8 @@ while true;do
       fi
     elif [ $guimode == xlunch ];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
-        sudo rm -f /usr/bin/xlunch 2>/dev/null
+        sudo rm -rf /usr/bin/xlunch "$DIRECTORY/xlunch" 2>/dev/null
+        sudo apt install -y libimlib2-dev libx11-dev
         cd "$DIRECTORY"
         git clone https://github.com/Tomas-M/xlunch
         cd "$DIRECTORY/xlunch"
@@ -136,8 +137,10 @@ while true;do
       width=800
       xposition=$(((screen_width/2)-(width/2)))
       yposition=$(((screen_height/2)-(height/2)))
-      scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
-      convert -blur 10x5 ~/blur.png ~/blur.png
+      if false;then
+        scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
+        convert -blur 10x5 ~/blur.png ~/blur.png
+      fi
       output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
         -p "Search: " -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
         --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
