@@ -25,5 +25,5 @@ done
 
 rm -f steam.deb control.tar.gz debian-binary data.tar.xz ~/Desktop/steam.desktop
 
-sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop
+sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam
 exit 0
