@@ -15,7 +15,7 @@ while [ -z $exitloop ];do
     #create default files inside
     echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
   fi
-
+  
   #$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
   if [ "$1" == 'refresh' ];then
     #set default settings, if they don't exist
@@ -46,7 +46,6 @@ while [ -z $exitloop ];do
     exit 0
   fi
   
-
   if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
     echo "Creating Settings menu button"
     echo "[Desktop Entry]

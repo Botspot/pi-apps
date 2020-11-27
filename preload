@@ -19,6 +19,12 @@ else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
 
+#yad or xlunch format
+format="$1"
+
+if [ -z "$format" ];then
+  format=yad
+fi
 
 mkdir -p "${DIRECTORY}/data/preload"
 
@@ -92,18 +98,30 @@ if [ $reloadlist == 1 ];then
     APPS="$(echo "$APPS" | shuf)"
   fi
   
-  PREIFS="$IFS"
-  IFS=$'\n'
-  LIST=''
-  for i in $APPS
-  do
-    LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
+  if [ "$format" == yad ];then
+    PREIFS="$IFS"
+    IFS=$'\n'
+    LIST=''
+    for i in $APPS
+    do
+      LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
-  done
-  IFS="$PREIFS"
+    done
+    IFS="$PREIFS"
+  elif [ "$format" == xlunch ];then
+    PREIFS="$IFS"
+    IFS=$'\n'
+    LIST=''
+    for i in $APPS
+    do
+      LIST="$LIST
+${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
+    done
+    IFS="$PREIFS"
+  fi
   LIST="$(echo -e "$LIST")"
   
   #save entire list string to file for future use

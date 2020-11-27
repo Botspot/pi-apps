@@ -76,8 +76,15 @@ uninstall() {
 
 motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
 
+
+
+#app list mode. Allowed values: 'yad', 'xlunch'
+guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+[ -z "$guimode" ] && guimode=yad
+#mode=yad
+
 while true;do
-  LIST="$("${DIRECTORY}/preload")"
+  LIST="$("${DIRECTORY}/preload" $guimode)"
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
@@ -86,31 +93,67 @@ while true;do
   
   while [ -z "$output" ];do
     
-    output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
-      --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
-      --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-      --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
-      --button=Install!"${DIRECTORY}/icons/install.png":4 \
-      --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
-      --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
-      )"
-    
-    button=$? #get exit code to determine which button was pressed
-    echo "Button: ${button}"
-    if [ $button -eq 252 ];then #if window manager x was pressed
-      exit 0
+    if [ $guimode == yad ];then
+      output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
+        --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+        --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
+        --button=Install!"${DIRECTORY}/icons/install.png":4 \
+        --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
+        --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
+        )"
+      
+      button=$? #get exit code to determine which button was pressed
+      echo "Button: ${button}"
+      if [ $button -eq 252 ];then #if window manager x was pressed
+        exit 0
+      fi
+      if [ -z "$output" ];then
+        echo "output variable empty!"
+        yad --center --title='Pi-Apps' --width=310 \
+          --window-icon="${DIRECTORY}/icons/logo.png" \
+          --text="Mind reading is not supported.
+    (You didn"\'"t select an App)" \
+          --button=OK:0
+      fi
+    elif [ $guimode == xlunch ];then
+      if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
+        sudo rm -f /usr/bin/xlunch 2>/dev/null
+        cd "$DIRECTORY"
+        git clone https://github.com/Tomas-M/xlunch
+        cd "$DIRECTORY/xlunch"
+        make -j8
+        sudo make install
+        sudo rm -f /usr/share/applications/genentries.desktop
+        cd $HOME
+        if [ ! -f /usr/bin/xlunch ];then
+          error "xlunch should be installed now, but /usr/bin/xlunch does not exist!"
+        fi
+      fi
+      screen_width="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 7p)"
+      screen_height="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 8p)"
+      height=700
+      width=800
+      xposition=$(((screen_width/2)-(width/2)))
+      yposition=$(((screen_height/2)-(height/2)))
+      scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
+      convert -blur 10x5 ~/blur.png ~/blur.png
+      output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
+        -p "Search: " -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
+        --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
+        --width $width --height $height --xposition $xposition --yposition $yposition \
+        --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;"
+        -g ~/blur.png)"
+      button=0
+      
+      if [ -z "$output" ];then
+        exit 0
+      fi
     fi
     output="$(echo "$output" | sed '/^$/d')"
     echo "Output: ${output}EOO"
     
-    if [ -z "$output" ];then
-      echo "output variable empty!"
-      yad --center --title='Pi-Apps' --width=310 \
-        --window-icon="${DIRECTORY}/icons/logo.png" \
-        --text="Mind reading is not supported.
-  (You didn"\'"t select an App)" \
-        --button=OK:0
-    fi
+    
   done
   
   case $button in
