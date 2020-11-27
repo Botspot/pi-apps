@@ -24,4 +24,5 @@ echo "Edited steam script to run on Raspberry Pi..."
 sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
 echo "Cleaning up..."
 rm steam.deb control.tar.gz debian-binary data.tar.xz
+read -p 'IMPORTANT NOTIFICATION!!! FOLLOW THE STEPS AT Games not showing up in the Steam browser? Follow the instructions at https://www.reddit.com/r/SBCGaming/comments/k1sx2v/fix_downloaded_steam_on_rpi_but_cant_see_your/ TO BE ABLE TO SEE YOUR GAMES AFTER YOU INSTALL STEAM! Press [Enter] to finish installation!'
 exit 0
