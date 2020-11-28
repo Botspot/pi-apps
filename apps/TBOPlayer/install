@@ -10,5 +10,5 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "python-pip python-gobject-2 python-dbus python-tk python-gtk2 python-requests tkdnd" "$(dirname "$0")" || exit 1
 
-cd ~ && wget https://github.com/KenT2/tboplayer/tarball/py2_version -O - | tar xz || error "Failed to download!"
+cd ~ && wget https://github.com/KenT2/tboplayer/tarball/master -O - | tar xz || error "Failed to download!"
 cd KenT2-tboplayer-* && chmod +x setup.sh && ./setup.sh || error "failed to run setup.sh!"
