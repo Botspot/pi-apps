@@ -39,17 +39,28 @@ if [ "$1" == 'multi-install' ];then
   for app in $2
   do
     "${DIRECTORY}/manage" install "$app"
+    if [ $? != 0 ];then
+      failed=1
+    fi
   done
   IFS="$PREIFS"
+  if [ $failed == 1 ] && [ "$(echo "$1" | wc -l)" == 1 ];then
+    exit 1
+  fi
 elif [ "$1" == 'multi-uninstall' ];then
   PREIFS="$IFS"
   IFS=$'\n'
   for app in $2
   do
     "${DIRECTORY}/manage" uninstall "$app"
+    if [ $? != 0 ];then
+      failed=1
+    fi
   done
   IFS="$PREIFS"
-  
+  if [ $failed == 1 ] && [ "$(echo "$1" | wc -l)" == 1 ];then
+    exit 1
+  fi
 elif [ "$1" == 'install' ];then
   #INSTALL
   #for this operation, a program name must be specified.

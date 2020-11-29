@@ -45,7 +45,7 @@ install() {
       echo -e "\nClose this window to exit."
       read enter #technically you could press Enter to exit.
     fi
-    '  "$title"
+    ' "$title"
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
 }
