@@ -1,0 +1,20 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "libglu1-mesa" "$(dirname "$0")" || exit 1
+
+rm -f wps-office_11.1.0.9719_arm64.deb 2>/dev/null
+
+wget https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/9719/wps-office_11.1.0.9719_arm64.deb || error "Failed to download wps office deb!"
+
+sudo apt install --fix-missing -y ~/wps-office_11.1.0.9719_arm64.deb || error "APT failed to install wps office."
+
+rm -f wps-office_11.1.0.9719_arm64.deb
+exit 0
