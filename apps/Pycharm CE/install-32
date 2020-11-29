@@ -1,0 +1,42 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+filename='pycharm-community-2018.3.7'
+
+rm -f $filename.tar.gz 2>/dev/null
+sudo rm -rf /opt/pycharm-community pycharm-community ${filename}
+#download the 2018.3.7 version "tar.gz" file
+wget https://download.jetbrains.com/python/${filename}.tar.gz || error "Failed to downloading file. Make sure 'wget' is installed and verify your Internet Network Connection"
+
+#extract and rename pycharm-community folder
+tar xvzf ${filename}.tar.gz || error "Failed to extract downloaded ${filename} files"
+rm -f ${filename}.tar.gz
+sudo mv ${filename} /opt/pycharm-community || error "Failed moving pycharm-community to /opt/pycharm-community"
+
+#enter pycharm-community folder
+cd /opt/pycharm-community || error "Failed to enter pycharm-community folder!"
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "python-pip openjdk-11-jdk" "$(dirname "$0")" || exit 1
+
+
+# Installing the software with permissions
+cd bin || error "Failed to enter to bin directory"
+chmod a+x ./pycharm.sh || error "Failed to run ./pycharm giving permission"
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PyCharm Community Edition
+Icon=/opt/pycharm-community/bin/pycharm.svg
+Exec=/opt/pycharm-community/bin/pycharm.sh %f
+Comment=Python IDE for Professional Developers
+Categories=Development;IDE;
+Terminal=false
+StartupWMClass=jetbrains-pycharm-ce" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
