@@ -5,16 +5,16 @@ There are many open-source, community-developed software projects for Raspberry 
 
 ## What do others say about Pi-Apps?
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
-> I want to give the devs of Pi-Apps a big shout-out." - [ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)
+> I want to give the devs of Pi-Apps a big shout-out." - **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)**
 
-> "Awesome. Thanks for doing this." - Novaspirit Tech
+> "Awesome. Thanks for doing this." - **Novaspirit Tech**
 
 > "I just discovered the nice project and I am impressed by the list of apps proposed especially Zoom or Visual Studio Code." - [olaxe](https://github.com/Botspot/pi-apps/issues/113#issue-752871771)
 
 > "Love this project. Keep up the awesome work and keep growing! Impressive." - [necro-nemesis](https://github.com/Botspot/pi-apps/issues/114#issue-753056982)
 
 > "It definitely looks really cool.
-> Thanks so much to Botspot for creating this; it's a great program." - [leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+> Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
 
 > "Thanks for all your great work! Every time I see your work, I appreciate it even more." - Itai from Discord
 
