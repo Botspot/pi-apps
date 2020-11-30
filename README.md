@@ -4,31 +4,33 @@
 There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
 
 ## What do others say about Pi-Apps?
-> It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
-> I want to give the devs of Pi-Apps a big shout-out. - [ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)
+> "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
+> I want to give the devs of Pi-Apps a big shout-out." - [ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
-> Awesome. Thanks for doing this. - Novaspirit Tech
+> "Awesome. Thanks for doing this." - Novaspirit Tech
 
-> I just discovered the nice project and I am impressed by the list of apps proposed especially Zoom or Visual Studio Code. - [olaxe](https://github.com/Botspot/pi-apps/issues/113#issue-752871771)
+> "I just discovered the nice project and I am impressed by the list of apps proposed especially Zoom or Visual Studio Code." - [olaxe](https://github.com/Botspot/pi-apps/issues/113#issue-752871771)
 
-> Love this project. Keep up the awesome work and keep growing! Impressive. - [necro-nemesis](https://github.com/Botspot/pi-apps/issues/114#issue-753056982)
+> "Love this project. Keep up the awesome work and keep growing! Impressive." - [necro-nemesis](https://github.com/Botspot/pi-apps/issues/114#issue-753056982)
 
-> It definitely looks really cool.
-> Thanks so much to Botspot for creating this; it's a great program. - [leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+> "It definitely looks really cool.
+> Thanks so much to Botspot for creating this; it's a great program." - [leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 
-> Thanks for all your great work! Every time I see your work, I appreciate it even more. - Itai from Discord
+> "Thanks for all your great work! Every time I see your work, I appreciate it even more." - Itai from Discord
 
-> Excellent job making Pi-Apps. Everyone is using it now. - FlyingCow from Discord
+> "Excellent job making Pi-Apps. Everyone is using it now." - FlyingCow from Discord
 
-> I need to find the time to try your app store. Thank you for all the work - [Puffergas](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=291240&p=1761535#p1761401)
+> "I need to find the time to try your app store. Thank you for all the work" - [Puffergas](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=291240&p=1761535#p1761401)
 
-## To install Pi Apps
+> "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
+
+## To install Pi-Apps
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
 ```
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
-## To run Pi Apps
+## To run Pi-Apps
 Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 ### Useful links
 - [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
@@ -52,7 +54,6 @@ Use the main window to quickly browse the selection of apps and easily install t
 ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
 It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
 ## To-do
-
 - [X] Make app creation system. (completed with the `createapp` script)  
 - [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
 - [X] Make 32-bit and 64-bit install scripts.  
