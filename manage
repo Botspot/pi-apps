@@ -34,6 +34,7 @@ dirhash() {
   echo "$hash" 1>&2
 }
 if [ "$1" == 'multi-install' ];then
+  failed=0
   PREIFS="$IFS"
   IFS=$'\n'
   for app in $2
@@ -44,10 +45,11 @@ if [ "$1" == 'multi-install' ];then
     fi
   done
   IFS="$PREIFS"
-  if [ $failed == 1 ] && [ "$(echo "$1" | wc -l)" == 1 ];then
+  if [ $failed == 1 ];then
     exit 1
   fi
 elif [ "$1" == 'multi-uninstall' ];then
+  failed=0
   PREIFS="$IFS"
   IFS=$'\n'
   for app in $2
@@ -58,7 +60,7 @@ elif [ "$1" == 'multi-uninstall' ];then
     fi
   done
   IFS="$PREIFS"
-  if [ $failed == 1 ] && [ "$(echo "$1" | wc -l)" == 1 ];then
+  if [ $failed == 1 ];then
     exit 1
   fi
 elif [ "$1" == 'install' ];then
