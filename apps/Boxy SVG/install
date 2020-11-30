@@ -10,9 +10,9 @@ function error {
 git clone https://github.com/Botspot/Boxy-SVG-RPi
 cd Boxy-SVG-RPi
 unzip ./boxysvgrpi.zip
-if [ -f /usr/bin/chromium-browser ];then
+if command -v chromium-browser;then
   chromium-browser --load-and-launch-app=$(pwd)/boxysvgrpi &
-elif [ -f /usr/bin/chromium ];then
+elif command -v chromium;then
   chromium --load-and-launch-app=$(pwd)/boxysvgrpi
 else
   error "You must have Chromium Browser installed to use the Boxy SVG Chrome App!"
