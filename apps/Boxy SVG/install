@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+git clone https://github.com/Botspot/Boxy-SVG-RPi
+cd Boxy-SVG-RPi
+unzip ./boxysvgrpi.zip
+if [ -f /usr/bin/chromium-browser ];then
+  chromium-browser --load-and-launch-app=$(pwd)/boxysvgrpi &
+elif [ -f /usr/bin/chromium ];then
+  chromium --load-and-launch-app=$(pwd)/boxysvgrpi
+else
+  error "You must have Chromium Browser installed to use the Boxy SVG Chrome App!"
+fi
