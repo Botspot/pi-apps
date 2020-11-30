@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget https://download.puffinbrowser.com/linux/raspbian/puffin-internet-terminal-demo_8.2.4.705_armhf.deb -O ~/puffin-internet-terminal.deb || error "Failed to download puffin-internet-terminal.deb!"
+
+sudo apt install -y --fix-missing ~/puffin-internet-terminal.deb || error "APT failed to install puffin-internet-terminal.deb!"
+
+
