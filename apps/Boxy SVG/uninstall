@@ -7,6 +7,7 @@ function error {
   exit 1
 }
 
-rm ~/.local/share/applications/boxy-svg-arm64.desktop ~/.local/share/applications/boxy-svg-armv7l.desktop
-rm -rf ~/BoxySVG-linux-arm64 ~/BoxySVG-linux-armv7l ~/Boxy-SVG-RPi
+rm ~/.local/share/applications/chrome-gaoogdonmngmdlbinmiclicjpbjhgomg-Default.desktop
+rm -rf ~/Boxy-SVG-RPi
 
+exit 0
