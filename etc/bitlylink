@@ -20,10 +20,6 @@ if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
   #Allowing analytics does not identify you, or any personal information about you. Botspot can only see the total number of "clicks", as well as the top 3 countries of origin.
   
   bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
-  if command -v chromium-browser ;then
-    chromium-browser --headless "$bitlylink" &>/dev/null &
-  elif command -v chromium ;then
-    chromium --headless "$bitlylink" &>/dev/null &
-  fi
+  curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink"
   #echo "clicked $bitlylink" 1>&2
 fi
