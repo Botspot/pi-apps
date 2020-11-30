@@ -81,15 +81,7 @@ elif [ "$1" == 'install' ];then
   fi
   
   #analytics
-  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
-    #this is used to let Botspot see the daily installs for each app.
-    #Botspot created an individual bitly link for each app. When you install an app, the cooresponding bit.ly link is "clicked" by a headless chromium-browser instance.
-    #Chromium accesses the bit.ly link, then exits.
-    #Allowing analytics does not identify you, or any personal information about you. Botspot can only see the number of "clicks" per day, as well as the top 10 countries of origin.
-    
-    bitlylink="https://bit.ly/pi-apps-install-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
-    chromium-browser --headless "$bitlylink" &>/dev/null &
-  fi
+  "${DIRECTORY}/etc/bitlylink" "$app" install
   
   #determine which script to run
   if [ -f "${DIRECTORY}/apps/${app}/install-32" ] && [ $arch == 32 ];then
@@ -132,6 +124,9 @@ elif [ "$1" == 'uninstall' ];then
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
+  
+  #analytics
+  "${DIRECTORY}/etc/bitlylink" "$app" uninstall
   
   echo -e "\e[96mUninstalling $app\e[39m"
   cd $HOME
