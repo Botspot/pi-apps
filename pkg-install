@@ -52,8 +52,9 @@ fi
 echo "Done"
 
 DEBIAN_FRONTEND=noninteractive
-
-output="$(sudo LANG=C apt update 2>&1)"
+LANG=C
+LC_ALL=C
+output="$(sudo LANG=C LC_ALL=C apt update 2>&1)"
 exitcode=$?
 
 #inform user packages are upgradeable
@@ -72,7 +73,7 @@ fi
 #remove residual packages
 sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
 
-output="$(sudo LANG=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
+output="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
 echo "output: $output"
 
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
@@ -93,7 +94,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
   
   #normal mode
-  output="$(sudo LANG=C apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
+  output="$(sudo LANG=C LC_ALL=C apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
   exitcode=$?
   echo 'Apt finished.'
   
@@ -112,7 +113,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   #    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
   #  fi
   #done
-  INSTALL_LIST="$(sudo LANG=C apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
+  INSTALL_LIST="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
   
   
   if [ ! -z $INSTALL_LIST ];then
