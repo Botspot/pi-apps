@@ -16,7 +16,9 @@ There are many open-source, community-developed software projects for Raspberry 
 > It definitely looks really cool.
 > Thanks so much to Botspot for creating this; it's a great program. - [leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 
-> Thanks for all your great work! Every time I see your work, I appreciate it even more. - Itai
+> Thanks for all your great work! Every time I see your work, I appreciate it even more. - Itai from Discord
+
+> Excellent job making Pi-Apps. Everyone is using it now. - FlyingCow from Discord
 
 > I need to find the time to try your app store. Thank you for all the work - [Puffergas](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=291240&p=1761535#p1761401)
 
