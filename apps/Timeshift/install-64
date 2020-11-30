@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd $HOME/Downloads
+wget https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_arm64.deb || error 'Failed to download timeshift!'
+sudo apt install -y --fix-broken ~/Downloads/timeshift_20.11.1_arm64.deb || error 'Failed to install .deb file!'
+rm -f timeshift_20.11.1_arm64.deb
