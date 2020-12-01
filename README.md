@@ -22,6 +22,10 @@ There are many open-source, community-developed software projects for Raspberry 
 
 > "I need to find the time to try your app store. Thank you for all the work" - [Puffergas](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=291240&p=1761535#p1761401)
 
+> "Good luck with your projects, Botspot, you're really making waves!" - Sakaki
+
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
+
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
 ## To install Pi-Apps
