@@ -47,7 +47,14 @@ fi
 onboot="$1"
 if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
   onboot='onboot'
-  sleep 1m #wait a minute, this is so the system will have booted all the way for an internet connection
+  
+  #make sure user installed some apps first. If none installed, then Pi-Apps may be unwanted/unused.
+  if [ "$(ls "${DIRECTORY}/data/status" | wc -l)" == 0 ];then
+    echo "No apps have been installed yet, so exiting now."
+    exit 0
+  fi
+  
+  sleep 10 #wait 10 seconds, this is so the system will have booted all the way for an internet connection
 fi
 
 if [ $nocheck == 1 ];then
@@ -85,7 +92,7 @@ if [ -d "${DIRECTORY}/update" ];then
   
   #list all files in main folder
   cd "${DIRECTORY}"
-  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/'  | grep -v 'xlunch/')"
   
   mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq | tr '\n' '|')"
   for file in $mergedfiles
@@ -151,17 +158,21 @@ fi
 LIST="${LIST::-1}"
 #echo "List: ${LIST}EOL"
 
+screen_width="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 7p)"
+screen_height="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 8p)"
+
+yad --form --text='Pi-Apps updates available.' \
+  --on-top --skip-taskbar --undecorated --close-on-unfocus \
+  --geometry=260+$((screen_width-262))+$((screen_height-150)) \
+  --image="${DIRECTORY}/icons/logo-64.png" \
+  --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":1 || exit 0
+
 echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --text='Updates available:' \
   --column=:IMG --column=Name \
   --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
-  --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
-  2>/dev/null
-
-button=$? #get exit code to determine which button was pressed
-echo "Button: ${button}"
-[ ! "$button" -eq 0 ] && error 'User cancelled' #exit now if anything but Update was clicked
+  --button='Update now'!"${DIRECTORY}/icons/download.png":0 || exit 0
 
 PREIFS="$IFS"
 IFS="|"
