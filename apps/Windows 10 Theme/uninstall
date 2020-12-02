@@ -12,3 +12,5 @@ if [ ! -f ~/Windows-10/uninstall ];then
 fi
 
 "${DIRECTORY}/etc/terminal-run" '~/Windows-10/uninstall ; sleep infinity'  "Don"\'"t close this terminal."
+
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
