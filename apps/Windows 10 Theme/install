@@ -18,4 +18,4 @@ if [ ! -f ~/Windows-10/install ];then
   error "Windows 10 install script missing!"
 fi
 
-"${DIRECTORY}/etc/terminal-run" '~/Windows-10/install ; sleep infinity' "Don"\'"t close this terminal."
+setsid ~/Windows-10/install &
