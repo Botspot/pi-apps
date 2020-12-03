@@ -15,9 +15,9 @@ else
   error "You must have Chromium Browser installed to use the Boxy SVG Chrome App!"
 fi
 
-git clone https://github.com/Botspot/Boxy-SVG-RPi
+git clone https://github.com/Botspot/Boxy-SVG-RPi || error "Failed to clone repository!"
 cd Boxy-SVG-RPi
-unzip ./boxysvgrpi.zip
+unzip ./boxysvgrpi.zip || error "Failed to extract boxysvgrpi.zip!"
 
 if [ -f "$HOME/.config/chromium/Default/Preferences" ];then
   pref_file="$HOME/.config/chromium/Default/Preferences"
