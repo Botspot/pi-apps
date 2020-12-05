@@ -7,6 +7,8 @@ function error {
   exit 1
 }
 
+cd $HOME
+
 rm -rf ~/chromium-v84-widevine &>/dev/null
 
 git clone https://github.com/Botspot/chromium-v84-widevine || error 'Failed to clone example.com repository!'
