@@ -9,7 +9,7 @@ function error {
 
 "${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
 
-if [ "$(cat "$DIRECTORY/data/status/Box86")" != 'installed' ];then
+if [ "$(cat "$DIRECTORY/data/status/Box86")" != 'installed' ] && [ ! -f /usr/local/bin/twistver ];then
   echo 'Installing box86 first...'
   "$DIRECTORY/manage" install Box86
 fi
