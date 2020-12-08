@@ -8,12 +8,12 @@ Pi-Apps brings all this hard-to-install software to one place, and simplifies th
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
 > I want to give the devs of Pi-Apps a big shout-out." - **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)**
 
-> "Awesome. Thanks for doing this." - **Novaspirit Tech**
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)**
 
 > "It definitely looks really cool.
 > Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
 
-> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - lukefrenner from Discord
+> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
 
 > "Pi apps has really terminated the use of the command-line." - vedforeal from Discord
 
@@ -21,7 +21,7 @@ Pi-Apps brings all this hard-to-install software to one place, and simplifies th
 
 > "Excellent job making Pi-Apps. Everyone is using it now." - FlyingCow from Discord
 
-> "Good luck with your projects, Botspot, you're really making waves!" - **Sakaki**
+> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)**
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
