@@ -1,7 +1,8 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-There are many open-source, community-developed software projects for Raspberry Pi, yet very few people know about them. Pi-Apps aims to improve this, functioning as a software catalog and standardizing installation.
+Some of the best software available for the Pi plaform is the hardest to install.  
+Pi-Apps brings all this hard-to-install software to one place, and simplifies the installation process to two clicks with the mouse.
 
 ## What do others say about Pi-Apps?
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
@@ -9,22 +10,18 @@ There are many open-source, community-developed software projects for Raspberry 
 
 > "Awesome. Thanks for doing this." - **Novaspirit Tech**
 
-> "I just discovered the nice project and I am impressed by the list of apps proposed especially Zoom or Visual Studio Code." - [olaxe](https://github.com/Botspot/pi-apps/issues/113#issue-752871771)
-
-> "Love this project. Keep up the awesome work and keep growing! Impressive." - [necro-nemesis](https://github.com/Botspot/pi-apps/issues/114#issue-753056982)
-
 > "It definitely looks really cool.
 > Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
 
-> "Thanks for all your great work! Every time I see your work, I appreciate it even more." - Itai from Discord
+> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - lukefrenner from Discord
+
+> "Pi apps has really terminated the use of the command-line." - vedforeal from Discord
+
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
 
 > "Excellent job making Pi-Apps. Everyone is using it now." - FlyingCow from Discord
 
-> "I need to find the time to try your app store. Thank you for all the work" - [Puffergas](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=291240&p=1761535#p1761401)
-
-> "Good luck with your projects, Botspot, you're really making waves!" - Sakaki
-
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
+> "Good luck with your projects, Botspot, you're really making waves!" - **Sakaki**
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
@@ -42,7 +39,6 @@ Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
 - [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
-- [RaspberryPiNews Pi-apps guide](https://www.youtube.com/watch?v=oiHTmwWGZPU)
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 ### Basic usage
 - This is the **main window**:  
