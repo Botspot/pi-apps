@@ -26,5 +26,9 @@ chmod +x scripts/rmlxde.sh
 chmod +x scripts/terminal.sh
 chmod +x scripts/xfce4fix.sh
 chmod +x scripts/uninstall.sh
+chmod +x scripts/fmsudo.sh
+chmod +x scripts/pi-apps.sh
+chmod +x scripts/ov_2.sh
+chmod +x scripts/ov_1.sh
 cp pigro.desktop  ~/Desktop
 cp pigro.desktop ~/.local/share/applications/
