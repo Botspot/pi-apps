@@ -7,4 +7,5 @@ function error {
   exit 1
 }
 
-sudo apt purge -y puffin-internet-terminal puffin-internet-terminal-demo
+sudo apt purge -y puffin-internet-terminal-demo
+sudo apt purge -y puffin-internet-terminal 

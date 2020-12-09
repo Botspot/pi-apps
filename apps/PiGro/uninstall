@@ -12,4 +12,5 @@ function error {
 
 rm -rf ~/PiGro-Aid-
 
-rm ~/Desktop/pigro.desktop /usr/share/applications/pigro.desktop
+rm ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
+
