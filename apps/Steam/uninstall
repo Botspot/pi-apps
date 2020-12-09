@@ -10,20 +10,7 @@ function error {
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
-ar x steam.deb
-filelist="$(tar tf data.tar.xz | sed "s/^.//g")"
+sudo apt purge -y steam-launcher
 
-IFS=$'\n'
-for file in $filelist
-do
-  if [ -f "$file" ];then
-    echo "Deleting $file"
-    sudo rm "$file"
-  fi
-done
-
-rm -f steam.deb control.tar.gz debian-binary data.tar.xz ~/Desktop/steam.desktop
-
-sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam
+sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam ~/Desktop/steam.desktop
 exit 0
