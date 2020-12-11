@@ -20,3 +20,15 @@ sudo ./retropie_setup.sh
 
 #Delete setup script
 sudo rm -r ~/RetroPie-Setup
+
+#Desktop shortcut
+echo '[Desktop Entry]
+Type=Application
+Name=RetroPie
+GenericName=RetroPie
+Comment=EmulationStation
+Icon=/home/pi/.icons/retropie.png
+Exec=sh -c "sudo chvt 1 && sudo ttyecho -n /dev/tty1 'emulationstation; sudo chvt 7'"
+Categories=Emulator;Game;
+Keywords=Emulator
+Terminal=true' > ~/.local/share/applications/retropie.desktop
