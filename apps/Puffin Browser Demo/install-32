@@ -11,4 +11,5 @@ wget https://download.puffinbrowser.com/linux/raspbian/puffin-internet-terminal-
 
 sudo apt install -y --fix-missing ~/puffin-internet-terminal.deb || error "APT failed to install puffin-internet-terminal.deb!"
 
+rm ~/puffin-internet-terminal.deb
 
