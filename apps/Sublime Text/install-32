@@ -12,9 +12,10 @@ if [ ! -f /usr/local/bin/box86 ];then
   wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash
   if [ ! -f /usr/local/bin/box86 ];then
     error "Box86 failed to install somehow!"
+  else
+    echo "installed" > "${DIRECTORY}/data/status/Box86"
   fi
 fi
-
 
 wget https://download.sublimetext.com/Sublime%20Text%202.0.2.tar.bz2 -O ~/sublime-text-2.tar.bz2 || error 'Failed to download!'
 tar -xf ~/sublime-text-2.tar.bz2 || error 'Failed to extract!'
