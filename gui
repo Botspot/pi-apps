@@ -76,8 +76,6 @@ uninstall() {
 
 motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
 
-
-
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 [ -z "$guimode" ] && guimode=yad
