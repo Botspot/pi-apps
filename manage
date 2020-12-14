@@ -47,6 +47,38 @@ if [ "$1" == 'multi-install' ];then
   IFS="$PREIFS"
   if [ $failed == 1 ];then
     exit 1
+  elif [ "$(ls "${DIRECTORY}/data/status" | wc -l)" -ge 5 ] && [ "$(($(date --utc --date '' +%s)/86400-30))" -ge "$(cat "${DIRECTORY}/data/last-donate-ask" 2>/dev/null || echo "0")" ];then
+    donatebox() {
+      TEXT="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/donate_message)"
+      if [ -z "$TEXT" ];then
+        TEXT=" <b>Pi-Apps depends on you!</b>
+ 
+ I (Botspot) have spent <b>over 300 hours</b> programming Pi-Apps.
+ Without financial support, I can't continue developing Pi-Apps as much as I have been. :(
+ If every Pi-Apps user pitched in a mere <i>25 cents</i>, I could work on open-source development full-time. 
+ 
+ If Pi-Apps has saved you time &amp; effort, please consider donating. Any amount helps.
+"
+      fi
+      yad --title="Donations, anyone?" --center \
+        --window-icon="${DIRECTORY}/icons/logo.png" \
+        --text="$(echo -e "$TEXT")" \
+        --button='Support Pi-Apps'!"${DIRECTORY}/icons/paypal.png":0 \
+        --button='No thanks'!"${DIRECTORY}/icons/exit.png"!"I respect your decision.
+Pi-Apps will always be free, but if everyone clicks this button, it won"\'"t be maintained forever.":1
+      button=$?
+      if [ $button == 0 ];then
+        x-www-browser 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=V6W8WM4GN8AJ2&item_name=Pi-Apps+development&currency_code=USD'
+        rm -f "${DIRECTORY}/data/last-donate-ask" 2>/dev/null
+      elif [ $button == 1 ];then
+        echo "$(($(date --utc --date '' +%s)/86400))" > "${DIRECTORY}/data/last-donate-ask"
+      else
+        rm -f "${DIRECTORY}/data/last-donate-ask" 2>/dev/null
+      fi
+    }
+    export -f donatebox
+    export DIRECTORY
+    setsid bash -c donatebox
   fi
 elif [ "$1" == 'multi-uninstall' ];then
   failed=0
