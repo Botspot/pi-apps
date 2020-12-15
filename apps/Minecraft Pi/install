@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+STORAGE="$(dirname "$0")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Install Docker
+curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
+sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
+rm "${STORAGE}/get-docker.sh"
+
+# Setup Backports Repo On Buster
+if [[ "$(lsb_release -cs)" = "buster" ]]; then
+    if grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
+        # Install Backports Key
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
+        # Install Backports Repository
+        echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
+        # Update APT Index
+        sudo apt-get update
+    fi
+fi
+
+wget -O "${STORAGE}/debs.zip" https://jenkins.thebrokenrail.com/job/minecraft-pi-docker/job/master/lastSuccessfulBuild/artifact/out/deb/*zip*/deb.zip || error 'Unable To Download'
+mkdir "${STORAGE}/deb"
+unzip "${STORAGE}/deb.zip" -d "${STORAGE}/deb" || error 'Unable To Unzip'
+sudo dpkg -i "$(find "${STORAGE}/deb/deb" -print -name 'minecraft-pi-native*.deb')" || error 'Unable To Install'
+sudo apt-get install -y -f || error 'Unable To Install Dependencies'
+rm -rf "${STORAGE}/deb"
