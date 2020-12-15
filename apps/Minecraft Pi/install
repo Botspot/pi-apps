@@ -10,13 +10,19 @@ function error {
   exit 1
 }
 
-# Install Docker
-curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
-sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
-rm "${STORAGE}/get-docker.sh"
+if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
+    error 'Unsupported Debian Version'
+fi
 
-# Setup Backports Repo On Buster
 if [[ "$(lsb_release -cs)" = "buster" ]]; then
+    # Uninstall Old Docker
+    sudo apt-get remove -y docker docker-engine docker.io containerd runc
+    # Install Docker
+    curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
+    sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
+    rm "${STORAGE}/get-docker.sh"
+
+    # Setup Backports Repo On Buster
     if grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
         # Install Backports Key
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
