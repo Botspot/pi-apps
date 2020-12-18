@@ -16,7 +16,7 @@ fi
 
 if [[ "$(lsb_release -cs)" = "buster" ]]; then
     # Uninstall Old Docker
-    sudo apt-get remove -y docker docker-engine docker.io containerd runc
+    sudo apt-get remove -y docker.io
     # Install Docker
     curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
     sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
