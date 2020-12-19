@@ -6,7 +6,7 @@
 if [ -f /usr/bin/lxterminal ];then
   lxterminal --title="$2" -e bash -c "$1"
 elif [ -f /usr/bin/xfce4-terminal ];then
-  xfce4-terminal --title="$2" -e bash -c "$1"
+  xfce4-terminal --title="$2" -x bash -c "$1"
 elif [ -f /usr/bin/mate-terminal ];then
   mate-terminal --title="$2" -e bash -c "$1"
 elif [ -f /usr/bin/xterm ];then
