@@ -9,7 +9,7 @@ function error {
 
 mkdir AIW
 cd ~/AIW || error "Failed to enter directory!"
-wget 'https://raw.githubusercontent.com/spectrumgamer75/Bash-Scripts/master/ALL%20IS%20WELL%20(V2.0)/aiwrpi.sh' || error "Failed to download!"
+wget 'https://raw.githubusercontent.com/spectrumgamer75/All-is-well/master/ALL%20IS%20WELL%20(V2.0)/aiwrpi.sh' || error "Failed to download!"
 chmod +x 'aiwrpi.sh'
 echo "[Desktop Entry]
 Name=All Is Well
