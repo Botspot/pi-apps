@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "openjdk-11-jdk" "$(dirname "$0")" || exit 1
+rm -f ideaIC-2020.3.tar.gz 2>/dev/null
+
+rm -rf ~/idea_ic 2>/dev/null
+mkdir ~/idea_ic || error "Failed to make idea_ic folder!"
+cd ~/idea_ic
+wget https://download.jetbrains.com/idea/ideaIC-2020.3.tar.gz || error "Failed to download!"
+
+tar xf ideaIC-2020.3.tar.gz --strip-components=1 || error "Failed to extract!"
+rm -f ideaIC-2020.3.tar.gz 2>/dev/null
+
+echo "[Desktop Entry]
+Type=Application
+Version=1.0
+Name=IntelliJ IDEA
+Path=$HOME/idea_ic/bin
+Exec=$HOME/idea_ic/bin/idea.sh
+Comment=A fast and lightweight IDE using GTK+
+Icon=$HOME/idea_ic/bin/idea.png
+Categories=Development;IDE;
+StartupNotify=true" > ~/.local/share/applications/intellijidea.desktop
