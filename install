@@ -14,6 +14,7 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
     error "User declined."
   fi
   if [ -f /usr/bin/apt ];then
+    sudo apt update
     sudo apt install -y yad
   elif [ -f /usr/bin/pacman ];then
     sudo pacman -S yad
