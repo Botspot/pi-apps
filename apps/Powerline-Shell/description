@@ -1,0 +1,7 @@
+A beautiful and useful prompt generator for Bash, ZSH, Fish, and tcsh:
+
+-Shows some important details about the git/svn/hg/fossil branch
+-Changes color if the last command exited with a failure code
+-If you're too deep into a directory tree, shortens the displayed path with an ellipsis
+-Shows the current Python virtualenv environment
+-It's easy to customize and extend.

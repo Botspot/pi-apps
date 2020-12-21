@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "python3 python-pip fonts-powerline fonts-fantasque-sans" "$(dirname "$0")" || exit 1
+
+wget -qO- https://raw.githubusercontent.com/techcoder20/RPI-PowerlineShell-Installer/main/install.sh | bash || error "install.sh failed!"
+
