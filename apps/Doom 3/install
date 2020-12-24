@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev \
+libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
+libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev libesd0-dev \
+freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake aria2 lolcat figlet" "$(dirname "$0")" || exit 1
+
+wget -qO- https://raw.githubusercontent.com/techcoder20/RPIDoom3Installer/main/install.sh | bash || error "install.sh script failed!"

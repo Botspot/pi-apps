@@ -1,0 +1,33 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#Removing Github Repo if already cloned from github
+
+sudo rm -r ~/RPIDoom3Installer 
+
+#Cloning Github Repo
+
+git clone https://github.com/techcoder20/RPIDoom3Installer.git ~/RPIDoom3Installer  || error 'Failed to clone example.com repository!'
+
+# Get dependencies
+
+"${DIRECTORY}/pkg-install" "libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev \
+libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
+libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev libesd0-dev \
+freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake aria2 lolcat figlet" "$(dirname "$0")" || exit 1
+
+
+#Going inside the installer directory
+cd ~/RPIDoom3Installer || error "Failed to change directory "
+
+#Making the install and uninstall script executable
+sudo chmod +x install.sh uninstall.sh || error "Failed To make install script and uninstall script executable"  
+
+#Running the install script
+./install.sh || error "Failed to run install script :("
