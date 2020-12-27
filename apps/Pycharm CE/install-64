@@ -7,11 +7,11 @@ function error {
   exit 1
 }
 
-filename='pycharm-community-2020.2.3'
+filename='pycharm-community-2020.3.1'
 
 rm -f $filename.tar.gz 2>/dev/null
 sudo rm -rf /opt/pycharm-community pycharm-community ${filename}
-#download the 2018.3.7 version "tar.gz" file
+#download the 2020.3.1 version "tar.gz" file
 wget https://download.jetbrains.com/python/${filename}.tar.gz || error "Failed to downloading file. Make sure 'wget' is installed and verify your Internet Network Connection"
 
 #extract and rename pycharm-community folder
