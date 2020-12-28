@@ -1,0 +1,71 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+if [ ! -f /usr/local/bin/box86 ];then
+  echo 'Installing box86 first...'
+  wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash
+  if [ ! -f /usr/local/bin/box86 ];then
+    error "Box86 failed to install somehow!"
+  else
+    echo "installed" > "${DIRECTORY}/data/status/Box86"
+  fi
+fi
+
+#Acquired at http://eagle.autodesk.com/eagle/software-versions/1
+
+sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
+
+if [ ! -d $HOME/eagle-7.7.0 ];then
+  rm -rf $HOME/eagle-7.7.0
+  echo -n "Downloading Eagle 7.7.0... "
+  wget -q http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
+  echo 'done'
+  echo -n "Extracting... "
+  bash ./eagle.run $HOME >/dev/null|| error "Failed to run eagle.run!"
+  rm -f ./eagle.run
+  echo "done"
+fi
+
+mkdir -p $HOME/eagle &>/dev/null
+
+#make it runnable from a terminal
+sudo ln -s $HOME/eagle-7.7.0/bin/eagle /usr/local/bin/eagle
+
+echo -n "Creating menu button... "
+mkdir -p ~/.local/share/applications/ &>/dev/null
+echo "#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=7.7.0
+Type=Application
+Terminal=false
+Icon=$HOME/eagle-7.7.0/bin/icons/Epf.svg
+Name=Eagle
+Exec=eagle %f
+Comment=Design Circuit Boards with Eagle CAD
+MimeType=application/brd;
+Categories=Development;Electronics;" > ~/.local/share/applications/eagle.desktop
+echo "done"
+
+echo -n "Creating .brd mimetype... "
+sudo bash -c 'echo "<?xml version="\""1.0"\"" encoding="\""UTF-8"\""?>
+<mime-info xmlns="\""http://www.freedesktop.org/standards/shared-mime-info"\"">
+   <mime-type type="\""application/brd"\"">
+     <comment>EagleCAD Project</comment>
+     <glob pattern="\""*.brd"\""/>
+   </mime-type>
+</mime-info>" > /usr/share/mime/packages/brd.xml'
+sudo update-mime-database /usr/share/mime
+echo done
+
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'eagle.desktop')" ];then
+  echo -n "Associating the .brd mimetype with Eagle... "
+  echo "[Added Associations]
+application/brd=eagle.desktop;" >> ~/.config/mimeapps.list
+  echo done
+fi
