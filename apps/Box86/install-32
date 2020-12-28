@@ -7,17 +7,4 @@ function error {
   exit 1
 }
 
-if [ -d ~/box86 ];then
-  echo -e "\e[33mbox86 already exists on your system. Moving the old version to Trash...\e[39m"
-  gio trash ~/box86
-fi
-
-"${DIRECTORY}/pkg-install" "cmake" "$(dirname "$0")" || exit 1
-
-git clone https://github.com/ptitSeb/box86 || error "failed to download repo!"
-cd box86 || error "failed to enter directory!"
-mkdir build; cd build
-cmake .. -DRPI4=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error "cmake failed!"
-make -j24 || error "make failed!"
-sudo make install || error "sudo make install failed!"
-sudo systemctl restart systemd-binfmt
+wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash || error "update-box86 script failed somehow!"
