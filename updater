@@ -158,8 +158,8 @@ fi
 LIST="${LIST::-1}"
 #echo "List: ${LIST}EOL"
 
-screen_width="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 7p)"
-screen_height="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 8p)"
+screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
+screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
 
 yad --form --text='Pi-Apps updates available.' \
   --on-top --skip-taskbar --undecorated --close-on-unfocus \
