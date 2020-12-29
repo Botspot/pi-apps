@@ -1,16 +1,13 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-### Why use pi-apps?
-Say there's **a guy**. He's a beginner and comes from a Windows background.  
-On day one, he will try to install a few familiar Windows apps. He searches the web and finds a **bad tutorial**. The tutorial says to install an x86 deb file on your PC. Well that didn't work on the Pi!  
-So he searches again. This time he finds an **outdated tutorial** (from RPi's Wheezy days) on **some random dude's blog**. The procedure **destroys his OS**. Now this guy has to re-flash his SD card. **What a hassle.** :(  
-This happens to hundreds of beginner users every day of the year.  
-It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help!
+Say there's **a guy**. He's comes from a Windows background and doesn't know much about Linux or RPi.  
+On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a tutorial that doesn't work anymore. If he's unlucky, he will find a tutorial that bricks his OS. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
+Something needs to be done! Why hasn't anybody made a collection of bash scripts that install apps easily?
+Pi-Apps does exactly this - distributing over 50 app-installers that are executed with one click of the mouse.
 
 ## To install Pi-Apps
-Install git(if you haven't already) with
-`sudo apt install git`, then do
+Make sure `git` is installed with `sudo apt install git`, then run:
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
@@ -37,7 +34,11 @@ Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
 
 > "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
 
+> "Pi-Apps is the reason I got a Pi4!" - behjemen from Discord
+
 > "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
+
+> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)**
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
