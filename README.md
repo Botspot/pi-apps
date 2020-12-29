@@ -5,7 +5,7 @@ Say there's **a guy**. He's a beginner and comes from a Windows background.
 On day one, he will try to install a few familiar Windows apps. He searches the web and finds a **bad tutorial**. The tutorial says to install an x86 deb file on your PC. Well that didn't work on the Pi!  
 So he searches again. This time he finds an **outdated tutorial** (from RPi's Wheezy days) on **some random dude's blog**. The procedure **destroys his OS**. Now this guy has to re-flash his SD card. **What a hassle.** :(  
 This happens to hundreds of beginner users every day of the year.  
-It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help.
+It's about time: someone needs to **make a collection of bash scripts that install apps with a click of a button**. Pi-Apps is here to help.
 
 ## What do others say about Pi-Apps?
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
