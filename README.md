@@ -1,32 +1,16 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
+### Why use pi-apps?
 Say there's **a guy**. He's a beginner and comes from a Windows background.  
 On day one, he will try to install a few familiar Windows apps. He searches the web and finds a **bad tutorial**. The tutorial says to install an x86 deb file on your PC. Well that didn't work on the Pi!  
 So he searches again. This time he finds an **outdated tutorial** (from RPi's Wheezy days) on **some random dude's blog**. The procedure **destroys his OS**. Now this guy has to re-flash his SD card. **What a hassle.** :(  
 This happens to hundreds of beginner users every day of the year.  
-It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help.
-
-## What do others say about Pi-Apps?
-> "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
-> I want to give the devs of Pi-Apps a big shout-out." - **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)**
-
-> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)**
-
-> "It definitely looks really cool.
-> Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
-
-> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
-
-> "Pi-Apps is the reason I got a Pi4!" - behjemen from Discord
-
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
-
-> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)**
-
-> "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
+It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help!
 
 ## To install Pi-Apps
+Install git(if you haven't already) with
+`sudo apt install git`, then do
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
@@ -41,6 +25,22 @@ Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
 - [Report an error](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
+
+## What do others say about Pi-Apps?
+> "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
+> I want to give the devs of Pi-Apps a big shout-out." - **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)**
+
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)**
+
+> "It definitely looks really cool.
+> Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
+
+> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
+
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
+
+> "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
+
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
