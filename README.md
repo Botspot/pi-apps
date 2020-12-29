@@ -1,11 +1,27 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-Say there's **a guy**. He's a beginner and comes from a Windows background.  
-On day one, he will try to install a few familiar Windows apps. He searches the web and finds a **bad tutorial**. The tutorial says to install an x86 deb file on your PC. Well that didn't work on the Pi!  
-So he searches again. This time he finds an **outdated tutorial** (from RPi's Wheezy days) on **some random dude's blog**. The procedure **destroys his OS**. Now this guy has to re-flash his SD card. **What a hassle.** :(  
-This happens to hundreds of beginner users every day of the year.  
-It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help.
+Say there's **a guy**. He's comes from a Windows background and doesn't know much about Linux or RPi.  
+On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a tutorial that doesn't work anymore. If he's unlucky, he will find a tutorial that bricks his OS. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
+Something needs to be done! Why hasn't anybody made a collection of bash scripts that install apps easily?
+Pi-Apps does exactly this - distributing over 50 app-installers that are executed with one click of the mouse.
+
+## To install Pi-Apps
+Make sure `git` is installed with `sudo apt install git`, then run:
+```
+git clone https://github.com/Botspot/pi-apps
+~/pi-apps/install
+```
+The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
+## To run Pi-Apps
+Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
+### Useful links
+- [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
+- [Send Botspot a donation](https://paypal.me/josephmarchand)
+- [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
+- [Report an error](https://github.com/Botspot/pi-apps/issues/new)
+- [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
+- [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
@@ -26,21 +42,6 @@ It's about time: someone needs to **make a collection bash scripts that install 
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
-## To install Pi-Apps
-```
-git clone https://github.com/Botspot/pi-apps
-~/pi-apps/install
-```
-The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
-## To run Pi-Apps
-Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
-### Useful links
-- [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
-- [Send Botspot a donation](https://paypal.me/josephmarchand)
-- [View changelog](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md)
-- [Report an error](https://github.com/Botspot/pi-apps/issues/new)
-- [Leepspvideo Pi-Apps walkthrough](https://www.youtube.com/watch?v=zxyWQ3FV98I)
-- [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
