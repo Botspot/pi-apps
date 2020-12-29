@@ -26,6 +26,8 @@ echo "$hidelist" > "${DIRECTORY}/data/hidelist"
   "${DIRECTORY}/install"
 fi) &
 
+rm -f "${DIRECTORY}/apps/Doom 3/install" &>/dev/null
+
 install() {
   app="$1"
   #terminal title text
