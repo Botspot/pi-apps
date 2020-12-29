@@ -1,8 +1,11 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-Some of the best software available for the Pi plaform is the hardest to install.  
-Pi-Apps brings all this hard-to-install software to one place, and simplifies the installation process to two clicks with the mouse.
+Say there's **a guy**. He's a beginner and comes from a Windows background.  
+On day one, he will try to install a few familiar Windows apps. He searches the web and finds a **bad tutorial**. The tutorial says to install an x86 deb file on your PC. Well that didn't work on the Pi!  
+So he searches again. This time he finds an **outdated tutorial** (from RPi's Wheezy days) on **some random dude's blog**. The procedure **destroys his OS**. Now this guy has to re-flash his SD card. **What a hassle.** :(  
+This happens to hundreds of beginner users every day of the year.  
+It's about time: someone needs to **make a collection bash scripts that install apps with a click of a button**. Pi-Apps is here to help.
 
 ## What do others say about Pi-Apps?
 > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
@@ -15,11 +18,9 @@ Pi-Apps brings all this hard-to-install software to one place, and simplifies th
 
 > "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
 
-> "Pi apps has really terminated the use of the command-line." - vedforeal from Discord
+> "Pi-Apps is the reason I got a Pi4!" - behjemen from Discord
 
 > "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
-
-> "Excellent job making Pi-Apps. Everyone is using it now." - FlyingCow from Discord
 
 > "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)**
 
@@ -32,7 +33,7 @@ git clone https://github.com/Botspot/pi-apps
 ```
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ## To run Pi-Apps
-Menu -> Accessories -> Pi Apps, or type `./pi-apps/gui`.
+Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
 ### Useful links
 - [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
 - [Send Botspot a donation](https://paypal.me/josephmarchand)
@@ -167,6 +168,7 @@ Embed code:
 > Most people never find them.  
 > One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
 > (Which would you rather do - click a shiny Install button, or copy-n-paste a bunch of commands from a sketchy blog tutorial?)
+
  - How long did it take to program this?  
 > About two weeks of nearly non-stop coding to make Pi-Apps from the ground-up. And since then, I've regularly fixed bugs, solved problems, adding new features, and handled new app submissions.
 > 
