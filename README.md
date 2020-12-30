@@ -3,7 +3,7 @@
 
 Say there's **a guy**. He's comes from a Windows background and doesn't know much about Linux or RPi.  
 On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a **tutorial that doesn't work** anymore. If he's unlucky, he will find a **tutorial that bricks his OS**. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
-Something needs to be done! Why hasn't anybody made a **collection of bash scripts that install apps easily**?
+Something needs to be done! Why hasn't anybody made a **collection of bash scripts that install apps easily**?  
 Pi-Apps does exactly this - distributing over 50 useful app install scripts that are executed with one click of the mouse.
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (the most famous RPi YouTuber) says:
