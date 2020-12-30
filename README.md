@@ -2,9 +2,14 @@
 ## Raspberry Pi App Store for Open Source Projects
 
 Say there's **a guy**. He's comes from a Windows background and doesn't know much about Linux or RPi.  
-On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a tutorial that doesn't work anymore. If he's unlucky, he will find a tutorial that bricks his OS. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
-Something needs to be done! Why hasn't anybody made a collection of bash scripts that install apps easily?
-Pi-Apps does exactly this - distributing over 50 app-installers that are executed with one click of the mouse.
+On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a **tutorial that doesn't work** anymore. If he's unlucky, he will find a **tutorial that bricks his OS**. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
+Something needs to be done! Why hasn't anybody made a **collection of bash scripts that install apps easily**?
+Pi-Apps does exactly this - distributing over 50 useful app install scripts that are executed with one click of the mouse.
+
+**[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (the most famous RPi YouTuber) says:
+
+> "It's an **awesome** Raspberry Pi app store and it **works really well** and there's lots of great stuff in here and it's super easy to install.
+> I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
 Make sure `git` is installed with `sudo apt install git`, then run:
@@ -24,9 +29,6 @@ Menu -> Accessories -> Pi Apps, or type `~/pi-apps/gui`.
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
-> "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install.
-> I want to give the devs of Pi-Apps a big shout-out." - **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)**
-
 > "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)**
 
 > "It definitely looks really cool.
