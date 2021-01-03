@@ -9,54 +9,18 @@ function error {
 
 cd $HOME
 
-#if box86 folder exists
-if [ -d box86 ];then
-  # if OS is not twisteros, then ask
-  if [ ! -f /usr/local/bin/twistver ];then
-    echo -n "Box86 already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
-    read answer
-    if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
-      echo -e "OK, using your pre-existing version of box86.\nBe warned though: It may be out of date and \e[1m\e[97mmay not run Zoom successfully!\e[0m"
-      #os is not twister, and box86 exists, but user declined overwrite
-      compile=0
-    else
-      #not twisteros, box86 does exist, and user confirmed overwrite
-      compile=1
-    fi
-  else
-    #os is twisteros and box86 folder exists: don't even ask, grayduck says the answer is NO
-    compile=0
-  fi
-else
-  #os may or may not be twisteros, but box86 does not exist
-  compile=1
-fi
-
-
-echo ''
-
-if [ -d "${HOME}/zoom" ];then
-  echo -ne "${HOME}/zoom already exists on your system. Do you want it overwritten with the latest version? [Y/n] "
-  read answer
-  if [ ! -z "$answer" ] && [ "$answer" == 'n' ];then
-    dlzoom=0
-  else
-    dlzoom=1
-  fi
-else
-  dlzoom=1
-fi
-
 # Get dependencies
 cd $HOME
-"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 cmake pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 cmake pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 
 #refresh lib list
 sudo ldconfig
 
-if [ $dlzoom == 1 ];then
+if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
+  #wget 'https://zoom.us/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://d11yldzmag5yn.cloudfront.net/prod/5.4.53391.1108/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
+  #get outdated Zoom client from Botspot's mirror because it's more stable
   wget 'https://github.com/Botspot/zoom_686_mirror/raw/main/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
   tar -xf ~/zoom_i686.tar.xz || error 'Failed to extract Zoom i686!'
   rm -f ~/zoom_i686.tar.xz #who cares if this fails
@@ -64,42 +28,36 @@ fi
 
 echo 'Creating launcher script'
 echo '#!/bin/bash
-echo -e "\e[102m\e[30mLaunching pulseaudio.\e[0m"
-pulseaudio &
-pulsepid=$!
-trap "kill $pulsepid" EXIT
-echo "the pulsepid is $pulsepid"
-sleep 2
+trap "echo '\''Zoom exited. Close this terminal to exit'\'' ; sleep infinity" EXIT
+if [ -z "$(ps aux | grep pulseaudio | grep -v grep)" ];then
+  echo -e "\e[102m\e[30mLaunching pulseaudio.\e[0m"
+  pulseaudio &
+  pulsepid=$!
+  trap "kill $pulsepid" EXIT
+  echo "the pulsepid is $pulsepid"
+  sleep 2
+fi
 cd ${HOME}/zoom/
 echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
 box86 zoom' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
 
-if [ $compile == 1 ];then
-  gio trash ~/box86
-  git clone https://github.com/ptitSeb/box86 || error 'Failed to clone repository!'
-  cd box86 || error 'Failed to enter repository!'
-  mkdir build || error 'Failed to make build directory!'
-  cd build || error 'Failed to enter build directory!'
-  cmake .. -DRPI4=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake!'
-  
-  echo "Compiling box86..."
-  make -j24 || error 'Failed to compile!'
-  
-  echo "Installing box86 on your system..."
-  sudo make install || error 'Failed to run sudo make install!'
-  cd $HOME
+if [ -f /usr/local/bin/box86 ];then
+  echo "Updating box86..."
+else
+  echo "Installing box86..."
 fi
-cd $HOME
-
+wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash || error "Box86 installation script failed!"
 if [ ! -f /usr/local/bin/box86 ];then
-  error "Box86 should be installed by now, but /usr/local/bin/box86 does not exist!"
+  error "Box86 failed to install somehow!"
+else
+  echo "installed" > "${DIRECTORY}/data/status/Box86"
 fi
 
 echo "Restarting systemd-binfmt service..."
 sudo systemctl restart systemd-binfmt #if this fails, no big deal.
 
-echo "Creating Application Menu button..."
+echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
 Name=Zoom
 Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh"\"" 'Close this window to exit Zoom'
@@ -109,6 +67,152 @@ Type=Application
 Comment=i386 version of software platform used for teleconferencing using Box86
 Categories=Network;
 StartupNotify=true" > ~/.local/share/applications/zoom.desktop
+
+if [ ! -f /etc/pulse/client.conf ] || [ "$(sha256sum /etc/pulse/client.conf | awk '{print $1}')" == 'e52ffe06a7fe32ff1ac69aab359059917fe6ee06b37ed1d2bf2df9e4cfd68e2d' ];then
+  echo "Fixing pulseaudio client.conf..."
+  sudo rm -f /etc/pulse/client.conf &>/dev/null
+  echo "# This file is part of PulseAudio.
+#
+# PulseAudio is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# PulseAudio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PulseAudio; if not, see <http://www.gnu.org/licenses/>.
+
+## Configuration file for PulseAudio clients. See pulse-client.conf(5) for
+## more information. Default values are commented out.  Use either ; or # for
+## commenting.
+
+; default-sink =
+; default-source =
+; default-server =
+; default-dbus-server =
+
+; autospawn = yes
+; daemon-binary = /usr/bin/pulseaudio
+; extra-arguments = --log-target=syslog
+
+; cookie-file =
+
+; enable-shm = yes
+; shm-size-bytes = 0 # setting this 0 will use the system-default, usually 64 MiB
+
+; auto-connect-localhost = no
+; auto-connect-display = no" | sudo tee /etc/pulse/client.conf &>/dev/null
+fi
+
+#fix PA autostart file
+if [ ! -f /etc/xdg/autostart/pulseaudio.desktop ];then
+  echo "Repairing pulseaudio autostart .desktop file..."
+  echo "[Desktop Entry]
+Version=1.0
+Name=PulseAudio Sound System
+Name[as]=PulseAudio শব্দ ব্যৱস্থা
+Name[be]=Гукавая сістэма PulseAudio
+Name[bn_IN]=PulseAudio শব্দ ব্যবস্থা
+Name[ca]=Sistema de so PulseAudio
+Name[cs]=Zvukový systém PulseAudio
+Name[de]=PulseAudio Soundsystem
+Name[de_CH]=PulseAudio Sound System
+Name[el]=Σύστημα ήχου PulseAudio
+Name[es]=Sistema de Sonido PulseAudio
+Name[fi]=PulseAudio-äänijärjestelmä
+Name[fr]=Système de son PulseAudio
+Name[gl]=Sistema de son PulseAudio
+Name[gu]=PulseAudio સાઉન્ડ સિસ્ટમ
+Name[he]=מערכת הקול PulseAudio
+Name[hi]=पल्सऑडियो ध्वनि तंत्र
+Name[hr]=PulseAudio zvučni sustav
+Name[hu]=PulseAudio hangrendszer
+Name[id]=Sistem Suara PulseAudio
+Name[it]=Sistema sonoro PulseAudio
+Name[ja]=PulseAudio サウンドシステム
+Name[kn]=PulseAudio ಧ್ವನಿ ವ್ಯವಸ್ಥೆ
+Name[ko]=펄스오디오 사운드 시스템
+Name[lt]=PulseAudio garso sistema
+Name[ml]=PulseAudio സൌണ്ട് സിസ്റ്റം
+Name[mr]=PulseAudio आवाज प्रणाली
+Name[nl]=PulseAudio geluidssysteem
+Name[nn]=PulseAudio lydsystem
+Name[oc]=Sistèma de son PulseAudio
+Name[or]=PulseAudio ଧ୍ୱନି ତନ୍ତ୍ର
+Name[pa]=ਪਲਸਆਡੀਓ ਸਾਊਂਡ ਸਿਸਟਮ
+Name[pl]=System dźwięku PulseAudio
+Name[pt]=Sistema de Som PulseAudio
+Name[pt_BR]=Sistema de som PulseAudio
+Name[ru]=Звуковая система PulseAudio
+Name[sk]=Zvukový systém PulseAudio
+Name[sr]=PulseAudio звучни систем
+Name[sr@latin]=PulseAudio zvučni sistem
+Name[sv]=PulseAudio ljudsystem
+Name[ta]=பள்ஸ் ஆடியோ ஒலி கணினி
+Name[te]=PulseAudio శబ్దపు సిస్టమ్
+Name[tr]=PulseAudio Ses Sistemi
+Name[uk]=Звукова система PulseAudio
+Name[zh_CN]=PulseAudio 声音系统
+Name[zh_TW]=PulseAudio 音效系統
+Comment=Start the PulseAudio Sound System
+Comment[as]=PulseAudio শব্দ ব্যৱস্থা আৰম্ভ কৰা হ'ব
+Comment[be]=Запуск гукавой сістэмы PulseAudio
+Comment[bn_IN]=PulseAudio শব্দ ব্যবস্থা আরম্ভ করা হবে
+Comment[ca]=Inicialitza el sistema de so PulseAudio
+Comment[cs]=Spustit zvukový systém PulseAudio
+Comment[de]=Das PulseAudio Soundsystem starten
+Comment[de_CH]=Das PulseAudio Sound System starten
+Comment[el]=Έναρξη του συστήματος ήχου PulseAudio
+Comment[es]=Iniciar el Sistema de Sonido PulseAudio
+Comment[fi]=Käynnistä PulseAudio-äänijärjestelmä
+Comment[fr]=Démarrer le système de son PulseAudio
+Comment[gl]=Iniciar o Sistema de son PulseAudio
+Comment[gu]=PulseAudio સાઉન્ડ સિસ્ટમને શરૂ કરો
+Comment[he]=התחל את מערכת הקול PulseAudio
+Comment[hi]=पल्सऑडियो ध्वनि तंत्र प्रारंभ करें
+Comment[hr]=Pokreni PulseAudio zvučni sustav
+Comment[hu]=A PulseAudio hangrendszer elindítása
+Comment[id]=Memulai Sistem Suara PulseAudio
+Comment[it]=Avvia il sistema sonoro PulseAudio
+Comment[ja]=PulseAudio サウンドシステムを開始
+Comment[kn]=PulseAudio ಧ್ವನಿ ವ್ಯವಸ್ಥೆಯನ್ನು ಆರಂಭಿಸಿ
+Comment[ko]=펄스오디오 사운드 시스템을 시작합니다
+Comment[lt]=Paleisti PulseAudio garso sistemą
+Comment[ml]=PulseAudio സൌണ്ട് സിസ്റ്റം ആരംഭിക്കുക
+Comment[mr]=PulseAudio आवाज प्रणाली सुरू करा
+Comment[nl]=Start het PulseAudio geluidssysteem
+Comment[nn]=Start PulseAudio-lydsystemet
+Comment[oc]=Aviar lo sistèma de son PulseAudio
+Comment[or]=PulseAudio ଧ୍ୱନି ତନ୍ତ୍ରକୁ ଆରମ୍ଭ କରନ୍ତୁ
+Comment[pa]=ਪਲਸਆਡੀਓ ਸਾਊਂਡ ਸਿਸਟਮ ਚਲਾਓ
+Comment[pl]=Uruchomienie systemu dźwięku PulseAudio
+Comment[pt]=Inciar o Sistema de Som PulseAudio
+Comment[pt_BR]=Iniciar o sistema de som PulseAudio
+Comment[ru]=Запуск звуковой системы PulseAudio
+Comment[sk]=Spustenie zvukového systému PulseAudio
+Comment[sr]=Покрени PulseAudio звучни систем
+Comment[sr@latin]=Pokreni PulseAudio zvučni sistem
+Comment[sv]=Starta ljudsystemet PulseAudio
+Comment[ta]=பள்ஸ் ஆடியோ ஒலி கணினியை துவக்கவும
+Comment[te]=PulseAudio శబ్దపు సిస్టమ్‌ను ప్రారంభించుము
+Comment[tr]=PulseAudio Ses Sistemini Başlat
+Comment[uk]=Запустити звукову систему PulseAudio
+Comment[zh_CN]=启动 PulseAudio 声音系统
+Comment[zh_TW]=啟動 PulseAudio 音效系統
+Exec=start-pulseaudio-x11
+Terminal=false
+Type=Application
+Categories=
+GenericName=
+X-GNOME-Autostart-Phase=Initialization
+X-KDE-autostart-phase=1" | sudo tee /etc/xdg/autostart/pulseaudio.desktop &>/dev/null
+fi
+systemctl --user unmask pulseaudio.service pulseaudio.socket
+systemctl --user enable pulseaudio.service pulseaudio.socket
 
 echo "Installation complete!"
 

@@ -8,5 +8,6 @@ function error {
 }
 gio trash "${HOME}/.zoom"
 gio trash "${HOME}/zoom"
+rm -f ~/.local/share/applications/zoom.desktop
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
