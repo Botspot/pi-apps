@@ -13,6 +13,13 @@ function error {
 #example below:
 wget -O ~/.conkyrc https://raw.githubusercontent.com/Botspot/rpi_conky/master/conkyrc || error 'Failed to download conkyrc!!'
 
+#change eth0 to wlan0 in conky config if user is currently using WiFi
+interface="$(ip addr | awk '/state UP/ {print $2}' | tr -d ':' | head -n 1)"
+if [ ! -z "$interface" ];then
+  sed -i "s/eth0/$interface/g" ~/.conkyrc
+fi
+
+
 # Get dependencies
 "${DIRECTORY}/pkg-install" "conky" "$(dirname "$0")" || exit 1
 
