@@ -25,6 +25,13 @@ hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*
 echo "$hidelist" > "${DIRECTORY}/data/hidelist"
 ) &
 
+#rename 'Vivaldi web browser' to Vivaldi
+(find "$DIRECTORY" -name 'Vivaldi '* | while read f; do mv -v "$f" "$(echo "${f}" | sed 's/ web browser//g')"; done
+if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'Vivaldi web browser')" ];then
+  rm -rf "$DIRECTORY/data/preload"
+fi
+) &
+
 (if cat ~/.config/autostart/pi-apps-updater.desktop | grep -q installedonly ;then
   "${DIRECTORY}/install"
 fi) &
