@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "mono-complete apt-transport-https dirmngr gnupg ca-certificates" "$(dirname "$0")" || exit 1
+
+rm -rf ~/MissionPlanner-latest &>/dev/null
+mkdir ~/MissionPlanner-latest
+cd ~/MissionPlanner-latest
+wget https://firmware.ardupilot.org/Tools/MissionPlanner/MissionPlanner-latest.zip || error "Failed to download MissionPlanner-latest.zip!"
+unzip MissionPlanner-latest.zip || error "Failed to extract MissionPlanner-latest.zip!"
+rm -f MissionPlanner-latest.zip
+cd
+
+echo "Getting latest version of Mono..."
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
+echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+sudo apt update
+sudo apt install -y mono-complete
+
+echo "[Desktop Entry]
+StartupNotify=true
+Terminal=false
+Type=Application
+Name=Mission Planner
+Exec=bash -c 'LIBGL_ALWAYS_SOFTWARE=1 mono $HOME/MissionPlanner-latest/MissionPlanner.exe'
+Icon=$(dirname "$0")/icon-64.png
+Categories=Development;Electronics;
+Comment=Command and control autonomius planes, vehicles and boats" > ~/.local/share/applications/mission-planner.desktop
+
