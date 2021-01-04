@@ -17,7 +17,10 @@ if [ ! -z "$1" ];then
 fi
 
 #hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
-(#prettify hidelist file
+(if [ -f /usr/local/bin/twistver ] && [ -z "$(cat "${DIRECTORY}/data/hidelist" | grep "Lightpad")" ];then
+  "${DIRECTORY}/install"
+fi
+#prettify hidelist file
 hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*$/d')"
 echo "$hidelist" > "${DIRECTORY}/data/hidelist"
 ) &
