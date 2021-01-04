@@ -80,7 +80,8 @@ Retropie
 Scrcpy
 Windows 10 Theme
 Chromium Widevine
-Back to Chromium v78" >> "${DIRECTORY}/data/hidelist"
+Back to Chromium v78
+Lightpad" >> "${DIRECTORY}/data/hidelist"
 fi
 
 echo "Creating settings if they don"\'"t exist..."
