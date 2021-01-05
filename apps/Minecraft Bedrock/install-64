@@ -13,8 +13,8 @@ sudo dpkg --add-architecture armhf
 #Download file
 cd ~
 curl -L https://www.dropbox.com/s/ewkdoylatsmvjgb/Minecraft_Bedrock_Launcher-arm_aarch64.0.0.626.AppImage --output MCBedrock_aarch64.AppImage
-chmod +x MCBedrock_aarch64.AppImage
-sudo mv MCBedrock_aarch64.AppImage /opt/MCBedrock_aarch64.AppImage
+chmod +x MCBedrock.AppImage
+sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
 #Make Desktop file
 echo '[Desktop Entry]
