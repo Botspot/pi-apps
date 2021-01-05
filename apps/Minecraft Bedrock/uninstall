@@ -8,6 +8,7 @@ function error {
 
 #Remove app
 sudo rm /usr/bin/MCBedrock.AppImage
+rm -rf ~/.cache/Minecraft\ Linux\ Launcher && rm -rf ~/.cache/mcpelauncher && rm -rf ~/.cache/mcpelauncher-webview && rm -rf ~/.cache/msa && rm -rf ~/.cache/msa-ui-qt && rm -rf ~/.local/share/msa
 
 #Dialog
 HEIGHT=15
