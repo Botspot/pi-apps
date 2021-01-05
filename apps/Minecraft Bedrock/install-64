@@ -14,7 +14,7 @@ sudo dpkg --add-architecture armhf
 cd ~
 curl -L https://www.dropbox.com/s/ewkdoylatsmvjgb/Minecraft_Bedrock_Launcher-arm_aarch64.0.0.626.AppImage --output MCBedrock_aarch64.AppImage
 chmod +x MCBedrock_aarch64.AppImage
-sudo mv MCBedrock_aarch64.AppImage /usr/local/bin/MCBedrock_aarch64.AppImage
+sudo mv MCBedrock_aarch64.AppImage /opt/MCBedrock_aarch64.AppImage
 
 #Make Desktop file
 echo '[Desktop Entry]
@@ -23,7 +23,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "GALLIUM_HUD=simple,fps /usr/local/bin/MCBedrock_aarch64.AppImage"
+Exec=bash -c "GALLIUM_HUD=simple,fps /opt/MCBedrock_aarch64.AppImage"
 Categories=Game;
 Terminal=false
 StartupNotify=true' > ~/.local/share/applications/minecraftbedrock.desktop
