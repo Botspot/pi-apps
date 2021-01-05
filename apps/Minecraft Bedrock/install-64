@@ -23,7 +23,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "GALLIUM_HUD=simple,fps /opt/MCBedrock_aarch64.AppImage"
+Exec=bash -c "GALLIUM_HUD=simple,fps /opt/MCBedrock.AppImage"
 Categories=Game;
 Terminal=false
 StartupNotify=true' > ~/.local/share/applications/minecraftbedrock.desktop
