@@ -11,9 +11,9 @@ function error {
 
 #Download file
 cd ~
-curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/ng.appimage/Minecraft_Bedrock_Launcher-arm.0.0.619.AppImage --output MCBedrock.AppImage
+curl -L https://www.dropbox.com/s/561zph65hlh6lbm/Minecraft_Bedrock_Launcher-arm.0.0.626.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
-sudo mv MCBedrock.AppImage /usr/bin/MCBedrock.AppImage
+sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
 #Make Desktop file
 echo '[Desktop Entry]
@@ -22,7 +22,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "sudo modprobe fuse ; GALLIUM_HUD=simple,fps /usr/bin/MCBedrock.AppImage"
+Exec=bash -c "sudo modprobe fuse ; GALLIUM_HUD=simple,fps /opt/MCBedrock.AppImage"
 Categories=Game;
 Terminal=false
 StartupNotify=true' > ~/.local/share/applications/minecraftbedrock.desktop
