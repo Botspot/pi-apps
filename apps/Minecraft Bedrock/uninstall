@@ -8,3 +8,32 @@ function error {
 
 #Remove app
 sudo rm /usr/bin/MCBedrock.AppImage
+
+#Dialog
+HEIGHT=15
+WIDTH=40
+CHOICE_HEIGHT=4
+BACKTITLE="Do you want to delete all game data for Minecraft Bedrock on this device?"
+TITLE="Delete all game data(including worlds)?"
+MENU="Choose one of the following options:"
+
+OPTIONS=(1 "No"
+         2 "Yes")
+
+CHOICE=$(dialog --clear \
+                --backtitle "$BACKTITLE" \
+                --title "$TITLE" \
+                --menu "$MENU" \
+                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                "${OPTIONS[@]}" \
+                2>&1 >/dev/tty)
+clear
+case $CHOICE in
+        1)
+            echo "Not removing any data! Hope you install me again!" 
+            ;;
+        2)
+            echo "Removing ALL game data! Press [CTRL+C within the next 10 seconds to cancel]" && sleep 10 && echo "REMOVING DATA!" && rm -rf ~/.config/Minecraft\ Linux\ Launcher && rm -rf ~/.cache/Minecraft\ Linux\ Launcher && rm -rf ~/.cache/mcpelauncher && rm -rf ~/.cache/mcpelauncher-webview && rm -rf ~/.cache/msa && rm -rf ~/.cache/msa-ui-qt && rm -rf ~/.local/share/mcpelauncher && rm -rf ~/.local/share/msa
+      	    ;;
+esac
+
