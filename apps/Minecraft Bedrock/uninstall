@@ -33,6 +33,6 @@ case $CHOICE in
             echo "Not removing any data! Hope you install me again!" 
             ;;
         2)
-            echo "Removing ALL game data! Press [CTRL+C within the next 10 seconds to cancel]" && sleep 10 && echo "REMOVING DATA!" && rm -rf ~/.config/Minecraft\ Linux\ Launcher && rm -rf ~/.cache/Minecraft\ Linux\ Launcher && rm -rf ~/.cache/mcpelauncher && rm -rf ~/.cache/mcpelauncher-webview && rm -rf ~/.cache/msa && rm -rf ~/.cache/msa-ui-qt && rm -rf ~/.local/share/mcpelauncher && rm -rf ~/.local/share/msa
+            echo "Removing ALL game data! Press [CTRL+C within the next 10 seconds to cancel]" && sleep 10 && echo "REMOVING DATA!" && rm -rf ~/.config/Minecraft\ Linux\ Launcher && rm -rf ~/.local/share/mcpelauncher
       	    ;;
 esac
