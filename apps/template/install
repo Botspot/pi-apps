@@ -2,8 +2,11 @@
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
+RED='\033[0;31m'
+NC='\033[0m' 
+
 function error {
-  echo -e "\\e[91m$1\\e[39m"
+  echo -e "${RED}\\e[91m$1\\e[39m${NC}"
   exit 1
 }
 
