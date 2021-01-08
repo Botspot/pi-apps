@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-sudo wget https://github.com/libredeb/lightpad/releases/download/v0.0.8/lightpad_0.0.8.rev1_armhf.deb -P ~/ || error "Failed to download lightpad_0.0.8.rev1_armhf.deb!"
+wget https://github.com/libredeb/lightpad/releases/download/v0.0.8/lightpad_0.0.8.rev1_armhf.deb || error "Failed to download lightpad_0.0.8.rev1_armhf.deb!"
 
 sudo apt install -y --fix-missing ~/lightpad_0.0.8.rev1_armhf.deb || error "APT failed to install lightpad_0.0.8.rev1_armhf.deb!"
 
