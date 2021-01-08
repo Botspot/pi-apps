@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://greentree.cf">
+  <defs>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="248.928" cy="448.821" r="246.387" id="gradient-1">
+      <stop offset="0" style="stop-color: rgb(0, 139, 5);"/>
+      <stop offset="1" style="stop-color: rgb(0, 196, 7);"/>
+    </radialGradient>
+  </defs>
+  <circle style="fill: url(#gradient-1);" cx="250" cy="250" r="246.387"/>
+  <path d="M 280.182 246.554 H 516.675 L 436.047 162.554 L 517.155 247.054 L 436.047 331.554 L 516.675 247.554 H 280.182 V 246.554 Z" style="fill: rgb(216, 216, 216); stroke: rgb(255, 255, 255); stroke-linejoin: round; stroke-width: 50px;" transform="matrix(-1, 0.00007, -0.00007, -1, 648.685791, 497.026093)" bx:shape="arrow 280.182 162.554 236.973 169 1 81.108 80.628 1@5820eb95"/>
+  <path style="fill: rgb(4, 109, 0);" transform="matrix(-0.000072, 0.997296, -0.997277, -0.000072, 878.322937, -284.509583)" d="M 542.467 383.043 A 247.042 247.042 0 0 1 542.467 876.957 A 249.854 249.854 0 0 0 542.467 383.043 Z" bx:shape="crescent 536 630 247.042 177 0.942 1@983a383a"/>
+  <path style="fill: rgb(7, 223, 0);" transform="matrix(-0.000072, -0.997296, -0.997277, 0.000072, 878.322937, 784.509644)" d="M 553.233 383.56 A 247.042 247.042 0 0 1 553.233 876.44 A 251.538 251.538 0 0 0 553.233 383.56 Z" bx:shape="crescent 536 630 247.042 172 0.942 1@ced2a791"/>
+</svg>
