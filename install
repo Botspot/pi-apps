@@ -7,7 +7,7 @@ function error {
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
-if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
+if ! command -v yad >/dev/null;then
   echo -n "YAD is required but not installed. Install now? [Y/n] "
   read answer
   if [ "$answer" == n ];then
@@ -18,6 +18,8 @@ if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "inst
     sudo apt install -y yad
   elif [ -f /usr/bin/pacman ];then
     sudo pacman -S yad
+  else
+    error "Failed to find any package manager"
   fi
 fi
 
@@ -36,7 +38,7 @@ Type=Application
 Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
 
 echo "Adding Desktop shortcut..."
-cp -f ${HOME}/.local/share/applications/pi-apps.desktop ${HOME}/Desktop/pi-apps.desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/pi-apps.desktop
 
 echo "Creating Settings menu button..."
 echo "[Desktop Entry]
@@ -62,7 +64,7 @@ NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
 
 mkdir -p "${DIRECTORY}/data"
 cd "${DIRECTORY}/data"
-mkdir -p installed-packages preload settings status update-status
+mkdir -p installed-packages preload settings status update-status categories
 cd $HOME
 
 #hide template file by default
@@ -70,7 +72,9 @@ echo "template" > "${DIRECTORY}/data/hidelist"
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ];then
-  echo "BalenaEtcher
+  PREIFS="$IFS"
+  IFS=$'\n'
+  apps="BalenaEtcher
 Chromium Media Edition
 CommanderPi
 Box86
@@ -78,10 +82,15 @@ Discord
 piKiss
 Retropie
 Scrcpy
+Steam
 Windows 10 Theme
 Chromium Widevine
 Back to Chromium v78
-Lightpad" >> "${DIRECTORY}/data/hidelist"
+Lightpad"
+  for app in $apps ;do
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden'
+  done
+  echo "Finished hiding apps on TwisterOS."
 fi
 
 echo "Creating settings if they don"\'"t exist..."

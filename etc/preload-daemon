@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#runs in the background and refreshes all the list files
+
+DIRECTORY="$(dirname "$(readlink -f "$(dirname "$0")")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#variable 1 is yad or xlunch
+#variable 2 is 'once', if you only want this to run once and exit.
+
+if [ "$(ps aux | grep preload-daemon | wc -l)" -gt 3 ];then
+  echo "Another instance of preload-daemon is already running. Exiting now."
+  exit 0
+fi
+
+folders="$(cat ${DIRECTORY}/data/categories/structure | awk -F '|' '{print $2}' | sort | uniq | grep .)"
+echo "$folders"
+
+#runs every 30 secs for 10 mins
+for i in {1.."$([ "$2" == 'once' ] && echo '1' || echo '20')"};do
+  IFS=$'\n'
+  "${DIRECTORY}/preload" "$1" &>/dev/null
+  for folder in $folders ; do
+    "${DIRECTORY}/preload" "$1" "$folder" &>/dev/null
+  done
+  [ "$2" == 'once' ] && exit 0
+  sleep 30
+done

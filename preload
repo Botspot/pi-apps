@@ -26,13 +26,21 @@ if [ -z "$format" ];then
   format=yad
 fi
 
+#specifies an app folder(s)
+prefix="$2"
+
+timestampfile="${DIRECTORY}/data/preload/timestamps-$(echo "$prefix" | tr -d '/')"
+listfile="${DIRECTORY}/data/preload/LIST-$(echo "$prefix" | tr -d '/')"
+
 mkdir -p "${DIRECTORY}/data/preload"
 
 mktimestamps() {
   #these directories are checked for changes
   checkdirs="${DIRECTORY}/apps
 ${DIRECTORY}/data/settings
-${DIRECTORY}/data/status"
+${DIRECTORY}/data/status
+${DIRECTORY}/data/categories
+${DIRECTORY}/etc"
   
   timestamps=''
   PREIFS="$IFS"
@@ -45,16 +53,19 @@ $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
   done
   IFS="$PREIFS"
   #remove first empty newline
-  timestamps="${timestamps:1}"
+  timestamps="$prefix
+$format
+$(ls -1q "${DIRECTORY}/apps"/* | wc -l)
+${timestamps:1}"
 }
 
 reloadlist=0
 
-if [ -f "${DIRECTORY}/data/preload/timestamps" ];then
+if [ -f "$timestampfile" ];then
   #get modified timestamps for directories
   mktimestamps
   
-  if [ "$timestamps" == "$(cat "${DIRECTORY}/data/preload/timestamps")" ];then
+  if [ "$timestamps" == "$(cat "$timestampfile")" ];then
     #if current timestamps and saved timestamps match, then don't reload the list
     reloadlist=0
     echo "Timestamps match." 1>&2
@@ -68,17 +79,75 @@ else
   reloadlist=1
 fi
 
-if [ ! -f "${DIRECTORY}/data/preload/LIST" ];then
+if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
   echo "list file does not exist." 1>&2
   reloadlist=1
 fi
 
+#this ensures that all apps & categories stay preloaded.
+(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &
+
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
-  #get list of apps ----------------------------------- and exclude apps mentioned in hidelist file
-  APPS="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
-  #APPS="$(echo "$(ls "${DIRECTORY}/apps")")"
   
+  APPS="$(ls "${DIRECTORY}/apps")"
+  structure="$(cat "${DIRECTORY}/data/categories/structure")"
+  
+  #generate a virtual file system with apps in folders represented as subdirectories
+  PREIFS="$IFS"
+  IFS=$'\n'
+  vfiles=''
+  for app in $APPS
+  do
+    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
+    
+    if [ -z "$line" ];then
+      echo "WARNING: $app app not found in $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g') file." 1>&2
+      if [ -z "$onlinestructurefile" ];then
+        onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
+      fi
+      onlinematch="$(echo "$onlinestructurefile" | grep "$app"'|')"
+      if [ ! -z "$onlinematch" ];then
+        echo -e "Located the default category for the $app app from github.\nIt is: ${onlinematch}EOO" 1>&2
+        echo "$onlinematch" >> "${DIRECTORY}/data/categories/structure"
+      else
+        echo -e "Could not find the default category for the $app app." 1>&2
+        echo "${app}|" >> "${DIRECTORY}/data/categories/structure"
+      fi
+      #refresh structure file
+      structure="$(cat "${DIRECTORY}/data/categories/structure")"
+      line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
+    fi
+    
+    vfiles="$vfiles
+$line"
+  done
+  IFS="$PREIFS"
+  vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
+  #echo "$vfiles"
+  
+  if [ ! -z "$prefix" ];then
+    echo "Showing apps within $prefix/" 1>&2
+    
+    vfiles="$(echo "$vfiles" | grep "$prefix" | sed "s+$prefix/++g")"
+  fi
+  
+  vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
+  #                         only root file name     replace \ with /   move first / to end of line     remove duplicate entries
+  #vfiles="$(echo "$vfiles" | awk -F '/' '{print $1}' | sed 's+\\+/+g' | sed 's+^/\(.*\)+\1/+' | sort | uniq)"
+  
+  #echo "$vfiles" 1>&2
+  
+  #get list of apps --------------- and exclude apps mentioned in hidelist file ---------------- remove lines containing '/'
+  APPS="$(echo "$vfiles" | grep -v '/')"
+  
+  #get list of "directories"
+  DIRS="$(echo "$vfiles" | grep '/' | tr -d '/' | grep -vx "hidden")"
+  #APPS="$(ls "${DIRECTORY}/apps")"
+  
+  #echo -e "Apps: $APPS\nDirs: $DIRS" 1>&2
+  
+  #exit 0
   #remove apps that are not compatible with OS architecture
   PREIFS="$IFS"
   IFS=$'\n'
@@ -96,16 +165,28 @@ if [ $reloadlist == 1 ];then
   #shuffle the list if enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
+    DIRS="$(echo "$DIRS" | shuf)"
   fi
   
   if [ "$format" == yad ];then
     PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
+    for i in $DIRS
+    do
+      LIST="${LIST}${DIRECTORY}/icons/folder.png
+${DIRECTORY}/icons/none-24.png
+$i
+$i/
+App folder
+"
+    done
+    
     for i in $APPS
     do
       LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
 ${DIRECTORY}/apps/${i}/icon-24.png
+$i
 $i
 "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
@@ -115,6 +196,12 @@ $i
     PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
+    for i in $DIRS
+    do
+      LIST="$LIST
+${i};${DIRECTORY}/icons/folder-64.png;${i}/"
+    done
+    
     for i in $APPS
     do
       LIST="$LIST
@@ -125,21 +212,15 @@ ${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled"
   LIST="$(echo -e "$LIST")"
   
   #save entire list string to file for future use
-  echo "$LIST" > "${DIRECTORY}/data/preload/LIST"
+  echo "$LIST" > "$listfile"
   export CACHED_LIST="$LIST"
   
   #save timestamps to file too
   mktimestamps
-  echo "$timestamps" > "${DIRECTORY}/data/preload/timestamps"
+  echo "$timestamps" > "$timestampfile"
 else
-  if [ -z "$CACHED_LIST" ];then
-    echo "Reading list file..." 1>&2
-    LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
-    export CACHED_LIST="$LIST"
-  else
-    echo "Reading list variable..." 1>&2
-    LIST="$CACHED_LIST"
-  fi
+  echo "Reading list file..." 1>&2
+  LIST="$(cat "$listfile")"
 fi
 
 (#put icons in cache

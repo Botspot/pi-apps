@@ -17,20 +17,17 @@ if [ ! -z "$1" ];then
 fi
 
 #hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
-(if [ -f /usr/local/bin/twistver ] && [ -z "$(cat "${DIRECTORY}/data/hidelist" | grep "Lightpad")" ];then
+if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" ];then
   "${DIRECTORY}/install"
+  rm "${DIRECTORY}/data/hidelist"
 fi
-#prettify hidelist file
-hidelist="$(cat "${DIRECTORY}/data/hidelist" | sort | uniq | sed '/^[[:space:]]*$/d')"
-echo "$hidelist" > "${DIRECTORY}/data/hidelist"
-) &
 
 #rename 'Vivaldi web browser' to Vivaldi
-(find "$DIRECTORY" -name 'Vivaldi '* | while read f; do mv -v "$f" "$(echo "${f}" | sed 's/ web browser//g')"; done
-if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'Vivaldi web browser')" ];then
-  rm -rf "$DIRECTORY/data/preload"
-fi
-) &
+#(find "$DIRECTORY" -name 'Vivaldi '* | while read f; do mv -v "$f" "$(echo "${f}" | sed 's/ web browser//g')"; done
+#if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'Vivaldi web browser')" ];then
+#  rm -rf "$DIRECTORY/data/preload"
+#fi
+#) &
 
 (if cat ~/.config/autostart/pi-apps-updater.desktop | grep -q installedonly ;then
   "${DIRECTORY}/install"
@@ -93,8 +90,10 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 [ -z "$guimode" ] && guimode=yad
 #mode=yad
 
+prefix=''
+
 while true;do
-  LIST="$("${DIRECTORY}/preload" $guimode)"
+  LIST="$("${DIRECTORY}/preload" $guimode $prefix)"
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
@@ -103,20 +102,34 @@ while true;do
   
   while [ -z "$output" ];do
     
-    if [ $guimode == yad ];then
-      output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
-        --text="$motd" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+    if [ "$guimode" == yad ];then
+      if [ -z "$prefix" ];then
+        buttons=("--button=Install!${DIRECTORY}/icons/install.png:4" \
+        "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2" \
+        "--button=Details!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
+      else
+        buttons=("--button=!${DIRECTORY}/icons/back.png!Back:3" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!Details:0" )
+      fi
+      
+      output="$(echo -e "$LIST" | yad --center --title='Pi-Apps'"$([ ! -z "$prefix" ] && echo ": $(echo "$prefix" | tr '/' '>')")" --width=310 --height=400 --no-headers \
+        --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
         --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-        --column=:IMG --column=:IMG --column=Name --column=tip:HD --print-column=3 --tooltip-column=4 \
-        --button=Install!"${DIRECTORY}/icons/install.png":4 \
-        --button=Uninstall!"${DIRECTORY}/icons/uninstall.png":2 \
-        --button=Details!"${DIRECTORY}/icons/info.png"!'View more about the selected software:0' \
-        )"
+        --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+        --print-column=4 --tooltip-column=5 \
+        "${buttons[@]}" \
+      )"
       
       button=$? #get exit code to determine which button was pressed
       echo "Button: ${button}"
       if [ $button -eq 252 ];then #if window manager x was pressed
         exit 0
+      fi
+      if [ "$button" == 3 ];then
+        #back button
+        break
       fi
       if [ -z "$output" ];then
         echo "output variable empty!"
@@ -126,7 +139,8 @@ while true;do
     (You didn"\'"t select an App)" \
           --button=OK:0
       fi
-    elif [ $guimode == xlunch ];then
+      
+    elif [ "$guimode" == xlunch ];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
         sudo rm -rf /usr/bin/xlunch "$DIRECTORY/xlunch" 2>/dev/null
         sudo apt install -y libimlib2-dev libx11-dev
@@ -141,33 +155,54 @@ while true;do
           error "xlunch should be installed now, but /usr/bin/xlunch does not exist!"
         fi
       fi
+      #xlunch compiled
+      
       screen_width="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 7p)"
       screen_height="$(xdpyinfo | grep 'dimensions:' | tr 'x' '\n' | tr ' ' '\n' | sed -n 8p)"
       height=700
       width=800
       xposition=$(((screen_width/2)-(width/2)))
       yposition=$(((screen_height/2)-(height/2)))
+      
       if false;then
         scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
         convert -blur 10x5 ~/blur.png ~/blur.png
       fi
+      
+      if [ ! -z "$prefix" ];then
+        echo "Adding back button to xlunch..."
+        LIST="Back;${DIRECTORY}/icons/back-64.png;./
+$LIST"
+        LIST="$(echo "$LIST" | grep .)"
+      fi
+      echo "$LIST"
+      
+      if [ -z "$prefix" ];then
+        searchbox="Search: "
+      else
+        searchbox="Viewing $(echo "$prefix" | tr '/' '>'). Search: "
+      fi
+      
       output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
-        -p "Search: " -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
+        -p "$searchbox" -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
         --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
         --width $width --height $height --xposition $xposition --yposition $yposition \
         --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;"
-        -g ~/blur.png)"
+        #-g ~/blur.png
+        )"
       button=0
       
       if [ -z "$output" ];then
-        exit 0
+        error "xlunch did not report any selected apps!"
       fi
+    else
+      error "Unrecognized app list style '$guimode'!"
     fi
     output="$(echo "$output" | sed '/^$/d')"
     echo "Output: ${output}EOO"
     
-    
   done
+  #output variable populated
   
   case $button in
 
@@ -175,121 +210,152 @@ while true;do
       echo "User exited."
       exit 0
       ;;
+    3)
+      echo "Back"
+      prefix="$(dirname "$prefix" | tr -d '.')"
+      ;;
     0)
       echo "Details"
-      output="$(echo "$output" | head -n1)"
-      if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
-        installedpackages="
-This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
+      if echo "$output" | grep -q '/' ;then
+        #folder
+        if [ "$output" == './' ];then
+          echo "Back"
+          prefix="$(dirname "$prefix" | tr -d '.')"
+        else
+          prefix="$prefix/$output"
+          prefix="${prefix::-1}"
+          prefix="$(echo "$prefix" | sed 's+^/++')"
+        fi
+        echo "Prefix is $prefix"
+        output=''
       else
-        installedpackages=''
-      fi
-      
-      description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')"
-      
-      text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
+        #app
+        
+        output="$(echo "$output" | head -n1)"
+        if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+          installedpackages="
+This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
+        else
+          installedpackages=''
+        fi
+        
+        description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')"
+        
+        text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
 Current status: $(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')
 Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')
 $(echo "$description" | grep -v "$(echo "$description" | head -n1)")
 $installedpackages"
-      
-      #if already installed then no need to provide install button. And vice versa.
-      whichbutton="$(
-      if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
-        echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
-      fi
-      if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
-        #Taking a chance here. If status file is nonexistent, assume uninstalled.
-        echo "--button=Install!${DIRECTORY}/icons/install.png:4"
-      elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
-        echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
-      elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
-        echo "--button=Install!${DIRECTORY}/icons/install.png:4"
-      else
-        #if status is corrupted or unknown, then show both buttons
-        echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
-      fi
-      )"
-      
-      echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
-        --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
-        --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
-        $whichbutton \
-        --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
-        --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
-        --button=Back!"${DIRECTORY}/icons/back.png":0
-      button=$? #get exit code to determine which button was pressed
-      echo "Button: ${button}"
-      
-      if [ $button == 0 ];then
-        echo 'Back' #do nothing, as user requested to go back
-        #clear app var
-        output=''
-      elif [ $button == 4 ];then
-        app="$output"
-        install "$app"
-      elif [ $button == 2 ];then
-        app="$output"
-        uninstall "$app"
-      elif [ $button == 6 ];then
-        echo 'previous app'
         
-        #convert $output into number, then subtract 1 from it
-        
-        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
-        
-        number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-        
-        lastline="$(echo "$lsoutput" | wc -l)"
-        
-        if [ $(($number - 1)) -lt '1' ];then
-          newnumber=$lastline
-        else
-          newnumber=$(($number - 1))
+        #if already installed then no need to provide install button. And vice versa.
+        whichbutton="$(
+        if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
+          echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
         fi
-        
-        output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
-        
-        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-        
-      elif [ $button == 8 ];then
-        echo 'next app'
-        
-        #convert $output into number, then add 1 to it
-        
-        lsoutput="$(echo "$(ls "${DIRECTORY}/apps")" | grep -vxE "$(cat "${DIRECTORY}/data/hidelist" | tr '\n' '|')")"
-        
-        number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-        
-        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-        
-        lastline="$(echo "$lsoutput" | wc -l)"
-        
-        if [ $(($number + 1)) -gt $lastline ];then
-          newnumber=1
+        if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
+          #Taking a chance here. If status file is nonexistent, assume uninstalled.
+          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
+          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
+        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
+          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
         else
-          newnumber=$(($number + 1))
+          #if status is corrupted or unknown, then show both buttons
+          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
         fi
+        )"
         
-        output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+        echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
+          --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+          --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+          --button=Back!"${DIRECTORY}/icons/back.png":0 \
+          --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
+          --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
+          $whichbutton
+        button=$? #get exit code to determine which button was pressed
+        echo "Button: ${button}"
         
-        echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-      elif [ $button == 10 ];then
-        echo "edit $output"
-        "${DIRECTORY}/createapp" "$output"
-      else
-        echo 'unknown button. Exiting now.'
-        exit 0
+        if [ $button == 0 ];then
+          echo 'Back' #do nothing, as user requested to go back
+          #clear app var
+          output=''
+        elif [ $button == 4 ];then
+          app="$output"
+          install "$app"
+        elif [ $button == 2 ];then
+          app="$output"
+          uninstall "$app"
+        elif [ $button == 6 ] || [ $button == 8 ];then
+          #previous or next app clicked
+          lsoutput="$(echo "$LIST" | grep -v '/' | grep -v '(' | grep -v *'\n App folder' | awk -F ';' '{print $NF}' | uniq)"
+          echo "$lsoutput"
+          
+          if [ $button == 6 ];then
+            echo 'previous app'
+            
+            #convert $output into number, then subtract 1 from it
+            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+            
+            lastline="$(echo "$lsoutput" | wc -l)"
+            
+            if [ $(($number - 1)) -lt '1' ];then
+              newnumber=$lastline
+            else
+              newnumber=$(($number - 1))
+            fi
+            
+            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+          elif [ $button == 8 ];then
+            echo 'next app'
+            
+            #convert $output into number, then add 1 to it
+            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+            
+            lastline="$(echo "$lsoutput" | wc -l)"
+            
+            if [ $(($number + 1)) -gt $lastline ];then
+              newnumber=1
+            else
+              newnumber=$(($number + 1))
+            fi
+            
+            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+          fi
+        elif [ $button == 10 ];then
+          echo "edit $output"
+          "${DIRECTORY}/createapp" "$output"
+        else
+          echo 'unknown button. Exiting now.'
+          exit 0
+        fi
       fi
       ;;
     2)
-      uninstall "$output"
-      #clear output var to prompt main window to open next
+      #uninstal
+      if ! echo "$output" | grep -q '/' ;then
+        uninstall "$output"
+        #clear output var to prompt main window to open next
+      else
+        motd="Sorry, you can"\'"t uninstall folders."
+        prefix=''
+      fi
       output=''
       ;;
     4)
-      install "$output"
-      #clear output var to prompt main window to open next
+      #install
+      if ! echo "$output" | grep -q '/' ;then
+        install "$output"
+        #clear output var to prompt main window to open next
+      else
+        motd="Sorry, you can"\'"t install folders."
+        prefix=''
+      fi
       output=''
       ;;
     *)

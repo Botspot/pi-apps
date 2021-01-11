@@ -103,16 +103,17 @@ ${params}"
   output="$(yad --center --title='Pi-Apps Settings' --width=310 --height=300 \
     --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" --columns=2 \
     $tooltips \
-    --field='New App'!"${DIRECTORY}/icons/create.png":FBTN "${DIRECTORY}/createapp" \
+    --field='Categories...'!"${DIRECTORY}/icons/categories.png":FBTN "bash -c '${DIRECTORY}/etc/categoryedit &>/dev/null'" \
     $yadparams \
+    --field='New App...'!"${DIRECTORY}/icons/create.png":FBTN "bash -c '${DIRECTORY}/createapp &>/dev/null'" \
     --button='Reset'!"${DIRECTORY}/icons/backup.png"!'Reset all settings to their defaults':2 \
     --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
     --button=Save!"${DIRECTORY}/icons/check.png":0 \
-    )"
-
+  )"
+  
   button=$? #get exit code to determine which button was pressed
   #exit if save was not clicked
-  [ $button -ne 0 ]&&[ $button -ne 2 ]&&exit 0
+  [ $button -ne 0 ] && [ $button -ne 2 ] && exit 0
 
   if [ $button -eq 2 ];then
     output=''
@@ -123,7 +124,7 @@ ${params}"
 done
 
 #remove empty lines from $output
-output="$(echo "$output" | sed -r '/^\s*$/d')"
+output="$(echo "$output" | grep .)"
 
 echo "Output: ${output}EOO"
 

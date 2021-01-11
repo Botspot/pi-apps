@@ -1,0 +1,91 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+APPS="$(ls "${DIRECTORY}/apps")"
+refresh() {
+  structure="$(cat "${DIRECTORY}/data/categories/structure")"
+}
+refresh
+#command line argument handler
+if [ ! -z "$1" ] && [ ! -z "$2" ];then
+  if ! echo "$APPS" | grep -q "$1" ;then
+    error "The $1 app does not exist in ${DIRECTORY}/apps!"
+  fi
+  
+  if echo "$structure" | grep -q "$1"'|' ;then
+    echo "The $1 app is currently in the $(dirname "$(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}')") category."
+  fi
+  
+  if ! echo "$structure" | grep -q "$2"'/' ;then
+    echo "The $2 category did not exist previously."
+  fi
+  
+  echo "Putting the $1 app in the $2 category..."
+  
+  #replace any mention of the $1 app with the new line at the end of file
+  echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" > "${DIRECTORY}/data/categories/structure"
+  
+  #structure file modified. Refresh the variable
+  refresh
+  echo "Line in structure file: $(echo "$structure" | grep "$1"'|')"
+  exit 0
+fi
+
+while true;do
+  
+  #generate a virtual file system with apps in folders represented as subdirectories
+  PREIFS="$IFS"
+  IFS=$'\n'
+  LIST=''
+  for app in $APPS
+  do
+    category="$(echo "$structure" | grep "$app"'|' | awk -F '|' '{print $2}' | tr -d '.' | head -n1)"
+    #echo "category for $app is $category."
+    LIST="${LIST}${DIRECTORY}/apps/$app/icon-24.png
+$app
+$category
+"
+  done
+  IFS="$PREIFS"
+  LIST="${LIST::-1}"
+  #echo -e "'$LIST'\n'$APPS'"
+  
+  output="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
+    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g')" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
+    --separator='|' --window-icon="${DIRECTORY}/icons/logo.png" \
+    --column=:IMG --column=Name --column=Category:TEXT \
+    --button=Reset!"${DIRECTORY}/icons/backup.png"!"Overwrites your structure file with the default one from the Pi-Apps repository.":4 \
+    --button=All!"${DIRECTORY}/icons/trash.png"!"Clears categories so all apps are in one list.":2 \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+    --button=Save!"${DIRECTORY}/icons/check.png":0 )"
+  button=$?
+  if [ "$button" == 0 ];then
+    #save
+    break
+  elif [ "$button" == 2 ];then
+    #delete all
+    #     remove categories from all lines, while leaving hidden ones intact
+    echo -e "$(echo "$structure" | grep -v '|hidden' | sed 's/|.*/|/')\n$(echo "$structure" | grep '|hidden')" | sort > "${DIRECTORY}/data/categories/structure"
+  elif [ "$button" == 4 ];then
+    #reset
+    rm "${DIRECTORY}/data/categories/structure"
+    wget -qO "${DIRECTORY}/data/categories/structure" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure'
+    [ ! -f "${DIRECTORY}/data/categories/structure" ] || [ -z "$(cat "${DIRECTORY}/data/categories/structure")" ] && error 'Failed to download a fresh structure file!'
+  else
+    #cancel or WM X
+    echo "User exited"
+    exit 0
+  fi
+  refresh
+done
+#remove first and last characters from each line ---- and '(null)' messaged from yad
+output="$(echo "$output" | sed 's/.$//; s/^.//' | sed "s+(null)++g")"
+
+echo "$output" > "${DIRECTORY}/data/categories/structure"
+
+"${DIRECTORY}/etc/preload-daemon" yad once &
