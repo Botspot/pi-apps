@@ -43,4 +43,5 @@ echo '{
 }' > $HOME/.minecraft/launcher_profiles.json
 
 echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher'
-echo 'NOTE: You can only play versions 1.13 and higher with your current config. To use lower versions, please follow the instructions at https://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz'
+echo -e "\e[21m\e[5mWARNING:\e[0m\e[97mYou can only play Minecraft versions \e[1m1.13\e[0m and higher with your current configuration! To use lower versions, please follow the instructions at \e[96mhttps://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz\e[39m to play versions \e[1m1.12\e[0m and under!"
+read -p "Press [Enter] to continue after you've read the above message"
