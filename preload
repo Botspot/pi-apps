@@ -24,6 +24,8 @@ format="$1"
 
 if [ -z "$format" ];then
   format=yad
+elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
+  error "Unknown list format '$format'!"
 fi
 
 #specifies an app folder(s)
@@ -213,7 +215,6 @@ ${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled"
   
   #save entire list string to file for future use
   echo "$LIST" > "$listfile"
-  export CACHED_LIST="$LIST"
   
   #save timestamps to file too
   mktimestamps
