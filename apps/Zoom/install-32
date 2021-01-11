@@ -214,6 +214,8 @@ fi
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
 
+echo -e "\e[21m\e[5mWARNING:\e[0m\e[97mLogging in to Zoom with a Google/Facebook account \e[1mDOES NOT WORK\e[0m at the moment! You can still use them by adding a password to the account. Follow the instructions at \e[96mhttps://support.zoom.us/hc/en-us/articles/115005166483-Managing-your-password#h_98ccd04b-33a9-48db-8a57-1d8d441a12e3\e[39m for more info."
+read -p "Press [Enter] to continue after you've read the above message."
 echo "Installation complete!"
 
 
