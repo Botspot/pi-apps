@@ -142,18 +142,49 @@ while true;do
       
     elif [ "$guimode" == xlunch ];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
-        sudo rm -rf /usr/bin/xlunch "$DIRECTORY/xlunch" 2>/dev/null
-        sudo apt install -y libimlib2-dev libx11-dev
-        cd "$DIRECTORY"
-        git clone https://github.com/Tomas-M/xlunch
-        cd "$DIRECTORY/xlunch"
-        make -j8
-        sudo make install
-        sudo rm -f /usr/share/applications/genentries.desktop
-        cd $HOME
-        if [ ! -f /usr/bin/xlunch ];then
-          error "xlunch should be installed now, but /usr/bin/xlunch does not exist!"
-        fi
+        #get current number of terminal-run processes
+        rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
+        echo '' > /tmp/terminalexit
+        "${DIRECTORY}/etc/terminal-run" "
+          function error {
+            echo -e "\""\e[91m$1\e[39m"\""
+            echo 'Close this terminal to exit.'
+            echo '' > /tmp/xlunchfailed
+            sleep infinity
+          }
+          trap 'echo "\"""\"" > /tmp/terminalexit' EXIT
+          rm -f /tmp/terminalexit
+          sudo rm -rf /usr/bin/xlunch "\""$DIRECTORY/xlunch"\"" 2>/dev/null
+          sudo apt install -y libimlib2-dev libx11-dev || error 'APT failed to install libimlib2-dev and libx11-dev packages!'
+          cd "\""$DIRECTORY"\""
+          git clone https://github.com/Tomas-M/xlunch || error 'Failed to clone xlunch repository!'
+          cd "\""$DIRECTORY/xlunch"\""
+          echo 'Running make...'
+          make -j8 || error 'make command failed!'
+          echo 'Running sudo make install...'
+          sudo make install || error 'sudo make install failed!'
+          sudo rm -f /usr/share/applications/genentries.desktop
+          cd $HOME
+          if [ ! -f /usr/bin/xlunch ];then
+            error 'xlunch should be installed now, but /usr/bin/xlunch does not exist!'
+          fi
+          echo '' > /tmp/xlunchfinished
+        " 'Compiling xlunch...'
+        #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
+        sleep 3
+        #check for an exit status code from the running terminal
+        while true; do
+          if [ -f /tmp/xlunchfinished ];then
+            break
+            echo "xlunch finished installing."
+          elif [ -f /tmp/xlunchfailed ] || [ -f /tmp/terminalexit ];then
+            #revert back to yad
+            echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
+            error "xlunch failed to compile!\nOr the terminal exited."
+          else
+            sleep 1
+          fi
+        done
       fi
       #xlunch compiled
       
@@ -165,7 +196,7 @@ while true;do
       yposition=$(((screen_height/2)-(height/2)))
       
       if false;then
-        scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
+        scrotosition=$(((screen_width/2)-(width/2))) -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
         convert -blur 10x5 ~/blur.png ~/blur.png
       fi
       
@@ -187,13 +218,19 @@ $LIST"
         -p "$searchbox" -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
         --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
         --width $width --height $height --xposition $xposition --yposition $yposition \
-        --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;"
+        --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1"
         #-g ~/blur.png
         )"
       button=0
       
       if [ -z "$output" ];then
         error "xlunch did not report any selected apps!"
+      fi
+      
+      #homepage button
+      if [ "$output" == 'pi-apps-homepage1' ];then
+        chromium-browser https://github.com/Botspot/pi-apps &
+        output=''
       fi
     else
       error "Unrecognized app list style '$guimode'!"
