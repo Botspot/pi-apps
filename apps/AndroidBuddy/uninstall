@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+rm -rf ~/droidbuddy ~/scrcpy ~/.local/share/applications/scrcpy.desktop ~/.local/share/applications/androidbuddy.desktop 2>/dev/null
+sudo rm -rf /usr/local/share/scrcpy 2>/dev/null
+exit 0

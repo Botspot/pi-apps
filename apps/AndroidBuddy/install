@@ -1,0 +1,39 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "adb ffmpeg libsdl2-2.0-0 python3-pip python3-tk gcc git pkg-config meson ninja-build libavcodec-dev libavformat-dev libavutil-dev libsdl2-dev" "$(dirname "$0")" || exit 1
+
+#SCRCPY
+sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop 2>/dev/null
+
+wget https://misapuntesde.com/rpi_share/scrcpy-1.13.tar.gz || error "Failed to download!"
+tar -xf scrcpy-1.13.tar.gz || error "Failed to extract!"
+rm scrcpy-1.13.tar.gz
+
+ln -s /usr/bin/adb $HOME/scrcpy/
+
+sudo mkdir -p /usr/local/share/scrcpy
+sudo cp -af $HOME/scrcpy/scrcpy-server /usr/local/share/scrcpy/scrcpy-server
+#END OF SCRCPY
+
+rm -rf ~/droidbuddy
+git clone https://gitlab.com/gazlene/droidbuddy.git || error 'Could not clone AndroidBuddy repo!'
+
+sudo pip3 install Pillow
+
+echo "[Desktop Entry]
+Name=AndroidBuddy
+Comment=GUI for Android device recovery and maintainence
+Icon=$(dirname "$0")/icon-64.png
+Path=$HOME/droidbuddy
+Exec=python3 $HOME/droidbuddy/main.py
+Type=Application
+Encoding=UTF-8
+Terminal=false
+Categories=Utility;" > ~/.local/share/applications/androidbuddy.desktop
