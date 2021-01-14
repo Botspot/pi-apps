@@ -83,8 +83,8 @@ $category
   fi
   refresh
 done
-#remove first and last characters from each line ---- and '(null)' messaged from yad
-output="$(echo "$output" | sed 's/.$//; s/^.//' | sed "s+(null)++g")"
+#remove first and last characters from each line ---- and '(null)' messaged from yad --- and sort it alphabetically
+output="$(echo "$output" | sed 's/.$//; s/^.//' | sed "s+(null)++g" | sort)"
 
 echo "$output" > "${DIRECTORY}/data/categories/structure"
 
