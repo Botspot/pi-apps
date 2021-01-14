@@ -3,7 +3,7 @@
 # Removes shortcuts
 rm ~/.local/share/applications/aiw.desktop
 # Removes main folder
-rm -r ~/AIW
+sudo rm -r ~/All-is-well
 # Removes alias
 sed -i '/alias aiw=.*All-is-well.*/d' ~/.bashrc
 exit 0
