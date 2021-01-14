@@ -7,5 +7,11 @@ function error {
   exit 1
 }
 
-sudo apt-get remove -y minecraft-pi-native
-sudo apt-get autoremove -y
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+sudo apt remove minecraft-pi-native mcpil-r -y
+sudo apt autoremove -y
+
+sudo mv /etc/apt/sources.list.bak /etc/apt/sources.list
+sudo rm /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+sudo apt update
