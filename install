@@ -68,7 +68,7 @@ mkdir -p installed-packages preload settings status update-status categories
 cd $HOME
 
 #hide template file by default
-echo "template" > "${DIRECTORY}/data/hidelist"
+"${DIRECTORY}/etc/categoryedit" "template" 'hidden'
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ];then

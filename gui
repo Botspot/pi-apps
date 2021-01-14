@@ -8,6 +8,12 @@ function error {
 
 [ -z "$(yad --help)" ] && error "YAD needs to be installed to run pi-apps."
 
+echo '|‾‾‾‾\(‾)          /‾\
+| |‾) |‾|         / ⧋ \ |‾'\''‾‾\|‾'\''‾‾\/‾‾‾|
+|  ‾_/| | |‾‾‾|  / ‾‾‾ \| |‾) | |‾) \ ‾‾\
+|_|‾  |_|  ‾‾‾  /_/‾‾‾\_\ .‾_/| .‾_/|‾‾ /
+                        |_|‾  |_|‾   ‾‾‾'
+
 #check for updates in background
 ("${DIRECTORY}/updater" 1>/dev/null) &
 
@@ -15,6 +21,8 @@ function error {
 if [ ! -z "$1" ];then
   output="$1"
 fi
+
+"${DIRECTORY}/etc/categoryedit" "Minecraft Pi" 'hidden'
 
 #hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
 if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" ];then
