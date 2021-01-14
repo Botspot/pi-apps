@@ -12,7 +12,36 @@ if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && 
     error 'Unsupported Debian Version'
 fi
 
+cd
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
+echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
+sudo apt update
+
+"${DIRECTORY}/pkg-install" "libseccomp2" "$(dirname "$0")" || exit 1
+
+sudo apt remove docker docker-engine docker.io containerd runc
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+mkdir ~/temp
+sudo mv ~/.minecraft/games/com.mojang/minecraftWorlds/* ~/temp
+
+sudo apt purge minecraft-pi -y
+
+wget https://jenkins.thebrokenrail.com/job/minecraft-pi-docker/job/master/lastSuccessfulBuild/artifact/out/deb/minecraft-pi-native_1.0.0.20201225.1901_all.deb
+
+sudo apt install -y ./minecraft-pi-native_1.0.0.20201225.1901_all.deb
+
+sudo rm minecraft-pi-native_1.0.0.20201225.1901_all.deb
+
+sudo mv ~/temp ~/.minecraft-pi/games/com.mojang/minecraftWorlds/
+
 curl -s https://packagecloud.io/install/repositories/Alvarito050506/mcpi-devs/script.deb.sh | sudo bash || error "mcpi install script failed."
 
 # Get dependencies
-sudo apt install mcpil minecraft-pi || error "error on sudo apt install mcpil"
+sudo apt install mcpil || error "error on sudo apt install mcpil"
+
+echo "Open Minecraft Pi with Start menu > Ganes > MCPIL-R"
