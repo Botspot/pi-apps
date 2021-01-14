@@ -1,5 +1,13 @@
 #!/bin/bash
 
+##
+## Config
+##
+
+MCPIL_R_VERSION='0.1.2'
+
+set -e
+
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 STORAGE="$(dirname "$0")"
 
@@ -8,40 +16,75 @@ function error {
   exit 1
 }
 
+##
+## Install MCPI-Docker
+##
+
 if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
     error 'Unsupported Debian Version'
 fi
 
-cd
+if [[ "$(lsb_release -cs)" = "buster" ]]; then
+  # Uninstall Old Docker
+  sudo apt-get remove -y docker.io
+  # Install Docker
+  if [ ! command -v docker &>/dev/null ];then
+    curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
+    sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
+    rm "${STORAGE}/get-docker.sh"
+  fi
+  
+  # Setup Backports Repo On Buster
+  if grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
+    # Install Backports Key
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
+    # Install Backports Repository
+    echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
+    # Update APT Index
+    sudo apt-get update
+  fi
+fi
 
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
-echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
-sudo apt update
+# Prepare
+rm -rf "${STORAGE}/mcpi-docker"
+mkdir "${STORAGE}/mcpi-docker"
 
-"${DIRECTORY}/pkg-install" "libseccomp2" "$(dirname "$0")" || exit 1
+# Download DEBs
+wget -O "${STORAGE}/mcpi-docker/deb.zip" https://jenkins.thebrokenrail.com/job/minecraft-pi-docker/job/master/lastSuccessfulBuild/artifact/out/deb/*zip*/deb.zip || error 'Unable To Download'
 
-sudo apt remove docker docker-engine docker.io containerd runc
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# Unzip DEBs
+mkdir "${STORAGE}/mcpi-docker/deb"
+unzip "${STORAGE}/mcpi-docker/deb.zip" -d "${STORAGE}/mcpi-docker/deb" || error 'Unable to extract debs.zip!'
 
-mkdir ~/temp
-sudo mv ~/.minecraft/games/com.mojang/minecraftWorlds/* ~/temp
+# Find DEB
+MCPI_DOCKER_DEB="$(find "${STORAGE}/mcpi-docker/deb/deb" -name 'minecraft-pi-native*.deb')"
 
-sudo apt purge minecraft-pi -y
+# Install DEB
+echo "Installing ${MCPI_DOCKER_DEB}..."
+sudo dpkg -i "${MCPI_DOCKER_DEB}" # Expected To Fail
+sudo apt-get --fix-broken install -y || error 'Unable To Complete Install'
 
-wget https://jenkins.thebrokenrail.com/job/minecraft-pi-docker/job/master/lastSuccessfulBuild/artifact/out/deb/minecraft-pi-native_1.0.0.20201225.1901_all.deb
+# Clean Up
+rm -rf "${STORAGE}/mcpi-docker"
 
-sudo apt install -y ./minecraft-pi-native_1.0.0.20201225.1901_all.deb
+##
+## Install MCPIL-R
+##
 
-sudo rm minecraft-pi-native_1.0.0.20201225.1901_all.deb
+MCPIL_R_URL="https://github.com/MCPI-Devs/MCPIL-R/releases/download/${MCPIL_R_VERSION}/mcpil-r_${MCPIL_R_VERSION}_all.deb"
 
-sudo mv ~/temp ~/.minecraft-pi/games/com.mojang/minecraftWorlds/
+# Prepare
+rm -rf "${STORAGE}/mcpil-r"
+mkdir "${STORAGE}/mcpil-r"
 
-curl -s https://packagecloud.io/install/repositories/Alvarito050506/mcpi-devs/script.deb.sh | sudo bash || error "mcpi install script failed."
+# Download DEB
+wget -O "${STORAGE}/mcpil-r/mcpil-r.deb" "${MCPIL_R_URL}"
 
-# Get dependencies
-sudo apt install mcpil || error "error on sudo apt install mcpil"
+# Install DEB
+echo "Installing ${STORAGE}/mcpil-r/mcpil-r.deb..."
+sudo dpkg -i "${STORAGE}/mcpil-r/mcpil-r.deb" # Expected To Fail
+sudo apt-get --fix-broken install -y || error 'Unable To Complete Install'
 
-echo "Open Minecraft Pi with Start menu > Ganes > MCPIL-R"
+# Clean Up
+rm -f "${STORAGE}/mcpil-r"

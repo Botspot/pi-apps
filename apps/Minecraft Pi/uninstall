@@ -7,5 +7,8 @@ function error {
   exit 1
 }
 
-sudo apt-get remove -y minecraft-pi-native
+sudo apt-get remove -y minecraft-pi-native mcpil-r
 sudo apt-get autoremove -y
+
+#if your app installs any packages, keep this command here so those packages will be removed.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
