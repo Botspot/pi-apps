@@ -7,8 +7,6 @@ function error {
   exit 1
 }
 
-mkdir AIW
-cd ~/AIW || error "Failed to enter directory!"
 git clone https://github.com/spectrumgamer75/All-is-well || error "Failed to download!"
 chmod +x 'aiwrpi.sh'
 echo "alias aiw=$HOME/All-is-well/aiw/aiwrpi.sh" >> ~/.bashrc
