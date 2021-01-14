@@ -7,16 +7,14 @@ function error {
   exit 1
 }
 
-mkdir AIW
-cd ~/AIW || error "Failed to enter directory!"
-wget 'https://raw.githubusercontent.com/spectrumgamer75/All-is-well/master/aiw/aiwrpi.sh' || error "Failed to download!"
+git clone https://github.com/spectrumgamer75/All-is-well || error "Failed to download!"
 chmod +x 'aiwrpi.sh'
-echo "alias aiw=$HOME/AIW/aiwrpi.sh" >> ~/.bashrc
+echo "alias aiw=$HOME/All-is-well/aiw/aiwrpi.sh" >> ~/.bashrc
 echo "[Desktop Entry]
 Name=All Is Well
 GenericName=Update Helper and Fixer
 Comment= ALL IS WELL is a bash script that allows users to easily update and upgrade their repositories and packages on linux. It will also fix any broken packages and dependencies.
-Exec=$HOME/AIW/aiwrpi.sh
+Exec=$HOME/All-is-well/aiw/aiwrpi.sh
 Icon=$HOME/pi-apps/apps/All Is Well/icon-64.png
 Terminal=true
 StartupNotify=true
