@@ -6,5 +6,5 @@ function error {
   exit 1
 }
 
-#Remove app
 sudo rm /opt/MCBedrock.AppImage
+rm -rf ~/'.cache/Minecraft Linux Launcher' ~/.cache/mcpelauncher ~/.cache/mcpelauncher-webview ~/.cache/msa ~/.cache/msa-ui-qt ~/.local/share/msa
