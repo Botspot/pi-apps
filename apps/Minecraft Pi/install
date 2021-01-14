@@ -14,6 +14,8 @@ fi
 
 cd
 
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
 echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
@@ -21,7 +23,7 @@ sudo apt update
 
 "${DIRECTORY}/pkg-install" "libseccomp2" "$(dirname "$0")" || exit 1
 
-sudo apt remove docker docker-engine docker.io containerd runc
+sudo apt remove docker docker-engine docker.io containerd runc -y
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker $USER
