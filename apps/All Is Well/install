@@ -8,6 +8,7 @@ function error {
 }
 
 git clone https://github.com/spectrumgamer75/All-is-well || error "Failed to download!"
+cd $HOME/All-is-well/aiw
 chmod +x 'aiwrpi.sh'
 echo "alias aiw=$HOME/All-is-well/aiw/aiwrpi.sh" >> ~/.bashrc
 echo "[Desktop Entry]
