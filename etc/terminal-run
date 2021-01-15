@@ -8,7 +8,7 @@ if [ -f /usr/bin/lxterminal ];then
 elif [ -f /usr/bin/xfce4-terminal ];then
   xfce4-terminal --title="$2" -x bash -c "$1"
 elif [ -f /usr/bin/mate-terminal ];then
-  mate-terminal --title="$2" -e bash -c "$1"
+  mate-terminal --title="$2" -e "bash -c "\""$1"\"""
 elif [ -f /usr/bin/xterm ];then
   xterm -T "$2" -e bash -c "$1"
 elif [ -f /usr/bin/x-terminal-emulator ];then
