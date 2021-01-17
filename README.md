@@ -63,6 +63,7 @@ It helps you select an icon, create & debug install/uninstall scripts, write a d
 - [X] Make 32-bit and 64-bit install scripts.  
 - [X] Allow multiple apps to be selected from the app list and be installed simultaneously.  
 - [X] Add a search function to the app list. It's still experimental: to enable it, switch to **xlunch** in **Pi-Apps Settings** -> **App List Style**.
+- [X] Break up the long app list with some categories.  
 
 ## How it works
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
@@ -104,6 +105,7 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
  
 ### Directory tree
  - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
+   - `CHANGELOG.md` [This file](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md) is a written history for all important events for Pi-Apps, including dates for when each app was added. It's worth a read! :)
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
    - `createapp` GUI script - this is run when you click "Create App" in Settings.  
    ![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)
@@ -122,7 +124,15 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
    - `updater` This GUI script is executed every time  the `gui` script is launched. Updater first compares today's date against the `last-update-check` file. If it's time to check for updates, `updater` first checks for App updates, then checks for other files/folders that have been modified or created. If anything can be updated, a dialog will open and ask permission to update:  
    ![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)
    - `data/` This folder holds all local data that should not be overwritten by updates.
-     - `settings/`This stores the current settings saved by the 'Pi-Apps Settings' window. Each file contains one setting. For example, the file `settings/Preferred text editor` contains "geany" by default.
+     - `categories` - This directory stores everything relating to which categories your apps are in. Currently it only contains one file:
+       - `structure` - The file that keeps track of which apps are in which categories. It's edited by the Pi-Apps Category Editor.
+     - `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
+     For example, if Pi Power Tools installs `xserver-xephyr` and `expect`, then the `installed-packages/Pi Power Tools` file will contain "xserver-xephyr expect".
+     - `preload/` This directory is used by the `preload` script to improve Pi-Apps' launch time.
+       - `timestamps` This file stores timestamps for the most recently modified app, the most recently modified setting, and the most rencently modified status file.
+       If any of these entries don't match when `preload` is called, then the app list will be regenerated.
+       - `LIST` This file holds the app list. The entire file's contents is piped into the YAD dialog box.
+     - `settings/` This stores the current settings saved by the 'Pi-Apps Settings' window. Each file contains one setting. For example, the file `settings/Preferred text editor` contains "geany" by default.
      - `status/` This folder stores all installation information for all apps.
      If you install Zoom, then the `status/Zoom` file will be created, containing "installed". Installed apps will have this status icon in the app list: ![installed](https://github.com/Botspot/pi-apps/blob/master/icons/installed.png?raw=true)  
      If installation was unsuccessful, then the file will contain "corrupted". The corresponding icon looks like: ![corrupted](https://github.com/Botspot/pi-apps/blob/master/icons/corrupted.png?raw=true)  
@@ -133,12 +143,6 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
      "new" means that app is new from the repository. (in other words, it does not exist locally)
      "local" means that app does not exist on the repository.
      "updatable" means the repository's version and the local version don't match.
-     - `preload/` This directory is used by the `preload` script to improve Pi-Apps' launch time.
-       - `timestamps` This file stores timestamps for the most recently modified app, the most recently modified setting, and the most rencently modified status file.
-       If any of these entries don't match when `preload` is called, then the app list will be regenerated.
-       - `LIST` This file holds the app list. The entire file's contents is piped into the YAD dialog box.
-     - `installed-packages/` This keeps track of any/all APT packages each app installed. This folder is written to from the `pkg-install` script.
-     For example, if Pi Power Tools installs `xserver-xephyr` and `expect`, then the `installed-packages/Pi Power Tools` file will contain "xserver-xephyr expect".
      - `hidelist` This file contains app names that should be hidden from the app list. `template` should always be there. If your Pi runs TwisterOS, then `hidelist` will contain several more app names, like balenaEtcher, for example.
      - `last-update-check` This contains a date in numeric form. (Jan. 1 would be `1`, Dec. 31 would be `365`.) The `updater` script uses this file to keep track of when updates were last checked.
    - `etc/` This folder is basically an extension of the main `pi-apps/` folder. Its contents don't need to clutter up the main directory, but they can't go in `data/` because these files should be kept up-to-date.
@@ -151,8 +155,12 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
      Now, the next time Settings is opened, you will see:  
      ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)
      With this file-based approach, adding new settings (and/or parameters) is much easier to do and in a standardized way. (As opposed to adding new settings by editing a bash script)
+     - `bitlylink` - Simple bash script that fetches a Pi-Apps analytics link, if enabled.
+     - `categoryedit` - This script is the Pi-Apps Category Editor.
      - `git_url` This simple file stores this link: https://github.com/Botspot/pi-apps
-     If you fork this repository and make changes, you will want Pi-Apps checking for updates from your repository, not this main one. Simply change the URL in this file to switch to your repository.
+     If you fork this repository and make changes, you will want Pi-Apps checking for updates from your repository, not this main one. Simply change the URL in this file to use your repository.
+     - `preload-daemon` - A simple wrapper for the `preload` script. It periodically updates all app lists for each category for minimal latency.
+     - `terminal-run` - This script is used to run multi-line scripts in a terminal. As easy as that sounds, in reality each terminal is different. So to be compatible with all Raspberry Pi OS'es, `terminal-run` is necessary to ensure terminal windows open and run properly.
    - `icons/` This stores all the icons that are embedded into various dialogs.
      - `screenshots/` Stores screenshots of various dialogs, mainly used as an image hosting service, though I suppose they could come in handy if an offline help dialog was made.
    - `update/` This folder holds the latest version of the entire Pi-Apps repository. It's contents is re-downloaded every time the `updater` script checks for updates. It is used to compare file hashes, detect when an app or file can be updated, and is used to copy new file versions into the main `pi-apps/` directory during an update.
