@@ -8,8 +8,6 @@ function error {
 }
 
 sudo snap remove snap-store || error "Unable to uninstall snap store"
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-
 if ! [ -d /snap ];then
   rm -f /usr/share/applications/snap
 fi
