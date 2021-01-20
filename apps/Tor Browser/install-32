@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-https://sourceforge.net/projects/tor-browser-ports/files/10.0.8-armhf/tor-browser-linux-armhf-10.0.8_en-US.tar.xz/download -O tor.tar.xz || error "Failed to download!"
+wget https://sourceforge.net/projects/tor-browser-ports/files/10.0.8-armhf/tor-browser-linux-armhf-10.0.8_en-US.tar.xz/download -O tor.tar.xz || error "Failed to download!"
 
 tar -xf ~/tor.tar.xz || error "Failed to extract!"
 
