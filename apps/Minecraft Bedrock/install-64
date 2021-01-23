@@ -12,7 +12,7 @@ sudo dpkg --add-architecture armhf
 
 #Download file
 cd ~
-curl -L https://www.dropbox.com/s/ewkdoylatsmvjgb/Minecraft_Bedrock_Launcher-arm_aarch64.0.0.626.AppImage --output MCBedrock.AppImage
+curl -L https://www.dropbox.com/s/tw3bnsp847fb614/Minecraft_Bedrock_Launcher-arm_aarch64.0.0.627.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
 sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
