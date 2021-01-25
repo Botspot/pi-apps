@@ -14,7 +14,11 @@ sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket
 sudo ln -s /var/lib/snapd/snap /snap || error "unable to create symbolic link between /var/lib/snapd/snap and /snap"
 sudo snap install core || error "Unable to install core"
 sudo snap install snap-store || error "Unable to install snap store"
-sudo rm -rf /usr/share/applications/snap
-ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || sudo ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || error "Failed to create symlink for Snap app shortcuts!"
 
+#Creating Symlink Only If Its Raspberry Pi OS
+if ! command -v twistver &> /dev/null
+then
+    sudo rm -rf /usr/share/applications/snap
+    ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || sudo ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || error "Failed to create symlink for Snap app shortcuts!"
+fi
 
