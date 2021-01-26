@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo Goodbye!
+
+sudo dpkg -r teamviewer-host
+sudo apt autoremove -y
