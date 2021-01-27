@@ -1,6 +1,10 @@
 #!/bin/bash
 
-echo Goodbye!
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
-sudo dpkg -r teamviewer-host
-sudo apt autoremove -y
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+sudo apt purge -y teamviewer-host || error "APT failed to remove teamviewer-host package."
