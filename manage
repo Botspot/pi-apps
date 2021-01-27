@@ -106,7 +106,7 @@ elif [ "$1" == 'install' ];then
   fi
   
   #if already installed then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" )" == 'installed' ];then
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'installed' ];then
     yad --text="$app is already installed. Are you sure you want to install it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -151,7 +151,7 @@ elif [ "$1" == 'uninstall' ];then
   fi
   
   #if already uninstalled then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" )" == 'uninstalled' ];then
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'uninstalled' ];then
     yad --text="$app is already uninstalled. Are you sure you want to uninstall it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -218,7 +218,7 @@ elif [ "$1" == 'update' ];then
   #if install was changed
   if [ ! "$newinstallhash" == "$oldinstallhash" ];then
     #if installed already
-    if [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'installed' ];then
+    if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'installed' ];then
       installback=yes
       #uninstall it using a recursive script instance
       "${DIRECTORY}/manage" uninstall "$app"
@@ -264,7 +264,7 @@ elif [ "$1" == 'check-all' ];then
     IFS=$'\n'
     for app in $applist
     do
-      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}")" == 'uninstalled' ];then
+      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'uninstalled' ];then
         #if app is uninstalled, then remove it from the list.
         applist="$(echo "$applist" | grep -vx "$app")"
         echo "Removing ${app} from list because it is uninstalled." 1>&2
