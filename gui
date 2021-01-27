@@ -22,8 +22,6 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-"${DIRECTORY}/etc/categoryedit" "Minecraft Pi" 'hidden'
-
 #hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
 if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" ];then
   "${DIRECTORY}/install"
