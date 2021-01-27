@@ -15,7 +15,7 @@ echo '|‾‾‾‾\(‾)          /‾\
                         |_|‾  |_|‾   ‾‾‾'
 
 #check for updates in background
-("${DIRECTORY}/updater" 1>/dev/null) &
+"${DIRECTORY}/updater" &>/dev/null &
 
 #Variable 1 is used to view the details of the specified app
 if [ ! -z "$1" ];then
@@ -31,17 +31,12 @@ if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" 
 fi
 
 #rename 'Vivaldi web browser' to Vivaldi
-#(find "$DIRECTORY" -name 'Vivaldi '* | while read f; do mv -v "$f" "$(echo "${f}" | sed 's/ web browser//g')"; done
-#if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'Vivaldi web browser')" ];then
-#  rm -rf "$DIRECTORY/data/preload"
-#fi
-#) &
-
-(if cat ~/.config/autostart/pi-apps-updater.desktop | grep -q installedonly ;then
-  "${DIRECTORY}/install"
-fi) &
-
-rm -f "${DIRECTORY}/apps/Doom 3/install" &>/dev/null
+(mv "${DIRECTORY}/apps/TeamViewer" "${DIRECTORY}/apps/TeamViewer Host" 2>/dev/null
+mv "${DIRECTORY}/data/status/TeamViewer" "${DIRECTORY}/data/status/TeamViewer Host" 2>/dev/null
+if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'TeamViewer Host')" ];then
+  rm -rf "$DIRECTORY/data/preload"
+fi
+) &
 
 install() {
   app="$1"
