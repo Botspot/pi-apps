@@ -9,5 +9,5 @@ function error {
 
 sudo rm -rf /opt/WidevineCdm
 
-rm -rf ~/chromium-v84-widevine ~/.local/share/applications/widevine-chromium.desktop &>/dev/null
+rm -rf ~/chromium-v84-widevine ~/.local/share/applications/widevine-chromium.desktop ~/.config/chromium-browser/WidevineCdm/latest-component-updated-widevine-cdm &>/dev/null
 exit 0

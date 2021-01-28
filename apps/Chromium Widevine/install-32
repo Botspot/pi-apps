@@ -18,7 +18,7 @@ Version=1.0
 Name=Chromium Widevine
 GenericName=Web Browser
 Comment=Play Netflix & Spotify on Chromium v84
-Exec=chromium-browser --user-agent="\""Mozilla/5.0 (X11; CrOS armv7l 13099.85.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.110 Safari/537.36"\"" %U
+Exec=chromium-browser %U --user-agent="\""Mozilla/5.0 (X11; CrOS armv7l 12371.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"\"" %U
 Terminal=false
 X-MultipleArgs=false
 Type=Application
@@ -29,3 +29,16 @@ StartupNotify=true" > ~/.local/share/applications/widevine-chromium.desktop
 sudo cp -a ~/chromium-v84-widevine/WidevineCdm /opt
 
 rm -rf ~/chromium-v84-widevine
+
+mkdir -p ~/.config/chromium-browser/WidevineCdm
+echo "{"\""Path"\"":"\""/opt/WidevineCdm"\""}" 1> ~/.config/chromium-browser/WidevineCdm/latest-component-updated-widevine-cdm
+
+if [ ! -z "$(ps aux | grep /usr/lib/chromium-browser | grep -v grep)" ];then
+  echo -e "\e[97mFor Chromium Widevine to work, you need to exit all instances of Chromium.\e[39m"
+  sleep 1
+  echo -en "\e[97m\nWaiting until Chromium is closed\e[39m"
+  while [ ! -z "$(ps aux | grep /usr/lib/chromium-browser | grep -v grep)" ];do
+    sleep 1
+    echo -n '.'
+  done
+fi
