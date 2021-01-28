@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget -O ~/veracrypt.deb 'https://sourceforge.net/projects/veracrypt/files/VeraCrypt%201.24-Update7/veracrypt-1.24-Update7-Debian-10-armhf.deb/download' || error "Failed to download veracrypt.deb!"
+
+sudo apt install -y --fix-broken ~/veracrypt.deb || error "Failed to install veracrypt.deb!"
+
+rm -f ~/veracrypt.deb
