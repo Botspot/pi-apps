@@ -12,7 +12,8 @@ echo '|‾‾‾‾\(‾)          /‾\
 | |‾) |‾|         / ⧋ \ |‾'\''‾‾\|‾'\''‾‾\/‾‾‾|
 |  ‾_/| | |‾‾‾|  / ‾‾‾ \| |‾) | |‾) \ ‾‾\
 |_|‾  |_|  ‾‾‾  /_/‾‾‾\_\ .‾_/| .‾_/|‾‾ /
-                        |_|‾  |_|‾   ‾‾‾'
+                        |_|‾  |_|‾   ‾‾‾
+'
 
 #check for updates in background
 "${DIRECTORY}/updater" &>/dev/null &
@@ -21,6 +22,14 @@ echo '|‾‾‾‾\(‾)          /‾\
 if [ ! -z "$1" ];then
   output="$1"
 fi
+
+(if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
+  rm /usr/local/bin/pi-apps
+  echo "#!/bin/bash
+${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
+  sudo chmod +x /usr/local/bin/pi-apps
+  echo "You can now run pi-apps in a terminal, just by running 'pi-apps'"
+fi) &
 
 #hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
 if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" ];then
