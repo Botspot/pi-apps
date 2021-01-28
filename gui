@@ -45,6 +45,8 @@ if [ -z "$(grep -r 'TeamViewer Host' /home/pi/pi-apps/data/preload)" ];then
 fi
 ) &
 
+(rm -rf "${DIRECTORY}/apps/Cordless") &
+
 install() {
   app="$1"
   #terminal title text
