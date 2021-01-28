@@ -40,7 +40,7 @@ fi
 #rename 'Vivaldi web browser' to Vivaldi
 (mv "${DIRECTORY}/apps/TeamViewer" "${DIRECTORY}/apps/TeamViewer Host" 2>/dev/null
 mv "${DIRECTORY}/data/status/TeamViewer" "${DIRECTORY}/data/status/TeamViewer Host" 2>/dev/null
-if [ ! -z "$(cat "$DIRECTORY/data/preload/LIST" | grep 'TeamViewer Host')" ];then
+if [ -z "$(grep -r 'TeamViewer Host' /home/pi/pi-apps/data/preload)" ];then
   rm -rf "$DIRECTORY/data/preload"
 fi
 ) &
