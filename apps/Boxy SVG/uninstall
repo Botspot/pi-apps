@@ -9,5 +9,6 @@ function error {
 
 rm ~/.local/share/applications/chrome-gaoogdonmngmdlbinmiclicjpbjhgomg-Default.desktop
 rm -rf ~/Boxy-SVG-RPi
+rm -rf ~/.config/BoxySVG
 
 exit 0
