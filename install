@@ -39,6 +39,7 @@ Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
 
 echo "Adding Desktop shortcut..."
 cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/pi-apps.desktop
+chmod +x ~/Desktop/pi-apps.desktop
 
 echo "Creating Settings menu button..."
 echo "[Desktop Entry]
