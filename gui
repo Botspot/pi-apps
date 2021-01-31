@@ -23,6 +23,12 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
+"${DIRECTORY}/etc/categoryedit" "Minecraft Pi (Modded)" 'hidden'
+"${DIRECTORY}/etc/categoryedit" "Doom 3" 'hidden'
+
+gio trash "${DIRECTORY}/apps/Minecraft Pi" 2>/dev/null
+gio trash "${DIRECTORY}/apps/MCPi Reborn" 2>/dev/null
+
 (if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
   rm /usr/local/bin/pi-apps
   echo "#!/bin/bash
