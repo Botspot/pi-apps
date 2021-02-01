@@ -94,6 +94,15 @@ Lightpad"
   echo "Finished hiding apps on TwisterOS."
 fi
 
+#pi-apps terminal command
+if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
+  rm /usr/local/bin/pi-apps
+  echo "#!/bin/bash
+${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
+  sudo chmod +x /usr/local/bin/pi-apps
+  echo "You can now run pi-apps in a terminal, just by running 'pi-apps'"
+fi
+
 echo "Creating settings if they don"\'"t exist..."
 "${DIRECTORY}/settings" refresh
 
