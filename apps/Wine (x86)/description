@@ -1,4 +1,4 @@
-Run Windows x86 apps with wine x86 running with box86.
+Run Windows x86 apps with wine x86 and box86.
 To run: wine path/to/file.exe
 To configure wine: go to 'Wine configuration' in main menu or type in terminal: wine winecfg
 Not all Windows applications will work under WINE. It's a good idea to check online if your program can run, or if WINE needs some setting changes to get it to work.
@@ -6,3 +6,5 @@ Not all Windows applications will work under WINE. It's a good idea to check onl
 note:
 the applications installed with wine will appear under the wine category in the main menu,
 and they will stay there even after uninstalling wine.
+
+Need support with running a game or app with wine and box86? Come join here: https://discord.gg/JKNQXprqUd
