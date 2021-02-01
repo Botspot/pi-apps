@@ -31,10 +31,10 @@ if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && 
 fi
 
 # Remove Old Minecraft Pi
-sudo apt-get remove -y minecraft-pi 
-sudo apt-get remove -y minecraft-pi-native 
-sudo apt-get remove -y mcpil
-sudo apt-get remove -y mcpil-r 
+sudo apt-get remove -y minecraft-pi || :
+sudo apt-get remove -y minecraft-pi-native || :
+sudo apt-get remove -y mcpil || :
+sudo apt-get remove -y mcpil-r || :
 sudo apt-get remove -y minecraft-pi-reborn-native || :
 
 # Debian Buster Support
