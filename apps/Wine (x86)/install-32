@@ -179,4 +179,5 @@ Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
 
 
 # Boot wine (make fresh wineprefix in ~/.wine
-BOX86_NOBANNER=1 wine ~/wine/bin/wineboot
+BOX86_NOBANNER=1
+setarch linux32 -L box86 ~/wine/bin/wine wineboot
