@@ -33,7 +33,6 @@ fi
 # Remove Old Minecraft Pi
 sudo apt-get remove -y minecraft-pi >/dev/null || :
 sudo apt-get remove -y minecraft-pi-native >/dev/null || :
-sudo apt-get remove -y mcpil >/dev/null || :
 sudo apt-get remove -y mcpil-r >/dev/null || :
 
 # Debian Buster Support
