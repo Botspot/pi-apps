@@ -50,7 +50,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
     echo -e "You are using a kernel with a 2G/2G memory split.\nWine will not work on such systems. What would you like to do?
 1. Switch to the 64-bit kernel (about 2 minutes)
 2. Compile a 3G/1G kernel (several hours)
-3. Install a precompiled 3g/1g kernel (might be outdated)
+3. Install a precompiled 3G/1G kernel (about 2 minutes but might be outdated)
 4. Exit"
     read -n1 answer
     echo ''
