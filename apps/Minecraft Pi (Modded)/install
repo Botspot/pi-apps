@@ -106,3 +106,6 @@ rm -rf "${STORAGE}/mcpil"
 # Update Docker Permissions
 sudo groupadd -f docker
 sudo usermod -aG docker "$(id -un)"
+
+echo -e "\e[21m\e[5mWARNING:\e[0m\e[97mMake sure 'GPU Driver' is set to Full/Fake in 'raspi-config', or else Minecraft Pi (Modded) won't run! Set it by running 'sudo raspi-config', then go to Advanced Options > GL Driver and set to Full/Fake"
+read -p "Press [Enter] to finish installation after you've read the above message"
