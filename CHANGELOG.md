@@ -1,7 +1,10 @@
+**NOTE**: This changelog covers the major events in pi-apps like new apps being added. If every action since day one was mentioned, "I suppose that even the world itself could not contain the books that should be written." ;)  
+Last update: Feb 4, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
 - **9/20/2020** Development begins.
-- **9/22/2020** Initial upload to github, including these apps: Arduino, BalenaEtcher, Chromium Media Edition, CommanderPi, Cool Retro Term, Cura, FreeCAD, Pi-Power-Tools, Raspi2png, and Windows 10 Theme  
+- **9/22/2020** Initial upload to github, including these apps: Arduino, BalenaEtcher, Chromium Media Edition, CommanderPi, Cool Retro Term, Cura, FreeCAD, Pi-Power-Tools, Raspi2png, and Windows 10 Theme.  
 - **10/1/2020** Many bugs fixed, createapp added, and added TBOPlayer app.  
 - **10/2/2020** More bug fixes & improvements; added Discord, Minecraft Java, and piKiss apps.  
 - **10/3/2020** Added some more icons, added conky app.  
@@ -47,3 +50,25 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **12/24/2020** Added Doom 3 app.
 - **12/27/2020** Boxy SVG app uses [Boxy-SVG-RPi](https://github.com/Botspot/Boxy-SVG-RPi) and Box86 app uses [box86-updater](https://github.com/Botspot/box86-updater)
 - **12/28/2020** Added Eagle and YouTubuddy apps
+- **12/29/2020** Changed Doom 3 app to not wget script and added the "a guy" story in the README :laughing:
+- **1/2/2021** Removed Cordless app due to users being banned by Discord and support being dropped. Added Whatsapp and Vivaldi browser
+- **1/3/2021** Added Lightpad, TLDR, and Mission Planner apps. Also improved Zoom.
+- **1/5/2021** Added app request templates
+- **1/8/2021** Removed Chromium Media Edition app and started work on categories
+- **1/9/2021** Added Ulauncher app
+- **1/10/2021** Added categories!
+- **1/11/2021** Added AndroidBuddy app amd fixed preload error
+- **1/12/2021** Improved xlunch compilation
+- **1/13/2021** Added Snap store, jGRASP IDE
+Minecraft Pi testing phase begins
+- **1/16/2021** Added Angry IP scanner app
+- **1/20/2021** Added AnyDesk app
+- **1/21/2021** Updated BalenaEtcher to v1.5.113
+- **1/26/2021** Added Teamviewer Host app
+- **1/27/2021** Added OBS Studio app
+- **1/28/2021** Added VSCodium and VeraCrypt apps
+Added pi-apps terminal command (you can now run pi-apps with `pi-apps`). 
+- **1/30/2021** Minecraft Pi (Modded) official launch
+- **1/31/2021** Added Wine x86 app
+- **2/1/2021** Added Remarkable app and fixed Minecraft Pi (Modded) install
+- **2/3/2021** Updated Minecraft Pi (Modded) to v0.1.8 and added Node.js app
