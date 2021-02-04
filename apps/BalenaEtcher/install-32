@@ -7,10 +7,18 @@ function error {
   exit 1
 }
 
-rm -f ./etcher_1.5.111_armv7l.deb
+function download_latest_release_armhf() {
+  echo "Downloading latest release..."
+  curl -s https://api.github.com/repos/$1/releases/latest \
+  | grep "browser_download_url.*armv7l.deb" \
+  | cut -d : -f 2,3 \
+  | tr -d \" \
+  | wget -qi -
+}
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.113/balena-etcher-electron_1.5.113+1dc56aed_armv7l.deb -O ~/etcher-v1.5.113_armv7l.deb || error "Failed to download!"
-
-sudo apt install -y --fix-broken ~/etcher-v1.5.113_armv7l.deb  || error "failed to install deb file!"
-rm -f ~/etcher-v1.5.113_armv7l.deb
+cd $HOME
+rm -f ./balena-etcher-electron_*_armv7l.deb 2>/dev/null
+download_latest_release_armhf Itai-Nelken/Etcher-arm-32-64
+sudo apt install -y --fix-broken ~/balena-etcher-electron_*_armv7l.deb  || error "failed to install deb file!"
+rm -f ~/balena-etcher-electron_*_armv7l.deb
 exit 0
