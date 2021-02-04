@@ -9,10 +9,22 @@ function error {
   exit 1
 }
 
-rm -f ~/etcher-v1.5.112_arm64.deb
+function download_latest_release_arm64() {
+  echo "Downloading latest arm64 release..."
+  curl -s https://api.github.com/repos/$1/releases/latest \
+  | grep "browser_download_url.*armv64.deb" \
+  | cut -d : -f 2,3 \
+  | tr -d \" \
+  | wget -qi -
+}
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.113/balena-etcher-electron_1.5.113+1dc56aed_arm64.deb -O ~/etcher-v1.5.113_arm64.deb || error "Failed to download!"
+# Get dependencies
+"${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || exit 1
 
-sudo apt install -y --fix-broken ~/etcher-v1.5.113_arm64.deb || error "failed to install deb file!"
-rm -f ~/etcher-v1.5.113_arm64.deb
+cd $HOME
+rm -f ./balena-etcher-electron_*_arm64.deb 2>/dev/null
+download_latest_release_arm64 Itai-Nelken/Etcher-arm-32-64
+sudo apt install -y --fix-broken ~/balena-etcher-electron_*_arm64.deb  || error "failed to install deb file!"
+rm -f ~/balena-etcher-electron_*_arm64.deb
 exit 0
+
