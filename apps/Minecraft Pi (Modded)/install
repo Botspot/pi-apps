@@ -4,7 +4,7 @@
 ## Config
 ##
 
-MCPIL_VERSION='0.1.7'
+MCPIL_VERSION='0.1.8'
 
 set -e
 
@@ -33,8 +33,7 @@ fi
 # Remove Old Minecraft Pi
 sudo apt-get remove -y minecraft-pi >/dev/null || :
 sudo apt-get remove -y minecraft-pi-native >/dev/null || :
-sudo apt-get remove -y mcpil >/dev/null || :
-sudo apt-get remove -y mcpil-r >/dev/null|| :
+sudo apt-get remove -y mcpil-r >/dev/null || :
 
 # Debian Buster Support
 if [[ "$(lsb_release -cs)" = "buster" ]]; then

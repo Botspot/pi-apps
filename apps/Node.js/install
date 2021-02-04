@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#Checking if using armv6
+if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
+  error "armv6 cpu not supported"
+fi
+
+"${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || exit 1
+
+#Add NodeSource repo:
+curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash - || error "Failed to add Nodesource repo!"
+
+#Install NodeJS:
+sudo apt install nodejs -y || error "Failed to install Node.JS"
