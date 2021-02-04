@@ -16,6 +16,9 @@ function download_latest_release_armhf() {
   | wget -qi -
 }
 
+# Get dependencies
+"${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || exit 1
+
 cd $HOME
 rm -f ./balena-etcher-electron_*_armv7l.deb 2>/dev/null
 download_latest_release_armhf Itai-Nelken/Etcher-arm-32-64
