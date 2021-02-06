@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-wget https://github.com/Itai-Nelken/Nativefier-Whatsapp-Web/releases/download/v1.0/WhatsAppWeb-linux-armv7l.tray.tar.xz || error 'Failed to download!'
+wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v1.0/WhatsAppWeb-linux-armv7l.tray.tar.xz || error 'Failed to download!'
 tar -xf WhatsAppWeb-linux-armv7l.tray.tar.xz || error "Failed to extract!"
 rm WhatsAppWeb-linux-armv7l.tray.tar.xz
 mv "WhatsAppWeb-linux-armv7l(tray)" WhatsAppWeb
