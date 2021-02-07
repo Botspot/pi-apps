@@ -14,7 +14,7 @@ Pi-Apps does exactly this - distributing over 50 useful app install scripts that
 ## To install Pi-Apps
 Make sure `git` is installed with `sudo apt install git`, then run:
 ```
-git clone https://github.com/oxmc/pi-apps
+git clone https://github.com/oxmc/pi-apps-modified
 mv ~/pi-apps-modified/pi-apps
 ~/pi-apps/install
 ```
