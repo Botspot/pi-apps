@@ -15,7 +15,7 @@ Pi-Apps does exactly this - distributing over 50 useful app install scripts that
 Make sure `git` is installed with `sudo apt install git`, then run:
 ```
 git clone https://github.com/oxmc/pi-apps-modified
-mv ~/pi-apps-modified/ /pi-apps
+mv ~/pi-apps-modified/ ~/pi-apps
 ~/pi-apps/install
 ```
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
