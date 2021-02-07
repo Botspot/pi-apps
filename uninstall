@@ -20,6 +20,9 @@ rm -f ~/.local/share/applications/pi-apps-settings.desktop
 rm -f ~/.config/autostart/pi-apps-updater.desktop
 rm -f ~/Desktop/pi-apps.desktop
 
+#Disable click-to-run.
+echo "$(sed '22 s/quick_exec=1/quick_exec=0/g' ~/.config/libfm/libfm.conf)" > ~/.config/libfm/libfm.conf
+
 echo -e "\e[32mUninstallation complete.
 \e[97mIf Pi-apps didn"\'"t work for you, \e[4m\e[21m\e[5mPLEASE\e[0m\e[97m consider submitting a \e[1mbug report\e[0m!
 --> \e[96mhttps://github.com/Botspot/pi-apps/issues/new\e[39m"
