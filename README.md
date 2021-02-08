@@ -8,18 +8,26 @@ Pi-Apps does exactly this - distributing over 50 useful app install scripts that
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (the most famous RPi YouTuber) says:
 
-> "It's an **awesome** Raspberry Pi app store and it **works really well** and there's lots of great stuff in here and it's super easy to install.
+> "It's an **awesome** Raspberry Pi app store and it works really well and there's **lots of great stuff** in here and it's super easy to install.  
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
-Make sure `git` is installed with `sudo apt install git`, then run:
+```
+wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
+```
+<details>
+<summary>Manual installation</summary>
+
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
 ```
+
+</details>
+
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ## To run Pi-Apps
-Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from its directory with `~/pi-apps/gui`
+Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from its directory with `~/pi-apps/gui`.
 ### Useful links
 - [![Pi-Apps Discord server](https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Pi-Apps%20Discord%20server&logo=discord)](https://discord.gg/RXSTvaUvuu)
 - [Send Botspot a donation](https://paypal.me/josephmarchand)
