@@ -14,8 +14,7 @@ Pi-Apps does exactly this - distributing over 50 useful app install scripts that
 ## To install Pi-Apps
 Make sure `git` is installed with `sudo apt install git`, then run:
 ```
-git clone https://github.com/Botspot/pi-apps
-~/pi-apps/install
+git clone https://github.com/Botspot/pi-apps; ~/pi-apps/install
 ```
 The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory.
 ## To run Pi-Apps
