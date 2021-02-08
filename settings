@@ -124,6 +124,7 @@ ${params}"
 done
 
 #remove empty lines from $output
+
 output="$(echo "$output" | grep .)"
 
 echo "Output: ${output}EOO"
@@ -145,6 +146,10 @@ do
 done
 IFS="$PREIFS"
 
-
-
-
+#click-to-run. Allowed values: 'Enabled', 'Disabled'
+ctrmode="$(cat "${DIRECTORY}/data/settings/Click-to-run")"
+if [ $ctrmode == "Enabled" ];then
+  echo "$(sed '22 s/quick_exec=0/quick_exec=1/g' ~/.config/libfm/libfm.conf)" > ~/.config/libfm/libfm.conf
+else
+  echo "$(sed '22 s/quick_exec=1/quick_exec=0/g' ~/.config/libfm/libfm.conf)" > ~/.config/libfm/libfm.conf
+fi
