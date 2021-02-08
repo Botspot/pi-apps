@@ -7,12 +7,8 @@ function error {
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
+#install yad automatically
 if ! command -v yad >/dev/null;then
-  echo -n "YAD is required but not installed. Install now? [Y/n] "
-  read answer
-  if [ "$answer" == n ];then
-    error "User declined."
-  fi
   if [ -f /usr/bin/apt ];then
     sudo apt update
     sudo apt install -y yad
@@ -22,11 +18,28 @@ if ! command -v yad >/dev/null;then
     error "Failed to find any package manager"
   fi
 fi
-
 #remove annoying YAD icon browser launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
-echo "Creating menu button..."
+#download pi-apps if folder missing
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
+  DIRECTORY="$HOME/pi-apps"
+  
+  #if directory does not exist, download it
+  if [ ! -d "$DIRECTORY" ];then
+    echo "Downloading Pi-Apps..."
+    output="$(git clone --depth 1 https://github.com/Botspot/pi-apps "$DIRECTORY" 2>&1)"
+    if [ ! -d "$DIRECTORY" ];then
+      error "Pi-Apps download failed!\ngit clone output was: $output"
+    fi
+  fi
+fi
+#from this point in, DIRECTORY variable populated with valid pi-apps directory
+
+#menu button
+if [ ! -f ~/.local/share/applications/pi-apps.desktop ];then
+  echo "Creating menu button..."
+fi
 mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=Pi Apps
@@ -37,11 +50,15 @@ Terminal=false
 Type=Application
 Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
 
-echo "Adding Desktop shortcut..."
+if [ ! -f ~/Desktop/pi-apps.desktop ];then
+  echo "Adding Desktop shortcut..."
+fi
 cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/pi-apps.desktop
 chmod +x ~/Desktop/pi-apps.desktop
 
-echo "Creating Settings menu button..."
+if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
+  echo "Creating Settings menu button..."
+fi
 echo "[Desktop Entry]
 Name=Pi Apps Settings
 Comment=Configure Pi-Apps or create an App
@@ -51,7 +68,9 @@ Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
 
-echo "Creating autostarted updater..."
+if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
+  echo "Creating autostarted updater..."
+fi
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
 Name=Pi Apps Updater
@@ -63,13 +82,12 @@ X-GNOME-Autostart-enabled=true
 Hidden=false
 NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
 
-mkdir -p "${DIRECTORY}/data"
-cd "${DIRECTORY}/data"
+mkdir -p "${DIRECTORY}/data" && cd "${DIRECTORY}/data" || error "Failed to make and enter ${DIRECTORY}/data directory!"
 mkdir -p installed-packages preload settings status update-status categories
 cd $HOME
 
 #hide template file by default
-"${DIRECTORY}/etc/categoryedit" "template" 'hidden'
+"${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ];then
@@ -89,7 +107,7 @@ Chromium Widevine
 Back to Chromium v78
 Lightpad"
   for app in $apps ;do
-    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden'
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done
   echo "Finished hiding apps on TwisterOS."
 fi
@@ -103,10 +121,14 @@ ${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
   echo "You can now run pi-apps in a terminal, just by running 'pi-apps'"
 fi
 
-echo "Creating settings if they don"\'"t exist..."
+if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
+  echo "Generating default settings..."
+fi
 "${DIRECTORY}/settings" refresh
 
-echo "Preloading app list..."
+if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
+  echo "Preloading app list..."
+fi
 "${DIRECTORY}/preload" &>/dev/null
 
 echo "Installation complete."
