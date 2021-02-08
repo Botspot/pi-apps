@@ -12,14 +12,28 @@ if ! command -v yad >/dev/null;then
   if [ -f /usr/bin/apt ];then
     sudo apt update
     sudo apt install -y yad
+    updated=1
   elif [ -f /usr/bin/pacman ];then
     sudo pacman -S yad
   else
-    error "Failed to find any package manager"
+    error "Failed to find any package manager to install yad."
   fi
 fi
 #remove annoying YAD icon browser launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
+
+#install git
+if ! command -v git >/dev/null;then
+  if [ -f /usr/bin/apt ];then
+    #only run sudo apt update if not already run
+    if [ -z "$updated" ];then
+      sudo apt update
+    fi
+    sudo apt install -y git
+  else
+    error "Failed to find any package manager to install git."
+  fi
+fi
 
 #download pi-apps if folder missing
 if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
