@@ -1,0 +1,26 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#Checking if using armv6
+if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
+  error "armv6 cpu not supported"
+fi
+
+if ! command -v curl >/dev/null ; then
+  echo -e "\033[0;31mcurl: command not found.\e[39m
+You need to install curl first. If you are on a debian system, this command should install it:
+\e[4msudo apt install curl\e[0m"
+  exit 1
+fi
+
+#Add NodeSource repo:
+curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash - || error "Failed to add Nodesource repo!"
+
+#Install NodeJS:
+sudo apt install nodejs -y || error "Failed to install Node.JS"

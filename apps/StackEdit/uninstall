@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo "removing ~/stackedit..."
+rm -rf ~/stackedit || error "Failed to remove ~/stackedit!"
+echo "removing menu shortcut..."
+rm -f ~/.local/share/applications/stackedit.desktop || error "Failed to remove menu shortcut!"
+echo "DONE!"

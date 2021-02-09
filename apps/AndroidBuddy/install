@@ -31,8 +31,7 @@ echo "[Desktop Entry]
 Name=AndroidBuddy
 Comment=GUI for Android device recovery and maintainence
 Icon=$(dirname "$0")/icon-64.png
-Path=$HOME/droidbuddy
-Exec=python3 $HOME/droidbuddy/main.py
+Exec=bash -c 'cd $HOME/droidbuddy ; python3 main.py'
 Type=Application
 Encoding=UTF-8
 Terminal=false

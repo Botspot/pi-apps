@@ -4,7 +4,7 @@
 ## Config
 ##
 
-MCPIL_VERSION='0.1.5'
+MCPIL_VERSION='0.1.8'
 
 set -e
 
@@ -18,7 +18,7 @@ function error {
 
 function install_deb {
   echo "Installing $1..."
-  sudo dpkg -i "$1" # Expected To Fail
+  sudo dpkg -i "$1" || : # Expected To Fail
   sudo apt-get --fix-broken install --no-install-recommends -y || error 'Unable To Complete Install'
 }
 
@@ -31,18 +31,14 @@ if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && 
 fi
 
 # Remove Old Minecraft Pi
-sudo apt-get remove -y minecraft-pi minecraft-pi-native || :
+sudo apt-get remove -y minecraft-pi >/dev/null || :
+sudo apt-get remove -y minecraft-pi-native >/dev/null || :
+sudo apt-get remove -y mcpil-r >/dev/null || :
 
 # Debian Buster Support
 if [[ "$(lsb_release -cs)" = "buster" ]]; then
   # Uninstall Old Docker
-  sudo apt-get remove -y docker.io
-  # Install Docker
-  if [ ! command -v docker &>/dev/null ];then
-    curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
-    sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
-    rm "${STORAGE}/get-docker.sh"
-  fi
+  sudo apt-get remove -y docker.io >/dev/null
   
   # Setup Backports Repo On Buster
   if ! grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
@@ -58,15 +54,25 @@ if [[ "$(lsb_release -cs)" = "buster" ]]; then
   fi
 fi
 
+# Install Docker
+if command -v docker &>/dev/null ;then
+  echo "Docker is installed at $(command -v docker)"
+else
+  echo "Docker is not installed. Running Docker install script..."
+  curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
+  sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
+  rm "${STORAGE}/get-docker.sh"
+fi
+
 # Prepare
 rm -rf "${STORAGE}/mcpi-reborn"
 mkdir "${STORAGE}/mcpi-reborn"
 
 # Download DEBs
-wget -O "${STORAGE}/mcpi-reborn/deb.zip" https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/artifact/out/deb/*zip*/deb.zip || error 'Unable To Download'
+wget -O "${STORAGE}/mcpi-reborn/deb.zip" https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/artifact/out/deb/*zip*/deb.zip || error 'Unable To Download deb.zip! Check your internet connection and try again.'
 
 # Unzip DEBs
-unzip "${STORAGE}/mcpi-reborn/deb.zip" -d "${STORAGE}/mcpi-reborn" || error 'Unable to extract deb.zip!'
+unzip "${STORAGE}/mcpi-reborn/deb.zip" -d "${STORAGE}/mcpi-reborn" || error 'Unable to extract deb.zip! Check your internet connection and try again.'
 
 # Find DEB
 MCPI_DOCKER_DEB="$(find "${STORAGE}/mcpi-reborn/deb" -name 'minecraft-pi-reborn-native*.deb')"
@@ -95,3 +101,7 @@ install_deb "${STORAGE}/mcpil/mcpil.deb"
 
 # Clean Up
 rm -rf "${STORAGE}/mcpil"
+
+# Update Docker Permissions
+sudo groupadd -f docker
+sudo usermod -aG docker "$(id -un)"

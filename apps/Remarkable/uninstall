@@ -7,8 +7,5 @@ function error {
   exit 1
 }
 
-rm -f ~/.local/share/applications/*gaoogdonmngmdlbinmiclicjpbjhgomg*
-rm -rf ~/Boxy-SVG-RPi
-rm -rf ~/.config/BoxySVG
-
-exit 0
+sudo apt purge remarkable -y || error "Failed to purge remarkable package!"
+sudo apt autoremove -y
