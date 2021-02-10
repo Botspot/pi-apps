@@ -72,6 +72,7 @@ echo "Please make sure you know you are doing! y/n"
 read answer
 if [ "$answer" == n ];then
   echo "$(sed '22 s/quick_exec=1/quick_exec=0/g' ~/.config/libfm/libfm.conf)" > ~/.config/libfm/libfm.conf
+  echo "Disabled click-to-run."
   echo "Continuing normal install..."
 else
   echo "$(sed '22 s/quick_exec=0/quick_exec=1/g' ~/.config/libfm/libfm.conf)" > ~/.config/libfm/libfm.conf
