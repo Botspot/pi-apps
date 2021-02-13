@@ -31,7 +31,6 @@ dirhash() {
   #------ hash every file in the folder ---------------- and add to it the filesystem list ------ hash it again
   hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
   echo "$hash"
-  echo "$hash" 1>&2
 }
 if [ "$1" == 'multi-install' ];then
   failed=0
@@ -106,7 +105,7 @@ elif [ "$1" == 'install' ];then
   fi
   
   #if already installed then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'installed' ];then
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'installed' ];then
     yad --text="$app is already installed. Are you sure you want to install it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -151,7 +150,7 @@ elif [ "$1" == 'uninstall' ];then
   fi
   
   #if already uninstalled then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'uninstalled' ];then
+  if [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'uninstalled' ];then
     yad --text="$app is already uninstalled. Are you sure you want to uninstall it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -184,7 +183,7 @@ elif [ "$1" == 'update' ];then
     true
   else
     rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
+    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
   newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
@@ -211,18 +210,16 @@ elif [ "$1" == 'update' ];then
     echo "$app is identical to the online version. Nothing to do!"
     exit 0
   else
-    echo "$app is not identical to the online version. Reinstalling..."
+    echo "$app is not identical to the online version."
   fi
   #else
   installback=no
-  #if install was changed
-  if [ ! "$newinstallhash" == "$oldinstallhash" ];then
-    #if installed already
-    if [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'installed' ];then
-      installback=yes
-      #uninstall it using a recursive script instance
-      "${DIRECTORY}/manage" uninstall "$app"
-    fi
+  #if install was changed                                                    #if installed already
+  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'installed' ];then
+    installback=yes
+    echo "$app's install script has been updated. Reinstalling $app..."
+    #uninstall it using a recursive script instance
+    "${DIRECTORY}/manage" uninstall "$app"
   fi
   
   #move old program to trash
@@ -252,7 +249,7 @@ elif [ "$1" == 'check-all' ];then
   fi
   
   rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
+  git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   
   #generate entire app list, combine local apps and online apps to one list
   applist="$(echo -e "$(ls "${DIRECTORY}/update/pi-apps/apps")\n$(ls "${DIRECTORY}/apps")" | sort | uniq)"
@@ -264,7 +261,7 @@ elif [ "$1" == 'check-all' ];then
     IFS=$'\n'
     for app in $applist
     do
-      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}" &>/dev/null)" == 'uninstalled' ];then
+      if [ ! -f "${DIRECTORY}/data/status/${app}" ] || [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'uninstalled' ];then
         #if app is uninstalled, then remove it from the list.
         applist="$(echo "$applist" | grep -vx "$app")"
         echo "Removing ${app} from list because it is uninstalled." 1>&2

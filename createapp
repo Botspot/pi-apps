@@ -272,7 +272,7 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
         output="$(yad --form --on-top \
           --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
           --text="Now it"\'"s time to make your install-32 and install-64 scripts.
-One of these scripts will be executed when somebody clicks you app"\'"s Install button.
+One of these scripts will be executed when somebody clicks your app"\'"s Install button.
 Two text editors should have openened and you can create your scripts." \
           --field="Run install-32 script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-32';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running install-32 script of $name"\""" \
           --field="Shellcheck install-32"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/install-32';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \

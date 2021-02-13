@@ -7,5 +7,7 @@ function error {
   exit 1
 }
 
-rm -f ~/.local/share/applications/whatsappweb.desktop
-rm -rf ~/WhatsappWeb
+
+#Uninstalling FreeTube
+sudo apt -y purge freetube || error "Failed to uninstall lightpad"
+sudo apt -y autoremove

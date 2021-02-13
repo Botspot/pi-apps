@@ -50,7 +50,8 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
     echo -e "You are using a kernel with a 2G/2G memory split.\nWine will not work on such systems. What would you like to do?
 1. Switch to the 64-bit kernel (about 2 minutes)
 2. Compile a 3G/1G kernel (several hours)
-3. Exit"
+3. Install a precompiled 3G/1G kernel (about 2 minutes but might be outdated)
+4. Exit"
     read -n1 answer
     echo ''
     if [ "$answer" == 1 ];then
@@ -93,10 +94,35 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       #message
       echo -e "It appears the 3G/1G kernel has been built and installed successfully.\nPlease reboot and install the Wine app again."
       sleep infinity
-    elif [ "$answer" == 3 ];then
+    elif [ "$answer" == 3 ];then 
+      #install precompiled 3g/1g kernel
+      
+      #backup ~/linux if it exists
+      rm -rf ~/linux.bak
+      [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
+      #download precompiled kernel
+      echo "Downloading precompiled kernel..."
+      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/2/rpi23_3g1g_kernel.tar.xz -O ~/3g1g-rpi-kernel.tar.xz || error "Failed to download prebuilt kernel!"
+      #extract precompiled kernel
+      echo "Extracting prebuilt kernel..."
+      tar -xf ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
+      cd linux || error "Failed to change folder to ~/linux!"
+      #install the precompiled kernel
+      export KERNEL=kernel7
+      sudo make modules_install || error "sudo make modules_install failed!"
+      sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
+      sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
+      sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
+      sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
+      cd
+      rm -rf linux
+      #message
+      echo -e "It appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again."
+      sleep infinity
+    elif [ "$answer" == 4 ];then
       exit 1
     else
-      echo "Invalid response. Must be '1', '2', or '3'."
+      echo "Invalid response. Must be '1', '2', '3' or '4'."
     fi
   done
 else
@@ -179,4 +205,7 @@ Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
 
 
 # Boot wine (make fresh wineprefix in ~/.wine
-BOX86_NOBANNER=1 wine ~/wine/bin/wineboot
+BOX86_NOBANNER=1
+setarch linux32 -L box86 ~/wine/bin/wine wineboot
+#update the wine prefix (~/.wine) to fix the issue that causes wine to not know its system drive
+wine wineboot -u

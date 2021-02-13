@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-rm -f ~/.local/share/applications/whatsappweb.desktop
-rm -rf ~/WhatsappWeb
+sudo apt purge remarkable -y || error "Failed to purge remarkable package!"
+sudo apt autoremove -y

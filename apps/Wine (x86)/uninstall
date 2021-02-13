@@ -7,14 +7,15 @@ function error {
   exit 1
 }
 
-rm -rf ~/.wine || error 'Failed to remove ~/.wine, trying again as root'
-sudo rm -rf ~/.wine || error 'Failed to remove ~/.wine as root!'
-sudo rm -rf /usr/local/bin/wine || error 'Failed to remove /usr/local/bin/wine!'
-sudo rm /usr/local/bin/winecfg || error 'Failed to remove /usr/local/bin/winecfg!'
-sudo rm /usr/local/bin/wineserver || error 'Failed to remove /usr/local/bin/wineserver!'
-rm -rf ~/wine || error 'Failed to remove ~/wine!'
+rm -rf ~/.wine
+sudo rm -rf /usr/local/bin/wine
+sudo rm /usr/local/bin/winecfg
+sudo rm /usr/local/bin/wineserver
+rm -rf ~/wine
 
-rm ~/.local/share/applications/winecfg.desktop || error 'Failed to remove winecfg menu shortcut'
+rm ~/.local/share/applications/wine-config.desktop || error 'Failed to remove winecfg menu shortcut!'
+rm ~/.local/share/applications/winetricks.desktop || error 'Failed to remove winetricks menu shortcut!'
+rm ~/.local/share/applications/wine-explorer.desktop || error 'Failed to remove wine desktop menu shortcut!'
 
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
