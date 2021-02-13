@@ -308,6 +308,9 @@ $installedpackages"
         if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
           echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
         fi
+        if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
+          echo "--button=Credits!${DIRECTORY}/icons/credits.png:12"
+        fi
         if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
           #Taking a chance here. If status file is nonexistent, assume uninstalled.
           echo "--button=Install!${DIRECTORY}/icons/install.png:4"
@@ -386,6 +389,13 @@ $installedpackages"
         elif [ $button == 10 ];then
           echo "edit $output"
           "${DIRECTORY}/createapp" "$output"
+        elif [ $button == 12 ];then
+          echo "credits of $output"
+          cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
+            --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+            --title="Credits of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+            --button=Close!"${DIRECTORY}/icons/exit.png":0
+            
         else
           echo 'unknown button. Exiting now.'
           exit 0
