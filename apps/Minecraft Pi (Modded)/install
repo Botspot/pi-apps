@@ -4,7 +4,6 @@
 ## Config
 ##
 
-MCPI_REBORN_VERSION='build_28'
 MCPIL_VERSION='0.1.8'
 
 set -e
@@ -32,9 +31,9 @@ if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && 
 fi
 
 # Remove Old Minecraft Pi
-sudo apt-get remove -y minecraft-pi >/dev/null || :
-sudo apt-get remove -y minecraft-pi-native >/dev/null || :
-sudo apt-get remove -y mcpil-r >/dev/null || :
+sudo apt-get remove -y minecraft-pi >/dev/null 2>&1 || :
+sudo apt-get remove -y minecraft-pi-native >/dev/null 2>&1 || :
+sudo apt-get remove -y mcpil-r >/dev/null 2>&1 || :
 
 # Debian Buster Support
 if [[ "$(lsb_release -cs)" = "buster" ]]; then
@@ -46,7 +45,8 @@ if [[ "$(lsb_release -cs)" = "buster" ]]; then
     # Install Backports Repository
     echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
     # Sign backports repo
-    sudo apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 04EE7237B7D453EC
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 648ACFD622F3D138
     # Update APT Index
     sudo apt-get update
     # Install Updated libseccomp2
