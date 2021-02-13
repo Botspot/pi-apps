@@ -43,11 +43,10 @@ if [[ "$(lsb_release -cs)" = "buster" ]]; then
   
   # Setup Backports Repo On Buster
   if ! grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
-    # Install Backports Key
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
     # Install Backports Repository
     echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
+    # Sign backports repo
+    sudo apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
     # Update APT Index
     sudo apt-get update
     # Install Updated libseccomp2
