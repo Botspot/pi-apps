@@ -34,6 +34,6 @@ Type=Application
 Categories=Application;Development;IDE;
 Comment=jGRASP IDE
 StartupNotify=true
-Keywords=Text;Editor;" > "$([ -e "$HOME/.local/share/applications" ] && echo "$HOME/.local/share/applications || echo /usr/share/applications)/jgrasp.desktop"
+Keywords=Text;Editor;" > "$([ -e "$HOME/.local/share/applications" ] && echo "$HOME/.local/share/applications" || echo /usr/share/applications)/jgrasp.desktop"
 
 
