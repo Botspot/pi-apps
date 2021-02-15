@@ -7,35 +7,10 @@ function error {
   exit 1
 }
 
-#make and enter discord-electron folder
-gio trash ~/discord-electron
-mkdir ~/discord-electron
-cd ~/discord-electron || error "Failed to enter discord-electron folder!"
-
-export tagname="$(curl --silent "https://api.github.com/repos/SpacingBat3/electron-discord-webapp/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")' | tr -d 'v')"
-
-if [ -z "$tagname" ];then
-  tagname='0.1.5'
-fi
-
-#Download from github
-wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v${tagname}/electron-discord-webapp-${tagname}-arm64.tar.gz || error 'Failed to download archive!'
-
-tar -xf electron-discord-webapp-${tagname}-arm64.tar.gz --strip 1 || error 'Failed to extract archive!'
-rm -f electron-discord-webapp-${tagname}-arm64.tar.gz
-
-cd $HOME
-
-#Create desktop shortcut
-echo "[Desktop Entry]
-StartupNotify=true
-Terminal=false
-Type=Application
-Name=Discord
-Path=$HOME/discord-electron
-Exec=$HOME/discord-electron/electron-discord-webapp
-Icon=$(dirname "$0")/icon-64.png
-Categories=Network;Chat;VideoConference;WebApp;Internet
-Comment=Your place to talk!
-GenericName=Network Messenger" > ~/.local/share/applications/discord.desktop
-
+echo "Downloading latest arm64 release..."
+curl -s https://api.github.com/repos/$1/releases/latest \
+| grep "browser_download_url.*arm64.deb" \
+| cut -d : -f 2,3 \
+| tr -d \" \
+| wget -qi -
+sudo apt -f -y install ./electron-discord-webapp_*_arm64.deb
