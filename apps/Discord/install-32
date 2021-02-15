@@ -7,9 +7,8 @@ function error {
   exit 1
 }
 
-
-curl -s https://api.github.com/repos/$1/releases/latest \
 echo "downloading discord-electron..."
+curl -s https://api.github.com/repos/$1/releases/latest \
 | grep "browser_download_url.*armv7l.deb" \
 | cut -d : -f 2,3 \
 | tr -d \" \
