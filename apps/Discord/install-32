@@ -7,6 +7,9 @@ function error {
   exit 1
 }
 
+gio trash ~/discord-electron > /dev/null
+rm -f ~/.local/share/applications/discord.desktop > /dev/null
+
 echo "downloading discord-electron..."
 curl -s https://api.github.com/repos/$1/releases/latest \
 | grep "browser_download_url.*armv7l.deb" \
