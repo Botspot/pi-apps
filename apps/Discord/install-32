@@ -11,7 +11,7 @@ gio trash ~/discord-electron > /dev/null
 rm -f ~/.local/share/applications/discord.desktop > /dev/null
 
 echo "downloading discord-electron..."
-curl -s https://api.github.com/repos/$1/releases/latest \
+curl -s https://api.github.com/repos/SpacingBat3/electron-discord-webapp/releases/latest \
 | grep "browser_download_url.*armv7l.deb" \
 | cut -d : -f 2,3 \
 | tr -d \" \
