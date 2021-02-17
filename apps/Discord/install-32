@@ -16,4 +16,4 @@ curl -s https://api.github.com/repos/SpacingBat3/electron-discord-webapp/release
 | cut -d : -f 2,3 \
 | tr -d \" \
 | wget -qi - | error "Failed to download latest release!"
-sudo apt -f -y install ./electron-discord-webapp_*_armhf.deb
+sudo apt-get -f -y install ./electron-discord-webapp_*_armhf.deb
