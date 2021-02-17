@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210214/Cura-mb-master-armhf-20210215.AppImage || error "Failed to download!"
+wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210217/Cura-mb-master-armhf-20210217.AppImage || error "Failed to download!"
 
 chmod +x ~/Cura.AppImage
 
