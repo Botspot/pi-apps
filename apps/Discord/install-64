@@ -14,9 +14,9 @@ cd ~/discord-electron || error "Failed to enter discord-electron folder!"
 
 export tagname="$(curl --silent "https://api.github.com/repos/SpacingBat3/electron-discord-webapp/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")' | tr -d 'v')"
 
-if [ -z "$tagname" ];then
+#if [ -z "$tagname" ];then
   tagname='0.1.5'
-fi
+#fi
 
 #Download from github
 wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v${tagname}/electron-discord-webapp-${tagname}-arm64.tar.gz || error 'Failed to download archive!'
