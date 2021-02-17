@@ -7,13 +7,17 @@ function error {
   exit 1
 }
 
-gio trash ~/discord-electron > /dev/null
-rm -f ~/.local/share/applications/discord.desktop > /dev/null
+function download() {
+  curl -s https://api.github.com/repos/SpacingBat3/electron-discord-webapp/releases/latest \
+  | grep "browser_download_url.*armhf.deb" \
+  | cut -d : -f 2,3 \
+  | tr -d \" \
+  | wget -qi -
+}
+
+gio trash ~/discord-electron 2> /dev/null
+rm -f ~/.local/share/applications/discord.desktop 2> /dev/null
 
 echo "downloading discord-electron..."
-curl -s https://api.github.com/repos/SpacingBat3/electron-discord-webapp/releases/latest \
-| grep "browser_download_url.*armv7l.deb" \
-| cut -d : -f 2,3 \
-| tr -d \" \
-| wget -qi - | error "Failed to download latest release!"
+download || error "Failed to download latest release!"
 sudo apt -f -y install ./electron-discord-webapp*armhf.deb
