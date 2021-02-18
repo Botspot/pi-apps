@@ -6,7 +6,7 @@ On day one, he tries to install a few familiar Windows apps. If he's lucky, he'l
 Something needs to be done! Why hasn't anybody made a **collection of bash scripts that install apps easily**?  
 Pi-Apps does exactly this - distributing over 50 useful app install scripts that are executed with one click of the mouse.
 
-**[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (the most famous RPi YouTuber) says:
+**[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (a very well known RPi YouTuber) says:
 
 > "It's an **awesome** Raspberry Pi app store and it works really well and there's **lots of great stuff** in here and it's super easy to install.  
 > I want to give the devs of Pi-Apps a big shout-out."
