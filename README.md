@@ -62,10 +62,9 @@ Use the main window to quickly browse the selection of apps and easily install t
 ![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)  
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)  
-- If you click **New App** in Settings, you can easily create your own Apps using the Create App Wizard.
-![create app](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/create%20app.png?raw=true)  
-It helps you select an icon, create & debug install/uninstall scripts, write a description, and more.  
+
 ## To-do
+
 - [X] Make app creation system. (completed with the `createapp` script)  
 - [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
 - [X] Make 32-bit and 64-bit install scripts.  
@@ -110,7 +109,81 @@ Each app folder contains some of these files:
  - `install-64` This script installs an app on 64bit OS'es, and is 64bit-specific.
 Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it's for 32bit OS'es only and will hide that app on 64bit installations.
  - `uninstall` This script uninstalls the app. It must undo all changes made during install, but with one exception: **It must not permanently delete any user-generated config!** [We don't want people's Minecraft worlds being deleted during an update.](https://github.com/Botspot/pi-apps/issues/44)
- 
+<details>
+<summary>Creating an app</summary>
+It's easy to make your own Pi-App.
+
+- First, launch Pi-Apps Settings.
+- Click New App.
+- This launches the Create App Wizard. This series of dialog boxes wi9ll guide you through the process of making your very own app.
+- It will ask for:
+	- **Name** of app (**required**)
+	- **Icon**: should be a **square** icon, at least **64x64** px. Note that Windows .bmp icons rarely scale properly.
+	- **Website**: In general, the website link should point to where users will find **help** and more **information** about the app.
+	- OS architecture **compatibility**: Select if your app is **32-bit** compatible, **64-bit** compatible, or **both**.
+	- **Description**: Explain to a total noob user **what the app is**, what the app **does**, and how to get it running. 
+	- **Credits**: Give yourself credit for adding it to Pi-Apps! :)
+- In the subsequent pages, Pi-Apps will assist you in making your own **bash scripts** to install and uninstall the app.  
+
+What's a *bash script*? I'm glad you asked.  
+Basically, ask yourself this question: "**What commands should I run in a terminal to install this app?**"  
+Simply **write down all those commands in a file** Pi-Apps opens for you.  
+Here's the `install-32` script from the Arduino app: (located at `~/pi-apps/apps/Arduino/install-32`)
+```bash
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget https://downloads.arduino.cc/arduino-1.8.13-linuxarm.tar.xz || error "failed to download!"
+
+tar -xf arduino-1.8.13-linuxarm.tar.xz || error "failed to extract with tar!"
+arduino-1.8.13/install.sh || error "failed to run install as non-root user!"
+sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
+
+rm $HOME/Desktop/arduino-arduinoide.desktop
+rm arduino-1.8.13-linuxarm.tar.xz
+exit 0
+```
+Let's walk through the script, one line at a time.  
+- This stuff belongs at the top of all Pi-Apps scripts. Don't worry much about it.
+```bash
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+```
+- This downloads the Arduino software from [Arduino's downloads page](https://www.arduino.cc/en/software):
+```bash
+wget https://downloads.arduino.cc/arduino-1.8.13-linuxarm.tar.xz || error "failed to download!"
+```
+- Oh, but what's that above? `error`? The `error` command is used in Pi-Apps scripts, to exit if something goes wrong. For example, if the above line *failed* to download Arduino for some reason, the script will **stop and talk**. (in the terminal, it will exit with a bright red error saying "`failed to download!`")
+- This line extracts the zipped folder we just downloaded: (again, notice the `error` command that will notify us if this current command fails)
+```bash
+tar -xf arduino-1.8.13-linuxarm.tar.xz || error "failed to extract with tar!"
+```
+- These two commands run Arduino's built-in installation bash scripts:
+```bash
+arduino-1.8.13/install.sh || error "failed to run install as non-root user!"
+sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
+```
+- And this remaining portion of the script will clean up unnecessary files afterwards. 
+```bash
+rm $HOME/Desktop/arduino-arduinoide.desktop
+rm arduino-1.8.13-linuxarm.tar.xz
+exit 0
+```
+- Notice that these above commands don't have `error`s. That's because we don't care if these commands fail.
+</details>
+
 ### Directory tree
  - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `CHANGELOG.md` [This file](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md) is a written history for all important events for Pi-Apps, including dates for when each app was added. It's worth a read! :)
