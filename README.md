@@ -115,7 +115,7 @@ It's easy to make your own Pi-App.
 
 - First, launch Pi-Apps Settings.
 - Click New App.
-- This launches the Create App Wizard. This series of dialog boxes wi9ll guide you through the process of making your very own app.
+- This launches the Create App Wizard. This series of dialog boxes will guide you through the process of making your very own app.
 - It will ask for:
 	- **Name** of app (**required**)
 	- **Icon**: should be a **square** icon, at least **64x64** px. Note that Windows .bmp icons rarely scale properly.
