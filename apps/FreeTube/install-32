@@ -9,7 +9,7 @@ function error {
 
 #Downloading Deb File For FreeTube
 rm -f ~/freetube.deb
-wget https://archive.org/download/freetube_0.11.2_armv7l/freetube_0.11.2_armv7l.deb -O ~/freetube.deb || error "Failed to download freetube.deb!"
+wget https://archive.org/download/freetube_0.11.2_armv7l/freetube_0.11.3_armv7l.deb -O ~/freetube.deb || error "Failed to download freetube.deb!"
 
 #Installing FreeTube
 sudo apt install -y --fix-missing ~/freetube.deb || error "APT failed to install freetube.deb!"
