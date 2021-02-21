@@ -8,6 +8,7 @@ function error {
 }
 
 cd $HOME
+rm -f WhatsAppWeb-linux-arm64.tar.xz
 wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v1.0/WhatsAppWeb-linux-arm64.tar.xz || error 'Failed to download!'
 tar -xf WhatsAppWeb-linux-arm64.tar.xz || error "Failed to extract!"
 rm WhatsAppWeb-linux-arm64.tar.xz
