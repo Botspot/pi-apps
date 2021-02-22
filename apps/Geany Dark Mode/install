@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#get theme files
+rm -rf ~/geany-themes
+git clone --depth 1 https://github.com/codebrainz/geany-themes || error "Failed to git clone the geany themes repository!"
+
+#copy theme files
+mkdir -p ~/.config/geany/colorschemes
+cp -a ~/geany-themes/colorschemes/. ~/.config/geany/colorschemes || error "Failed to copy colorschemes to $HOME/.config/geany/colorschemes"
+
+#clear geany's pre-existing color_scheme entry
+sed -i '/color_scheme=/d' ~/.config/geany/geany.conf
+
+#add new theme config line to bottom of file
+echo "color_scheme=spyder-dark.conf" >> ~/.config/geany/geany.conf
+
+#clean up
+rm -rf ~/geany-themes
+
+if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
+  echo "Geany text editor is currently running.\nPlease close Geany and launch it again to apply the new theme."
+fi
