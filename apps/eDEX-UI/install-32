@@ -9,9 +9,9 @@ function error {
 
 rm -rf ~/eDEX-UI-RPi &>/dev/null
 mkdir ~/eDEX-UI-RPi
-wget https://github.com/GitSquared/edex-ui/releases/download/v2.2.6/eDEX-UI-Linux-armv7l.AppImage -O ~/eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.6.AppImage || error 'Failed to download 2.2.6 appimage!'
-wget https://github.com/Botspot/eDEX-UI-RPi/raw/main/eDEX-UI%20Linux%20(armv7l)_3.0.0.AppImage -O ~/eDEX-UI-RPi/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_3.0.0.AppImage' || error 'Failed to download v3.0 appimage!'
-chmod +x ./'eDEX-UI-RPi/eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.6.AppImage' ./'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_3.0.0.AppImage' || error 'Failed to mark the appimage's as executable!'
+wget -O ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.6.AppImage' 'https://github.com/GitSquared/edex-ui/releases/download/v2.2.6/eDEX-UI-Linux-armv7l.AppImage' || error 'Failed to download 2.2.6 appimage!'
+wget -O ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_3.0.0.AppImage' 'https://github.com/Botspot/eDEX-UI-RPi/raw/main/eDEX-UI%20Linux%20(armv7l)_3.0.0.AppImage' || error 'Failed to download v3.0 appimage!'
+chmod +x ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.6.AppImage' ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_3.0.0.AppImage' || error 'Failed to mark the appimage's as executable!'
 
 echo "[Desktop Entry]
 Name=eDEX-UI 2.2.6
