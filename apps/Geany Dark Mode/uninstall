@@ -25,6 +25,6 @@ for file in $files ;do
 done
 
 #clear geany's color_scheme entry
-sed -i '/color_scheme=/d' ~/.config/geany/geany.conf
+sed -i 's/color_scheme=.*/color_scheme=/g' ~/.config/geany/geany.conf
 
 exit 0

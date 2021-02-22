@@ -16,14 +16,12 @@ mkdir -p ~/.config/geany/colorschemes
 cp -a ~/geany-themes/colorschemes/. ~/.config/geany/colorschemes || error "Failed to copy colorschemes to $HOME/.config/geany/colorschemes"
 
 #clear geany's pre-existing color_scheme entry
-sed -i '/color_scheme=/d' ~/.config/geany/geany.conf
-
-#add new theme config line to bottom of file
-echo "color_scheme=spyder-dark.conf" >> ~/.config/geany/geany.conf
+sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
 
 #clean up
 rm -rf ~/geany-themes
 
 if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
-  echo "Geany text editor is currently running.\nPlease close Geany and launch it again to apply the new theme."
+  echo -e "\nGeany text editor is currently running.\nPlease close Geany and launch it again to apply the new theme."
+  sleep 5
 fi
