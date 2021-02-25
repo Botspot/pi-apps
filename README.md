@@ -23,7 +23,7 @@ git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
 ```
 </details>
-The install script ensures YAD is installed, creates two menu buttons, and an autostarted updater. Nothing is modified outside your home directory execpt one file to allow `pi-apps` in a terminal.
+The install script ensures YAD is installed, creates two menu buttons, an autostarted updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Nothing is modified outside your home directory.
 
 To uninstall Pi-Apps run `sudo rm //usr/local/bin/pi-apps && rm -r //home/pi/pi-apps`
 
