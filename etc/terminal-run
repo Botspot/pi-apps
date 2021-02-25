@@ -11,6 +11,8 @@ elif [ -f /usr/bin/mate-terminal ];then
   mate-terminal --title="$2" -e "bash -c "\""$1"\"""
 elif [ -f /usr/bin/xterm ];then
   xterm -T "$2" -e bash -c "$1"
+elif [ -f /usr/bin/konsole ];then
+  konsole -p tabtitle="$2" -e bash <(echo "$1")
 elif [ -f /usr/bin/x-terminal-emulator ];then
   $(readlink -f /usr/bin/x-terminal-emulator) -e bash -c "$1"
 else
