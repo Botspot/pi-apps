@@ -11,10 +11,8 @@ DIRECTORY="$(readlink -f "$(dirname "$0")")"
 if ! command -v yad >/dev/null;then
   if [ -f /usr/bin/apt ];then
     sudo apt update
-    sudo apt install -y yad
+    sudo apt install -y yad || error "Failed to install yad."
     updated=1
-  elif [ -f /usr/bin/pacman ];then
-    sudo pacman -S yad
   else
     error "Failed to find any package manager to install yad."
   fi
@@ -29,7 +27,7 @@ if ! command -v git >/dev/null;then
     if [ -z "$updated" ];then
       sudo apt update
     fi
-    sudo apt install -y git
+    sudo apt install -y git || error "Failed to install git."
   else
     error "Failed to find any package manager to install git."
   fi

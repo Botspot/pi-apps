@@ -27,9 +27,6 @@ fi
 "${DIRECTORY}/etc/categoryedit" "RetroPie" 'hidden'
 "${DIRECTORY}/etc/categoryedit" "Doom 3" 'Games') &
 
-gio trash "${DIRECTORY}/apps/Minecraft Pi" 2>/dev/null
-gio trash "${DIRECTORY}/apps/MCPi Reborn" 2>/dev/null
-
 (if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
   rm /usr/local/bin/pi-apps
   echo "#!/bin/bash
@@ -44,15 +41,11 @@ if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" 
   rm "${DIRECTORY}/data/hidelist"
 fi
 
-#rename 'Vivaldi web browser' to Vivaldi
-(mv "${DIRECTORY}/apps/TeamViewer" "${DIRECTORY}/apps/TeamViewer Host" 2>/dev/null
-mv "${DIRECTORY}/data/status/TeamViewer" "${DIRECTORY}/data/status/TeamViewer Host" 2>/dev/null
-if [ -z "$(grep -r 'TeamViewer Host' /home/pi/pi-apps/data/preload)" ];then
-  rm -rf "$DIRECTORY/data/preload"
-fi
+#wine fix without losing data in ~/.wine
+(
+wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/install-32 > "${DIRECTORY}/apps/Wine (x86)/install-32"
+wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/uninstall > "${DIRECTORY}/apps/Wine (x86)/uninstall"
 ) &
-
-(rm -rf "${DIRECTORY}/apps/Cordless") &
 
 install() {
   app="$1"

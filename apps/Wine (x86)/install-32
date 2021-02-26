@@ -129,6 +129,8 @@ else
   echo "Your system is using a 3G/1G kernel. Continuing..."
 fi
 
+#Past this point, the pi is running a Wine-compatible kernel.
+
 if [ ! -f /usr/local/bin/box86 ];then
   echo 'Installing box86 first...'
   wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash
@@ -207,5 +209,15 @@ Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
 # Boot wine (make fresh wineprefix in ~/.wine
 BOX86_NOBANNER=1
 setarch linux32 -L box86 ~/wine/bin/wine wineboot
+
+#wait until above process exits
+while [ ! -z "$(ps aux | grep -i 'wine C:' | grep -v grep)" ];do
+  sleep 1
+done
+echo "First wineboot finished. Now updating wine prefix..."
+
 #update the wine prefix (~/.wine) to fix the issue that causes wine to not know its system drive
-wine wineboot -u
+#running as background process - terminal will exit but that's ok
+setsid wine wineboot -u
+
+exit 0

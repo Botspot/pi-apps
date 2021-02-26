@@ -7,19 +7,20 @@ function error {
   exit 1
 }
 
-wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v1.0/WhatsAppWeb-linux-arm64.tray.tar.xz || error 'Failed to download!'
-tar -xf WhatsAppWeb-linux-arm64.tray.tar.xz || error "Failed to extract!"
-rm WhatsAppWeb-linux-arm64.tray.tar.xz
-mv "WhatsAppWeb-linux-arm64(tray)"  WhatsAppWeb
+cd $HOME
+rm -f WhatsAppWeb-linux-armv7l.tar.xz
+wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v1.0/WhatsAppWeb-linux-armv7l.tar.xz || error 'Failed to download!'
+tar -xf WhatsAppWeb-linux-armv7l.tar.xz || error "Failed to extract!"
+rm WhatsAppWeb-linux-armv7l.tar.xz
+mv "WhatsAppWeb-linux-armv7l" WhatsAppWeb
 
 echo "[Desktop Entry]
 Name=Whatsapp Web
 Comment=Nativefier Whatsapp Web webapp.
 Exec=$HOME/WhatsAppWeb/WhatsAppWeb
-Path="$HOME/WhatsAppWeb"
+Path=$HOME/WhatsAppWeb
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 StartupNotify=true
 Type=Application
 Categories=Network;" > ~/.local/share/applications/whatsappweb.desktop || error "Failed to create menu button!"
-
