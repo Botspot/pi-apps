@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-sudo apt-get remove -y minecraft-pi-reborn-native mcpil
-sudo apt-get autoremove -y
+sudo apt purge -y qemu
+sudo apt autoremove -y

@@ -27,9 +27,6 @@ fi
 "${DIRECTORY}/etc/categoryedit" "RetroPie" 'hidden'
 "${DIRECTORY}/etc/categoryedit" "Doom 3" 'Games') &
 
-gio trash "${DIRECTORY}/apps/Minecraft Pi" 2>/dev/null
-gio trash "${DIRECTORY}/apps/MCPi Reborn" 2>/dev/null
-
 (if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
   rm /usr/local/bin/pi-apps
   echo "#!/bin/bash
@@ -44,15 +41,11 @@ if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" 
   rm "${DIRECTORY}/data/hidelist"
 fi
 
-#rename 'Vivaldi web browser' to Vivaldi
-(mv "${DIRECTORY}/apps/TeamViewer" "${DIRECTORY}/apps/TeamViewer Host" 2>/dev/null
-mv "${DIRECTORY}/data/status/TeamViewer" "${DIRECTORY}/data/status/TeamViewer Host" 2>/dev/null
-if [ -z "$(grep -r 'TeamViewer Host' /home/pi/pi-apps/data/preload)" ];then
-  rm -rf "$DIRECTORY/data/preload"
-fi
+#wine fix without losing data in ~/.wine
+(
+wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/install-32 > "${DIRECTORY}/apps/Wine (x86)/install-32"
+wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/uninstall > "${DIRECTORY}/apps/Wine (x86)/uninstall"
 ) &
-
-(rm -rf "${DIRECTORY}/apps/Cordless") &
 
 install() {
   app="$1"
@@ -308,6 +301,9 @@ $installedpackages"
         if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
           echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
         fi
+        if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
+          echo "--button=Credits!${DIRECTORY}/icons/credits.png:12"
+        fi
         if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
           #Taking a chance here. If status file is nonexistent, assume uninstalled.
           echo "--button=Install!${DIRECTORY}/icons/install.png:4"
@@ -386,6 +382,13 @@ $installedpackages"
         elif [ $button == 10 ];then
           echo "edit $output"
           "${DIRECTORY}/createapp" "$output"
+        elif [ $button == 12 ];then
+          echo "credits of $output"
+          cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
+            --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+            --title="Credits of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+            --button=Close!"${DIRECTORY}/icons/exit.png":0
+            
         else
           echo 'unknown button. Exiting now.'
           exit 0
