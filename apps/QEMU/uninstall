@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-rm -rf ~/WhatsAppWeb
-rm ~/.local/share/applications/whatsappweb.desktop
+sudo apt purge -y qemu
+sudo apt autoremove -y
