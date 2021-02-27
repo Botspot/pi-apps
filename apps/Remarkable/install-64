@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#downloads
+wget https://remarkableapp.github.io/files/remarkable_1.87_all.deb || error 'Failed to Download remarkable_1.87_all'
+wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-webkit-3.0_2.4.11-3_arm64.deb || error 'Failed to Download gir1.2-webkit-3.0_2.4.11-3_arm64.deb'
+wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to Download libwebkitgtk-3.0-0_2.4.11-3_arm64'
+wget http://ftp.br.debian.org/debian/pool/main/i/icu/libicu57_57.1-6+deb9u4_arm64.deb || error 'Failed to Download libicu57_57.1-6+deb9u4_arm64'
+wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to Download '
+wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb || error 'Failed to Download '
+
+
+#installation
+sudo apt --fix-broken -y install ./libicu57_57.1-6+deb9u4_arm64.deb || error 'Failed to install libicu57_57.1-6+deb9u4_arm64'
+sudo apt --fix-broken -y install ./libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to install libjavascriptcoregtk-3.0-0_2.4.11-3_arm64'
+sudo apt --fix-broken -y install ./libwebkitgtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to install libwebkitgtk-3.0-0_2.4.11-3_arm64'
+sudo apt --fix-broken -y install ./gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb || error 'Failed to install libjavascriptcoregtk-3.0-0_2.4.11-3_arm64'
+
+sudo apt --fix-broken -y install ./gir1.2-webkit-3.0_2.4.11-3_arm64.deb || error 'Failed to install gir1.2-webkit-3.0_2.4.11-3_arm64'
+sudo apt --fix-broken -y install ./remarkable_1.87_all.deb || error 'Failed to install remarkable_1.87_all'
+
+#remove
+rm remarkable_1.87_all.deb
+rm gir1.2-webkit-3.0_2.4.11-3_arm64.deb
+rm libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb
+rm libwebkitgtk-3.0-0_2.4.11-3_arm64.deb
+rm libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb
+rm libicu57_57.1-6+deb9u4_arm64.deb
+ 
