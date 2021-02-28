@@ -117,7 +117,8 @@ Steam
 Windows 10 Theme
 Chromium Widevine
 Back to Chromium v78
-Lightpad"
+Lightpad
+Wine (x86)"
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done

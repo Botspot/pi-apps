@@ -23,29 +23,10 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-("${DIRECTORY}/etc/categoryedit" "Minecraft Pi (Modded)" 'Games'
-"${DIRECTORY}/etc/categoryedit" "RetroPie" 'hidden'
-"${DIRECTORY}/etc/categoryedit" "Doom 3" 'Games') &
-
-(if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
-  rm /usr/local/bin/pi-apps
-  echo "#!/bin/bash
-${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
-  sudo chmod +x /usr/local/bin/pi-apps
-  echo "You can now run pi-apps in a terminal, just by running 'pi-apps'"
-fi) &
-
-#hide Chromium Widevine & Back to Chromium v78 on existing TwisterOS installs
-if [ -f "${DIRECTORY}/data/hidelist" ] || [ ! -d "${DIRECTORY}/data/categories" ];then
+#hide wine on twisteros
+if [ -f /usr/local/bin/twistver ] && ! grep -q "Wine (x86)|Tools" "${DIRECTORY}/data/categories/structure" ;then
   "${DIRECTORY}/install"
-  rm "${DIRECTORY}/data/hidelist"
 fi
-
-#wine fix without losing data in ~/.wine
-(
-wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/install-32 > "${DIRECTORY}/apps/Wine (x86)/install-32"
-wget -qO- https://gist.githubusercontent.com/mobilegmYT/93bc709e5db27452ec0591ae8782441f/raw/2952dc75c9be0cdf019b815bebc51cd23781d00b/uninstall > "${DIRECTORY}/apps/Wine (x86)/uninstall"
-) &
 
 install() {
   app="$1"
