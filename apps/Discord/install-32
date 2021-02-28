@@ -20,5 +20,6 @@ rm -f ~/.local/share/applications/discord.desktop 2> /dev/null
 
 echo "downloading discord-electron..."
 download || error "Failed to download latest release!"
-sudo apt -f -y install ./electron-discord-webapp*armhf.deb || error "Failed to install discord-electron!"
+sudo dpkg -i electron-discord-webapp*armhf.deb || error "Failed to install discord-electron!"
+sudo apt -f install
 rm -f electron-discord-webapp*armhf.deb
