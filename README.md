@@ -336,11 +336,12 @@ Embed code:
 > About two weeks of nearly non-stop coding to make Pi-Apps from the ground-up. And since then, I've regularly fixed bugs, solved problems, adding new features, and handled new app submissions.
 
  - Is Pi-Apps still under development?
-> Sure is! Initial development is done for the most part, and I don't see any more major features being added to Pi-Apps's core functionality. (besides maybe allowing `apt`-package apps in the future)
-> But, there's always an app or two that need attention, and dozens of app requests. It's enough work to keep a whole team busy.
+> Sure is! Initial development is done for the most part, and I don't see any more [major features](https://github.com/Botspot/pi-apps#to-do) being added to Pi-Apps's core functionality. (besides maybe allowing `apt`-package apps in the future)
+> But, there's always an app or two that need attention, and dozens of app requests. It's enough work to keep a *team* of developers busy.
 
  - How can I help?
-> - You can donate if you'd like. The money goes to me (minus the annoying Paypal fees), and helps support future open-source development. Some of the money goes to placing a bounty on an app that I'd like to see completed by someone else who has skills/time that I don't have.
+> - It's always nice to leave a kind word about Pi-Apps on forums and in comments. In addition to helping others find this useful software, you may just get added to [the hall of fame](https://github.com/Botspot/pi-apps#what-do-others-say-about-pi-apps)!
+> - You can [donate](https://paypal.me/josephmarchand) if you'd like. The money goes to me (minus the Paypal fees), and helps support future open-source development. Some of the money goes to placing [bounties](https://github.com/ptitSeb/box86/issues/296) on apps that I'd like to see completed by someone else who has skills/time that I don't have.
 > - You can look through the [list of app requests](https://github.com/Botspot/pi-apps/issues) and help create the scripts for them.
-> - If you see someone complaining about a broken app on **Youtube**, please encourage them to join the [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) or to [open an issue](https://github.com/Botspot/pi-apps/issues/new) to get the problem solved. (I'm not on YouTube much.)
-> - You could help diagnose issues others are having.
+> - If you see someone complaining about a broken app on Youtube, Reddit, or Facebook, please encourage them to join the [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) or to [open an issue](https://github.com/Botspot/pi-apps/issues/new) to get the problem solved. (I'm not on those sites very often.)
+> - You could help troubleshoot/diagnose issues others are having.
