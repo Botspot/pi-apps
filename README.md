@@ -139,6 +139,8 @@ It's easy to make your own Pi-App.
 	- **Credits**: Give yourself credit for adding it to Pi-Apps! :)
 - In the subsequent pages, Pi-Apps will assist you in making your own **bash scripts** to install and uninstall the app.  
 
+### Making an `install` script
+
 What's a *bash script*? I'm glad you asked.  
 Basically, ask yourself this question: "**What commands should I run in a terminal to install this app?**"  
 Simply **write down all those commands in a file** Pi-Apps opens for you.  
@@ -164,7 +166,7 @@ rm arduino-1.8.13-linuxarm.tar.xz
 exit 0
 ```
 Let's walk through the script, one line at a time.  
-- This stuff belongs at the top of all Pi-Apps scripts. Don't worry much about it.
+- This stuff belongs at the top of all Pi-Apps scripts.⏬ Don't worry much about it.
 ```bash
 #!/bin/bash
 
@@ -175,30 +177,85 @@ function error {
   exit 1
 }
 ```
-- This downloads the Arduino software from [Arduino's downloads page](https://www.arduino.cc/en/software):
+- This downloads the Arduino software from [Arduino's downloads page](https://www.arduino.cc/en/software). ⏬
 ```bash
 wget https://downloads.arduino.cc/arduino-1.8.13-linuxarm.tar.xz || error "failed to download!"
 ```
-- Oh, but what's that above? `error`? The `error` command is used in Pi-Apps scripts, to exit if something goes wrong. For example, if the above line *failed* to download Arduino for some reason, the script will **stop and talk**. (in the terminal, it will exit with a bright red error saying "`failed to download!`")
-- This line extracts the zipped folder we just downloaded: (again, notice the `error` command that will notify us if this current command fails)
+- Oh, but what's that ⏫? `error`? The **`error`** command is used in all Pi-Apps scripts to **exit if something goes wrong**. For example, if the above line *failed* to download Arduino for some reason, the script will **stop and talk**. (in the terminal, it will exit with a red error saying "`failed to download!`")
+- This line extracts the zipped folder we just downloaded. ⏬ (again, notice the `error` command that will notify us if this current command fails)
 ```bash
 tar -xf arduino-1.8.13-linuxarm.tar.xz || error "failed to extract with tar!"
 ```
-- These two commands run Arduino's built-in installation bash scripts:
+- These two commands run Arduino's built-in installation bash scripts. ⏬
 ```bash
 arduino-1.8.13/install.sh || error "failed to run install as non-root user!"
 sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
 ```
-- And this remaining portion of the script will clean up unnecessary files afterwards. 
+- And this remaining portion of the script will clean up unnecessary files afterwards.⏬
 ```bash
 rm $HOME/Desktop/arduino-arduinoide.desktop
 rm arduino-1.8.13-linuxarm.tar.xz
 exit 0
 ```
-- Notice that these above commands don't have `error`s. That's because we don't care if these commands fail.
+- Notice that these ⏫ commands don't have `error`s. That's because we don't care if these commands fail.
+
+### Other things to be aware of
+The Arduino app was quite simple because it already included its own installation scripts. Not all apps are like this. Below are other tips that will come in handy when making your own apps, or understanding other pre-made install scripts.
+
+- To download a github repository, you can't use `wget`. Use the `git clone` command instead. For example, `git clone https://github.com/Botspot/pi-apps`, which will download the git repository to the ~/pi-apps folder by default. (As usual, add an `|| error` clause at the end in case the download fails.)
+- To install a package, don't use `apt`! Doing this causes problems, no matter which approach you try:
+  - Your app could install the `ffmpeg` package when installing the app, and uninstall `ffmpeg` when uninstalling the app. What's the problem here? Some people will already have `ffmpeg` installed on the system, and they will be quite annoyed when it goes missing after uninstalling your app.
+  - To solve the above issue, your app could only install the `ffmpeg` package, and *not even try* to uninstall it. This solution *would work*, but it's a very bad choice, both for disk usage, and for the Pi-Apps policy where users expect an uninstall script to undo everything.
+  - Solution: **don't use `apt`.** Use Pi-Apps's **`pkg-install`** script. Pkg-install uses `apt`, but it records which packages each app installs. When you uninstall the app, the `purge-installed` script will uninstall these packages that were written down earlier.  
+`pkg-install` usage:  
+`"${DIRECTORY}/pkg-install" "package1 package2 package3" "$(dirname "$0")" || exit 1`  
+That ⏫ is roughly equivalent to something like `sudo apt update && sudo apt install -y package1 package2 package3 || exit 1`  
+And to **remove** all packages your app installed earlier:  
+`"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1`  
+In case you were wondering, the `pkg-install` and `purge-installed` scripts know which app is running them thanks to the `"$(dirname "$0")"` portion.  
+ - Shortcut: create small text files using `echo` inside the install script. Many scripts use this technique to create menu button files:
+```
+echo "[Desktop Entry]
+Name=Ultimaker Cura
+GenericName=3D Printing Software
+Comment=Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
+Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage'
+Icon=$(dirname $0)/icon-64.png
+Terminal=false
+Type=Application
+MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
+Categories=Graphics;Education;Development;Science;
+Keywords=3D;Printing;
+StartupNotify=true" > ~/.local/share/applications/cura.desktop
+```
+This ⏫ was taken from the Cura app's `install-32` script. It creates a file at `~/.local/share/applications/cura.desktop`. (Don't forget to make the uninstall script remove it!)
+ - Delete files with `rm /path/to/file-i-wanna-delete.txt`. It's good practice to use `rm -f` to hide errors in case the file doesn't exist. For deleting entire folders, use `rm -rf`.
+ - Move files to the Trash with `gio trash /path/to/file/or/folder-i-wanna-delete`.
+
+### Making an `uninstall` script
+It should **undo all changes** made during installation, with one exception: uninstalling an app must not delete the app's configuration files. [We don't want people's Minecraft worlds being deleted during an update.](https://github.com/Botspot/pi-apps/issues/44)  
+Here's the Arduino app's `uninstall` script. ⏬
+```bash
+#!/bin/bash
+arduino-1.8.13/uninstall.sh
+sudo arduino-1.8.13/uninstall.sh
+rm -rf arduino-1.8.13
+```
+You may notice that the `DIRECTORY=` and `function error` lines are missing. ⏫ In this case, leaving them out is fine, but it's bad form. Updating the Arduino app now would trigger an unneeded pop-up for all users, so it stays as-is.  
+Script explanation:  
+- These run scripts that have resided in Arduino's folder. ⏬ They will remove the menu buttons for us and take care of most of the uninstall process.  
+```
+arduino-1.8.13/uninstall.sh
+sudo arduino-1.8.13/uninstall.sh
+```
+- And this will delete the Arduino folder. ⏬
+```
+rm -rf arduino-1.8.13
+```
+
 </details>
 
-### Directory tree
+## Directory tree
  - `~/pi-apps/` This is the main folder that holds everything. In all scripts, it is represented as the `${DIRECTORY}` variable.
    - `CHANGELOG.md` [This file](https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md) is a written history for all important events for Pi-Apps, including dates for when each app was added. It's worth a read! :)
    - `COPYING` This file contains the GNU General Public License v3 for Pi-Apps.
