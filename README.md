@@ -1,14 +1,14 @@
 # Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
-Say there's **a guy**. He's comes from a Windows background and doesn't know much about Linux or RPi.  
-On day one, he tries to install a few familiar Windows apps. If he's lucky, he'll find a **tutorial that doesn't work** anymore. If he's unlucky, he will find a **tutorial that bricks his OS**. So on day one, this guy has followed two faulty tutorials and destroyed his system. How annoying!  
-Something needs to be done! Why hasn't anybody made a **collection of bash scripts that install apps easily**?  
-Pi-Apps does exactly this - distributing over 50 useful app install scripts that are executed with one click of the mouse.
+Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
+Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pies to their full, desktop PC, potential.  
+Countless **Raspberry Pies remain in disuse** for this very reason. Something must be done!  
+Introducing **Pi-Apps**, basically a list of pre-made apps you can install with **one click**. (What a concept!)
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (a very well known RPi YouTuber) says:
 
-> "It's an **awesome** Raspberry Pi app store and it works really well and there's **lots of great stuff** in here and it's super easy to install.  
+> "It's an **awesome** Raspberry Pi app store and it **works really well** and there's *lots* of **great stuff in here** and it's super **easy to install**.  
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
@@ -23,7 +23,9 @@ git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
 ```
 </details>
+
 The install script ensures YAD is installed, creates two menu buttons, an autostarted updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside your home directory.
+
 <details>
 <summary>To uninstall Pi-Apps</summary>
 To uninstall Pi-Apps:
@@ -44,18 +46,17 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
-> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)**
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)** (large RPi YouTuber)
 
-> "It definitely looks really cool.
-> Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)**
+> Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)** (large RPi YouTuber)
 
-> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[Raspberry Pi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)**
+> "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[RPi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)** (RPi YouTuber)
 
 > "Pi-Apps is the reason I got a Pi4!" - behjemen from Discord
 
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne** (RPi moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857)
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator)
 
-> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)**
+> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)** (RPi legend)
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
@@ -72,21 +73,23 @@ Use the main window to quickly browse the selection of apps and easily install t
 
 ## To-do
 
-- [X] Make app creation system. (completed with the `createapp` script)  
-- [X] Add Pi-Apps to Twister OS. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
-- [X] Make 32-bit and 64-bit install scripts.  
-- [X] Allow multiple apps to be selected from the app list and be installed simultaneously.  
-- [X] Add a search function to the app list. It's still experimental: to enable it, switch to **xlunch** in **Pi-Apps Settings** -> **App List Style**.
-- [X] Break up the long app list with some categories.  
+- [X] Make **app creation system**. (completed with the `createapp` script)  
+- [X] Add Pi-Apps to **Twister OS**. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
+- [X] Support individual **32-bit** and **64-bit** install scripts.  
+- [X] Allow **multiple apps** to be selected from the app list and be installed simultaneously.  
+- [X] Add a **search function** to the app list. It's still experimental: to enable it, switch to **xlunch** in **Pi-Apps Settings** -> **App List Style**.
+- [X] Break up the long app list with some **categories**.  
 
-## How it works
+<details>
+<summary>Terminal & script usage</summary>
+
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
  - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
  - Because of the contained nature of each app folder, it's really easy to 'package' your own apps: just put the folder in a ZIP file and send it to friends. (or upload it as a [new issue](https://github.com/Botspot/pi-apps/issues/new) so your app can be added to Pi-Apps)
  - When you click Install, the selected App's `install` script is executed. (Or, in some cases, the `install-32` or `install-64` script is executed.)
  - When you click Uninstall, the selected App's `uninstall` script is executed.
 ## Terminal usage
- - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, though in some cases, a dialog may appear to ask you a question.
+ - The `manage` script is similar to `apt-get` - it handles installing apps, uninstalling them, keeping them updated, and more. `Manage` does not include a GUI, but in one case, a dialog will ask if you really want to install the same app twice.
    - To **install** an app, run this:
 `~/pi-apps/manage install Zoom`
    - To **uninstall** an app:
@@ -105,6 +108,7 @@ Note that if an app is up-to-date, no files will be moved around.
  - To **list** all apps:
  `ls ~/pi-apps/apps`
  Note that this will also list the `template` app, which is usually hidden.
+
 ## App folder:
 Each app folder contains some of these files:
  - `credits` Contains credits for the app. This file may mention who created the app originally, who compiled it, who submitted it to Pi-Apps, etc. Few apps use this file.
@@ -116,6 +120,9 @@ Each app folder contains some of these files:
  - `install-64` This script installs an app on 64bit OS'es, and is 64bit-specific.
 Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it's for 32bit OS'es only and will hide that app on 64bit installations.
  - `uninstall` This script uninstalls the app. It must undo all changes made during install, but with one exception: **It must not permanently delete any user-generated config!** [We don't want people's Minecraft worlds being deleted during an update.](https://github.com/Botspot/pi-apps/issues/44)
+
+</details>
+
 <details>
 <summary>Creating an app</summary>
 It's easy to make your own Pi-App.
@@ -241,7 +248,7 @@ exit 0
      No
      ```
      Now, the next time Settings is opened, you will see:  
-     ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)
+     ![auto-donate](https://i.ibb.co/nzBNgFT/auto-donate.png)  
      With this file-based approach, adding new settings (and/or parameters) is much easier to do and in a standardized way. (As opposed to adding new settings by editing a bash script)
      - `bitlylink` - Simple bash script that fetches a Pi-Apps analytics link, if enabled.
      - `categoryedit` - This script is the Pi-Apps Category Editor.
@@ -270,4 +277,13 @@ Embed code:
 
  - How long did it take to program this?  
 > About two weeks of nearly non-stop coding to make Pi-Apps from the ground-up. And since then, I've regularly fixed bugs, solved problems, adding new features, and handled new app submissions.
-> 
+
+ - Is Pi-Apps still under development?
+> Sure is! Initial development is done for the most part, and I don't see any more major features being added to Pi-Apps's core functionality. (besides maybe allowing `apt`-package apps in the future)
+> But, there's always an app or two that need attention, and dozens of app requests. It's enough work to keep a whole team busy.
+
+ - How can I help?
+> - You can donate if you'd like. The money goes to me (minus the annoying Paypal fees), and helps support future open-source development. Some of the money goes to placing a bounty on an app that I'd like to see completed by someone else who has skills/time that I don't have.
+> - You can look through the [list of app requests](https://github.com/Botspot/pi-apps/issues) and help create the scripts for them.
+> - If you see someone complaining about a broken app on **Youtube**, please encourage them to join the [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) or to [open an issue](https://github.com/Botspot/pi-apps/issues/new) to get the problem solved. (I'm not on YouTube much.)
+> - You could help diagnose issues others are having.
