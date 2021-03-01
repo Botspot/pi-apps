@@ -8,4 +8,9 @@ function error {
 }
 
 sudo apt purge remarkable -y || error "Failed to purge remarkable package!"
+sudo apt purge gir1.2-webkit -y || error "Failed to purge gir1.2-webkit pacakge!"
+sudo apt purge gir1.2-javascriptcoregtk -y || error "Failed to purge gir1.2-javascriptcoregtk pacakge!"
+sudo apt purge libwebkitgtk -y || error "Failed to purge libwebkitgtk pacakge!"
+sudo apt purge libjavascriptcoregtk -y || error "Failed to purge libjavascriptcoregtk pacakge!"
+sudo apt purge libicu57* -y || error "Failed to purge libicus57 pacakge!"
 sudo apt autoremove -y
