@@ -14,3 +14,4 @@ wget https://archive.org/download/macos_921_qemu_rpi/qemu-5.2.50-armhf.deb || er
 #Install QEMU
 sudo apt install --fix-broken -y ./qemu-5.2.50-armhf.deb || error 'Failed to install QEMU!'
 rm qemu-5.2.50-armhf.deb
+
