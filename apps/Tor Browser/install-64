@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-wget https://sourceforge.net/projects/tor-browser-ports/files/10.0.8-arm64/tor-browser-linux-arm64-10.0.8_en-US.tar.xz/download -O tor.tar.xz || error "Failed to download!"
+wget https://phoenixnap.dl.sourceforge.net/project/tor-browser-ports/10.0.11-arm64/tor-browser-linux-arm64-10.0.11_en-US.tar.xz -O tor.tar.xz || error "Failed to download!"
 
 tar -xf ~/tor.tar.xz || error "Failed to extract!"
 
