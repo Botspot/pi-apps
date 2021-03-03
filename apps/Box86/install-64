@@ -10,7 +10,8 @@ function error {
 sudo dpkg --add-architecture armhf
 sudo apt update
 
-CODENAME=$(lsb_release -cs)
+cores="$(nproc)"
+CODENAME="$(lsb_release -cs)"
 if [ "${CODENAME}" = "focal" || "${CODENAME}" = "buster" ];then
   "${DIRECTORY}/pkg-install" "libc6:armhf  libx11-6:armhf  libgdk-pixbuf2.0-0:armhf libgtk2.0-0:armhf libstdc++6:armhf libsdl2-2.0-0:armhf mesa-va-drivers:armhf libsdl1.2-dev:armhf libsdl-mixer1.2:armhf libpng16-16:armhf libcal3d12v5:armhf libsdl2-net-2.0-0:armhf libopenal1:armhf libsdl2-image-2.0-0:armhf libvorbis-dev:armhf libcurl4:armhf osspd:armhf pulseaudio:armhf libjpeg62:armhf libudev1:armhf libgl1-mesa-dev:armhf libsnappy1v5:armhf libx11-dev:armhf libsmpeg0:armhf libboost-filesystem1.67.0:armhf libboost-program-options1.67.0:armhf libavcodec58:armhf libavformat58:armhf libswscale5:armhf libmyguiengine3debian1v5:armhf libboost-iostreams1.67.0:armhf  libsdl2-mixer-2.0-0:armhf  gcc-arm-linux-gnueabihf  cmake" "$(dirname "$0")" || exit 1
 elif [ "${CODENAME}" = "groovy" ];then
@@ -26,6 +27,6 @@ git clone https://github.com/ptitSeb/box86 || error "failed to download repo!"
 cd box86 || error "failed to enter directory!"
 mkdir build; cd build
 cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error "cmake failed!"
-make -j4 || error "make failed!"
+make -j$cores || error "make failed!"
 sudo make install || error "sudo make install failed!"
 sudo systemctl restart systemd-binfmt
