@@ -131,7 +131,7 @@ elif [ "$1" == 'install' ];then
   echo -e "\e[96mInstalling $app with $scriptname script\e[39m"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  if "nice $installscript" ; then
+  if nice "$installscript" ; then
     echo 'installed' > "${DIRECTORY}/data/status/${app}"
     echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
     exit 0
