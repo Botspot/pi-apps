@@ -1,0 +1,17 @@
+This is a terminal version of pi apps but with more features.
+
+Usage
+pi-apps [argument]
+
+Available Arguments: 
+"list-all"  Prints the list of available apps that are installable
+"list-installed"  Prints all installed apps
+"list-uninstalled"  Prints all uninstalled apps
+"install [appname]"  Install any app available in pi-apps
+"uninstall [appname]"  Uninstall any app available in pi-apps
+"search [appname]"  Search for a app in pi apps
+"website [appname]"  Prints website for app
+"update"  Update pi-apps
+"gui"  Launches gui for pi-apps
+
+Run "pi-apps help" to get this information
