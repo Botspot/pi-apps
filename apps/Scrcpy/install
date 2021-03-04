@@ -7,22 +7,20 @@ function error {
   exit 1
 }
 
-echo "Install Scrcpy"
 echo -e "==============\n"
-echo " · More info scrcpy --help or visiting https://github.com/Genymobile/scrcpy"
+echo " · More info: run "scrcpy --help" or visit https://github.com/Genymobile/scrcpy"
 echo " · The Android device requires at least API 21 (Android 5.0)."
 echo " · Make sure you enabled adb debugging on your device(s)."
 echo " · On some devices, you also need to enable an additional option to control it using keyboard and mouse."
 echo " · If you have issues, try to run the app a couple of times through Terminal."
-echo
 
 sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop 2>/dev/null
 
 "${DIRECTORY}/pkg-install" "adb ffmpeg libsdl2-2.0-0" "$(dirname "$0")" || exit 1
 
-wget https://misapuntesde.com/rpi_share/scrcpy-1.13.tar.gz || error "Failed to download!"
-tar -xf scrcpy-1.13.tar.gz || error "Failed to extract!"
-rm scrcpy-1.13.tar.gz
+wget https://misapuntesde.com/rpi_share/scrcpy-1.17.tar.gz || error "Failed to download!"
+tar -xf scrcpy-1.17.tar.gz || error "Failed to extract!"
+rm scrcpy-1.17.tar.gz
 
 ln -s /usr/bin/adb $HOME/scrcpy/
 
