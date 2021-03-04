@@ -1,0 +1,45 @@
+#!/bin/bash
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo '                         __________'
+echo '__________/ DXX-Rebirth /'
+
+~/pi-apps/pkg-install "libsdl-mixer1.2 libsdl-image1.2 libphysfs1 libglu1-mesa" ~/pi-apps/apps/d1x-rebirth
+
+mkdir ~/.d1x-rebirth
+cd ~/.d1x-rebirth
+
+# rename existing files to lower case
+for i in $( ls | grep [A-Z] ); do mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
+
+if [ ! -f descent.hog ]; then
+    echo No game content detected, downloading shareware version
+    wget -q --show-progress https://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip || error "failed to download game content!"
+    unzip descent-pc-shareware.zip
+    rm descent-pc-shareware.zip
+fi
+
+wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa || error "failed to download hires pack!"
+wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
+wget -N -q --show-progress https://github.com/dimag0g/dxx-rebirth/releases/download/v0.61-switch/d1x-rebirth-rpi || error "failed to download the executable!"
+chmod a+x d1x-rebirth-rpi
+
+echo "ResolutionX=640
+ResolutionY=480
+WindowMode=1" > descent.cfg
+
+echo "[Desktop Entry]
+Name=Descent 1
+Comment=DXX-Rebirth source port of Descent: First Strike from 1995...
+Exec=$HOME/.d1x-rebirth/d1x-rebirth-rpi -hogdir $HOME/.d1x-rebirth
+Icon=$HOME/pi-apps/apps/d1x-rebirth/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;ActionGame;
+StartupNotify=false
+" > ~/.local/share/applications/d1x-rebirth.desktop || error "Failed to create menu entry!"
+
+exit 0
