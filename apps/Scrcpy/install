@@ -18,9 +18,9 @@ sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.
 
 "${DIRECTORY}/pkg-install" "adb ffmpeg libsdl2-2.0-0" "$(dirname "$0")" || exit 1
 
-wget https://misapuntesde.com/rpi_share/scrcpy-1.17.tar.gz || error "Failed to download!"
-tar -xf scrcpy-1.17.tar.gz || error "Failed to extract!"
-rm scrcpy-1.17.tar.gz
+wget https://misapuntesde.com/rpi_share/scrcpy-1.13.tar.gz || error "Failed to download!"
+tar -xf scrcpy-1.13.tar.gz || error "Failed to extract!"
+rm scrcpy-1.13.tar.gz
 
 ln -s /usr/bin/adb $HOME/scrcpy/
 
@@ -29,9 +29,8 @@ sudo cp -af $HOME/scrcpy/scrcpy-server /usr/local/share/scrcpy/scrcpy-server
 
 echo "[Desktop Entry]
 Name=Scrcpy
-Exec=$HOME/scrcpy/android.sh
+Exec=bash -c 'cd $HOME/scrcpy ; $HOME/scrcpy/android.sh'
 Icon=$(dirname "$0")/icon-64.png
-Path=$HOME/scrcpy/
 Type=Application
 Comment=Display and control of Android devices connected on USB
 Categories=ConsoleOnly;Utility;System;" > ~/.local/share/applications/scrcpy.desktop
