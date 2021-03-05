@@ -118,7 +118,8 @@ Windows 10 Theme
 Chromium Widevine
 Back to Chromium v78
 Lightpad
-Wine (x86)"
+Wine (x86)
+Mac OS Theme"
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done

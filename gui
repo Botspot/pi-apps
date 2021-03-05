@@ -24,9 +24,9 @@ if [ ! -z "$1" ];then
 fi
 
 #hide wine on twisteros
-if [ -f /usr/local/bin/twistver ] && ! grep -q "Wine (x86)|Tools" "${DIRECTORY}/data/categories/structure" ;then
+(if [ -f /usr/local/bin/twistver ] && ! grep -q "Mac OS Theme|Eyecandy" "${DIRECTORY}/data/categories/structure" ;then
   "${DIRECTORY}/install"
-fi
+fi) &
 
 install() {
   app="$1"
