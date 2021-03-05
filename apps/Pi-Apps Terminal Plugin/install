@@ -13,7 +13,7 @@ pip3 install python-Levenshtein fuzzywuzzy || error "pip3 failed to python-Leven
 #Downloading papm file
 wget https://raw.githubusercontent.com/techcoder20/PiAppsTerminalAdvanced/main/PiAppsTerminalAdvanced.py -O "${DIRECTORY}/PiAppsTerminalAdvanced.py" || error "Failed to download PiAppsTerminalAdvanced.py"
 
-echo "#!/bin/bash
-#${DIRECTORY}/gui
-python3 ${DIRECTORY}/PiAppsTerminalAdvanced.py "'$@' | sudo tee /usr/local/bin/pi-apps >/dev/null
+echo '#!/bin/bash
+#'${DIRECTORY}/gui'
+python3 '${DIRECTORY}/PiAppsTerminalAdvanced.py' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
 sudo chmod +x /usr/local/bin/pi-apps
