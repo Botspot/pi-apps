@@ -15,5 +15,5 @@ wget https://raw.githubusercontent.com/techcoder20/PiAppsTerminalAdvanced/main/P
 
 echo "#!/bin/bash
 #${DIRECTORY}/gui
-python3 ${DIRECTORY}/PiAppsTerminalAdvanced.py "'$@' | sudo tee /usr/local/bin/pi-apps >/dev/null
+python3 ${DIRECTORY}/PiAppsTerminalAdvanced.py"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
 sudo chmod +x /usr/local/bin/pi-apps
