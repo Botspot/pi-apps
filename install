@@ -127,7 +127,7 @@ Mac OS Theme"
 fi
 
 #pi-apps terminal command
-if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
+if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui";then
   echo "#!/bin/bash
 ${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
