@@ -128,11 +128,10 @@ fi
 
 #pi-apps terminal command
 if [ ! -f /usr/local/bin/pi-apps ] || ! grep -q /usr/local/bin/pi-apps "${DIRECTORY}/gui";then
-  rm /usr/local/bin/pi-apps
   echo "#!/bin/bash
 ${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
-  echo "You can now run pi-apps in a terminal, just by running 'pi-apps'"
+  echo "You can now launch pi-apps from a terminal, just by running 'pi-apps'"
 fi
 
 if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
