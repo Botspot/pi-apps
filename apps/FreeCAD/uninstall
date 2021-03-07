@@ -7,8 +7,4 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-
-sudo rm -f $(cat ~/freecad-build/install_manifest.txt) ~/.local/share/applications/org.freecadweb.FreeCAD.desktop || error "failed to remove every installed file!"
-
-rm -rf ~/freecad-build ~/FreeCAD-0.18.4 || error "failed to remove both installation folders!"
+sudo apt purge -y freecad || error "apt failed to purge the freecad package!"

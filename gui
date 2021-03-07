@@ -28,6 +28,10 @@ fi
   "${DIRECTORY}/install"
 fi) &
 
+rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
+
+"${DIRECTORY}/etc/categoryedit" 'FreeCAD' Editors >/dev/null
+
 install() {
   app="$1"
   #terminal title text
