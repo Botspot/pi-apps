@@ -6,7 +6,7 @@ function error {
   exit 1
 }
 
-rm -f snapdrop-linux-armv7l.tar.xz
+rm -f snapdrop-linux-arm64.zip
 
 wget https://github.com/chunky-milk/snapdrop-rpi/releases/download/1.0/snapdrop-linux-arm64.zip || error "Failed to download archive!"
 unzip snapdrop-linux-arm64.zip || error "Failed to extract archive!"
