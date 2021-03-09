@@ -8,7 +8,7 @@ function error {
 
 rm -f snapdrop-linux-armv7l.tar.xz
 
-wget https://github.com/chunky-milk/snapdrop-rpi/raw/master/snapdrop-linux-armv7l.tar.xz || error "Failed to download archive!"
+wget https://github.com/chunky-milk/snapdrop-rpi/releases/download/1.0/snapdrop-linux-armv7l.tar.xz || error "Failed to download archive!"
 tar -xvf snapdrop-linux-armv7l.tar.xz || error "Failed to extract archive!"
 rm -f snapdrop-linux-armv7l.tar.xz
 
