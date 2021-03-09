@@ -5,7 +5,7 @@
 ##
 
 # Used To Trigger Updates
-MCPI_REBORN_VERSION='build_50'
+MCPI_REBORN_VERSION='build_52'
 # MCPIL Version
 MCPIL_VERSION='0.1.9'
 
@@ -30,7 +30,7 @@ function install_deb {
 ##
 
 if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-    error 'Unsupported Debian Version'
+    error "Unsupported Debian Version! Your Debian version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid."
 fi
 
 # Remove Old Minecraft Pi
