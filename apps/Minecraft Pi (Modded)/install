@@ -30,7 +30,8 @@ function install_deb {
 ##
 
 if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-    error 'Unsupported Debian Version'
+    debian_version=$(lsb_release -cs)
+    error 'Unsupported Debian Version! Go ask for support at https://discord.com/invite/aDqejQGMMy and make sure to say your debian version is' $deb
 fi
 
 # Remove Old Minecraft Pi
