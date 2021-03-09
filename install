@@ -7,6 +7,8 @@ function error {
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
+cd $HOME
+
 #install yad automatically
 if ! command -v yad >/dev/null;then
   if [ -f /usr/bin/apt ];then
