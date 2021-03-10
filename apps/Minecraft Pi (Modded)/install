@@ -108,3 +108,6 @@ rm -rf "${STORAGE}/mcpil"
 # Update Docker Permissions
 sudo groupadd -f docker
 sudo usermod -aG docker "$(id -un)"
+
+echo 'WARNING! You MUST open raspi-config with "sudo raspi-config", go to "Advanced Options", then go to "GL Driver" and MAKE SURE it's set to Fake KMS for RPI4, or Full KMS for RPI3 for this mod to work!!!'
+read -p "Please press [Enter] to finish install after you have read the above message"
