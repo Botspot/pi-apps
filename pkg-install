@@ -71,7 +71,7 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
 fi
 
 #remove residual packages
-sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+#sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
 
 output="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
 echo "output: $output"
@@ -94,9 +94,10 @@ if [ ! -z "$INSTALL_LIST" ];then
   echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
   
   #normal mode
-  output="$(sudo LANG=C LC_ALL=C apt-get install -y --no-install-recommends $PKG_LIST 2>&1)"
+  output="$(sudo LANG=C LC_ALL=C apt-get install -y --no-install-recommends $PKG_LIST 2>&1 1>&2)"
   exitcode=$?
   echo 'Apt finished.'
+  echo "Output: $output"
   
   errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
