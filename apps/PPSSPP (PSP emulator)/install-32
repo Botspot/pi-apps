@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "build-essential cmake libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip apt-transport-https" "$(dirname "$0")" || exit 1
+cd ~/
+rm -f ppsspp_1.11.2_armhf.zip
+wget https://github.com/chunky-milk/ppsspp-rpi/releases/download/1.11.2/ppsspp_1.11.2_armhf.zip || error "Failed to download zip!"
+unzip ppsspp_1.11.2_armhf.zip || error "Failed to unzip PPSSPP!"
+rm ppsspp_1.11.2_armhf.zip || error "Failed to remove zip!"
+
+# Desktop entry
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PPSSPP
+Comment=PSP emulator
+Icon=$(dirname "$0")/icon-64.png
+Exec=$HOME/ppsspp/PPSSPPSDL
+Categories=Game;" > ~/.local/share/applications/ppsspp.desktop || error "Failed to create desktop entry!"
+
