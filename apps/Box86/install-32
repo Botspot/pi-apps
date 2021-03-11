@@ -7,4 +7,13 @@ function error {
   exit 1
 }
 
-wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash || error "update-box86 script failed somehow!"
+
+sudo rm -f /etc/apt/sources.list.d/box86.list
+echo "adding box86 repo..."
+sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
+echo "adding key..."
+wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
+echo "running 'sudo apt update'..."
+sudo apt update || error "Failed to run sudo apt update"
+echo "installing box86..."
+sudo apt install box86 -y || error "Failed to install the box86 package"
