@@ -25,7 +25,7 @@ Version=1.0
 Type=Application
 Name=Minecraft Launcher
 Comment=3D block based sandbox game
-Icon=$HOME/pi-apps/apps/Minecraft Java/icon-64.png
+Icon=$(dirname "$0")/icon-64.png
 Exec=env MESA_GL_VERSION_OVERRIDE=3.3 java -jar /usr/share/minecraftjava/launcher.jar
 Categories=Game;" > minecraft.desktop
 chmod +x minecraft.desktop
