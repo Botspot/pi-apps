@@ -20,7 +20,14 @@ sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraft
 
 #Create desktop shortcut
 cd ~/.local/share/applications/
-wget https://raw.githubusercontent.com/mobilegmYT/pi-apps-resources/main/Minecraft/minecraft.desktop
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Minecraft Launcher
+Comment=3D block based sandbox game
+Icon=$HOME/pi-apps/apps/Minecraft Java/icon-64.png
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 java -jar /usr/share/minecraftjava/launcher.jar
+Categories=Game;" > minecraft.desktop
 chmod +x minecraft.desktop
 cd
 
