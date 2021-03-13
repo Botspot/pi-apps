@@ -19,8 +19,9 @@ You need to install curl first. If you are on a debian system, this command shou
   exit 1
 fi
 
-#Add NodeSource repo:
-curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash - || error "Failed to add Nodesource repo!"
+#Install nvm manager:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash || error "Failed to install nvm!"
+source ~/.bashrc
 
 #Install NodeJS:
-sudo apt install nodejs -y || error "Failed to install Node.JS"
+nvm install --lts
