@@ -107,8 +107,7 @@ cd $HOME
 if [ -f /usr/local/bin/twistver ];then
   PREIFS="$IFS"
   IFS=$'\n'
-  apps="BalenaEtcher
-Chromium Media Edition
+  apps="Chromium Media Edition
 CommanderPi
 Box86
 Discord
