@@ -32,7 +32,7 @@ sudo mv /opt/$name/*/* /opt/$name/
 rm $name.tar.gz
 
 #Making file executable
-sudo chmod +x /opt/$name/bin/$name.sh
+sudo chmod +x /opt/$name/bin/pycharm.sh
 
 #Implementing terminal fix
 git clone https://github.com/JetBrains/pty4j.git ~/pty4j
