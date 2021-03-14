@@ -54,10 +54,11 @@ ${dir}/$(ls -t "$dir" | head -n1)
 $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
   done
   IFS="$PREIFS"
-  #remove first empty newline
+  #remove first empty newline and check a few other things for changes too
   timestamps="$prefix
 $format
 $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
+$(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
 ${timestamps:1}"
 }
 
@@ -96,9 +97,9 @@ if [ $reloadlist == 1 ];then
   structure="$(cat "${DIRECTORY}/data/categories/structure")"
   
   #generate a virtual file system with apps in folders represented as subdirectories
+  vfiles=''
   PREIFS="$IFS"
   IFS=$'\n'
-  vfiles=''
   for app in $APPS
   do
     line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
@@ -125,6 +126,23 @@ if [ $reloadlist == 1 ];then
 $line"
   done
   IFS="$PREIFS"
+  
+  #create special directory containing installed apps
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $APPS
+  do
+    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
+    
+    if [ -f "${DIRECTORY}/data/status/$app" ] && [ "$(cat "${DIRECTORY}/data/status/$app")" == 'installed' ];then
+      #if installed, add to list
+      vfiles="$vfiles
+Installed/$app"
+    fi
+    
+  done
+  IFS="$PREIFS"
+  
   vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
   #echo "$vfiles"
   
@@ -176,7 +194,13 @@ $line"
     LIST=''
     for i in $DIRS
     do
-      LIST="${LIST}${DIRECTORY}/icons/folder.png
+      if [ "$i" == 'Installed' ];then
+        diricon="${DIRECTORY}/icons/folder-installed.png"
+      else
+        diricon="${DIRECTORY}/icons/folder.png"
+      fi
+      
+      LIST="${LIST}$diricon
 ${DIRECTORY}/icons/none-24.png
 $i
 $i/
@@ -194,14 +218,23 @@ $i
 "
     done
     IFS="$PREIFS"
+    
   elif [ "$format" == xlunch ];then
+    #XUNCH list format
+    
     PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
     for i in $DIRS
     do
+      if [ "$i" == 'Installed' ];then
+        diricon="${DIRECTORY}/icons/folder-installed-64.png"
+      else
+        diricon="${DIRECTORY}/icons/folder-64.png"
+      fi
+      
       LIST="$LIST
-${i};${DIRECTORY}/icons/folder-64.png;${i}/"
+${i};$diricon;${i}/"
     done
     
     for i in $APPS
