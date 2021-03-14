@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+sudo rm -f /usr/share/applications/stuntrally.desktop
+sudo rm -f /usr/share/applications/sr-editor.desktop
+
+sudo apt purge stunt-rally -y || error "Failed to uninstall stunt rally!"
+
+rm -r $HOME/.config/stuntrally/

@@ -1,0 +1,416 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#get dependencies
+DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
+TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
+sudo apt -f -y install "$TOINSTALL"
+if ! command -v checkinstall >/dev/null ; then
+  wget https://archive.org/download/macos_921_qemu_rpi/checkinstall_20210126-1_arm64.deb || error "Failed to download checkinstall!"
+  sudo apt install ./checkinstall_20210126-1_arm64.deb -y  || error "Failed to install checkinstall!"
+  CHECKINSTALL=1
+fi
+
+#compile stunt rally
+cd $HOME
+git clone --depth=1 git://github.com/stuntrally/stuntrally.git stuntrally || error "Failed to clone stuntrally repo!"
+cd stuntrally/data || error "Failed to change directory to '$DIRECTORY/stuntrally/data'!"
+git clone --depth=1 git://github.com/stuntrally/tracks.git tracks || error "Failed to clone tracks repo!"
+cd .. || error "Failed to go one directory up!"
+mkdir build || error "Failed to create '$DIRECTORY/stuntrally/build' directory!"
+cd build || error "Failed to change directory to '$DIRECTORY/stuntrally/build'!"
+cmake .. || error "Failed to run 'cmake ..'!"
+make -j$(nproc) || make || error "Failed to run 'make'!"
+#sudo make install
+
+#make a deb with checkinstall
+echo "Stunt Rally $(uname -m).">description-pak || error "Failed to create 'description-pak'!"
+sudo checkinstall -y -D --provides="stunt-rally" --pkgname="stunt-rally" --install="no" make install || error "Failed to run checkinstall!"
+
+#unpack the deb, remove the home directory from it (if present), and repack it
+DEBNAME="$(basename stunt-rally*.deb)" || error "Failed to get deb name!"
+DEBDIR="$(echo ${DEBNAME/.deb/})" || error "Failed to generate deb directory name from deb name!"
+dpkg-deb -R $DEBNAME $DEBDIR || error "Failed to unpack deb!"
+rm -rf $DEBDIR/home || sudo rm -rf $DEBDIR/home
+rm -f $DEBNAME || error "Failed to delete old deb!"
+dpkg-deb -b $DEBDIR || sudo dpkg-deb -b $DEBDIR || error "Failed to repack deb!"
+
+#install the deb
+sudo dpkg -i $DEBNAME; sudo apt install -f -y || error "Failed to install the deb!"
+
+#fix the menu shortcut icons
+sudo rm /usr/share/applications/stuntrally.desktop &>/dev/null
+sudo rm /usr/share/applications/sr-editor.desktop &>/dev/null
+
+echo "[Desktop Entry]
+Name=Stunt Rally
+GenericName=Racing game
+GenericName[fr]=Jeu de course
+Comment=3D racing game with stunt and rally elements
+Comment[de]=3D-Rennspiel mit Stunt-Elementen
+Comment[fi]=3D Rallipeli stunttielementein
+Comment[fr]=Jeu de course en 3D avec des éléments acrobatiques
+Exec=stuntrally
+Icon=stuntrally
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Application;Game;SportsGame;
+" | sudo tee /usr/share/applications/stuntrally.desktop >/dev/null
+
+echo "[Desktop Entry]
+Name=Stunt Rally Track Editor
+Name[fr]=Éditeur de circuits Stunt Rally
+Name[de]=Stunt Rally Streckeneditor
+GenericName=Track editor
+GenericName[de]=Streckeneditor
+GenericName[fr]=Éditeur de circuits
+Comment=Track editor for Stunt Rally
+Comment[de]=Stunt Rally Streckeneditor
+Comment[fi]=Stunt Rally rataeditori
+Comment[fr]=Éditez des circuits pour Stunt Rally
+Exec=sr-editor
+Icon=sr-editor
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Application;Game;SportsGame;
+" | sudo tee /usr/share/applications/sr-editor.desktop >/dev/null
+
+mkdir -p ~/.config/stuntrally
+echo '
+[ car1 ]
+abs = off
+absA = off
+autorear = on
+autorear_inv = on
+autotrans = on
+camera = 9
+car = SZ
+clr_gloss = 1.000000
+clr_hue = 0.440000
+clr_refl = 1.100000
+clr_sat = 0.900000
+clr_val = 0.710000
+sss_effect = 0.574000
+sss_effectA = 0.650000
+sss_velfactor = 0.626000
+sss_velfactorA = 0.734000
+steer_range = 1.000000
+steer_rangeA = 0.760000
+steer_sim_easy = 0.650000
+steer_sim_normal = 0.900000
+tcs = off
+tcsA = off
+
+[ car2 ]
+camera = 9
+car = ES
+clr_gloss = 0.500000
+clr_hue = 0.910000
+clr_refl = 1.000000
+clr_sat = 1.000000
+clr_val = 1.000000
+
+[ car3 ]
+camera = 9
+car = ES
+clr_gloss = 1.000000
+clr_hue = 0.750000
+clr_refl = 0.400000
+clr_sat = 0.950000
+clr_val = 0.900000
+
+[ car4 ]
+camera = 9
+car = ES
+clr_gloss = 0.500000
+clr_hue = 0.000000
+clr_refl = 1.000000
+clr_sat = 1.000000
+clr_val = 0.900000
+
+[ car5 ]
+clr_gloss = 0.500000
+clr_hue = 0.910000
+clr_refl = 1.000000
+clr_sat = 1.000000
+clr_val = 1.000000
+
+[ car6 ]
+clr_gloss = 0.030000
+clr_hue = 0.700000
+clr_refl = 1.300000
+clr_sat = 1.000000
+clr_val = 0.700000
+
+[ game ]
+boost_add_sec = 0.100000
+boost_max = 11.000000
+boost_min = 2.000000
+boost_per_km = 1.000000
+boost_power = 0.800000
+boost_type = 2
+chall_num = -1
+champ_num = -1
+champ_rev = off
+collis_cars = on
+collis_roadw = off
+collis_veget = on
+damage_dec = 40.000000
+damage_type = 1
+dyn_objects = on
+flip_type = 1
+in_main = off
+in_menu = 0
+local_players = 1
+num_laps = 2
+pre_time = 2.000000
+rewind_type = 1
+sim_mode = easy
+split_vertically = on
+start_in_main = on
+start_order = 0
+track = Jng7-Hilly
+track_user = off
+trk_reverse = off
+
+[ graph_detail ]
+anisotropy = 0
+preset = 0
+road_dist = 1.000000
+ter_detail = 1.704071
+ter_dist = 0.000000
+ter_mtr = 0
+ter_tripl = 0
+tex_filter = 2
+tex_size = 0
+view_dist = 1000.000000
+
+[ graph_par ]
+particles = off
+particles_len = 1.000000
+trail_len = 1.000000
+trails = off
+
+[ graph_reflect ]
+dist = 20.000000
+faces_once = 1
+map_size = 0
+mode = 0
+skip_frames = 150
+water_reflect = off
+water_refract = off
+water_rttsize = 0
+
+[ graph_shadow ]
+count = 1
+dist = 100.000000
+lightmap_size = 0
+shader_mode = 
+size = 0
+type = 0
+
+[ graph_veget ]
+grass = 0.000000
+grass_dist = 0.640571
+imposters_only = on
+trees = 0.000000
+trees_dist = 0.601562
+use_imposters = off
+
+[ graphs ]
+tc_r = 1.026358
+tc_xr = 1.017167
+te_common = on
+te_reference = off
+te_xf_pow = 1.000000
+te_xfx = 4.000000
+te_xfy = 160.000000
+te_yf = 9013.303711
+
+[ gui ]
+car_ed_tab = 0
+cars_sort = 1
+cars_view = 0
+chall_tab = 0
+champ_info = on
+champ_tab = 0
+tut_tab = 0
+tweak_tab = 0
+
+[ gui_tracks ]
+columns0 = 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1
+columns1 = 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+filter = off
+filters0 = 1 0 0 0 0 0 0 0 0 0 0 0 0
+filters1 = 26 6 5 4 3 5 5 4 5 4 5 5 9
+sort = 2
+sortup = on
+view = 0
+
+[ hud_show ]
+cam_tilt = on
+caminfo = on
+car_dbgsurf = off
+car_dbgtxt = off
+car_dbgtxtclr = 0
+car_dbgtxtcnt = 5
+car_tirevis = off
+check_arrow = on
+check_beam = off
+fps = off
+gauges = on
+graphs = off
+graphs_type = 1
+mph = off
+opplist_sort = on
+opponents = off
+show_cardbg = off
+show_digits = on
+times = on
+trackmap = on
+
+[ hud_size ]
+arrow = 0.260000
+cam_bnc_mul = 1.000000
+cam_bounce = on
+cam_in_loop = 1
+cam_loop_chng = on
+fov = 90.000000
+fov_max = 120.000000
+fov_smooth = 5.000000
+gauges = 0.190000
+gauges_type = 3
+mini_border = on
+mini_rotated = on
+mini_terrain = on
+mini_zoom = 2.400000
+mini_zoomed = on
+minimap = 0.165000
+minipos = 0.100000
+
+[ misc ]
+autostart = off
+boostFromExhaust = off
+bulletDebug = off
+bulletLines = off
+bulletProfilerTxt = off
+dev_keys = off
+dev_no_prvs = off
+escquit = off
+language = en
+loadingback = on
+mouse_capture = on
+ogredialog = off
+profilerTxt = off
+screenshot_png = off
+show_welcome = on
+version = 2600
+
+[ network ]
+game_name = Default Game
+local_port = 4243
+master_server_address = stuntrally.dy.fi
+master_server_port = 4243
+nickname = Player
+
+[ pacenotes ]
+alpha = 0.900000
+dist = 300.000000
+near = 0.570000
+next = 4
+show = on
+size = 0.930000
+
+[ replay ]
+bestonly = on
+ghoHideDist = 5.000000
+ghoHideDistTrk = 5.000000
+ghost = off
+ghostother = on
+ghostpar = off
+ghostrewind = on
+listghosts = off
+listview = 0
+num_views = 1
+rec = off
+trackghost = on
+
+[ sim ]
+bullet_freq = 160.000000
+bullet_iter = 24
+dynamics_iter = 60
+game_freq = 82.000000
+gui_sleep = 1
+multi_thr = 1
+perf_speed = 100000.000000
+thread_sleep = 5
+
+[ sound ]
+device = 
+hud_chk = off
+hud_chk_wrong = on
+hud_vol = 0.750000
+reverb = on
+vol_car_crash = 0.608426
+vol_car_scrap = 0.915743
+vol_engine = 0.580488
+vol_env = 0.748115
+vol_fl_cont = 0.878492
+vol_fl_splash = 0.636364
+vol_susp = 0.474945
+vol_tires = 0.856763
+volume = 1.550000
+
+[ video ]
+buffer = FBO
+fsaa = 0
+fullscreen = off
+limit_fps = off
+limit_fps_val = 60.000000
+limit_sleep = -1
+rendersystem = OpenGL Rendering Subsystem
+vsync = on
+windowx = 800
+windowy = 600
+
+[ video_eff ]
+all_effects = off
+bloom = off
+bloomintensity = 0.130000
+bloomorig = 0.910000
+boost_fov = off
+dof = off
+dof_far = 1000.000000
+dof_focus = 100.000000
+godrays = off
+hdr = off
+hdr_adaptationScale = 0.510000
+hdr_bloomint = 0.810000
+hdr_bloomorig = 0.340000
+hdr_p1 = 0.620000
+hdr_p2 = 0.100000
+hdr_p3 = 0.790000
+hdr_vignettingDarkness = 0.340000
+hdr_vignettingRadius = 2.850000
+motionblur = off
+motionblurintensity = 0.400000
+softparticles = off
+ssao = off
+' > ~/.config/stuntrally/game.cfg
+
+#clean up
+sudo apt purge -y "$TOINSTALL"
+if [[ "$CHECKINSTALL" == 1 ]]; then
+  sudo apt purge -y checkinstall
+fi
+sudo rm -rf ~/stuntrally
+echo "Installing dependencies..."
+"${DIRECTORY}/pkg-install" "libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev" "$(dirname "$0")" || exit 1
