@@ -13,14 +13,14 @@ function error {
 rm -f ~/libfdk-aac2_2.0.1-1_arm64.deb ~/libfdk-aac-dev_2.0.1-1_arm64.deb ~/obs_arm64.deb
 
 #Downloading deb files
-wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_arm64.deb -O ~/libfdk-aac2_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac2_2.0.1-1_armhf.deb"
-wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_arm64.deb -O ~/libfdk-aac-dev_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac-dev_2.0.1-1_armhf.deb"
-wget https://github.com/techcoder20/RPIObsInstaller/blob/main/obs_arm64.deb?raw=true -O ~/obs_arm64.deb || error "Failed to download obs_armhf.deb"
+wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_arm64.deb -O ~/libfdk-aac2_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac2_2.0.1-1_arm64.deb"
+wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_arm64.deb -O ~/libfdk-aac-dev_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac-dev_2.0.1-1_arm64.deb"
+wget https://github.com/techcoder20/RPIObsInstaller/blob/main/obs_arm64.deb?raw=true -O ~/obs_arm64.deb || error "Failed to download obs_arm64.deb"
 
 #Installing Deb Files
-sudo apt -y install --fix-missing ~/libfdk-aac2_2.0.1-1_arm64.deb || error "Failed to install ~/libfdk-aac2_2.0.1-1_armhf.deb"
-sudo apt -y install --fix-missing ~/libfdk-aac-dev_2.0.1-1_arm64.deb || error "Failed to install ~/libfdk-aac-dev_2.0.1-1_armhf.deb"
-sudo apt -y install --fix-missing ~/obs_arm64.deb || error "Failed to install ~/obs_armhf.deb"
+sudo apt -y install --fix-missing ~/libfdk-aac2_2.0.1-1_arm64.deb || error "Failed to install ~/libfdk-aac2_2.0.1-1_arm64.deb"
+sudo apt -y install --fix-missing ~/libfdk-aac-dev_2.0.1-1_arm64.deb || error "Failed to install ~/libfdk-aac-dev_2.0.1-1_arm64.deb"
+sudo apt -y install --fix-missing ~/obs_arm64.deb || error "Failed to install ~/obs_arm64.deb"
 
 #Removing deb files after installation
 sudo rm -f ~/libfdk-aac2_2.0.1-1_arm64.deb ~/libfdk-aac-dev_2.0.1-1_arm64.deb ~/obs_arm64.deb
