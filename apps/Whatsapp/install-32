@@ -14,6 +14,7 @@ tar -xf WhatsAppWeb-linux-armv7l.tar.xz || error "Failed to extract!"
 rm WhatsAppWeb-linux-armv7l.tar.xz
 mv "WhatsAppWeb-linux-armv7l" WhatsAppWeb
 
+#create menu shortcut
 echo "[Desktop Entry]
 Name=Whatsapp Web
 Comment=Nativefier Whatsapp Web webapp.
