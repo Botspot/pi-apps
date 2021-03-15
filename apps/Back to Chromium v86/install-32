@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
+  echo -n "Please close all Chromium windows first."
+  while [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];do
+    echo -n '.'
+    sleep 1
+  done
+fi
+
+rm -rf ~/chromium86 chromium86.zip
+echo "Downloading..."
+wget https://github.com/Botspot/chromium86/releases/download/86/chromium86.zip
+
+echo "Extracting..."
+unzip chromium86.zip
+
+echo "Copying files..."
+sudo cp -af ~/chromium86/. / || error "Failed to copy files from $HOME/chromium86 to /"
+rm -rf ~/chromium86 chromium86.zip
+
+exit 0
