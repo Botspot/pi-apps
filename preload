@@ -88,7 +88,7 @@ if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
 fi
 
 #this ensures that all apps & categories stay preloaded.
-(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &
+(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &>/dev/null &
 
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
@@ -144,13 +144,15 @@ Installed/$app"
   IFS="$PREIFS"
   
   vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
-  #echo "$vfiles"
+  #echo "$vfiles" 1>&2
+  
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
     
-    vfiles="$(echo "$vfiles" | grep "$prefix" | sed "s+$prefix/++g")"
+    vfiles="$(echo "$vfiles" | grep "^$prefix/" | sed "s+$prefix/++g")"
   fi
+  #echo "$vfiles" 1>&2
   
   vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
   #                         only root file name     replace \ with /   move first / to end of line     remove duplicate entries
