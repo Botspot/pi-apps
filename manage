@@ -94,6 +94,13 @@ elif [ "$1" == 'multi-uninstall' ];then
   if [ $failed == 1 ];then
     exit 1
   fi
+elif [ "$1" == 'install-if-not-installed' ];then
+  
+  #if not installed
+  if [ ! -f "${DIRECTORY}/data/status/$2" ] || [ "$(cat "${DIRECTORY}/data/status/$2")" != installed ];then
+    #install it
+    "${DIRECTORY}/manage" install "$2" || exit 1
+  fi
 elif [ "$1" == 'install' ];then
   #INSTALL
   #for this operation, a program name must be specified.
@@ -336,5 +343,5 @@ elif [ "$1" == 'update-all' ];then
   IFS="$PREIFS"
   echo -e '\e[92mOperation completed successfully!\e[39m'
 else
-  error "Did not understand ${1}. It must be either "\'"install"\'", "\'"uninstall"\'", "\'"multi-install"\'", "\'"multi-uninstall"\'", "\'"update"\'", "\'"check-all"\'", or "\'"update-all"\'"."
+  error "Did not understand $1. Allowed values: 'install', 'install-if-not-installed', 'multi-install', 'multi-uninstall', 'update', 'check-all', or 'update-all'."
 fi
