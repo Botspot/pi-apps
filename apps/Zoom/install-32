@@ -44,13 +44,13 @@ echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
 box86 zoom' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
 
-if [ -f /usr/local/bin/box86 ];then
+if command -v box86 >/dev/null;then
   echo "Updating box86..."
 else
   echo "Installing box86..."
 fi
 "${DIRECTORY}/manage" install-if-not-installed 'Box86' || error "Box86 installation failed!"
-if [ ! -f /usr/local/bin/box86 ];then
+if ! command -v box86 >/dev/null;then
   error "Box86 failed to install somehow!\n/usr/local/bin/box86 does not exist"
 fi
 
