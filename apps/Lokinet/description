@@ -1,0 +1,5 @@
+Lokinet is an anonymous, decentralized and IP based overlay network for the internet.
+
+Service Nodes on the Loki network will operate a low latency onion routing protocol, forming a fully decentralised overlay network, called Lokinet. Onion routing protocols allow for users to form tunnels or paths through a distributed network, using multiple nodes as hops to obfuscate the destination and origin of data packets.
+
+The network does not rely on trusted authorities and its state is fully derived from the blockchain. Users can connect to individual Service Nodes and create bidirectional paths for packets to be routed through. The network can be used to access internally hosted services called SNApps. Users can utilise Service Nodes exit functionality to browse the external internet without their IP address being exposed.
