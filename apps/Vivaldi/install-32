@@ -7,6 +7,7 @@ function error {
   exit 1
 }
 
-wget https://vivaldi.com/download/vivaldi-stable_armhf.deb -O ~/vivaldi_armhf.deb || error 'Failed to download vivaldi!'
-sudo apt install --fix-missing -y ~/vivaldi_armhf.deb || error 'Failed to install vivaldi!'
-rm ~/vivaldi_armhf.deb
+rm -f ~/vivaldi.deb
+wget https://downloads.vivaldi.com/stable/vivaldi-stable_3.7.2218.45-1_armhf.deb -O ~/vivaldi.deb || error 'Failed to download vivaldi!'
+sudo apt install --fix-missing -y ~/vivaldi.deb || error 'Failed to install vivaldi!'
+rm -f ~/vivaldi.deb
