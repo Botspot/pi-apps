@@ -15,4 +15,5 @@ wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.116/
 
 sudo apt install -fy ~/etcher-v1.5.116_arm64.deb || error "failed to install deb file!"
 rm -f ~/etcher-v1.5.116_arm64.deb
+
 exit 0
