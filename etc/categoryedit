@@ -21,14 +21,21 @@ if [ ! -z "$1" ] && [ ! -z "$2" ];then
     echo "The $1 app is currently in the $(dirname "$(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}')") category."
   fi
   
-  if ! echo "$structure" | grep -q "$2"'/' ;then
+  if ! echo "$structure" | grep -q '|'"$2" ;then
     echo "The $2 category did not exist previously."
   fi
   
   echo "Putting the $1 app in the $2 category..."
   
   #replace any mention of the $1 app with the new line at the end of file
-  echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" > "${DIRECTORY}/data/categories/structure"
+  output="$(echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" | sort)"
+  
+  #only change the structure file if something was really changed
+  if [ "$output" != "$(cat "${DIRECTORY}/data/categories/structure")" ];then
+    echo "$output" > "${DIRECTORY}/data/categories/structure"
+  else
+    echo "categoryedit: Not changing structure file, because nothing was changed."
+  fi
   
   #structure file modified. Refresh the variable
   refresh
