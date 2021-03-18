@@ -92,7 +92,7 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 prefix=''
 
 while true;do
-  LIST="$("${DIRECTORY}/preload" $guimode $prefix)"
+  LIST="$("${DIRECTORY}/preload" $guimode "$prefix")"
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
