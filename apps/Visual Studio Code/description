@@ -1,7 +1,5 @@
 Visual Studio Code is a free source-code editor made by Microsoft.
 Features include support for debugging, syntax highlighting, intelligent code completion, snippets, code refactoring, and embedded Git
 It supports most popular coding languages including Python, JavaScript, and more.
-Note: Visual Studio Code can be installed in Raspberry Pi OS via the default repositories  by running the command "sudo apt install code -y".
-This should be done instead unless you're using a different OS other than Raspberry Pi OS (Full or Desktop) which doesn't have the repositories 
-found in Raspberry Pi OS (http://archive.raspberrypi.org/ and http://raspbian.raspberrypi.org/)
+Note: If you are using Raspberry Pi OS, you don't need to install this app. Just run "sudo apt install code" in the terminal. Pi-Apps will still continue to ship VSCode so that non-PiOS users can still have access to it.
 
