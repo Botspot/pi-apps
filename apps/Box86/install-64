@@ -43,3 +43,4 @@ echo "running 'sudo apt update'..."
 sudo apt update || error "Failed to run sudo apt update"
 echo "installing box86..."
 sudo apt install box86 -y || error "Failed to install the box86 package"
+sudo systemctl restart systemd-binfmt
