@@ -103,9 +103,9 @@ while true;do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=Install!${DIRECTORY}/icons/install.png:4" \
-        "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2" \
-        "--button=Details!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
+        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
         buttons=("--button=!${DIRECTORY}/icons/back.png!Back:3" \
         "--button=!${DIRECTORY}/icons/install.png!Install:4" \
@@ -293,14 +293,14 @@ $installedpackages"
         fi
         if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
           #Taking a chance here. If status file is nonexistent, assume uninstalled.
-          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
-          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2"
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
-          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
         else
           #if status is corrupted or unknown, then show both buttons
-          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2 --button=!${DIRECTORY}/icons/install.png:4"
         fi
         )"
         
