@@ -63,10 +63,12 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 ### Basic usage
 - This is the **main window**:  
 ![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
-Use the main window to quickly browse the selection of apps and easily install them.  
-- If you double-click an app, or select and app and click Details, you will see the **Details window**.  
+Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
+- After selecting a category, you will see a list of apps:  
+![app list](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/app%20list.png?raw=true)  
+- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
 ![details](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/details%20window.png?raw=true)  
-- The **updater window** may pop up when you launch Pi-Apps, or when your Pi boots:  
+- Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
 ![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)  
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)  
@@ -79,6 +81,7 @@ Use the main window to quickly browse the selection of apps and easily install t
 - [X] Allow **multiple apps** to be selected from the app list and be installed simultaneously.  
 - [X] Add a **search function** to the app list. It's still experimental: to enable it, switch to **xlunch** in **Pi-Apps Settings** -> **App List Style**.
 - [X] Break up the long app list with some **categories**.  
+- [X] Add a new category containing all apps currently **installed**.
 
 <details>
 <summary>Terminal & script usage</summary>
