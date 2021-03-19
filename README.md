@@ -1,4 +1,4 @@
-# Pi-Apps   ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/logo-64.png?raw=true)
+![logo](https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 
 Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
