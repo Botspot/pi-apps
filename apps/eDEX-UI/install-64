@@ -9,9 +9,8 @@ function error {
 
 rm -rf ~/eDEX-UI-RPi &>/dev/null
 mkdir ~/eDEX-UI-RPi
-wget -O ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage' 'https://github.com/GitSquared/edex-ui/releases/download/v2.2.7/eDEX-UI-Linux-armv7l.AppImage' || error 'Failed to download 2.2.6 appimage!'
-chmod +x ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage' || error 'Failed to make the appimage executable!'
-
+wget https://github.com/GitSquared/edex-ui/releases/download/v2.2.7/eDEX-UI-Linux-arm64.AppImage -O ~/eDEX-UI-RPi/eDEX-UI-Linux-arm64_2.2.7.AppImage || error 'Failed to download 2.2.6 appimage!'
+chmod +x ./'eDEX-UI-RPi/eDEX-UI-RPi/eDEX-UI-Linux-arm64_2.2.7.AppImage' || error 'Failed to make the appimage executable!'
 
 echo "[Desktop Entry]
 Name=eDEX-UI 2.2.7
