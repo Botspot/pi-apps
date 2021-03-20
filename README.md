@@ -62,7 +62,22 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 
 > "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
 
-# Read the wiki for the full documentation [add wiki link]
+<hr>
+
+# Read [the wiki](https://github.com/Botspot/pi-apps/wiki)  for the full documentation
+
+### Basic usage
+- This is the **main window**:  
+![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
+Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
+- After selecting a category, you will see a list of apps:  
+![app list](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/app%20list.png?raw=true)  
+- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
+![details](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/details%20window.png?raw=true)  
+- Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
+![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)  
+- Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
+![settings](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)  
 
 ## To-do
 
