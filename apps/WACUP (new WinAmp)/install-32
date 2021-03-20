@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+[ "$(cat "${DIRECTORY}/data/status/Wine (x86)")" != 'installed' ] && ("${DIRECTORY}/manage" install 'Wine (x86)' || error "Exiting now, as Wine failed to install.")
+
+rm -f ~/wacup.exe
+
+wget -O ~/wacup.exe 'https://getwacup.com/preview/WACUP_Preview_v1_0_18_6840.exe' || error "Failed to download wacup.exe!"
+
+wine ~/wacup.exe || error "Wine failed to run wacup.exe!"

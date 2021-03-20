@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#use the error function often!
+#If a certain command is necessary for installation to continue, then add this to the end of it:
+# || error 'reason'
+#example below:
+git clone https://example.com || error 'Failed to clone example.com repository!'
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "package1 package2 package3" "$(dirname "$0")" || exit 1
