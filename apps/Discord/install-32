@@ -19,7 +19,9 @@ gio trash ~/discord-electron 2> /dev/null
 rm -f ~/.local/share/applications/discord.desktop 2> /dev/null
 
 echo "downloading discord-electron..."
-download || error "Failed to download latest release!"
+cd $HOME
+#download || error "Failed to download latest release!"
+wget https://github.com/SpacingBat3/electron-discord-webapp/releases/download/v1.2.1/electron-discord-webapp_1.2.1_armhf.deb
 sudo dpkg -i electron-discord-webapp*armhf.deb || error "Failed to install discord-electron!"
-sudo apt -f install
+sudo apt -fy install
 rm -f electron-discord-webapp*armhf.deb
