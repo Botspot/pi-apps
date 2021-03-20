@@ -11,6 +11,7 @@ cd $HOME
 
 #install yad automatically
 if ! command -v yad >/dev/null;then
+  
   if [ -f /usr/bin/apt ];then
     sudo apt update
     sudo apt install -y yad || error "Failed to install yad."
@@ -24,14 +25,31 @@ sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #install git
 if ! command -v git >/dev/null;then
+  
   if [ -f /usr/bin/apt ];then
     #only run sudo apt update if not already run
     if [ -z "$updated" ];then
       sudo apt update
+      updated=1
     fi
     sudo apt install -y git || error "Failed to install git."
   else
     error "Failed to find any package manager to install git."
+  fi
+fi
+
+#install curl
+if ! command -v curl >/dev/null;then
+  if [ -f /usr/bin/apt ];then
+  
+    #only run sudo apt update if not already run
+    if [ -z "$updated" ];then
+      sudo apt update
+      updated=1
+    fi
+    sudo apt install -y curl || error "Failed to install curl."
+  else
+    error "Failed to find any package manager to install curl."
   fi
 fi
 
