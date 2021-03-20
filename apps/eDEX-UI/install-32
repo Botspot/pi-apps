@@ -16,7 +16,7 @@ chmod +x ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage' ~/'eDEX-UI-RPi/eDEX
 echo "[Desktop Entry]
 Name=eDEX-UI 2.2.7
 Comment=eDEX-UI sci-fi interface
-Exec=bash -c "\""sudo modprobe fuse; $HOME/eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.6.AppImage"\"" %U
+Exec=bash -c "\""sudo modprobe fuse; $HOME/eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage"\"" %U
 Terminal=false
 Type=Application
 Icon=$(dirname "$0")/icon-64.png
