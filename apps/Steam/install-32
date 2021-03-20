@@ -9,11 +9,12 @@ function error {
 
 "${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
 
-if [ ! -f /usr/local/bin/box86 ];then
-  echo 'Installing box86 first...'
-  wget -qO- https://raw.githubusercontent.com/Botspot/box86-updater/main/update-box86 | bash
-  if [ ! -f /usr/local/bin/box86 ];then
-    error "Box86 failed to install somehow!"
+#install box86
+if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
+  echo 'Installing box86...'
+  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
+  if ! command -v box86 ;then
+    error "Box86 executable does not exist!"
   else
     echo "installed" > "${DIRECTORY}/data/status/Box86"
   fi
