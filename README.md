@@ -18,6 +18,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 <details>
 <summary>Manual installation</summary>
 
+# installation
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
