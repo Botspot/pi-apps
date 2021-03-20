@@ -84,8 +84,9 @@ Use the main window to select an app category you want to view. Open a category 
 - [X] Break up the long app list with some **categories**.  
 - [X] Add a new category containing all apps currently **installed**.
 
+## Terminal usage
 <details>
-<summary>Terminal & script usage</summary>
+<summary>Click to open</summary>
 
  - Each 'App' is simply a small `install` script, `uninstall` script, two icon sizes, and two text files containing the description and a website URL.
  - Each App is stored in its own separate directory. `~/pi-apps/apps/` holds all these app directories. The Zoom app, for example, would be located at `~/pi-apps/apps/Zoom/`.
@@ -127,10 +128,9 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
 
 </details>
 
-<details>
-<summary>Creating an app</summary>
-
 ## Creating an app
+<details>
+<summary>Click to open</summary>
 
 It's easy to make your own Pi-App.  
 - First, launch Pi-Apps Settings.
