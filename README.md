@@ -4,7 +4,7 @@
 Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
 Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pies to their full, desktop PC, potential.  
 Countless **Raspberry Pies remain in disuse** for this very reason. Something must be done!  
-Introducing **Pi-Apps**, basically a list of pre-made apps you can install with **one click**. (What a concept!)
+Introducing **Pi-Apps**, basically a list of pre-made apps you can install with **one click**.  
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (a very well known RPi YouTuber) says:
 
@@ -52,7 +52,8 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 
 > "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[RPi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)** (RPi YouTuber)
 
-> "Pi-Apps is the reason I got a Pi4!" - behjemen from Discord
+> "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
+> We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - (RPi developer)
 
 > "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator)
 
