@@ -89,8 +89,6 @@ Use the main window to select an app category you want to view. Open a category 
 - [X] Break up the long app list with some **categories**.  
 - [X] Add a new category containing all apps currently **installed**.
 
-
-
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
