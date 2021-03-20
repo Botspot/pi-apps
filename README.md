@@ -129,8 +129,10 @@ Sidenote: if an app only has an `install-32` script, then Pi-Apps will assume it
 
 <details>
 <summary>Creating an app</summary>
-It's easy to make your own Pi-App.
 
+## Creating an app
+
+It's easy to make your own Pi-App.  
 - First, launch Pi-Apps Settings.
 - Click New App.
 - This launches the Create App Wizard. This series of dialog boxes will guide you through the process of making your very own app.
