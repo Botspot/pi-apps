@@ -7,7 +7,10 @@ function error {
   exit 1
 }
 
-[ "$(cat "${DIRECTORY}/data/status/Wine (x86)")" != 'installed' ] && ("${DIRECTORY}/manage" install 'Wine (x86)' || error "Exiting now, as Wine failed to install.")
+if [ ! -f /usr/local/bin/twistver ] || [ "$(cat "${DIRECTORY}/data/status/Wine (x86)")" != 'installed' ]; then
+  echo 'Wine Is Not Installed, installing it now.'
+  $DIRECTORY/manage install 'Wine (x86)' || error "Failed to install wine (x86)!"
+fi
 
 rm -f ~/wacup.exe
 
