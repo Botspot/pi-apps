@@ -11,6 +11,6 @@ function error {
 
 rm -f ~/wacup.exe
 
-wget -O ~/wacup.exe 'https://getwacup.com/preview/WACUP_Preview_v1_0_18_6840.exe' || error "Failed to download wacup.exe!"
+wget -O ~/wacup.exe 'https://getwacup.com/preview/WACUP_Preview_v1_0_21_7236.exe' || error "Failed to download wacup.exe!"
 
 wine ~/wacup.exe || error "Wine failed to run wacup.exe!"
