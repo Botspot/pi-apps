@@ -41,6 +41,9 @@ fi) &
   "${DIRECTORY}/etc/categoryedit" 'Node.js' Tools >/dev/null
 ) &
 
+#completely remove cordless app
+rm -rf "${DIRECTORY}/apps/Cordless" &>/dev/null
+
 install() {
   app="$1"
   #terminal title text
