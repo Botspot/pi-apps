@@ -8,6 +8,8 @@ function error {
 }
 
 #Uninstall NodeJS
+export NVM_DIR="$HOME/.config/nvm"
+cd $NVM_DIR
 nvm uninstall default || error "Failed to purge Node.JS!"
 
 #Remove nvm
