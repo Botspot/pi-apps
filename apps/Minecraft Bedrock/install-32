@@ -11,7 +11,7 @@ function error {
 
 #Download file
 cd ~
-curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.1-beta-21-648/Minecraft_Bedrock_Launcher-arm-0.0.648.AppImage --output MCBedrock.AppImage
+curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.1-beta-21-652/Minecraft_Bedrock_Launcher-arm-0.0.652.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
 sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
