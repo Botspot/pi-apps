@@ -5,9 +5,9 @@ function error {
   exit 1
 }
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
 cd $HOME
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #install yad automatically
 if ! command -v yad >/dev/null;then
