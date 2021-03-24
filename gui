@@ -23,20 +23,29 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-#hide macos theme on twisteros
-(if [ -f /usr/local/bin/twistver ] && ! grep -q "Mac OS Theme|Eyecandy" "${DIRECTORY}/data/categories/structure" ;then
-  "${DIRECTORY}/install"
-fi) &
-
-#move a bunch of apps to the new multimedia category
 (
+  #hide macos theme on twisteros
+  if [ -f /usr/local/bin/twistver ] && ! grep -q "Mac OS Theme|Eyecandy" "${DIRECTORY}/data/categories/structure" ;then
+    "${DIRECTORY}/install"
+  fi
+  
+  #mark wine as installed, if twisteros
+  if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
+    echo 'installed' > "${DIRECTORY}/data/status/Wine (x86)"
+  fi
+  #mark box86 as installed, if twisteros
+  if [ -f /usr/local/bin/twistver ] && command -v box86 >/dev/null ;then
+    echo 'installed' > "${DIRECTORY}/data/status/Box86"
+  fi
+  
+  #move a bunch of apps to the new multimedia category
   "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' Multimedia >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'FreeTube' Multimedia >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'Sonic Pi 3.2' Multimedia >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'TBOPlayer' Multimedia >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'WACUP (new WinAmp)' Multimedia >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'YouTubuddy' Multimedia >/dev/null
-  
+  #move a couple apps to tools category
   "${DIRECTORY}/etc/categoryedit" 'Snapdrop' Tools >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'Node.js' Tools >/dev/null
 ) &
