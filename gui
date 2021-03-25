@@ -23,35 +23,61 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-(
-  #hide macos theme on twisteros
-  if [ -f /usr/local/bin/twistver ] && ! grep -q "Mac OS Theme|Eyecandy" "${DIRECTORY}/data/categories/structure" ;then
-    "${DIRECTORY}/install"
+runonce() {
+  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
+  
+  #all arguments is command(s) to run
+  #hash the command and check if it's already been run before
+  
+  runonce_hash="$(echo "$@" | sha256sum | awk '{print $1}')"
+  if grep -q "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
+    #hash found
+    echo "runonce: '$@' already run before. Skipping."
+  else
+    #run the command.
+    bash <(echo "$@")
+    #if it succeeds, add the hash to the list to never run it again
+    if [ $? == 0 ];then
+      echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
+      echo "'$@' succeeded. Added to list."
+    else
+      echo "'$@' failed. Not adding hash to list."
+    fi
+    
   fi
   
-  #mark wine as installed, if twisteros
+}
+
+#mark wine as installed, if twisteros
+runonce "
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
-    echo 'installed' > "${DIRECTORY}/data/status/Wine (x86)"
-  fi
-  #mark box86 as installed, if twisteros
+    echo 'installed' > '${DIRECTORY}/data/status/Wine (x86)'
+  fi"
+
+#mark box86 as installed, if twisteros
+runonce "
   if [ -f /usr/local/bin/twistver ] && command -v box86 >/dev/null ;then
-    echo 'installed' > "${DIRECTORY}/data/status/Box86"
-  fi
-  
-  #move a bunch of apps to the new multimedia category
-  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'FreeTube' Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Sonic Pi 3.2' Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'TBOPlayer' Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'WACUP (new WinAmp)' Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'YouTubuddy' Multimedia >/dev/null
-  #move a couple apps to tools category
-  "${DIRECTORY}/etc/categoryedit" 'Snapdrop' Tools >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Node.js' Tools >/dev/null
-) &
+    echo 'installed' > '${DIRECTORY}/data/status/Box86'
+  fi"
+
+
+#move a bunch of apps to the new multimedia category
+runonce "
+  '${DIRECTORY}/etc/categoryedit' 'Chromium Widevine' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'FreeTube' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'Sonic Pi 3.2' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'TBOPlayer' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'WACUP (new WinAmp)' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'YouTubuddy' Multimedia >/dev/null"
+
+#move a couple apps to tools category
+runonce "
+  '${DIRECTORY}/etc/categoryedit' 'Snapdrop' Tools >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'Node.js' Tools >/dev/null"
+
 
 #completely remove cordless app
-rm -rf "${DIRECTORY}/apps/Cordless" &>/dev/null
+runonce "rm -rf '${DIRECTORY}/apps/Cordless' &>/dev/null"
 
 install() {
   app="$1"
