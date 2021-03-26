@@ -8,9 +8,13 @@ function error {
 }
 
 #get dependencies
-DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
-TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
-sudo apt -f -y install "$TOINSTALL"
+#DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
+#TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
+#sudo apt -f -y install "$TOINSTALL"
+
+echo "Installing dependencies..."
+"${DIRECTORY}/pkg-install" "cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev" "$(dirname "$0")" || exit 1
+
 if ! command -v checkinstall >/dev/null ; then
   wget https://archive.org/download/macos_921_qemu_rpi/checkinstall_20210126-1_arm64.deb || error "Failed to download checkinstall!"
   sudo apt install ./checkinstall_20210126-1_arm64.deb -y  || error "Failed to install checkinstall!"
@@ -412,5 +416,3 @@ if [[ "$CHECKINSTALL" == 1 ]]; then
   sudo apt purge -y checkinstall
 fi
 sudo rm -rf ~/stuntrally
-echo "Installing dependencies..."
-"${DIRECTORY}/pkg-install" "libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev" "$(dirname "$0")" || exit 1

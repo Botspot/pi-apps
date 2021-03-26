@@ -11,5 +11,6 @@ sudo rm -f /usr/share/applications/stuntrally.desktop
 sudo rm -f /usr/share/applications/sr-editor.desktop
 
 sudo apt purge stunt-rally -y || error "Failed to uninstall stunt rally!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 rm -r $HOME/.config/stuntrally/
