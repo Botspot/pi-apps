@@ -122,11 +122,11 @@ cd $HOME
 "${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
 
 #hide duplicates if running in twisteros
-if [ -f /usr/local/bin/twistver ];then
+if [ -f /usr/local/bin/twistver ] && if [[ $(twistver) == "Twister OS version"* ]]; then
+  #twisteros full
   PREIFS="$IFS"
   IFS=$'\n'
-  apps="Chromium Media Edition
-CommanderPi
+  apps="CommanderPi
 Box86
 Discord
 piKiss
@@ -135,13 +135,43 @@ Scrcpy
 Steam
 Windows 10 Theme
 Chromium Widevine
-Back to Chromium v78
 Lightpad
 Wine (x86)
 Mac OS Theme"
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done
+  
+  #unhide chromiumv78 on twisteros
+  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' >/dev/null
+  echo "Finished hiding apps on TwisterOS."
+  
+  
+elif [ -f /usr/local/bin/twistver ] && if [[ $(twistver) != "Twister OS version"* ]]; then
+  #twisteros lite
+  PREIFS="$IFS"
+  IFS=$'\n'
+  apps="Chromium Widevine
+Box86
+Windows 10 Theme
+Lightpad
+Wine (x86)
+Mac OS Theme"
+  for app in $apps ;do
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+  done
+  
+  #unhide some apps on twisteros lite that were hidden.
+  #This moves these apps to the '' category, which will be reset next time pi-apps launches
+  "${DIRECTORY}/etc/categoryedit" CommanderPi >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Discord >/dev/null
+  "${DIRECTORY}/etc/categoryedit" piKiss >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Scrcpy >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Steam >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' >/dev/null
+  
+  
   echo "Finished hiding apps on TwisterOS."
 fi
 
