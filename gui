@@ -76,6 +76,13 @@ runonce "
   '${DIRECTORY}/etc/categoryedit' 'Node.js' Tools >/dev/null"
 
 
+runonce "
+  if [ -f /usr/local/bin/twistver ] && if [[ $(twistver) != 'Twister OS version'* ]] ;then
+    '${DIRECTORY}/install'
+  fi"
+
+
+
 #completely remove cordless app
 runonce "rm -rf '${DIRECTORY}/apps/Cordless' &>/dev/null"
 
