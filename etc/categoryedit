@@ -12,13 +12,13 @@ refresh() {
 }
 refresh
 #command line argument handler
-if [ ! -z "$1" ] && [ ! -z "$2" ];then
+if [ ! -z "$1" ];then
   if ! echo "$APPS" | grep -q "$1" ;then
     error "The $1 app does not exist in ${DIRECTORY}/apps!"
   fi
   
   if echo "$structure" | grep -q "$1"'|' ;then
-    echo "The $1 app is currently in the $(dirname "$(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}')") category."
+    echo "The $1 app is currently in the $(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}') category."
   fi
   
   if ! echo "$structure" | grep -q '|'"$2" ;then
