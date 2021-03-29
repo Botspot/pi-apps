@@ -32,14 +32,15 @@ runonce() {
   runonce_hash="$(echo "$@" | sha256sum | awk '{print $1}')"
   if grep -q "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
     #hash found
-    echo "runonce: '$@' already run before. Skipping."
+    #echo "runonce: '$@' already run before. Skipping."
+    true
   else
     #run the command.
     bash <(echo "$@")
     #if it succeeds, add the hash to the list to never run it again
     if [ $? == 0 ];then
       echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
-      echo "'$@' succeeded. Added to list."
+      #echo "'$@' succeeded. Added to list."
     else
       echo "'$@' failed. Not adding hash to list."
     fi
@@ -77,7 +78,7 @@ runonce "
 
 
 runonce "
-  if [ -f /usr/local/bin/twistver ] && if [[ $(twistver) != 'Twister OS version'* ]] ;then
+  if [ -f /usr/local/bin/twistver ] && [[ "\$"(twistver) != 'Twister OS version'* ]] ;then
     '${DIRECTORY}/install'
   fi"
 
