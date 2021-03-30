@@ -82,7 +82,13 @@ runonce "
     '${DIRECTORY}/install'
   fi"
 
-
+runonce "
+  rm -rf '${DIRECTORY}/apps/Back to Chromium v86'
+  rm -rf '${DIRECTORY}/apps/Back to Chromium v78'
+  if [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v78")' == installed ] || [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v86")' == installed ];then
+    echo 'installed' > '${DIRECTORY}/data/status/Downgrade Chromium'
+  fi
+  "
 
 #completely remove cordless app
 runonce "rm -rf '${DIRECTORY}/apps/Cordless' &>/dev/null"
