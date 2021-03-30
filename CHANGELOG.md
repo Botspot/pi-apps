@@ -1,5 +1,5 @@
 **NOTE**: This changelog covers the major events in pi-apps like new apps being added. If every action since day one was mentioned, "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last update: Feb 4, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+Last updated: March 29, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -51,7 +51,7 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **12/27/2020** Boxy SVG app uses [Boxy-SVG-RPi](https://github.com/Botspot/Boxy-SVG-RPi) and Box86 app uses [box86-updater](https://github.com/Botspot/box86-updater)
 - **12/28/2020** Added Eagle and YouTubuddy apps
 - **12/29/2020** Changed Doom 3 app to not wget script and added the "a guy" story in the README :laughing:
-- **1/2/2021** Removed Cordless app due to users being banned by Discord and support being dropped. Added Whatsapp and Vivaldi browser
+- **1/2/2021** Removed Cordless app due to users being banned by Discord and support being dropped. Added WhatsApp and Vivaldi browser
 - **1/3/2021** Added Lightpad, TLDR, and Mission Planner apps. Also improved Zoom.
 - **1/5/2021** Added app request templates
 - **1/8/2021** Removed Chromium Media Edition app and started work on categories
@@ -72,3 +72,25 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **1/31/2021** Added Wine x86 app
 - **2/1/2021** Added Remarkable app and fixed Minecraft Pi (Modded) install
 - **2/3/2021** Updated Minecraft Pi (Modded) to v0.1.8 and added Node.js app
+- **2/8/2021** Added StackEdit and FreeTube apps, hid RetroPie and made Doom 3 visable.
+- **2/13/2021** Added credits button for apps and fixed Minecraft Pi (Modded) install issues
+- **2/17/2021** Updated BalenaEtcher, Cura, and WhatsApp apps, and also added QEMU app.
+- **2/20/2021** Changed wine install scripts and fixed WhatsApp download bug.
+- **2/21/2021** Added Geany Dark Mode app, updated FreeTube, and more Wine install fixes.
+- **2/28/2021** Hidden Wine on Twister OS.
+- **3/4/2021** Added pi-apps terminal plugin and Mac OS theme apps, updated Minecraft Pi (Modded) and addded info about getting better FPS on both Minecraft apps
+- **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports
+- **3/8/2021** Added Snapdrop app, updated intellij IDEA and Minecraft Pi (Modded) with a FPS counter and newer build
+- **3/10/2021** Added Decent 1/2 and ppsspp apps
+- **3/11/2021** Changed box86 install to use itai's apt repository
+- **3/12/2021** Updated Tor Browser to 10.0.13, changed Node.js app to use nvm version manager and unhid BalenaEtcher on Twister OS
+- **3/14/2021** Added Stunt Rally app, and added a "Installed" category for installed apps
+- **3/15/2021** Added Back to Chromium v86 app, and updated box86 to be installable on aarch64 OSes
+- **3/16/2021** Added Lokinet app and large upgrade to Zoom app
+- **3/17/2021** Added 64-bit support for Vivaldi
+- **3/18/2021** Added Notepad++ app and made Doom 3 run in a 64-bit kernel with a 32-bit userland
+- **3/19/2021** redesign all program icons, the Pi-Apps logo, and all screenshots.
+- **3/20/2021** Updated eDEX-UI to v2.2.7, completely transitioned to Itai's box86 builds for all apps, added WACUP app and made a new "Multimedia" category
+- **3/24/2021** Added Libreoffice MS Theme app, and automarked box86/Wine as installed on Twister OS
+- **3/28/2021** Hide less apps on Twister OS Lite
+- **3/29/2021** Updated QEMU to v5.2.90
