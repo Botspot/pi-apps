@@ -12,10 +12,9 @@ mkdir speedtest
 wget https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-armhf-linux.tgz -O ~/speedtest.tgz|| error 'Failed to download!'
 cd speedtest
 tar -xvzf ~/speedtest.tgz || error "failed to extract files!"
-cd $HOME
 rm ~/speedtest.tgz
 
-echo "Creating shortcut..."
+printf "Creating shortcut..."
 echo "[Desktop Entry]
 Type=Application
 Name=Run Speedtest
@@ -26,3 +25,10 @@ Categories=Network;WebBrowser;
 Path=$HOME/speedtest
 Terminal=true
 StartupNotify=false" > ~/.local/share/applications/speedtest.desktop || error "failed to create menu shortcut!"
+echo "done"
+
+printf "creating /usr/local/bin/speedtest so you can launch from terminal..."
+echo "#!/bin/bash
+$HOME/speedtest/speedtest" | sudo tee /usr/local/bin/speedtest >/dev/null
+sudo chmod +x /usr/local/bin/speedtest
+echo "done"
