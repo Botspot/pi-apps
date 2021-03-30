@@ -122,7 +122,7 @@ cd $HOME
 "${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
 
 #hide duplicates if running in twisteros
-if [ -f /usr/local/bin/twistver ] && if [[ $(twistver) == "Twister OS version"* ]]; then
+if [ -f /usr/local/bin/twistver ] && [[ $(twistver) == "Twister OS version"* ]]; then
   #twisteros full
   PREIFS="$IFS"
   IFS=$'\n'
@@ -147,7 +147,7 @@ Mac OS Theme"
   echo "Finished hiding apps on TwisterOS."
   
   
-elif [ -f /usr/local/bin/twistver ] && if [[ $(twistver) != "Twister OS version"* ]]; then
+elif [ -f /usr/local/bin/twistver ] && [[ $(twistver) != "Twister OS version"* ]]; then
   #twisteros lite
   PREIFS="$IFS"
   IFS=$'\n'
@@ -160,6 +160,7 @@ Mac OS Theme"
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done
+  IFS="$PREIFS"
   
   #unhide some apps on twisteros lite that were hidden.
   #This moves these apps to the '' category, which will be reset next time pi-apps launches
