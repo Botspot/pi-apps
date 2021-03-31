@@ -7,12 +7,13 @@ function error {
   exit 1
 }
 
+cd ~/.local/share
+rm -f arduino-1.8.13-linuxaarch64.tar.xz
 wget https://downloads.arduino.cc/arduino-1.8.13-linuxaarch64.tar.xz || error "failed to download!"
 
 tar -xf arduino-1.8.13-linuxaarch64.tar.xz || error "failed to extract with tar!"
-arduino-1.8.13/install.sh || error "failed to run install as non-root user!"
+arduino-1.8.13/install.sh || error "failed to run install as $USER user!"
 sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
 
-rm $HOME/Desktop/arduino-arduinoide.desktop
-rm arduino-1.8.13-linuxaarch64.tar.xz
+rm -f $HOME/Desktop/arduino-arduinoide.desktop arduino-1.8.13-linuxaarch64.tar.xz
 exit 0
