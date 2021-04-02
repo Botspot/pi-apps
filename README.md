@@ -47,20 +47,20 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
-> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)** (large RPi YouTuber)
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)** (large RPi YouTuber) on Discord
 
 > Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)** (large RPi YouTuber)
 
 > "I love pi-apps. It's great and installs tons of useful software that people don't know how to install. Great work Botspot!" - **[RPi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)** (RPi YouTuber)
 
 > "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
-> We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - (RPi developer)
+> We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - RPi developer in an email
 
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator)
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator) on the RPi forums
 
-> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)** (RPi legend)
+> "Good luck with your projects, Botspot, you're really making waves!" - **[Sakaki](https://github.com/sakaki-)** (RPi legend) in an email
 
-> "I love Pi-Apps and I chase all my friends around tryna get them to install it" - Beiop from Discord
+> "I ❤️ Pi-Apps cuz it is totally awesome! I pranked a lot of people with MacOS theme and Win10 theme!" - LEHAtupointow on Discord
 
 <hr>
 
