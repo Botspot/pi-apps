@@ -9,7 +9,7 @@ function error {
 
 sudo apt purge lokinet-gui -y || error "Failed to uninstall \"lokinet-gui\"!"
 sudo apt purge lokinet -y || error "Failed to uninstall \"lokinet\"!"
-sudo apt purge lokinet-bin - y || error "Failed to uninstall \"lokinet-bin\"!" 
+sudo apt purge lokinet-bin -y || error "Failed to uninstall \"lokinet-bin\"!" 
   
   if [ -e /etc/systemd/system/lokinet.service.d ]; then
      echo "removing systemd override"
