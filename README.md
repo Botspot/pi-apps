@@ -15,7 +15,12 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
-However, piping scripts straight to bash can be considered controversial as you don't get to see what the script is running, therefore a manual installation is provided below.
+
+<details>
+<summary>Piping to Bash</summary>
+Piping scripts straight to bash can be considered controversial as you don't get to see what the script is running, therefore a manual installation is provided below.
+</details>
+<br>
 <details>
 <summary>Manual installation</summary>
 
