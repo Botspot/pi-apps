@@ -15,6 +15,7 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
+However, piping scripts straight to bash can be considered controversial as you don't get to see what it is running, therefore a manual installation is provided below.
 <details>
 <summary>Manual installation</summary>
 
@@ -25,7 +26,7 @@ git clone https://github.com/Botspot/pi-apps
 ```
 </details>
 
-The install script ensures YAD is installed, creates two menu buttons, an autostarted updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside your home directory.
+The install script ensures YAD is installed, creates two menu buttons, an auto-started updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside your home directory.
 
 <details>
 <summary>To uninstall Pi-Apps</summary>
