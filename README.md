@@ -19,7 +19,7 @@ However, piping scripts straight to bash can be considered controversial as you 
 <details>
 <summary>Manual installation</summary>
 
-# installation
+# Installation
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
