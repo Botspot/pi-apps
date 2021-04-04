@@ -163,14 +163,14 @@ Mac OS Theme"
   IFS="$PREIFS"
   
   #unhide some apps on twisteros lite that were hidden.
-  #This moves these apps to the '' category, which will be reset next time pi-apps launches
-  "${DIRECTORY}/etc/categoryedit" CommanderPi >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Discord >/dev/null
-  "${DIRECTORY}/etc/categoryedit" piKiss >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Scrcpy >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Steam >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' >/dev/null
+  #This removes certain apps completely from the category file. Effectively resets them to online default.
+  "${DIRECTORY}/etc/categoryedit" CommanderPi --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Discord --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" piKiss --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Scrcpy --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Steam --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' --delete >/dev/null
   
   
   echo "Finished hiding apps on TwisterOS."

@@ -76,7 +76,7 @@ runonce "
   '${DIRECTORY}/etc/categoryedit' 'Snapdrop' Tools >/dev/null
   '${DIRECTORY}/etc/categoryedit' 'Node.js' Tools >/dev/null"
 
-
+#re-run install script on twistos lite to show select pre-hidden apps
 runonce "
   if [ -f /usr/local/bin/twistver ] && [[ "\$"(twistver) != 'Twister OS version'* ]] ;then
     '${DIRECTORY}/install'
