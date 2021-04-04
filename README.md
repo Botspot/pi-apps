@@ -119,3 +119,13 @@ Embed code:
 > - You can look through the [list of app requests](https://github.com/Botspot/pi-apps/issues) and help create the scripts for them.
 > - If you see someone complaining about a broken app on Youtube, Reddit, or Facebook, please encourage them to join the [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) or to [open an issue](https://github.com/Botspot/pi-apps/issues/new) to get the problem solved. (I'm not on those sites very often.)
 > - You could help troubleshoot/diagnose issues others are having.
+
+## Privacy regarding analytics
+
+Pi-Apps takes analytic data which gives Botspot access to the following data:
+Which Apps are being installed
+Countries which apps are being downloaded from
+
+However this data does not label you, only generic data to see which apps are favorite :)
+
+If you do not wish to participate in the data collection you are welcome to withdraw by going to Pi-Apps Settings and changing the `Enable Analytics` setting to off, this means the Pi-apps downloads straight from source rather than going through bit.ly.
