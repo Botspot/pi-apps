@@ -15,4 +15,4 @@ sudo apt install -yf ~/turbowarp.deb || error "Failed to install turbowarp.deb!"
 rm -f ~/turbowarp.deb
 
 #Move TurboWarp desktop file from Education category to Programming category
-sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop
+sudo sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop
