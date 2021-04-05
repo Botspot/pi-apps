@@ -1,0 +1,3 @@
+# This file contains files & directories that you don't want to be updated by the Pi-Apps updater script. Each line is run through grep -v, and the paths don't have to be absolute. 'icons/' is enough to exclude the pi-apps icons folder.
+
+#icons/ # <-- uncomment to exclude the icons fo0lder from being updated

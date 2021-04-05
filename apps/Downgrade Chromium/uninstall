@@ -1,0 +1,53 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
+  echo -n "Please close all Chromium windows first."
+  yad --info --center --window-icon="$(dirname "$0")/icon-64.png" \
+  --title="Close Chromium first" --text="$(echo -e "Chromium is running.\nTo reduce the risk of Chromium profile corruption, please close Chromium first.")" \
+  --window-icon="$(dirname "$0")/icon-64.png" --no-buttons &
+  yadpid=$!
+  while [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];do
+    echo -n '.'
+    sleep 1
+  done
+  echo
+  kill $yadpid
+fi
+
+if [ -d ~/.config/chromium.bak ];then
+  read -p "Would you like to restore the backup of Chromium's config folder? [y/n] " answer
+  
+  if [ "$answer" == y ] || [ "$answer" == Y ];then
+    echo "Restoring backup..."
+    
+    #first remove existing
+    if [ -e ~/.config/chromium ];then
+      gio trash ~/.config/chromium || rm -rf ~/.config/chromium
+    fi
+    
+    #then rename the backup folder
+    mv ~/.config/chromium.bak ~/.config/chromium
+    
+  elif [ "$answer" == n ] || [ "$answer" == N ];then
+    true #do nothing
+  else
+    error "Unknown answer "\""$answer"\"""
+  fi  
+fi
+
+echo "Allowing Chromium to be upgradable..."
+echo "chromium-browser install" | sudo dpkg --set-selections
+echo "chromium-browser-l10n install" | sudo dpkg --set-selections
+echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections
+
+echo "Upgrading Chromium..."
+sudo apt upgrade -y --allow-downgrades chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra rpi-chromium-mods
+
+

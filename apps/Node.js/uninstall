@@ -7,12 +7,15 @@ function error {
   exit 1
 }
 
+#prepare to run nvm
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+cd $NVM_DIR
+
 #Uninstall NodeJS
-sudo apt purge nodejs -y || error "Failed to purge Node.JS!"
-sudo apt autoremove -y #who cares if this fails?
+nvm deactivate
+nvm uninstall default || error "Failed to purge Node.JS!"
 
-#remove /etc/apt/sources.list.d/nodesource.list
-sudo rm /etc/apt/sources.list.d/nodesource.list || error "Failed to remove nodesource repo!"
-
-#if your app installs any packages, keep this command here so those packages will be removed.
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+#Remove nvm
+sudo rm -rf ~/.nvm

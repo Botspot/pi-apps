@@ -23,14 +23,75 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-#hide wine on twisteros
-(if [ -f /usr/local/bin/twistver ] && ! grep -q "Mac OS Theme|Eyecandy" "${DIRECTORY}/data/categories/structure" ;then
-  "${DIRECTORY}/install"
-fi) &
+runonce() {
+  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
+  
+  #all arguments is command(s) to run
+  #hash the command and check if it's already been run before
+  
+  runonce_hash="$(echo "$@" | sha256sum | awk '{print $1}')"
+  if grep -q "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
+    #hash found
+    #echo "runonce: '$@' already run before. Skipping."
+    true
+  else
+    #run the command.
+    bash <(echo "$@")
+    #if it succeeds, add the hash to the list to never run it again
+    if [ $? == 0 ];then
+      echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
+      #echo "'$@' succeeded. Added to list."
+    else
+      echo "'$@' failed. Not adding hash to list."
+    fi
+    
+  fi
+  
+}
 
-rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
+#mark wine as installed, if twisteros
+runonce "
+  if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
+    echo 'installed' > '${DIRECTORY}/data/status/Wine (x86)'
+  fi"
 
-"${DIRECTORY}/etc/categoryedit" 'FreeCAD' Editors >/dev/null
+#mark box86 as installed, if twisteros
+runonce "
+  if [ -f /usr/local/bin/twistver ] && command -v box86 >/dev/null ;then
+    echo 'installed' > '${DIRECTORY}/data/status/Box86'
+  fi"
+
+
+#move a bunch of apps to the new multimedia category
+runonce "
+  '${DIRECTORY}/etc/categoryedit' 'Chromium Widevine' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'FreeTube' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'Sonic Pi 3.2' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'TBOPlayer' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'WACUP (new WinAmp)' Multimedia >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'YouTubuddy' Multimedia >/dev/null"
+
+#move a couple apps to tools category
+runonce "
+  '${DIRECTORY}/etc/categoryedit' 'Snapdrop' Tools >/dev/null
+  '${DIRECTORY}/etc/categoryedit' 'Node.js' Tools >/dev/null"
+
+#re-run install script on twistos lite to show select pre-hidden apps
+runonce "
+  if [ -f /usr/local/bin/twistver ] && [[ "\$"(twistver) != 'Twister OS version'* ]];then
+    '${DIRECTORY}/install'
+  fi"
+
+runonce "
+  rm -rf '${DIRECTORY}/apps/Back to Chromium v86'
+  rm -rf '${DIRECTORY}/apps/Back to Chromium v78'
+  if [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v78")' == installed ] || [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v86")' == installed ];then
+    echo 'installed' > '${DIRECTORY}/data/status/Downgrade Chromium'
+  fi
+  "
+
+#completely remove cordless app
+runonce "rm -rf '${DIRECTORY}/apps/Cordless' &>/dev/null"
 
 install() {
   app="$1"
@@ -90,7 +151,7 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 prefix=''
 
 while true;do
-  LIST="$("${DIRECTORY}/preload" $guimode $prefix)"
+  LIST="$("${DIRECTORY}/preload" $guimode "$prefix")"
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
@@ -101,9 +162,9 @@ while true;do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=Install!${DIRECTORY}/icons/install.png:4" \
-        "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2" \
-        "--button=Details!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
+        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
         buttons=("--button=!${DIRECTORY}/icons/back.png!Back:3" \
         "--button=!${DIRECTORY}/icons/install.png!Install:4" \
@@ -291,14 +352,14 @@ $installedpackages"
         fi
         if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
           #Taking a chance here. If status file is nonexistent, assume uninstalled.
-          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
-          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2"
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2"
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
-          echo "--button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
         else
           #if status is corrupted or unknown, then show both buttons
-          echo "--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2 --button=Install!${DIRECTORY}/icons/install.png:4"
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2 --button=!${DIRECTORY}/icons/install.png:4"
         fi
         )"
         

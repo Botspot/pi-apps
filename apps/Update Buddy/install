@@ -12,6 +12,7 @@ function error {
 
 rm -rf update-buddy
 
+
 git clone https://github.com/Botspot/update-buddy || error 'Failed to clone example.com repository!'
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]

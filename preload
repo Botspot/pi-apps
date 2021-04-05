@@ -41,7 +41,6 @@ mktimestamps() {
   checkdirs="${DIRECTORY}/apps
 ${DIRECTORY}/data/settings
 ${DIRECTORY}/data/status
-${DIRECTORY}/data/categories
 ${DIRECTORY}/etc"
   
   timestamps=''
@@ -50,14 +49,15 @@ ${DIRECTORY}/etc"
   for dir in $checkdirs
   do
     timestamps="$timestamps
-${dir}/$(ls -t "$dir" | head -n1)
-$(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
+dir $dir $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
   done
   IFS="$PREIFS"
-  #remove first empty newline
-  timestamps="$prefix
-$format
-$(ls -1q "${DIRECTORY}/apps"/* | wc -l)
+  #remove first empty newline and check a few other things for changes too
+  timestamps="prefix: $prefix
+format: $format
+number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
+preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
+structure shasum: $(shasum "${DIRECTORY}/data/categories/structure" | awk '{print $1}')
 ${timestamps:1}"
 }
 
@@ -74,7 +74,9 @@ if [ -f "$timestampfile" ];then
   else
     #timestamps don't match, so reload the list
     reloadlist=1
-    echo "Timestamps don"\'"t match" 1>&2
+    echo "Timestamps don't match" 1>&2
+    
+    echo -e "original file: $(cat "$timestampfile")\nnew timestamp: $timestamps" 1>&2
   fi
 else
   #timestamp file not found
@@ -82,12 +84,12 @@ else
 fi
 
 if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
-  echo "list file does not exist." 1>&2
+  echo "list file for $prefix does not exist." 1>&2
   reloadlist=1
 fi
 
 #this ensures that all apps & categories stay preloaded.
-(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &
+(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &>/dev/null &
 
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
@@ -96,9 +98,9 @@ if [ $reloadlist == 1 ];then
   structure="$(cat "${DIRECTORY}/data/categories/structure")"
   
   #generate a virtual file system with apps in folders represented as subdirectories
+  vfiles=''
   PREIFS="$IFS"
   IFS=$'\n'
-  vfiles=''
   for app in $APPS
   do
     line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
@@ -125,14 +127,33 @@ if [ $reloadlist == 1 ];then
 $line"
   done
   IFS="$PREIFS"
+  
+  #create special directory containing installed apps
+  PREIFS="$IFS"
+  IFS=$'\n'
+  for app in $APPS
+  do
+    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
+    
+    if [ -f "${DIRECTORY}/data/status/$app" ] && [ "$(cat "${DIRECTORY}/data/status/$app")" == 'installed' ];then
+      #if installed, add to list
+      vfiles="$vfiles
+Installed/$app"
+    fi
+    
+  done
+  IFS="$PREIFS"
+  
   vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
-  #echo "$vfiles"
+  #echo "$vfiles" 1>&2
+  
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
     
-    vfiles="$(echo "$vfiles" | grep "$prefix" | sed "s+$prefix/++g")"
+    vfiles="$(echo "$vfiles" | grep "^$prefix/" | sed "s+$prefix/++g")"
   fi
+  #echo "$vfiles" 1>&2
   
   vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
   #                         only root file name     replace \ with /   move first / to end of line     remove duplicate entries
@@ -176,7 +197,13 @@ $line"
     LIST=''
     for i in $DIRS
     do
-      LIST="${LIST}${DIRECTORY}/icons/folder.png
+      if [ "$i" == 'Installed' ];then
+        diricon="${DIRECTORY}/icons/folder-installed.png"
+      else
+        diricon="${DIRECTORY}/icons/folder.png"
+      fi
+      
+      LIST="${LIST}$diricon
 ${DIRECTORY}/icons/none-24.png
 $i
 $i/
@@ -194,14 +221,23 @@ $i
 "
     done
     IFS="$PREIFS"
+    
   elif [ "$format" == xlunch ];then
+    #XUNCH list format
+    
     PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
     for i in $DIRS
     do
+      if [ "$i" == 'Installed' ];then
+        diricon="${DIRECTORY}/icons/folder-installed-64.png"
+      else
+        diricon="${DIRECTORY}/icons/folder-64.png"
+      fi
+      
       LIST="$LIST
-${i};${DIRECTORY}/icons/folder-64.png;${i}/"
+${i};$diricon;${i}/"
     done
     
     for i in $APPS

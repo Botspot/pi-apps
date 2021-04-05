@@ -5,12 +5,13 @@ function error {
   exit 1
 }
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
 cd $HOME
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #install yad automatically
 if ! command -v yad >/dev/null;then
+  
   if [ -f /usr/bin/apt ];then
     sudo apt update
     sudo apt install -y yad || error "Failed to install yad."
@@ -24,14 +25,31 @@ sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #install git
 if ! command -v git >/dev/null;then
+  
   if [ -f /usr/bin/apt ];then
     #only run sudo apt update if not already run
     if [ -z "$updated" ];then
       sudo apt update
+      updated=1
     fi
     sudo apt install -y git || error "Failed to install git."
   else
     error "Failed to find any package manager to install git."
+  fi
+fi
+
+#install curl
+if ! command -v curl >/dev/null;then
+  if [ -f /usr/bin/apt ];then
+  
+    #only run sudo apt update if not already run
+    if [ -z "$updated" ];then
+      sudo apt update
+      updated=1
+    fi
+    sudo apt install -y curl || error "Failed to install curl."
+  else
+    error "Failed to find any package manager to install curl."
   fi
 fi
 
@@ -104,12 +122,11 @@ cd $HOME
 "${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
 
 #hide duplicates if running in twisteros
-if [ -f /usr/local/bin/twistver ];then
+if [ -f /usr/local/bin/twistver ] && [[ $(twistver) == "Twister OS version"* ]]; then
+  #twisteros full
   PREIFS="$IFS"
   IFS=$'\n'
-  apps="BalenaEtcher
-Chromium Media Edition
-CommanderPi
+  apps="CommanderPi
 Box86
 Discord
 piKiss
@@ -118,13 +135,44 @@ Scrcpy
 Steam
 Windows 10 Theme
 Chromium Widevine
-Back to Chromium v78
 Lightpad
 Wine (x86)
 Mac OS Theme"
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done
+  
+  #unhide chromiumv78 on twisteros
+  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' >/dev/null
+  echo "Finished hiding apps on TwisterOS."
+  
+  
+elif [ -f /usr/local/bin/twistver ] && [[ $(twistver) != "Twister OS version"* ]]; then
+  #twisteros lite
+  PREIFS="$IFS"
+  IFS=$'\n'
+  apps="Chromium Widevine
+Box86
+Windows 10 Theme
+Lightpad
+Wine (x86)
+Mac OS Theme"
+  for app in $apps ;do
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+  done
+  IFS="$PREIFS"
+  
+  #unhide some apps on twisteros lite that were hidden.
+  #This removes certain apps completely from the category file. Effectively resets them to online default.
+  "${DIRECTORY}/etc/categoryedit" CommanderPi --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Discord --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" piKiss --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Scrcpy --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" Steam --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' --delete >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' --delete >/dev/null
+  
+  
   echo "Finished hiding apps on TwisterOS."
 fi
 

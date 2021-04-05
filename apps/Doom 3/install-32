@@ -30,4 +30,4 @@ cd ~/RPIDoom3Installer || error "Failed to change directory "
 sudo chmod +x install.sh uninstall.sh || error "Failed To make install script and uninstall script executable"  
 
 #Running the install script
-./install.sh || error "Failed to run install script :("
+setarch linux32 ./install.sh || error "Failed to run install script :("

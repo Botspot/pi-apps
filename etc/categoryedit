@@ -12,23 +12,35 @@ refresh() {
 }
 refresh
 #command line argument handler
-if [ ! -z "$1" ] && [ ! -z "$2" ];then
+if [ ! -z "$1" ];then
   if ! echo "$APPS" | grep -q "$1" ;then
     error "The $1 app does not exist in ${DIRECTORY}/apps!"
   fi
   
   if echo "$structure" | grep -q "$1"'|' ;then
-    echo "The $1 app is currently in the $(dirname "$(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}')") category."
+    echo "The $1 app is currently in the $(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}') category."
   fi
   
-  if ! echo "$structure" | grep -q "$2"'/' ;then
-    echo "The $2 category did not exist previously."
+  #check if $2 is --delete
+  if [ "$2" == '--delete' ];then
+    output="$(echo "$structure" | grep -v "$1"'|')"
+  else
+    if ! echo "$structure" | grep -q '|'"$2" ;then
+      echo "The $2 category did not exist previously."
+    fi
+    
+    echo "Putting the $1 app in the $2 category..."
+    
+    #replace any mention of the $1 app with the new line at the end of file
+    output="$(echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" | sort)"
   fi
   
-  echo "Putting the $1 app in the $2 category..."
-  
-  #replace any mention of the $1 app with the new line at the end of file
-  echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" > "${DIRECTORY}/data/categories/structure"
+  #only change the structure file if something was really changed
+  if [ "$output" != "$(cat "${DIRECTORY}/data/categories/structure")" ];then
+    echo "$output" > "${DIRECTORY}/data/categories/structure"
+  else
+    echo "categoryedit: Not changing structure file, because nothing was changed."
+  fi
   
   #structure file modified. Refresh the variable
   refresh

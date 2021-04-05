@@ -15,9 +15,9 @@ echo "[Desktop Entry]
 Name=All Is Well
 GenericName=Update Helper and Fixer
 Comment= ALL IS WELL is a bash script that allows users to easily update and upgrade their repositories and packages on linux. It will also fix any broken packages and dependencies.
-Exec=$HOME/All-is-well/aiw/aiwrpi.sh
+Exec=$DIRECTORY/etc/terminal-run $HOME/All-is-well/aiw/aiwrpi.sh 'All Is Well'
 Icon=$HOME/pi-apps/apps/All Is Well/icon-64.png
-Terminal=true
+Terminal=false
 StartupNotify=true
 Type=Application
 Categories=Utility;" > ~/.local/share/applications/aiw.desktop || error "Failed to create menu button!"

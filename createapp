@@ -24,6 +24,38 @@ windowheight=400
 #start with this app name:
 #name='Email Checker'
 
+text_editor() {
+  #$1 is file to open
+  [ -z "$1" ] && error "text_editor(): no file specified"
+  
+  #find the best text editor
+  preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+  
+  #change preferred editor if user-default doesn't exist
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=geany
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=mousepad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=leafpad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=nano
+  fi
+  
+  if [ "$preferrededitor" == nano ];then
+    "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
+  else
+    #non-terminal text editor
+    "$preferrededitor" "$1"
+  fi
+  
+  
+}
+
+
 while true;do
   case $step in
     1)
@@ -241,26 +273,20 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
         cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
       fi
       
-      #find the best text editor
-      preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
-      if [ -z "$preferrededitor" ];then
-        preferrededitor=geany
-      fi
-      
       #open the correct file
       if [ "$compatibility" == "32" ];then
         scriptname='install-32'
-        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
       elif [ "$compatibility" == "64" ];then
         scriptname='install-64'
-        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
       elif [ "$compatibility" == "64 32" ];then
         scriptname='' #this symbolizes that 2 scripts will be made
-        "$preferrededitor" "${DIRECTORY}/apps/${name}/install-64" &
-        "$preferrededitor" "${DIRECTORY}/apps/${name}/install-32" &
+        text_editor "${DIRECTORY}/apps/${name}/install-64" &
+        text_editor "${DIRECTORY}/apps/${name}/install-32" &
       elif [ "$compatibility" == "6432" ];then
         scriptname='install'
-        "$preferrededitor" "${DIRECTORY}/apps/${name}/${scriptname}" &
+        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
       fi
       
       #install shellcheck if not installed
@@ -309,13 +335,7 @@ A text editor should have openened and you can create your install script." \
       ;;
     4)
       
-      #find the best text editor
-      preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
-      if [ -z "$preferrededitor" ];then
-        preferrededitor=geany
-      fi
-      
-      "$preferrededitor" "${DIRECTORY}/apps/${name}/uninstall" &
+      text_editor "${DIRECTORY}/apps/${name}/uninstall" &
       
       #install shellcheck if not installed
       [ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck

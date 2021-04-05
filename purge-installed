@@ -3,12 +3,13 @@
 #$1 is the path to the program folder being installed. For example, ~/pi-apps/apps/Arduino
 #Example usage: ~/pi-apps/uninstall-installed ~/pi-apps/apps/Arduino
 
+#app name
 PRG="$(echo "$1" | tr '/' '\n' | tail -1)"
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 if [ -z "$PRG" ];then
-  echo -e "\e[91mNo program directory specified!\e[39m"
+  echo -e "\e[91mNo app name specified!\e[39m"
   exitcode=1
 elif [ ! -d "$1" ];then
   echo -e "\e[91m$1 does not exist!\e[39m"
@@ -27,7 +28,7 @@ function error {
   exit 1
 }
 echo "Running purge-installed..."
-PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${PRG}")"
+PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${PRG}" | tr '\n' ' ' | sed 's/  / /g')"
 
 if [ ! -f "${DIRECTORY}/data/installed-packages/${PRG}" ];then
   echo -e "\e[33mDoes ${DIRECTORY}/data/installed-packages/${PRG} exist?\e[39m"

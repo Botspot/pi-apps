@@ -1,4 +1,15 @@
 #!/bin/bash
-arduino-1.8.13/uninstall.sh
-sudo arduino-1.8.13/uninstall.sh
-rm -rf arduino-1.8.13
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd ~/.local/share
+
+arduino-1.8.13/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
+sudo arduino-1.8.13/uninstall.sh || error "Failed to run uninstall.sh as root user"
+rm -rf arduino-1.8.13 || error "Failed to remove arduino-1.8.13 folder"
+

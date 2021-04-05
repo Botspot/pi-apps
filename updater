@@ -92,9 +92,20 @@ if [ -d "${DIRECTORY}/update" ];then
   
   #list all files in main folder
   cd "${DIRECTORY}"
-  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/'  | grep -v 'xlunch/')"
+  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'xlunch/')"
   
   mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq | tr '\n' '|')"
+  
+  #exclude files mentioned in data/update-exclusion file
+  PREIFS="$IFS"
+  IFS=$'\n'                                   #exclude commented lines
+  for file in $(cat data/update-exclusion | grep "^[^#;]")
+  do
+    mergedfiles="$(echo "$mergedfiles" | grep -v "$file")"
+    echo "Excluding $file from the mergedlist."
+  done
+  IFS="$PREIFS" # back to IFS='|'
+  
   for file in $mergedfiles
   do
     newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
