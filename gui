@@ -184,8 +184,8 @@ while true;do
       output="$(echo -e "$LIST" | yad --center --title='Pi-Apps'"$([ ! -z "$prefix" ] && echo ": $(echo "$prefix" | tr '/' '>')")" --width=310 --height=400 --no-headers \
         --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
         --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-        --column=prgicon:IMG --column=Name --column=Sysname:HD --column=tip:HD --column=status:IMG --column=spacer \
-        --print-column=3 --tooltip-column=4 \
+        --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+        --print-column=4 --tooltip-column=5 \
         "${buttons[@]}" \
       )"
       
