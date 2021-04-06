@@ -1,6 +1,7 @@
 ![logo](https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true)
 ## Raspberry Pi App Store for Open Source Projects
 English | [简体中文](./README-zh_CN.md)
+
 Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
 Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pies to their full, desktop PC, potential.  
 Countless **Raspberry Pies remain in disuse** for this very reason. Something must be done!  
