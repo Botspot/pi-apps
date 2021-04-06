@@ -16,6 +16,7 @@ rm -f ~/turbowarp.deb
 
 echo -n "Moving menu launcher from Education to Programming category... "
 sudo sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop
+sudo sed -i 's/%U/%f%U/g' /usr/share/applications/turbowarp-desktop.desktop
 echo done
 
 #create scratch project mime type
