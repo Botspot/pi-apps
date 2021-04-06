@@ -14,6 +14,26 @@ sudo apt install -yf ~/turbowarp.deb || error "Failed to install turbowarp.deb!"
 
 rm -f ~/turbowarp.deb
 
-#Move TurboWarp desktop file from Education category to Programming category
+echo -n "Moving menu launcher from Education to Programming category... "
 sudo sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop
+echo done
 
+#create scratch project mime type
+echo -n "Creating .sb3 mimetype... "
+sudo bash -c 'echo "<?xml version="\""1.0"\"" encoding="\""UTF-8"\""?>
+<mime-info xmlns="\""http://www.freedesktop.org/standards/shared-mime-info"\"">
+   <mime-type type="\""application/sb3"\"">
+     <comment>Scratch 3 Project</comment>
+     <glob pattern="\""*.sb3"\""/>
+     <icon name="\""scratch-desktop"\""/>
+   </mime-type>
+</mime-info>" > /usr/share/mime/packages/sb3.xml'
+sudo update-mime-database /usr/share/mime
+echo done
+
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'turbowarp-desktop.desktop')" ];then
+  echo -n "Associating the .sb3 mimetype with TurboWarp... "
+  echo "[Added Associations]
+application/sb3=turbowarp-desktop.desktop;" >> ~/.config/mimeapps.list
+  echo done
+fi
