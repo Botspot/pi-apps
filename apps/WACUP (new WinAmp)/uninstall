@@ -9,4 +9,4 @@ function error {
 
 echo -e "\e[30m\e[107mClick Yes to uninstall WACUP\e[0m"
 
-BOX86_NOBANNER=1 wine '/home/pi/.wine/drive_c/Program Files/WACUP/UninstWACUP.exe'
+BOX86_NOBANNER=1 wine ~/'.wine/drive_c/Program Files/WACUP/UninstWACUP.exe'

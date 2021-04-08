@@ -91,7 +91,7 @@ fi
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
   
-  source /home/pi/pi-apps/api
+  source "${DIRECTORY}/api"
   vfiles="$(app_categories)"
   
   #generate a virtual file system with apps in folders represented as subdirectories
