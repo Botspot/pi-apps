@@ -1,0 +1,16 @@
+OpenSCAD is software for creating solid 3D CAD models.
+
+Unlike most free software for creating 3D models, OpenSCAD does not focus on
+the artistic aspects of 3D modelling but instead on the CAD aspects.
+OpenSCAD is more suitable for creating 3D models of machine parts but
+perhaps not when creating computer-animated movies.
+
+OpenSCAD is not an interactive modeller. Instead OpenSCAD is something like
+a 3D-compiler that reads in a script file that describes the object
+and renders the 3D model from this script file. This gives designers
+full control over the modelling process and enables them to easily
+change any step in the modelling process or make designs that are
+defined by configurable parameters.
+
+To run: Menu -> Graphics -> OpenSCAD
+To run in a terminal: OpenSCAD.AppImage
