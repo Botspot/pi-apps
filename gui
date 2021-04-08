@@ -124,6 +124,9 @@ install() {
     ' "$title"
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
+  
+  #re-preload all categories in background
+  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
 }
 
 uninstall() {
@@ -148,6 +151,9 @@ uninstall() {
     ' "$title"
   sleep 1
   while ps -C manage &>/dev/null;do sleep 0.1; done
+  
+  #re-preload all categories in background
+  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
 }
 
 motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
@@ -285,7 +291,8 @@ $LIST"
         -p "$searchbox" -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
         --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
         --width $width --height $height --xposition $xposition --yposition $yposition \
-        --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1"
+        --button "${DIRECTORY}/icons/logo-128-trans.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
+        --button "${DIRECTORY}/icons/logo-trans.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
         #-g ~/blur.png
         )"
       button=0
@@ -345,11 +352,12 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         
         description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')"
         
-        text="$(echo "$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")" | head -n1)
-Current status: $(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')
-Website: $(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')
-$(echo "$description" | grep -v "$(echo "$description" | head -n1)")
+        text="$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")
 $installedpackages"
+        
+        abovetext="<b>$output</b>
+Current status: $(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')
+Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')"\"">$(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')</a>"
         
         #if already installed then no need to provide install button. And vice versa.
         whichbutton="$(
@@ -372,7 +380,7 @@ $installedpackages"
         fi
         )"
         
-        echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
+        echo "$text" | yad --text-info --fontname=12 --wrap --show-uri --text="$abovetext" \
           --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
           --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
           --button=Back!"${DIRECTORY}/icons/back.png":0 \
@@ -451,7 +459,7 @@ $installedpackages"
       fi
       ;;
     2)
-      #uninstal
+      #uninstall
       if ! echo "$output" | grep -q '/' ;then
         uninstall "$output"
         #clear output var to prompt main window to open next
