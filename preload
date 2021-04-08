@@ -88,61 +88,14 @@ if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
   reloadlist=1
 fi
 
-#this ensures that all apps & categories stay preloaded.
-(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &>/dev/null &
-
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
   
-  APPS="$(ls "${DIRECTORY}/apps")"
-  structure="$(cat "${DIRECTORY}/data/categories/structure")"
+  source /home/pi/pi-apps/api
+  vfiles="$(app_categories)"
   
   #generate a virtual file system with apps in folders represented as subdirectories
-  vfiles=''
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for app in $APPS
-  do
-    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    
-    if [ -z "$line" ];then
-      echo "WARNING: $app app not found in $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g') file." 1>&2
-      if [ -z "$onlinestructurefile" ];then
-        onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
-      fi
-      onlinematch="$(echo "$onlinestructurefile" | grep "$app"'|')"
-      if [ ! -z "$onlinematch" ];then
-        echo -e "Located the default category for the $app app from github.\nIt is: ${onlinematch}EOO" 1>&2
-        echo "$onlinematch" >> "${DIRECTORY}/data/categories/structure"
-      else
-        echo -e "Could not find the default category for the $app app." 1>&2
-        echo "${app}|" >> "${DIRECTORY}/data/categories/structure"
-      fi
-      #refresh structure file
-      structure="$(cat "${DIRECTORY}/data/categories/structure")"
-      line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    fi
-    
-    vfiles="$vfiles
-$line"
-  done
-  IFS="$PREIFS"
   
-  #create special directory containing installed apps
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for app in $APPS
-  do
-    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    
-    if [ -f "${DIRECTORY}/data/status/$app" ] && [ "$(cat "${DIRECTORY}/data/status/$app")" == 'installed' ];then
-      #if installed, add to list
-      vfiles="$vfiles
-Installed/$app"
-    fi
-    
-  done
-  IFS="$PREIFS"
   
   vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
   #echo "$vfiles" 1>&2
@@ -197,10 +150,10 @@ Installed/$app"
     LIST=''
     for i in $DIRS
     do
-      if [ "$i" == 'Installed' ];then
-        diricon="${DIRECTORY}/icons/folder-installed.png"
+      if [ -f "${DIRECTORY}/icons/categories/${i}.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${i}.png"
       else
-        diricon="${DIRECTORY}/icons/folder.png"
+        diricon="${DIRECTORY}/icons/categories/default.png"
       fi
       
       LIST="${LIST}$diricon
@@ -230,10 +183,10 @@ $i
     LIST=''
     for i in $DIRS
     do
-      if [ "$i" == 'Installed' ];then
-        diricon="${DIRECTORY}/icons/folder-installed-64.png"
+      if [ -f "${DIRECTORY}/icons/categories/${i}-64.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${i}-64.png"
       else
-        diricon="${DIRECTORY}/icons/folder-64.png"
+        diricon="${DIRECTORY}/icons/categories/default-64.png"
       fi
       
       LIST="$LIST
@@ -271,3 +224,6 @@ done
 IFS="$PREIFS" ) &
 
 echo "$LIST"
+
+#re-preload all categories in background
+"${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
