@@ -92,12 +92,12 @@ if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
   
   source "${DIRECTORY}/api"
-  vfiles="$(app_categories)"
+  vfiles="$(app_categories)" #generate paps within categories as folders
   
   #generate a virtual file system with apps in folders represented as subdirectories
   
   
-  vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
+  vfiles="$(echo "$vfiles" | grep . | sort | uniq)"
   #echo "$vfiles" 1>&2
   
   
@@ -108,22 +108,15 @@ if [ $reloadlist == 1 ];then
   fi
   #echo "$vfiles" 1>&2
   
+  #remove apps within categories - show this layer of stuff only.
   vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
-  #                         only root file name     replace \ with /   move first / to end of line     remove duplicate entries
-  #vfiles="$(echo "$vfiles" | awk -F '/' '{print $1}' | sed 's+\\+/+g' | sed 's+^/\(.*\)+\1/+' | sort | uniq)"
   
-  #echo "$vfiles" 1>&2
-  
-  #get list of apps --------------- and exclude apps mentioned in hidelist file ---------------- remove lines containing '/'
+  #get list of apps - excluding folders
   APPS="$(echo "$vfiles" | grep -v '/')"
   
-  #get list of "directories"
+  #get list of folders - excluding apps - and hide the hidden folder.
   DIRS="$(echo "$vfiles" | grep '/' | tr -d '/' | grep -vx "hidden")"
-  #APPS="$(ls "${DIRECTORY}/apps")"
   
-  #echo -e "Apps: $APPS\nDirs: $DIRS" 1>&2
-  
-  #exit 0
   #remove apps that are not compatible with OS architecture
   PREIFS="$IFS"
   IFS=$'\n'
