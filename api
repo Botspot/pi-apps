@@ -114,12 +114,26 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   #category file cleaned up past this point
   
   #show normal categories
-  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}'
+  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' 
   
   #show special Installed category
   list_apps installed | sed 's+^+Installed/+g'
   
   #show special All Apps category
   list_apps cpu_installable | sed 's+^+All Apps/+g'
+}
+
+usercount() { # $1 is app name. if empty, all are shown.
+  clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
+  
+  [ -z "$clicklist" ] && error "usercount: clicklist empty. Likely no internet connection"
+  
+  if [ -z "$1" ];then
+    echo "$clicklist"
+  else
+    # $1 is app
+    echo "$clicklist" | grep " $1"'$' | awk '{print $1}' | head -n1
+  fi
+  
 }
 
