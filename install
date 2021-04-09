@@ -8,21 +8,6 @@ function error {
 cd $HOME
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
-#install yad automatically
-if ! command -v yad >/dev/null;then
-  
-  if [ -f /usr/bin/apt ];then
-    sudo apt update
-    sudo apt install -y yad || error "Failed to install yad."
-    updated=1
-  else
-    error "Failed to find any package manager to install yad."
-  fi
-fi
-#remove annoying YAD icon browser launcher
-sudo rm -f /usr/share/applications/yad-icon-browser.desktop
-
 #install git
 if ! command -v git >/dev/null;then
   
@@ -195,4 +180,12 @@ fi
 "${DIRECTORY}/preload" &>/dev/null
 
 echo "Installation complete."
-
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
+   MACHINE='aarch64'
+elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+   MACHINE='armv7l'
+else
+   echo "Failed to detect OS CPU architecture! Something is very wrong."
+   exit 1
+fi
+sudo cp $DIRECTORY/yad-"$MACHINE".AppImage /usr/local/bin/yad
