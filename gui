@@ -88,7 +88,7 @@ runonce "
   rm -rf '${DIRECTORY}/apps/FreeCAD (precompiled)'
   rm -rf '${DIRECTORY}/apps/Chromium Media Edition'
   rm -rf '${DIRECTORY}/apps/Retropie'
-  if [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v78")' == installed ] || [ '$(cat "${DIRECTORY}/data/status/Back to Chromium v86")' == installed ];then
+  if [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v78' 2>/dev/null) == installed ] || [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v86' 2>/dev/null) == installed ];then
     echo 'installed' > '${DIRECTORY}/data/status/Downgrade Chromium'
   fi
   "
@@ -279,7 +279,6 @@ while true;do
 $LIST"
         LIST="$(echo "$LIST" | grep .)"
       fi
-      echo "$LIST"
       
       if [ -z "$prefix" ];then
         searchbox="Search: "
@@ -287,14 +286,29 @@ $LIST"
         searchbox="Viewing $(echo "$prefix" | tr '/' '>'). Search: "
       fi
       
-      output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
-        -p "$searchbox" -a -c 2 --title "Pi-Apps: Raspberry Pi app store" \
-        --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80\
-        --width $width --height $height --xposition $xposition --yposition $yposition \
-        --button "${DIRECTORY}/icons/logo-128-trans.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
-        --button "${DIRECTORY}/icons/logo-trans.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
-        #-g ~/blur.png
-        )"
+      
+      #xlunchtheme=light
+      if [ "$xlunchtheme" == light ];then
+        #light mode
+        output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e0 --tc 000000 --pc 6060ffff --hc ffffff50 \
+          -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
+          --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
+          --width $width --height $height --xposition $xposition --yposition $yposition \
+          --button "${DIRECTORY}/icons/logo-128-3d.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
+          --button "${DIRECTORY}/icons/logo-3d.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
+          #-g ~/blur.png
+          )"
+      else
+        #dark mode
+        output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
+          -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
+          --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
+          --width $width --height $height --xposition $xposition --yposition $yposition \
+          --button "${DIRECTORY}/icons/logo-128-trans.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
+          --button "${DIRECTORY}/icons/logo-trans.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
+          #-g ~/blur.png
+          )"
+      fi
       button=0
       
       if [ -z "$output" ];then
@@ -341,23 +355,46 @@ $LIST"
         output=''
       else
         #app
-        
         output="$(echo "$output" | head -n1)"
-        if [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+        
+        if [ -f "${DIRECTORY}/data/installed-packages/${output}" ] && [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
           installedpackages="
 This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
         else
           installedpackages=''
         fi
         
-        description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')"
+        #text below the app icon
+        description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')$installedpackages"
         
-        text="$(cat "${DIRECTORY}/apps/${output}/description" || echo "Description unavailable")
-$installedpackages"
-        
+        #text to the right of the app icon
         abovetext="<b>$output</b>
-Current status: $(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')
-Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')"\"">$(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavailable')</a>"
+  Current status: $(echo "$(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')" | sed 's/corrupted/corrupted (installation failed)/g')"
+        if [ -f "${DIRECTORY}/apps/${output}/website" ];then
+          #show website if it exists
+          abovetext="$abovetext
+  Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
+          
+        fi
+        
+        if [ -z "$clicklist" ];then
+          source "${DIRECTORY}/api"
+          clicklist="$(usercount)"
+        fi
+        
+        usercount="$(echo "$clicklist" | grep " $output"'$' | awk '{print $1}' | head -n1)"
+        if [ ! -z "$usercount" ] && [ "$usercount" -gt 20 ];then
+          abovetext="$abovetext
+  <b>$(printf "%'d" "$usercount")</b> users"
+          
+          if [ "$usercount" -ge 1500 ] && [ "$usercount" -lt 10000 ];then
+            #if a lot of users, add an exclamation point!
+            abovetext="${abovetext}!"
+          elif [ "$usercount" -ge 10000 ];then
+            #if a crazy number of users, add two exclamation points!
+            abovetext="${abovetext}!!"
+          fi
+        fi
         
         #if already installed then no need to provide install button. And vice versa.
         whichbutton="$(
@@ -380,7 +417,7 @@ Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" || echo 'unavai
         fi
         )"
         
-        echo "$text" | yad --text-info --fontname=12 --wrap --show-uri --text="$abovetext" \
+        echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
           --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
           --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
           --button=Back!"${DIRECTORY}/icons/back.png":0 \
