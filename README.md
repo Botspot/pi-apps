@@ -19,7 +19,7 @@ The install script ensures YAD is installed, creates two menu buttons, an auto-s
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
-
+To manually install Pi-Apps:
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
