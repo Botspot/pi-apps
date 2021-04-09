@@ -189,3 +189,4 @@ else
    exit 1
 fi
 sudo cp $DIRECTORY/yad-"$MACHINE".AppImage /usr/local/bin/yad
+sudo chmod +x /usr/bin/yad
