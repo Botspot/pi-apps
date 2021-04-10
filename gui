@@ -82,14 +82,22 @@ runonce "
     '${DIRECTORY}/install'
   fi"
 
+#remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade app
 runonce "
   rm -rf '${DIRECTORY}/apps/Back to Chromium v86'
   rm -rf '${DIRECTORY}/apps/Back to Chromium v78'
   rm -rf '${DIRECTORY}/apps/FreeCAD (precompiled)'
   rm -rf '${DIRECTORY}/apps/Chromium Media Edition'
+  rm -rf '${DIRECTORY}/apps/Cordless'
   rm -rf '${DIRECTORY}/apps/Retropie'
   if [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v78' 2>/dev/null) == installed ] || [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v86' 2>/dev/null) == installed ];then
     echo 'installed' > '${DIRECTORY}/data/status/Downgrade Chromium'
+  fi
+  "
+#rename xlunch setting to xlunch-dark
+runonce "
+  if [ "\"""\$"(cat '${DIRECTORY}/data/settings/App List Style')"\"" == xlunch ];then
+    echo 'xlunch-dark' > '${DIRECTORY}/data/settings/App List Style'
   fi
   "
 
@@ -99,8 +107,6 @@ runonce "
     '${DIRECTORY}/install'
   fi
   "
-#completely remove cordless app
-runonce "rm -rf '${DIRECTORY}/apps/Cordless' &>/dev/null"
 
 install() {
   app="$1"
@@ -213,9 +219,21 @@ while true;do
           --button=OK:0
       fi
       
-    elif [ "$guimode" == xlunch ];then
+    elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
         #get current number of terminal-run processes
+        
+        #uninstall xlunch first
+        sudo rm -r /etc/xlunch
+        sudo rm -r /usr/share/xlunch
+        sudo rm /usr/bin/xlunch
+        sudo rm /usr/bin/genentries
+        sudo rm /usr/bin/updateentries
+        sudo rm /usr/bin/genentries.desktop.sh
+        sudo rm /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png
+        sudo rm /usr/share/icons/hicolor/48x48/apps/xlunch.png
+        sudo rm /usr/share/applications/genentries.desktop
+        
         rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
         echo '' > /tmp/terminalexit
         "${DIRECTORY}/etc/terminal-run" "
@@ -233,6 +251,7 @@ while true;do
           git clone https://github.com/Tomas-M/xlunch || error 'Failed to clone xlunch repository!'
           cd "\""$DIRECTORY/xlunch"\""
           echo 'Running make...'
+          echo "\"""\$"(cat '${DIRECTORY}/xlunch/Makefile' | grep -v 'genentries \|cp -r svgicons/')"\"" > '${DIRECTORY}/xlunch/Makefile'
           make -j8 || error 'make command failed!'
           echo 'Running sudo make install...'
           sudo make install || error 'sudo make install failed!'
@@ -250,10 +269,15 @@ while true;do
           if [ -f /tmp/xlunchfinished ];then
             break
             echo "xlunch finished installing."
-          elif [ -f /tmp/xlunchfailed ] || [ -f /tmp/terminalexit ];then
+          elif [ -f /tmp/xlunchfailed ];then
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
-            error "xlunch failed to compile!\nOr the terminal exited."
+            error "xlunch failed to compile!"
+          elif [ -f /tmp/terminalexit ];then
+            #revert back to yad
+            echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
+            #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
+            error "The xlunch compilation terminal exited."
           else
             sleep 1
           fi
@@ -269,7 +293,7 @@ while true;do
       yposition=$(((screen_height/2)-(height/2)))
       
       if false;then
-        scrotosition=$(((screen_width/2)-(width/2))) -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
+        scrot -a "$((xposition+1)),$((yposition+33)),${width},${height}" blur.png #blur_init.png
         convert -blur 10x5 ~/blur.png ~/blur.png
       fi
       
@@ -286,20 +310,26 @@ $LIST"
         searchbox="Viewing $(echo "$prefix" | tr '/' '>'). Search: "
       fi
       
-      
-      #xlunchtheme=light
-      if [ "$xlunchtheme" == light ];then
+      if [ "$guimode" == xlunch-light-3d ];then
         #light mode
-        output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e0 --tc 000000 --pc 6060ffff --hc ffffff50 \
+        output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
-          --button "${DIRECTORY}/icons/logo-128-3d.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
-          --button "${DIRECTORY}/icons/logo-3d.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
-          #-g ~/blur.png
+          --button "${DIRECTORY}/icons/logo-3d.png;;$((($width/2)-(300/2))),0;pi-apps-homepage1" \
+          -g "${DIRECTORY}/icons/background-3d.png"
+          )"
+      elif [ "$guimode" == xlunch-dark-3d ];then
+        #dark mode, 3d opaque version
+        output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 2F313600 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
+          -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
+          --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff20 --scrollindicatorcolor ffffff40 \
+          --width $width --height $height --xposition $xposition --yposition $yposition \
+          --button "${DIRECTORY}/icons/logo-3d-dark.png;;$((($width/2)-(300/2))),0;pi-apps-homepage1" \
+          -g "${DIRECTORY}/icons/background-3d-dark.png"
           )"
       else
-        #dark mode
+        #dark mode, transparent version
         output="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
@@ -369,11 +399,11 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         
         #text to the right of the app icon
         abovetext="<b>$output</b>
-  Current status: $(echo "$(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')" | sed 's/corrupted/corrupted (installation failed)/g')"
+  - Current status: $(echo "$(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')" | sed 's/corrupted/corrupted (installation failed)/g')"
         if [ -f "${DIRECTORY}/apps/${output}/website" ];then
           #show website if it exists
           abovetext="$abovetext
-  Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
+  - Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
           
         fi
         
@@ -385,7 +415,7 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         usercount="$(echo "$clicklist" | grep " $output"'$' | awk '{print $1}' | head -n1)"
         if [ ! -z "$usercount" ] && [ "$usercount" -gt 20 ];then
           abovetext="$abovetext
-  <b>$(printf "%'d" "$usercount")</b> users"
+  - <b>$(printf "%'d" "$usercount")</b> users"
           
           if [ "$usercount" -ge 1500 ] && [ "$usercount" -lt 10000 ];then
             #if a lot of users, add an exclamation point!
