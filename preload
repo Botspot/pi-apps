@@ -24,6 +24,8 @@ format="$1"
 
 if [ -z "$format" ];then
   format=yad
+elif [[ "$format" = xlunch* ]];then
+  format=xlunch
 elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
   error "Unknown list format '$format'!"
 fi
@@ -57,6 +59,7 @@ dir $dir $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
 format: $format
 number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
 preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
+api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
 structure shasum: $(shasum "${DIRECTORY}/data/categories/structure" | awk '{print $1}')
 ${timestamps:1}"
 }
