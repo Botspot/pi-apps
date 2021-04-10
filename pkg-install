@@ -117,7 +117,7 @@ if [ ! -z "$INSTALL_LIST" ];then
   INSTALL_LIST="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
   
   
-  if [ ! -z $INSTALL_LIST ];then
+  if [ ! -z "$INSTALL_LIST" ];then
     echo -e "\e[91mAPT did not exit with an error, but these packages failed to install somehow: $INSTALL_LIST\e[39m"
     exit 1
   else
