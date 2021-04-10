@@ -224,15 +224,7 @@ while true;do
         #get current number of terminal-run processes
         
         #uninstall xlunch first
-        sudo rm -r /etc/xlunch
-        sudo rm -r /usr/share/xlunch
-        sudo rm /usr/bin/xlunch
-        sudo rm /usr/bin/genentries
-        sudo rm /usr/bin/updateentries
-        sudo rm /usr/bin/genentries.desktop.sh
-        sudo rm /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png
-        sudo rm /usr/share/icons/hicolor/48x48/apps/xlunch.png
-        sudo rm /usr/share/applications/genentries.desktop
+        sudo rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
         
         rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
         echo '' > /tmp/terminalexit
