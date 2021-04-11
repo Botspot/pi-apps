@@ -16,4 +16,7 @@ sudo cp -af ~/scratch2/libpepflashplayer.so /usr/lib/chromium-browser/libpepflas
 echo "Installing scratch2 package..."
 sudo apt install -yf ~/scratch2/scratch2_0.25_armhf.deb || error "Failed to install scratch2 package"
 
+echo "Holding scratch2 package version so it won't upgrade..."
+echo "scratch2 hold" | sudo dpkg --set-selections
+
 rm -rf ~/scratch2
