@@ -9,7 +9,7 @@ function error {
 
 cd $HOME
 #Download QEMU
-wget https://archive.org/download/macos_921_qemu_rpi/qemu_5.2.50-1_arm64.deb || error 'Failed to Download QEMU!'
+wget https://archive.org/download/macos_921_qemu_rpi/qemu-5.2.92-arm64.deb || error 'Failed to Download QEMU!'
 #Install QEMU
-sudo apt install --fix-broken -y ./qemu_5.2.50-1_arm64.deb || error 'Failed to unstall QEMU!'
-rm qemu_5.2.50-1_arm64.deb
+sudo apt install -fy ./qemu-5.2.92-arm64.deb || error 'Failed to unstall QEMU!'
+rm -f qemu-5.2.92-arm64.deb
