@@ -289,7 +289,7 @@ while true;do
         convert -blur 10x5 ~/blur.png ~/blur.png
       fi
       
-      if [ ! -z "$prefix" ];then
+      if [ ! -z "$prefix" ] && ! echo "$LIST" | grep -q 'Back;' ;then
         echo "Adding back button to xlunch..."
         LIST="Back;${DIRECTORY}/icons/back-64.png;./
 $LIST"
