@@ -27,8 +27,8 @@ Terminal=true
 StartupNotify=false" > ~/.local/share/applications/speedtest.desktop || error "failed to create menu shortcut!"
 echo "done"
 
-printf "creating /usr/local/bin/speedtest so you can launch from terminal..."
+echo -n "creating /usr/local/bin/speedtest so you can launch from terminal..."
 echo "#!/bin/bash
-$HOME/speedtest/speedtest" | sudo tee /usr/local/bin/speedtest >/dev/null
+$HOME/speedtest/speedtest \"\$@\"" | sudo tee /usr/local/bin/speedtest >/dev/null
 sudo chmod +x /usr/local/bin/speedtest
 echo "done"
