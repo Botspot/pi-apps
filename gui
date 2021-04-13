@@ -345,7 +345,7 @@ $LIST"
     else
       error "Unrecognized app list style '$guimode'!"
     fi
-    output="$(echo "$output" | sed '/^$/d')"
+    output="$(echo "$output" | grep .)"
     echo "Output: ${output}EOO"
     
   done
