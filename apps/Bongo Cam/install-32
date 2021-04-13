@@ -11,13 +11,13 @@ function error {
 "${DIRECTORY}/pkg-install" "libsfml-dev libsdl2-dev libxdo-dev" "$(dirname "$0")" || exit 1
 
 #Download
-cd ~
-wget https://github.com/mobilegmYT/bongocat-osu/releases/download/1.5.3/bongocat-armv7l-1.5.3.zip
+rm -rf ~/bongocat-armv7l-* ~/bongocam
+wget -O ~/bongocat.zip https://github.com/mobilegmYT/bongocat-osu/releases/download/1.5.3/bongocat-armv7l-1.5.3.zip
 
 #Install
-unzip bongocat-armv7l-1.5.3.zip
-rm bongocat-armv7l-1.5.3.zip
-mv bongocat-armv7l-1.5.3 bongocam
+unzip ~/bongocat.zip
+rm ~/bongocat.zip
+mv ~/bongocat-armv7l-* ~/bongocam
 chmod +x ~/bongocam/bongo
 
 #Desktop shortcut
@@ -30,4 +30,4 @@ Path=$HOME/bongocam/
 Type=Application
 Encoding=UTF-8
 Terminal=false
-Categories=AudioVideo" > ~/.local/share/applications/bongocam.desktop
+Categories=AudioVideo;" > ~/.local/share/applications/bongocam.desktop
