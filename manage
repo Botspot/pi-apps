@@ -69,7 +69,8 @@ Pi-Apps will always be free, but if everyone clicks this button, it won"\'"t be 
       
       if [ $button == 0 ];then
         #open donation page if button 0 clicked
-        x-www-browser 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=V6W8WM4GN8AJ2&item_name=Pi-Apps+development&currency_code=USD'
+        #x-www-browser 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=V6W8WM4GN8AJ2&item_name=Pi-Apps+development&currency_code=USD'
+        x-www-browser 'https://paypal.me/josephmarchand'
       fi
       #don't ask again for 30 days, no matter what button clicked
       echo "$(($(date --utc --date '' +%s)/86400))" > "${DIRECTORY}/data/last-donate-ask"
