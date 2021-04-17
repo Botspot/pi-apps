@@ -12,19 +12,25 @@ function error {
 #variable 1 is yad or xlunch
 #variable 2 is 'once', if you only want this to run once and exit.
 
-if [ "$(ps aux | grep preload-daemon | wc -l)" -gt 3 ];then
+if [ "$(ps aux | grep preload-daemon | grep -v grep | wc -l)" -gt 2 ];then
   echo "Another instance of preload-daemon is already running. Exiting now."
   exit 0
 fi
 
-folders="$(cat ${DIRECTORY}/data/categories/structure | awk -F '|' '{print $2}' | sort | uniq | grep .)"
-echo "$folders"
+#generate list of folders to preload, including special folders
+folders="$(cat ${DIRECTORY}/data/categories/structure | awk -F '|' '{print $2}' | sort | uniq | grep .)
+Installed
+All Apps"
+#echo "$folders"
+
+[ "$1" != yad ] && [ "$1" != xlunch ] && [ ! -z "$1" ] && error "Unrecognized list format $1"
 
 #runs every 30 secs for 10 mins
-for i in {1.."$([ "$2" == 'once' ] && echo '1' || echo '20')"};do
+for i in {1..20};do
   IFS=$'\n'
   "${DIRECTORY}/preload" "$1" &>/dev/null
   for folder in $folders ; do
+    echo "Preloading $folder..."
     "${DIRECTORY}/preload" "$1" "$folder" &>/dev/null
   done
   [ "$2" == 'once' ] && exit 0

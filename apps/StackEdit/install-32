@@ -9,7 +9,7 @@ function error {
 
 cd $HOME
 echo "Downloading..."
-wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v1.0/StackEdit-linux-armv7l.tar.xz || error 'Failed to Download!'
+wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v2.0/StackEdit-linux-armv7l.tar.xz || error 'Failed to Download!'
 echo "extracting..."
 tar -xf StackEdit-linux-armv7l.tar.xz || error "Failed to extract!"
 echo "Renaming folder..."

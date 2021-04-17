@@ -181,7 +181,7 @@ echo "[Desktop Entry]
 StartupNotify=true
 Terminal=false
 Type=Application
-Name=Wine configuration
+Name=Wine Configuration
 Exec=wine winecfg
 Icon=$(dirname "$0")/icon-64.png
 Categories=System;
@@ -194,25 +194,44 @@ Exec=bash -c 'BOX86_NOBANNER=1 box86 winetricks --gui'
 Terminal=false
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
-Categories=System;" > ~/.local/share/applications/winetricks.desktop
+Categories=System;" > ~/.local/share/applications/wine-tricks.desktop
 
 echo "[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Wine Desktop
-Comment=Graphical desktop for Wine
+Comment=Wine graphical desktop environment to mimic a Windows OS
 Icon=$(dirname "$0")/icon-64.png
-Exec=/usr/local/bin/wine explorer /desktop=shell,1280x720 explorer.exe
+Exec=wine explorer /desktop=shell,1280x720
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
 
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Program Manager
+Comment=Install/Remove Windows programs
+Icon=$(dirname "$0")/icon-64.png
+Exec=wine uninstaller
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-uninstaller.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Task Manager
+Comment=View running processes within Wine
+Icon=$(dirname "$0")/icon-64.png
+Exec=wine taskmgr
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-taskmgr.desktop
 
 # Boot wine (make fresh wineprefix in ~/.wine
 BOX86_NOBANNER=1
 setarch linux32 -L box86 ~/wine/bin/wine wineboot
 
 #wait until above process exits
-while [ ! -z "$(ps aux | grep -i 'wine C:' | grep -v grep)" ];do
+while [ ! -z "$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
 echo "First wineboot finished. Now updating wine prefix..."

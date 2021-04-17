@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function error {
+	echo -e "\\e[91m$1\\e[39m"
+	exit
+}
+
+cd ~/.local/share
+
+sudo ~/.local/share/processing*/uninstall.sh || error "failed to uninstall"
+rm -rf processing* || error "Failed to remove install directory!"
+cd ~/
