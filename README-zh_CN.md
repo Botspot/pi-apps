@@ -28,7 +28,7 @@ git clone https://github.com/Botspot/pi-apps
 </details>
 
 <details>
-<summary><b>To uninstall Pi-Apps</b></summary>
+<summary><b>卸载 Pi-Apps</b></summary>
 卸载 Pi-Apps:
 
 ```
