@@ -13,7 +13,7 @@ Linux 比 Windows 更难掌握。它面向高级用户，如果你照着教程�
 
 ## 安装 Pi-Apps
 ```
-wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
+wget -qO- https://cdn.jsdelivr.net/gh/Botspot/pi-apps@master/install | bash
 ```
 安装脚本可以确保已安装 YAD，还会创建两个菜单按钮，一个运行的更新程序以及一个允许从终端运行 pi-apps 的文件(`/usr/local/bin/pi-apps`) 。除此之外，Pi-Apps 文件夹之外没有任何修改。
 
