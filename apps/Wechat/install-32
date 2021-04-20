@@ -14,7 +14,7 @@ if ! command -v wine || [ "$(cat "${DIRECTORY}/data/status/Wine (x86)" 2>/dev/nu
 fi
 ulimit -c unlimited
 
-echo "Note that during this installation, a error may pop up saying \"Geco\" or \"Mono\" isn't installed. Don't worry, that error is normal. Just click the \"Install\" button!"
+echo "Note that during this installation, a error may pop up saying \"Gecko\" or \"Mono\" isn't installed. Don't worry, that error is normal. Just click the \"Install\" button!"
 read -p "Press [Enter] to continue installaton."
 
 rm -rf ~/.config/wechat-prefix
@@ -41,5 +41,6 @@ rm ~/WeChatSetup.exe
 
 sudo sed -i "s|$HOME/.config/wechat-prefix/dosdevices/c:/users/Public/Desktop/WeChat.lnk|$HOME/.config/wechat-prefix/dosdevices/c:/Program Files/Tencent/WeChat/WeChat.exe|g" $HOME/Desktop/WeChat.desktop
 sudo sed -i "s|$HOME/.config/wechat-prefix/dosdevices/c:/users/Public/Desktop/WeChat.lnk|$HOME/.config/wechat-prefix/dosdevices/c:/Program Files/Tencent/WeChat/WeChat.exe|g" $HOME/.local/share/applications/wine/Programs/WeChat/WeChat.desktop
+sudo sed -i "s|$HOME/.config/wechat-prefix/dosdevices/c:/users/Public/Desktop/WeChat.lnk|$HOME/.config/wechat-prefix/dosdevices/c:/Program Files/Tencent/WeChat/WeChat.exe|g" $HOME/Desktop/WeChat.desktop
 
 echo 'Install complete! Open WeChat now by using the desktop shortcut in your desktop or in the start menu.'
