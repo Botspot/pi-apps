@@ -46,7 +46,8 @@ if [ "$1" == 'multi-install' ];then
   IFS="$PREIFS"
   if [ $failed == 1 ];then
     exit 1
-  elif [ "$(ls "${DIRECTORY}/data/status" | wc -l)" -ge 5 ] && [ "$(($(date --utc --date '' +%s)/86400-30))" -ge "$(cat "${DIRECTORY}/data/last-donate-ask" 2>/dev/null || echo "0")" ];then
+  #disable donate box
+  elif false && [ "$(ls "${DIRECTORY}/data/status" | wc -l)" -ge 5 ] && [ "$(($(date --utc --date '' +%s)/86400-30))" -ge "$(cat "${DIRECTORY}/data/last-donate-ask" 2>/dev/null || echo "0")" ];then
     donatebox() {
       TEXT="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/donate_message)"
       if [ -z "$TEXT" ];then
