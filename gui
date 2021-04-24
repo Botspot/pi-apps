@@ -107,6 +107,11 @@ runonce "
     '${DIRECTORY}/install'
   fi
   "
+runonce "
+  if [ -f /usr/local/bin/twistver ]; then
+    echo -e "\napps/Wine (x86)/" >> ${DIRECTORY}/data/update-exclusion
+  fi
+"
 
 install() {
   app="$1"
