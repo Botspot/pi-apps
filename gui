@@ -110,6 +110,7 @@ runonce "
 runonce "
   if [ -f /usr/local/bin/twistver ]; then
     echo -e "\napps/Wine (x86)/" >> ${DIRECTORY}/data/update-exclusion
+    echo -e "apps/Steam" >>${DIRECTORY}/data/update-exclusion
   fi
 "
 
