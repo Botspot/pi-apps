@@ -102,7 +102,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
       #download precompiled kernel
       echo "Downloading precompiled kernel..."
-      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/3/rpi23_3g1g_kernel.tar.xz -O ~/3g1g-rpi-kernel.tar.xz || error "Failed to download prebuilt kernel!"
+      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/4/rpi23_3g1g_kernel.tar.xz -O ~/3g1g-rpi-kernel.tar.xz || error "Failed to download prebuilt kernel!"
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
       tar -xf ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
