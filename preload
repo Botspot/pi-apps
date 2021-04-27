@@ -26,7 +26,9 @@ if [ -z "$format" ];then
   format=yad
 elif [[ "$format" = xlunch* ]];then
   format=xlunch
-elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
+elif [ "$format" == "fullscreen-menu" ];then
+  format=xlunch
+elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ] && [ "$format" != "fullscreen-menu" ];then
   error "Unknown list format '$format'!"
 fi
 
@@ -204,6 +206,8 @@ ${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled"
   #save timestamps to file too
   mktimestamps
   echo "$timestamps" > "$timestampfile"
+elif [ "$format" == "fullscreen-menu" ];then
+  "$0" yad "$2"
 else
   echo "Reading list file..." 1>&2
   LIST="$(cat "$listfile")"
