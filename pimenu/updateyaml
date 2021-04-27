@@ -1,0 +1,45 @@
+#!/bin/bash
+DIR="$(dirname "$(dirname "$(realpath "$0")")")"
+updateyaml(){
+	"$DIR/preload" xlunch "$1" |grep . |while read line;do 
+		name="$(echo "$line" |awk 'BEGIN {FS=";" } { print $1 }')"
+		icon="$(echo "$line" |awk 'BEGIN {FS=";" } { print $2 }')"
+		path="$(echo "$line" |awk 'BEGIN {FS=";" } { print $3 }')"	
+
+		if echo "$path" |grep '/' >/dev/null;then
+			color="#174AE3"
+		else
+			color="#008000"
+			status="$(cat "$DIR/data/status/$path" 2>/dev/null | grep .)" 
+			if [ -z "$status" ];then
+				status="uninstalled"
+			fi
+
+			if [ "$1" == "Installed" ];then
+				name="$path"
+			else
+				name="$path\n($status)"
+			fi
+		fi	
+		echo "  - 
+    name : \"$path\"
+    label: \"$name\"
+    icon : \"$icon\"
+    color: \"$color\""
+		if echo "$path" |grep '/' >/dev/null;then
+			echo "    items:"
+			getitems "$name"
+		fi
+	done
+}
+getitems(){
+	updateyaml "$1" |sed 's/^/    /'
+}
+echo "---">"$DIR/pimenu/pimenu.yaml.1"
+updateyaml >>"$DIR/pimenu/pimenu.yaml.1"
+echo "  - 
+    name : \"\"
+    label: \"Close\"
+    icon : \"$DIR/pimenu/ico/exit.png\"
+    color: \"#F22F2F\"">>"$DIR/pimenu/pimenu.yaml.1"
+mv "$DIR/pimenu/pimenu.yaml"{.1,''}
