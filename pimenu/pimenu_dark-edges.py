@@ -251,7 +251,7 @@ def main():
         root.wm_attributes('-fullscreen', True)
     btn_frame = Frame(root, bg=pabc)
     img = PhotoImage(file=os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0]))) + "/icons/proglogo.png")
-    pi_apps_btn = SimpleFlatButton(btn_frame,text=sys.argv[1], image=img, command=pi_apps_mainpage )
+    pi_apps_btn = FlatButton(btn_frame,text=sys.argv[1], image=img, command=pi_apps_mainpage )
     pi_apps_btn.set_color(pabc)
     pi_apps_btn.pack()
     piframe = Frame(root, bg="#155CAA")
