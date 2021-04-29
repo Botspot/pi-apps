@@ -33,7 +33,7 @@ for i in {1..20};do
     echo "Preloading $folder..."
     "${DIRECTORY}/preload" "$1" "$folder" &>/dev/null
   done
-  [ "$1" == 'fullscreen-menu' ] && "$DIRECTORY/pimenu/updateyaml" && "$DIRECTORY/pimenu/ico/updateicons"
+  [ "$1" != 'fullscreen-menu' ] || "$DIRECTORY/pimenu/updateyaml"
   [ "$2" == 'once' ] && exit 0
   sleep 30
 done
