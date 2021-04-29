@@ -27,7 +27,7 @@ if [ -z "$format" ];then
 elif [[ "$format" = xlunch* ]];then
   format=xlunch
 elif [ "$format" == "fullscreen-menu" ];then
-  format=xlunch
+  format=fullscreen-menu
 elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ] && [ "$format" != "fullscreen-menu" ];then
   error "Unknown list format '$format'!"
 fi
