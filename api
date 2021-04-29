@@ -2,7 +2,7 @@
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
-echo "API directory is $DIRECTORY" 1>&2
+#echo "API directory is $DIRECTORY" 1>&2
 
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
@@ -87,7 +87,7 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   
   #find apps not in categories file
   {
-    missingapps="$(list_apps | grep -vx "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')")"
+    missingapps="$(list_apps | list_subtract "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}')")"
     
     if [ ! -z "$missingapps" ];then
       PREIFS="$IFS"
@@ -125,10 +125,29 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
       IFS="$PREIFS"
     fi
   }
+  
+  #find apps in categories file that don't exist
+  {
+    ghostapps="$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | list_subtract "$(list_apps)")"
+    
+    if [ ! -z "$ghostapps" ];then
+      PREIFS="$IFS"
+      IFS=$'\n'
+      for app in $ghostapps ;do
+        echo "WARNING: $app does not exist but it was found in categories file." 1>&2
+        echo "Removing $app from the categories file..." 1>&2
+        #put the app in root directory - no category
+        sed -i "/$app/d" "${DIRECTORY}/data/categories/structure"
+        
+      done
+      IFS="$PREIFS"
+    fi
+  }
+  
   #category file cleaned up past this point
   
   #show normal categories
-  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' 
+  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g'
   
   #show special Installed category
   list_apps installed | sed 's+^+Installed/+g'
@@ -150,6 +169,4 @@ usercount() { # $1 is app name. if empty, all are shown.
   fi
   
 }
-
-
 
