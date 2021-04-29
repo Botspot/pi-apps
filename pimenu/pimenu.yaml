@@ -97,7 +97,7 @@
         color: "#008000"
       - 
         name : "Cool Retro Term"
-        label: "Cool Retro Term\n(uninstalled)"
+        label: "Cool Retro Term\n(installed)"
         icon : "/home/pi/pi-apps/apps/Cool Retro Term/icon-64.png"
         color: "#008000"
       - 
@@ -412,7 +412,7 @@
         color: "#008000"
       - 
         name : "USBImager"
-        label: "USBImager\n(uninstalled)"
+        label: "USBImager\n(installed)"
         icon : "/home/pi/pi-apps/apps/USBImager/icon-64.png"
         color: "#008000"
       - 
@@ -427,7 +427,7 @@
         color: "#008000"
       - 
         name : "Vivaldi"
-        label: "Vivaldi\n(uninstalled)"
+        label: "Vivaldi\n(installed)"
         icon : "/home/pi/pi-apps/apps/Vivaldi/icon-64.png"
         color: "#008000"
       - 
@@ -604,7 +604,7 @@
         color: "#008000"
       - 
         name : "Cool Retro Term"
-        label: "Cool Retro Term\n(uninstalled)"
+        label: "Cool Retro Term\n(installed)"
         icon : "/home/pi/pi-apps/apps/Cool Retro Term/icon-64.png"
         color: "#008000"
       - 
@@ -745,6 +745,11 @@
         icon : "/home/pi/pi-apps/apps/Box86/icon-64.png"
         color: "#008000"
       - 
+        name : "Cool Retro Term"
+        label: "Cool Retro Term"
+        icon : "/home/pi/pi-apps/apps/Cool Retro Term/icon-64.png"
+        color: "#008000"
+      - 
         name : "Flameshot"
         label: "Flameshot"
         icon : "/home/pi/pi-apps/apps/Flameshot/icon-64.png"
@@ -808,6 +813,16 @@
         name : "Turbo Scratch"
         label: "Turbo Scratch"
         icon : "/home/pi/pi-apps/apps/Turbo Scratch/icon-64.png"
+        color: "#008000"
+      - 
+        name : "USBImager"
+        label: "USBImager"
+        icon : "/home/pi/pi-apps/apps/USBImager/icon-64.png"
+        color: "#008000"
+      - 
+        name : "Vivaldi"
+        label: "Vivaldi"
+        icon : "/home/pi/pi-apps/apps/Vivaldi/icon-64.png"
         color: "#008000"
       - 
         name : "Web Apps"
@@ -887,7 +902,7 @@
         color: "#008000"
       - 
         name : "Vivaldi"
-        label: "Vivaldi\n(uninstalled)"
+        label: "Vivaldi\n(installed)"
         icon : "/home/pi/pi-apps/apps/Vivaldi/icon-64.png"
         color: "#008000"
       - 
@@ -1074,7 +1089,7 @@
         color: "#008000"
       - 
         name : "USBImager"
-        label: "USBImager\n(uninstalled)"
+        label: "USBImager\n(installed)"
         icon : "/home/pi/pi-apps/apps/USBImager/icon-64.png"
         color: "#008000"
       - 

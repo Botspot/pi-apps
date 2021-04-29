@@ -5,11 +5,17 @@ updateyaml(){
 		name="$(echo "$line" |awk 'BEGIN {FS=";" } { print $1 }')"
 		icon="$(echo "$line" |awk 'BEGIN {FS=";" } { print $2 }')"
 		path="$(echo "$line" |awk 'BEGIN {FS=";" } { print $3 }')"	
-
+		if cat "$DIR/pimenu/settings/icons size" | grep 24 >/dev/null;then
+			if echo "$path" |grep '/' >/dev/null;then
+				icon="$(echo "$icon" |sed -e "s/-64.png/.png/g")" 
+			else
+				icon="$(echo "$icon" |sed -e "s/-64.png/-24.png/g")"
+			fi
+		fi
 		if echo "$path" |grep '/' >/dev/null;then
-			color="#174AE3"
+			color="$(cat "$DIR/settings/folders_buttons_color")"
 		else
-			color="#008000"
+			color="$(cat "$DIR/settings/apps_buttons_color")"
 			status="$(cat "$DIR/data/status/$path" 2>/dev/null | grep .)" 
 			if [ -z "$status" ];then
 				status="uninstalled"

@@ -1,0 +1,109 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+if [ "$1" == 'revert' ];then
+  #overwrite all settings with the defaults
+  settings="$(ls "${DIRECTORY}/settings-params" | tr '\n' '|')"
+  PREIFS="$IFS"
+  IFS='|'
+  for name in $settings
+  do
+    cat "${DIRECTORY}/settings-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/settings/${name}"
+  done
+  IFS="$PREIFS"
+  exit 0
+fi
+while [ -z $exitloop ];do
+  
+  settings="$(ls "${DIRECTORY}/settings-params" | tr '\n' '|')"
+  yadparams=''
+  tooltips=''
+  PREIFS="$IFS"
+  IFS='|'
+  for name in $settings
+  do
+    params="$(cat "${DIRECTORY}/settings-params/${name}" | grep -v '#')"
+    
+    #create file if necessary
+    if [ ! -f "${DIRECTORY}/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
+      cat "${DIRECTORY}/settings-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    fi
+    #get current setting
+    curval="$(cat "${DIRECTORY}/settings/${name}")"
+    
+    #order params, with selected option first
+    params="$(echo "$params" | grep -x "$curval")
+$(echo "$params" | grep -vx "$curval")"
+    
+    params="$(echo "$params" | tr '\n' '!')"
+    params="${params::-1}"
+    
+    tooltip="$(cat "${DIRECTORY}/settings-params/${name}" | grep '^#' | tr -d '#' | tr '\n' '\r')"
+    tooltip="${tooltip::-1}"
+    #echo "Params of ${name}: ${params}"
+    #echo "Tooltip of ${name}: ${tooltip}"
+    
+    yadparams="${yadparams}
+--field=:CB
+${params}"
+    tooltips="${tooltips}
+--field=${name}:!!${tooltip}:BTN
+''"
+  done
+  IFS="$PREIFS"
+  
+  #replace all space ' ' characters with a special kind of space: a punctuation space ( ). This way, bash won't split the strings into separate words.
+  yadparams="$(echo "$yadparams" | sed 's/ / /g')"
+  tooltips="$(echo "$tooltips" | sed 's/ / /g')"
+  echo "$yadparams\n$tooltips"
+  output="$(yad --center --title='Pi-Apps pimenu-fullscreen Settings' --width=310 --height=300 \
+    --form --separator='\n' --window-icon="${DIRECTORY}/../icons/logo.png" --columns=2 \
+    $tooltips \
+    --field="Pi-apps button color":BTN "bash -c \"'$DIRECTORY/setcolors' pi-apps\"" \
+    --field="Apps buttons color":BTN "bash -c \"'$DIRECTORY/setcolors' apps\"" \
+    $yadparams \
+    --field="Folders buttons color":BTN "bash -c \"'$DIRECTORY/setcolors' folders\"" \
+    --button='Reset'!"${DIRECTORY}/../icons/backup.png"!'Reset all settings to their defaults':2 \
+    --button=Cancel!"${DIRECTORY}/../icons/exit.png":1 \
+    --button=Save!"${DIRECTORY}/../icons/check.png":0 \
+  )"
+  
+  button=$? #get exit code to determine which button was pressed
+  #exit if save was not clicked
+  [ $button -ne 0 ] && [ $button -ne 2 ] && exit 0
+
+  if [ $button -eq 2 ];then
+    output=''
+    "${0}" revert
+  else
+    exitloop=yes
+  fi
+done
+
+#remove empty lines from $output
+output="$(echo "$output" | grep .)"
+
+echo "Output: ${output}EOO"
+
+settings="$(ls "${DIRECTORY}/settings-params" | tr '\n' '|')"
+
+settingnumber=1
+
+PREIFS="$IFS"
+IFS='|'
+for name in $settings
+do
+  curval="$(echo "$output" | sed -n "${settingnumber}p")"
+  
+  echo "Setting '$name' to '$curval'"
+  echo "$curval" > "${DIRECTORY}/settings/${name}"
+  
+  settingnumber=$((settingnumber + 1))
+done
+IFS="$PREIFS"
+
+if [ "$(cat "${DIRECTORY}/settings/buttons style")" == "Light_edges" ];then
+	cp "$DIRECTORY/pimenu_light-edges.py" "$DIRECTORY/pimenu.py"
+else
+	cp "$DIRECTORY/pimenu_dark-edges.py" "$DIRECTORY/pimenu.py"
+fi
+chmod +x "$DIRECTORY/pimenu.py"
