@@ -13,9 +13,9 @@ updateyaml(){
 			fi
 		fi
 		if echo "$path" |grep '/' >/dev/null;then
-			color="$(cat "$DIR/settings/folders_buttons_color")"
+			color="$(cat "$DIR/pimenu/settings/folders_buttons_color")"
 		else
-			color="$(cat "$DIR/settings/apps_buttons_color")"
+			color="$(cat "$DIR/pimenu/settings/apps_buttons_color")"
 			status="$(cat "$DIR/data/status/$path" 2>/dev/null | grep .)" 
 			if [ -z "$status" ];then
 				status="uninstalled"
