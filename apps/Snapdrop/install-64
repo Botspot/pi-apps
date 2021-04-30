@@ -11,6 +11,7 @@ rm -f Snapdrop-linux-arm64.zip
 wget https://github.com/chunky-milk/snapdrop-rpi/releases/download/2.0/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
 unzip Snapdrop-linux-arm64.zip || error "Failed to extract archive!"
 rm -f Snapdrop-linux-arm64.zip || error "Failed to remove archive!"
+mv Snapdrop-linux-arm64 snapdrop || error "Failed to move directory!"
 
 # Desktop entry
 echo "[Desktop Entry]
