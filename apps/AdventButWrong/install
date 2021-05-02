@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+curl -s https://packagecloud.io/install/repositories/LEHAtupointow/txtadvent/script.deb.sh | sudo bash || error "CANNOT ADD THE REPOSITORY"
+
+sudo apt update || error "CANNOT UPDATE INDEX!"
+
+sudo apt install adventbutwrong || "CANNOT INSTALL THE GAME!"
