@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/manage" install-if-not-installed 'Wine (x86)' || error "Wine is required to run Windows Screensavers but it failed to install!"
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "x11-utils yad xprintidle" "$(dirname "$0")" || exit 1
+
+git clone https://github.com/Botspot/Screensavers || error 'Failed to clone repository!'
+
+#create menu launcher
+if [ ! -f ~/.local/share/applications/windows-screensavers.desktop ];then
+  echo "[Desktop Entry]
+Exec=$DIRECTORY/gui
+Icon=xscreensaver
+Terminal=false
+Name=Windows Screensavers
+Comment=Select and configure Windows screensavers that run on your Pi with Wine
+Type=Application
+Categories=Settings;DesktopSettings;Security;X-XFCE;" > ~/.local/share/applications/windows-screensavers.desktop
+fi
