@@ -3,7 +3,7 @@
 # A terrible idea that contradicts the very nature of Raspberry Pis.
 
 ## How to use my superior version of pi-apps:
-1. Download sourcecode via browser of `git clone`
+1. Download sourcecode via browser or `git clone`
 2. `cd` into directory
 3. `chmod +x compile.sh`
 4. `compile.sh`
