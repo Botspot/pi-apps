@@ -1,7 +1,0 @@
-#!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-rm -fr ~/.fheroes2
-rm ~/.local/share/applications/fheroes2.desktop
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
