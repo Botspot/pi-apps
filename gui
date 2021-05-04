@@ -116,6 +116,9 @@ runonce "
   fi
 "
 
+#for the text_editor() function
+source "${DIRECTORY}/api"
+
 install() {
   app="$1"
   #terminal title text
@@ -426,34 +429,37 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
           fi
         fi
         
-        #if already installed then no need to provide install button. And vice versa.
-        whichbutton="$(
+        #array holding various buttons that may be passed to yad
+        whichbutton=()
+        
         if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
-          echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
+          #if edit button enabled, show it
+          whichbutton+=("--button=Edit!${DIRECTORY}/icons/edit.png!Make changes to the app:8")
         fi
         if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
-          echo "--button=Credits!${DIRECTORY}/icons/credits.png:12"
+          #if credits file exists, display credits button
+          whichbutton+=("--button=Credits!!See who made the app and who put it on Pi-Apps:10")
         fi
         if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
-          #Taking a chance here. If status file is nonexistent, assume uninstalled.
-          echo "--button=!${DIRECTORY}/icons/install.png:4"
+          #If status file is nonexistent, assume uninstalled.
+          whichbutton+=("--button=!${DIRECTORY}/icons/install.png:4")
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
-          echo "--button=!${DIRECTORY}/icons/uninstall.png:2"
+          #if installed, display uninstall button
+          whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2")
         elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
-          echo "--button=!${DIRECTORY}/icons/install.png:4"
+          #if uninstalled, display install button
+          whichbutton+=("--button=!${DIRECTORY}/icons/install.png:4")
         else
           #if status is corrupted or unknown, then show both buttons
-          echo "--button=!${DIRECTORY}/icons/uninstall.png:2 --button=!${DIRECTORY}/icons/install.png:4"
+          whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2" "--button=!${DIRECTORY}/icons/install.png:4")
         fi
-        )"
         
         echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
           --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
           --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
           --button=Back!"${DIRECTORY}/icons/back.png":0 \
-          --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
-          --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
-          $whichbutton
+          --button=Scripts!"${DIRECTORY}/icons/shellscript.png"!"Feel free to see how an app is installed!"$'\n'"Perfect for learning or troubleshooting.":6 \
+          "${whichbutton[@]}"
         button=$? #get exit code to determine which button was pressed
         echo "Button: ${button}"
         
@@ -467,52 +473,25 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         elif [ $button == 2 ];then
           app="$output"
           uninstall "$app"
-        elif [ $button == 6 ] || [ $button == 8 ];then
-          #previous or next app clicked
-          lsoutput="$(echo "$LIST" | grep -v '/' | grep -v '(' | grep -v *'\n App folder' | awk -F ';' '{print $NF}' | uniq)"
-          echo "$lsoutput"
-          
-          if [ $button == 6 ];then
-            echo 'previous app'
-            
-            #convert $output into number, then subtract 1 from it
-            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-            
-            lastline="$(echo "$lsoutput" | wc -l)"
-            
-            if [ $(($number - 1)) -lt '1' ];then
-              newnumber=$lastline
-            else
-              newnumber=$(($number - 1))
-            fi
-            
-            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-          elif [ $button == 8 ];then
-            echo 'next app'
-            
-            #convert $output into number, then add 1 to it
-            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-            
-            lastline="$(echo "$lsoutput" | wc -l)"
-            
-            if [ $(($number + 1)) -gt $lastline ];then
-              newnumber=1
-            else
-              newnumber=$(($number + 1))
-            fi
-            
-            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+        elif [ $button == 6 ];then
+          app="$output"
+          #determine path to app's install script
+          if [ -f "${DIRECTORY}/apps/${app}/install-${arch}" ];then
+            install_script="${DIRECTORY}/apps/${app}/install-${arch}"
+          elif [ -f "${DIRECTORY}/apps/${app}/install" ];then
+            install_script="${DIRECTORY}/apps/${app}/install"
           fi
-        elif [ $button == 10 ];then
+          
+          uninstall_script="${DIRECTORY}/apps/${app}/uninstall"
+          
+          text_editor "$uninstall_script" &
+          sleep 0.1
+          text_editor "$install_script" &
+          
+        elif [ $button == 8 ];then
           echo "edit $output"
           "${DIRECTORY}/createapp" "$output"
-        elif [ $button == 12 ];then
+        elif [ $button == 10 ];then
           echo "credits of $output"
           cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
             --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
