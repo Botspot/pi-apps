@@ -135,3 +135,4 @@ Embed code:
 > - You can look through the [list of app requests](https://github.com/Botspot/pi-apps/issues) and help create the scripts for them.
 > - If you see someone complaining about a broken app on Youtube, Reddit, or Facebook, please encourage them to join the [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) or to [open an issue](https://github.com/Botspot/pi-apps/issues/new) to get the problem solved. (I'm not on those sites very often.)
 > - You could help troubleshoot/diagnose issues others are having.
+
