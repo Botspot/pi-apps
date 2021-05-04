@@ -14,5 +14,5 @@ filename='anydesk_6.1.1-1_armhf'
 wget https://download.anydesk.com/rpi/${filename}.deb || error "Failed to downloading file. Make sure 'wget' is installed and verify your Internet Network Connection"
 
 # Installing the software with permissions
-sudo apt install -y --fix-broken ~/${filename}.deb || error "Failed to install it using gdebi"
+sudo apt install -y --fix-broken ~/${filename}.deb || error "Failed to install deb file"
 
