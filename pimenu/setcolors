@@ -1,0 +1,22 @@
+#!/bin/bash
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+function folders {
+	output="$(yad --color --title="Folders buttons color" --center )"
+	if [ "$?" == "0" ];then
+		echo -n "$output">"$DIRECTORY/settings/folders_buttons_color"
+	fi
+}
+function apps {
+	output="$(yad --color --title="Apps buttons color" --center)"
+	if [ "$?" == "0" ];then
+		echo -n "$output" >"$DIRECTORY/settings/apps_buttons_color"
+	fi
+}
+function pi-apps {
+	output="$(yad --title="Pi-apps button color" --color --center)" 
+	if [ "$?" == "0" ];then
+		echo -n "$output" >"$DIRECTORY/settings/Pi_apps_button_color"
+	fi
+}
+
+"$1"

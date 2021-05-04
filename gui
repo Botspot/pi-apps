@@ -5,7 +5,208 @@ function error {
   echo -e "\e[91m$1\e[39m"
   exit 1
 }
+function details {
+  button=$2
+  output="$1"
+  prefix="$3"
+  output="$(echo "$output" | grep .)"
+  echo "Output: ${output}EOO"
+  LIST="$("$DIRECTORY/preload" yad "All Apps")"
+  #output variable populated
+  
+  case $button in
 
+    1)
+      echo "User exited."
+      exit 0
+      ;;
+    3)
+      echo "Back"
+      prefix="$(dirname "$prefix" | tr -d '.')"
+      ;;
+    0)
+      echo "Details"
+      if echo "$output" | grep -q '/' ;then
+        #folder
+        if [ "$output" == './' ];then
+          echo "Back"
+          prefix="$(dirname "$prefix" | tr -d '.')"
+        else
+          prefix="$prefix/$output"
+          prefix="${prefix::-1}"
+          prefix="$(echo "$prefix" | sed 's+^/++')"
+        fi
+        echo "Prefix is $prefix"
+        output=''
+      else
+        #app
+        output="$(echo "$output" | head -n1)"
+        
+        if [ -f "${DIRECTORY}/data/installed-packages/${output}" ] && [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+          installedpackages="
+This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
+        else
+          installedpackages=''
+        fi
+        
+        #text below the app icon
+        description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')$installedpackages"
+        
+        #text to the right of the app icon
+        abovetext="<b>$output</b>
+  - Current status: $(echo "$(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')" | sed 's/corrupted/corrupted (installation failed)/g')"
+        if [ -f "${DIRECTORY}/apps/${output}/website" ];then
+          #show website if it exists
+          abovetext="$abovetext
+  - Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
+          
+        fi
+        
+        if [ -z "$clicklist" ];then
+          source "${DIRECTORY}/api"
+          clicklist="$(usercount)"
+        fi
+        
+        usercount="$(echo "$clicklist" | grep " $output"'$' | awk '{print $1}' | head -n1)"
+        if [ ! -z "$usercount" ] && [ "$usercount" -gt 20 ];then
+          abovetext="$abovetext
+  - <b>$(printf "%'d" "$usercount")</b> users"
+          
+          if [ "$usercount" -ge 1500 ] && [ "$usercount" -lt 10000 ];then
+            #if a lot of users, add an exclamation point!
+            abovetext="${abovetext}!"
+          elif [ "$usercount" -ge 10000 ];then
+            #if a crazy number of users, add two exclamation points!
+            abovetext="${abovetext}!!"
+          fi
+        fi
+        
+        #if already installed then no need to provide install button. And vice versa.
+        whichbutton="$(
+        if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
+          echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
+        fi
+        if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
+          echo "--button=Credits!${DIRECTORY}/icons/credits.png:12"
+        fi
+        if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
+          #Taking a chance here. If status file is nonexistent, assume uninstalled.
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
+        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2"
+        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
+          echo "--button=!${DIRECTORY}/icons/install.png:4"
+        else
+          #if status is corrupted or unknown, then show both buttons
+          echo "--button=!${DIRECTORY}/icons/uninstall.png:2 --button=!${DIRECTORY}/icons/install.png:4"
+        fi
+        )"
+        
+        echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
+          --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+          --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+          --button=Back!"${DIRECTORY}/icons/back.png":0 \
+          --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
+          --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
+          $whichbutton
+        button=$? #get exit code to determine which button was pressed
+        echo "Button: ${button}"
+        
+        if [ $button == 0 ];then
+          echo 'Back' #do nothing, as user requested to go back
+          #clear app var
+          output=''
+        elif [ $button == 4 ];then
+          app="$output"
+          install "$app"
+        elif [ $button == 2 ];then
+          app="$output"
+          uninstall "$app"
+        elif [ $button == 6 ] || [ $button == 8 ];then
+          #previous or next app clicked
+          lsoutput="$(echo "$LIST" | grep -v '/' | grep -v '(' | grep -v *'\n App folder' | awk -F ';' '{print $NF}' | uniq)"
+          echo "$lsoutput"
+          
+          if [ $button == 6 ];then
+            echo 'previous app'
+            
+            #convert $output into number, then subtract 1 from it
+            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+            
+            lastline="$(echo "$lsoutput" | wc -l)"
+            
+            if [ $(($number - 1)) -lt '1' ];then
+              newnumber=$lastline
+            else
+              newnumber=$(($number - 1))
+            fi
+            
+            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+          elif [ $button == 8 ];then
+            echo 'next app'
+            
+            #convert $output into number, then add 1 to it
+            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+            
+            lastline="$(echo "$lsoutput" | wc -l)"
+            
+            if [ $(($number + 1)) -gt $lastline ];then
+              newnumber=1
+            else
+              newnumber=$(($number + 1))
+            fi
+            
+            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
+            
+            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
+          fi
+        elif [ $button == 10 ];then
+          echo "edit $output"
+          "${DIRECTORY}/createapp" "$output"
+        elif [ $button == 12 ];then
+          echo "credits of $output"
+          cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
+            --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+            --title="Credits of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+            --button=Close!"${DIRECTORY}/icons/exit.png":0
+            
+        else
+          echo 'unknown button. Exiting now.'
+          exit 0
+        fi
+      fi
+      ;;
+    2)
+      #uninstall
+      if ! echo "$output" | grep -q '/' ;then
+        uninstall "$output"
+        #clear output var to prompt main window to open next
+      else
+        motd="Sorry, you can"\'"t uninstall folders."
+        prefix=''
+      fi
+      output=''
+      ;;
+    4)
+      #install
+      if ! echo "$output" | grep -q '/' ;then
+        install "$output"
+        #clear output var to prompt main window to open next
+      else
+        motd="Sorry, you can"\'"t install folders."
+        prefix=''
+      fi
+      output=''
+      ;;
+    *)
+    error "Unknown button: $button"
+    ;;
+  esac
+}
 [ -z "$(yad --help)" ] && error "YAD needs to be installed to run pi-apps."
 
 echo '|‾‾‾‾\(‾)          /‾\
@@ -107,14 +308,6 @@ runonce "
     '${DIRECTORY}/install'
   fi
   "
-
-#on twisteros, prevent the updating of wine and steam
-runonce "
-  if [ -f /usr/local/bin/twistver ]; then
-    echo -e '\napps/Wine (x86)/' >> '${DIRECTORY}/data/update-exclusion'
-    echo -e 'apps/Steam' >> '${DIRECTORY}/data/update-exclusion'
-  fi
-"
 
 install() {
   app="$1"
@@ -350,13 +543,28 @@ $LIST"
         chromium-browser https://github.com/Botspot/pi-apps &
         output=''
       fi
+    elif [ "$guimode" == "fullscreen-menu" ];then
+      cat /usr/share/doc/python-yaml/README>/dev/null || "${DIRECTORY}/etc/terminal-run" "sudo apt install python-yaml -y && sleep 30" "Installing python-yaml"
+      motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
+      if [ -z "$motd" ];then
+        motd="Raspberry Pi App Store for Open Source Projects"
+      fi
+      output="$("$DIRECTORY/pimenu/pimenu.py" "$motd" fs)"
+      if [ -z "$output" ];then
+        echo "Pi-apps closed"
+        exit 0
+      fi
+      button=0
+      LIST="$("$DIRECTORY/preload" yad "All Apps")"
+      
     else
       error "Unrecognized app list style '$guimode'!"
     fi
-    output="$(echo "$output" | grep .)"
-    echo "Output: ${output}EOO"
     
   done
+  output="$(echo "$output" | grep .)"
+  echo "Output: ${output}EOO"
+  LIST="$("$DIRECTORY/preload" yad "All Apps")"
   #output variable populated
   
   case $button in
@@ -509,6 +717,7 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
             
             echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
           fi
+          details "$output" 0 "$prefix"
         elif [ $button == 10 ];then
           echo "edit $output"
           "${DIRECTORY}/createapp" "$output"
