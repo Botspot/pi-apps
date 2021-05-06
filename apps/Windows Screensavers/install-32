@@ -17,7 +17,7 @@ git clone https://github.com/Botspot/Screensavers || error 'Failed to clone repo
 #create menu launcher
 if [ ! -f ~/.local/share/applications/windows-screensavers.desktop ];then
   echo "[Desktop Entry]
-Exec=$DIRECTORY/gui
+Exec=$HOME/Screensavers/gui
 Icon=xscreensaver
 Terminal=false
 Name=Windows Screensavers
