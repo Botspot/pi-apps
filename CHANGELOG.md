@@ -1,5 +1,5 @@
 **NOTE**: This changelog covers the major events in pi-apps like new apps being added. If every action since day one was mentioned, "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: March 29, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+Last updated: April 24, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -93,4 +93,14 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **3/20/2021** Updated eDEX-UI to v2.2.7, completely transitioned to Itai's box86 builds for all apps, added WACUP app and made a new "Multimedia" category
 - **3/24/2021** Added Libreoffice MS Theme app, and automarked box86/Wine as installed on Twister OS
 - **3/28/2021** Hide less apps on Twister OS Lite
-- **3/29/2021** Updated QEMU to v5.2.90
+- **3/30/2021** Merge all Chromium downgrade apps into "Downgrade Chromium" and added Github-CLI app
+- **3/31/2021** Updated Arduino IDE to change install location
+- **4/3/2021** Updated Update Buddy to show a update notification like pi-apps
+- **4/5/2021** Added Turbo Scratch app
+- **4/6/2021** Added WeChat app and bumped Github-CLI version
+- **4/7/2021** Bumped Discord version to renamed "WebCord"
+- **4/8/2021** Added new api script, improved icons, faster preloading. Updated whatsapp + stackedit. Added Bongo Cam and OpenSCAD apps.
+- **4/9/2021** Display user count for apps and squarify icons
+- **4/10/2021** Added flameshot, Processing IDE, Scratch 2 (with flash player fixes), Heros 2 and Linux Mint's Web Apps
+- **4/12/2021** Added AstroMenace app
+- **4/13/2021** Added Lego Digital Designer app, changed Wine to add extra menu sortcuts and bumped Etcher to 1.5.117 and Minecraft Bedrock Launcher to build 658
