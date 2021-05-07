@@ -120,13 +120,14 @@ runonce "
 source "${DIRECTORY}/api"
 
 install() {
-  app="$1"
+  app="$1" #one app name per line
+  
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
     title="Installing $app"
-  elif [ $linecount -le 4 ];then
-    title="Installing $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  elif [ $linecount -lt 4 ];then
+    title="Installing $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
     title="Installing several apps"
   fi
@@ -147,13 +148,14 @@ install() {
 }
 
 uninstall() {
-  app="$1"
+  app="$1" #one app name per line
+  
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
     title="Uninstalling $app"
   elif [ $linecount -le 4 ];then
-    title="Uninstalling $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+    title="Uninstalling $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
     title="Uninstalling several apps"
   fi
