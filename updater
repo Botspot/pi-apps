@@ -145,7 +145,7 @@ IFS="|"
 for i in $updatable
 do
   LIST="${LIST}${DIRECTORY}/update/pi-apps/apps/${i}/icon-24.png
-$i "\("$([ $(cat "${DIRECTORY}/data/update-status/${i}") == 'new' ] && echo 'new ')app$([ $(cat "${DIRECTORY}/data/status/${i}") == 'installed' ] && echo ', <b>will be reinstalled</b>')"\)"
+$i "\("$([ "$(cat "${DIRECTORY}/data/update-status/${i}")" == 'new' ] && echo 'new ')app$([ "$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null)" == 'installed' ] && echo ', <b>will be reinstalled</b>')"\)"
 "
 done
 for i in $mainupdate
@@ -155,7 +155,7 @@ do
     #if updatable file in question is a shell script, then display shellscript icon.
     mimeicon="${DIRECTORY}/icons/shellscript.png"
     mimetype='script'
-  elif [ "$(file -b --mime-type "${DIRECTORY}/${i}")" == 'image/png' ];then
+  elif [[ "${DIRECTORY}/${i}" == *.png ]];then
     mimeicon="${DIRECTORY}/icons/image.png"
     mimetype='image'
   else
