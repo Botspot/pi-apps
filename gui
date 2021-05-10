@@ -115,6 +115,13 @@ runonce "
     echo -e 'apps/Steam' >> '${DIRECTORY}/data/update-exclusion'
   fi
 "
+#fix wine in update-exclusion
+runonce "
+ if [ -f /usr/local/bin/twistver ]; then
+  sed -i '/apps/Wine (x86)/d' "${DIRECTORY}/data/update-exclusion" &>/dev/null || true #make sure this line doesn't fail the script
+  echo -e '\napps/Wine\ (x86)' >> "${DIRECTORY}/data/update-exclusion"
+ fi
+"
 
 #for the text_editor() function
 source "${DIRECTORY}/api"
