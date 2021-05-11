@@ -8,6 +8,6 @@ function error {
 }
 
 rm -f ~/vivaldi.deb
-wget https://downloads.vivaldi.com/stable/vivaldi-stable_3.8.2259.40-1_arm64.deb -O ~/vivaldi.deb || error 'Failed to download vivaldi!'
+wget https://downloads.vivaldi.com/stable/vivaldi-stable_3.8.2259.42-1_arm64.deb -O ~/vivaldi.deb || error 'Failed to download vivaldi!'
 sudo apt install --fix-missing -y ~/vivaldi.deb || error 'Failed to install vivaldi!'
 rm -f ~/vivaldi.deb
