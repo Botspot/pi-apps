@@ -15,7 +15,8 @@ git clone https://gitlab.com/bztsrc/usbimager.git || error "Failed to clone USBI
 cd usbimager/ || error "Failed to entr usbimager repo folder!"
 git checkout $VER || error "Failed to checkout version $VER!"
 cd src/
-make deb -j$(nproc)
+USE_LIBUI=yes make -j$(nproc)
+make deb
 cd ..
 sudo apt install -fy ./usbimager*arm64.deb
 cd ..
