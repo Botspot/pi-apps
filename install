@@ -179,7 +179,7 @@ fi
 #pi-apps terminal command
 if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui";then
   echo "#!/bin/bash
-${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
+${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
   echo "You can now launch pi-apps from a terminal, just by running 'pi-apps'"
 fi
