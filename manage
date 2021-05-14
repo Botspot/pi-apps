@@ -14,6 +14,8 @@ if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
@@ -26,12 +28,13 @@ else
 fi
 
 dirhash() {
-  #find "${DIRECTORY}/update/pi-apps/apps/${2}" -type f -print0
   #echo "Hashing this dir: $1" 1>&2
-  #------ hash every file in the folder ---------------- and add to it the filesystem list ------ hash it again
-  hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
+  
+  #-------- hash every file in the folder and display the filenames --------------- hash all that again
+  hash="$(echo -e "$(find "$1" -type f -print0 2>/dev/null | xargs -0 sha1sum)" | sha1sum | awk '{print $1}')"
   echo "$hash"
 }
+
 if [ "$1" == 'multi-install' ];then
   failed=0
   PREIFS="$IFS"
@@ -112,8 +115,17 @@ elif [ "$1" == 'install' ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
+  #ensure not a disabled app
+  if [ -f "${DIRECTORY}/data/status/${app}" ] && [ "$(cat "${DIRECTORY}/data/status/${app}")"  == 'disabled' ];then
+    echo -e "\e[93mNot installing the $app app. IT IS DISABLED.\e[39m"
+    sleep 1
+    echo 'Waiting 5 seconds...'
+    sleep 5
+    exit 0
+  fi
+  
   #if already installed then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'installed' ];then
+  if [ "$(app_status "${app}")" == 'installed' ];then
     yad --text="$app is already installed. Are you sure you want to install it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -158,7 +170,7 @@ elif [ "$1" == 'uninstall' ];then
   fi
   
   #if already uninstalled then ask for confirmation
-  if [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'uninstalled' ];then
+  if [ "$(app_status "${app}")" == 'uninstalled' ];then
     yad --text="$app is already uninstalled. Are you sure you want to uninstall it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
@@ -223,7 +235,7 @@ elif [ "$1" == 'update' ];then
   #else
   installback=no
   #if install was changed                                                    #if installed already
-  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)" == 'installed' ];then
+  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
     installback=yes
     echo "$app's install script has been updated. Reinstalling $app..."
     #uninstall it using a recursive script instance
@@ -293,7 +305,7 @@ elif [ "$1" == 'check-all' ];then
     #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
     
     if [ "$newhash" == "$oldhash" ];then
-      echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
+      #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
       echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
     else
       if [ ! -d "${DIRECTORY}/apps/${app}" ];then

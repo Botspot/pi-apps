@@ -37,13 +37,18 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     
   elif [ "$1" == installed ];then
     #list installed apps
-    #list apps|   only show      (          list of installed apps                | remove match string  |   basename   )
+    #list apps|   only show      (          list of installed apps                      | remove match string  |   basename   )
     list_apps local | list_intersect "$(grep -rx 'installed' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     
   elif [ "$1" == corrupted ];then
     #list corrupted apps
-    #list apps|only show         (          list of corrupted apps                | remove match string  |   basename   )
+    #list apps|only show         (          list of corrupted apps                      | remove match string  |   basename   )
     list_apps local | list_intersect "$(grep -rx 'corrupted' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
+    
+  elif [ "$1" == disabled ];then
+    #list corrupted apps
+    #list apps|only show         (          list of disabled apps                     | remove match string  |   basename   )
+    list_apps local | list_intersect "$(grep -rx 'disabled' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     
   elif [ "$1" == uninstalled ];then
     #list uninstalled apps
@@ -62,8 +67,8 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     cat "${DIRECTORY}/data/categories/structure" | grep '|hidden' | awk -F'|' '{print $1}'
     
   elif [ "$1" == visible ];then
-    #list apps that are in any other category but 'hidden'
-    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}'
+    #list apps that are in any other category but 'hidden', and aren't disabled
+    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
     
   elif [ "$1" == online ];then
     #list apps that exist on the online git repo
@@ -218,6 +223,46 @@ script_name() { #returns name of install script(s) for the $1 app. outputs: '', 
     echo 'install-32 install-64'
   elif [ -f "${DIRECTORY}/apps/$1/install" ];then
     echo 'install'
+  fi
+  
+}
+
+app_status() {
+  # $1 is app name
+  
+  [ -z "$1" ] && error 'app_status: $1 variable empty!'
+  
+  if [ -f "${DIRECTORY}/data/status/${1}" ];then
+    cat "${DIRECTORY}/data/status/${1}"
+  else
+    echo 'uninstalled' #if app status file doesn't exist, assume uninstalled
+  fi
+}
+
+runonce() {
+  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
+  
+  #Runs a script in the form of stdin
+  
+  script="$(cat /dev/stdin)"
+  
+  runonce_hash="$(echo "$script" | sha256sum | awk '{print $1}')"
+  
+  if grep -qx '^'"$runonce_hash"'$' "${DIRECTORY}/data/runonce_hashes" ;then
+    #hash found
+    #echo "runonce: '$script' already run before. Skipping."
+    true
+  else
+    #run the script.
+    bash <(echo "$script")
+    #if it succeeds, add the hash to the list to never run it again
+    if [ $? == 0 ];then
+      echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
+      echo "'$script' succeeded. Added to list."
+    else
+      echo "'$script' failed. Not adding hash to list."
+    fi
+    
   fi
   
 }
