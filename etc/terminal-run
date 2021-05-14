@@ -3,7 +3,8 @@
 #$1 is the command to be run.
 #$2 is the title.
 
-#DEBUG=1 
+#set to 1 to display which terminal is being used
+DEBUG=0
 
 if [ -f /usr/bin/lxterminal ];then
   lxterminal --title="$2" -e bash -c "$1"
