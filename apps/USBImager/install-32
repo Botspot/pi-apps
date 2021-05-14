@@ -9,7 +9,6 @@ function error {
 
 
 cd Downloads || error 'Failed to change directory!'
-wget https://gitlab.com/bztsrc/usbimager/-/raw/binaries/usbimager_1.0.5-armhf.deb || error 'Failed to Download usbimager_1.0.5-armhf.deb!'
-sudo dpkg -i usbimager_1.0.5-armhf.deb || error 'Failed to install usbimager_1.0.5-armhf.deb!'
-rm usbimager_1.0.5-armhf.deb
-
+wget https://gitlab.com/bztsrc/usbimager/-/blob/binaries/usbimager_1.0.7-armhf.deb || error 'Failed to Download usbimager_1.0.5-armhf.deb!'
+sudo dpkg -i usbimager_1.0.7-armhf.deb || error 'Failed to install usbimager_1.0.7-armhf.deb!'
+rm -f usbimager_1.0.7-armhf.deb
