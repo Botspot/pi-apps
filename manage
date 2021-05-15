@@ -30,8 +30,8 @@ fi
 dirhash() {
   #echo "Hashing this dir: $1" 1>&2
   
-  #-------- hash every file in the folder and display the filenames --------------- hash all that again
-  hash="$(echo -e "$(find "$1" -type f -print0 2>/dev/null | xargs -0 sha1sum)" | sha1sum | awk '{print $1}')"
+  #-------- hash every file in the folder ---------------------------------------------------- list all filenames ------------------- hash all that again
+  hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
   echo "$hash"
 }
 
