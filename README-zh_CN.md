@@ -64,3 +64,12 @@ git clone https://github.com/Botspot/pi-apps
 > “我❤️Pi-Apps，因为它真是太棒了！我用 MacOS 主题和 Win10 主题和很多人开了玩笑” - LEHAtupointow 在 Discord 上写道
 
 <hr>
+
+# 阅读 [Wiki](https://github.com/Botspot/pi-apps/wiki) 以获得完整文档
+
+### 基本用法
+- 这是**主窗口**：
+![主窗口](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
+使用主窗口选择要查看的应用类别。双击打开一个类别文件夹。
+- 选择类别后，您会看到一个应用列表：
+![应用列表](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/app%20list.png?raw=true)  
