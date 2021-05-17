@@ -101,11 +101,13 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       rm -rf ~/linux.bak
       [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
       #download precompiled kernel
+      cd $HOME
       echo "Downloading precompiled kernel..."
-      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/3/rpi23_3g1g_kernel.tar.xz -O ~/3g1g-rpi-kernel.tar.xz || error "Failed to download prebuilt kernel!"
+      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/4.1/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
-      tar -xf ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
+      sleep 0.5 # so user has time to read what is happening
+      unzip ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
       cd linux || error "Failed to change folder to ~/linux!"
       #install the precompiled kernel
       export KERNEL=kernel7
@@ -117,7 +119,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       cd
       rm -rf linux
       #message
-      echo -e "It appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again."
+      echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
       sleep infinity
     elif [ "$answer" == 4 ];then
       exit 1

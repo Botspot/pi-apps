@@ -4,62 +4,73 @@
 #Example usage: ~/pi-apps/uninstall-installed ~/pi-apps/apps/Arduino
 
 #app name
-PRG="$(echo "$1" | tr '/' '\n' | tail -1)"
-
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
-if [ -z "$PRG" ];then
-  echo -e "\e[91mNo app name specified!\e[39m"
-  exitcode=1
-elif [ ! -d "$1" ];then
-  echo -e "\e[91m$1 does not exist!\e[39m"
-  exitcode=1
-elif [ -z "$(echo "$1" | grep "pi-apps/apps")" ];then
-  echo -e "\e[33mWarning: That program directory ($1) is located outside of pi-apps.\e[39m"
-fi
-
-if [ ! -z $exitcode ];then
-  echo -e "\e[91mExiting now.\e[39m"
-  exit 1
-fi
+app="$(basename "$1")"
 
 function error {
   echo -e "\e[91m$1\e[39m"
   exit 1
 }
-echo "Running purge-installed..."
-PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${PRG}" | tr '\n' ' ' | sed 's/  / /g')"
 
-if [ ! -f "${DIRECTORY}/data/installed-packages/${PRG}" ];then
-  echo -e "\e[33mDoes ${DIRECTORY}/data/installed-packages/${PRG} exist?\e[39m"
-  exit 0
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+echo -e "\e[97m\nRunning purge-installed...\e[39m"
+
+if [ -z "$app" ];then
+  error "No app name specified to purge-installed!"
 fi
 
-if [ -z "${DIRECTORY}/data/installed-packages/${PRG}" ];then
-  echo "Nothing to purge. Exiting now."
-  exit 0
+echo -n "Waiting until APT locks are released... "
+{
+while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
+  sleep 0.5
+done
+while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
+  sleep 0.5
+done
+if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
+    sleep 0.5
+  done
 fi
+echo "Done"
+}
 
-PURGE_LIST="$(sudo LANG=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
-echo "These packages will be purged: $PURGE_LIST"
+#to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
+appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
 
-#normal mode
-output="$(sudo LANG=C apt purge -y $PKG_LIST 2>&1)"
-exitcode=$?
-
-errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
-if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
-  echo -e "\e[91mFailed to uninstall the packages!\e[39m"
-  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-  exit 1
-fi
-
-#ensure all packages are really purged
-PURGE_LIST="$(sudo LANG=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
-
-if [ ! -z "$PURGE_LIST" ];then
-  error "APT did not exit with an error, but these packages are still installed somehow: $PURGE_LIST"
+#if dummy deb found/installed
+if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
+  #new pkg-install implementation - using dummy debs
+  
+  echo -e "\e[97m\nRemoving dummy deb for $app...\e[39m"
+  sudo apt purge -y pi-apps-$appnamehash || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
+  
+  echo -e "\e[97m\nAutoremoving packages...\e[39m"
+  sudo apt autoremove -y || error "apt failed to autoremove!"
+  
+elif [ -f "${DIRECTORY}/data/installed-packages/${app}" ];then
+  #old pkg-install implementation
+  echo -e "\e[93m\nWARNING! pkg-install is using the legacy implementation - an installed-packages file instead of a dummy deb\e[39m"
+  
+  PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${app}" | tr '\n' ' ' | sed 's/  / /g')"
+  
+  PURGE_LIST="$(sudo LANG=C LC_ALL=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
+  echo "These packages will be purged: $PURGE_LIST"
+  
+  #normal mode
+  output="$(sudo LANG=C LC_ALL=C apt purge -y $PKG_LIST 2>&1)"
+  exitcode=$?
+  
+  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+    echo -e "\e[91mFailed to uninstall the packages!\e[39m"
+    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+    exit 1
+  fi
 else
-  echo -e "\e[32mAll packages were purged succesfully.\e[39m"
-  gio trash "${DIRECTORY}/data/installed-packages/${PRG}"
+  echo "purge-installed: Neither dummy deb nor installed-packages file detected. Nothing to do!"
 fi
+
+
+echo -e "\e[32mAll packages have been purged succesfully.\e[39m"
+rm -f "${DIRECTORY}/data/installed-packages/${app}"

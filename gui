@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -a #export all functions and variables for child processes like runonce()
+
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -6,7 +9,12 @@ function error {
   exit 1
 }
 
-[ -z "$(yad --help)" ] && error "YAD needs to be installed to run pi-apps."
+#for the text_editor(), runonce() and app_status() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+if ! command -v yad &>/dev/null;then
+  error "YAD needs to be installed to run pi-apps."
+fi
 
 echo '|‾‾‾‾\(‾)          /‾\
 | |‾) |‾|         / ⧋ \ |‾'\''‾‾\|‾'\''‾‾\/‾‾‾|
@@ -23,99 +31,75 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
-runonce() {
-  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
-  
-  #all arguments is command(s) to run
-  #hash the command and check if it's already been run before
-  
-  runonce_hash="$(echo "$@" | sha256sum | awk '{print $1}')"
-  if grep -q "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
-    #hash found
-    #echo "runonce: '$@' already run before. Skipping."
-    true
-  else
-    #run the command.
-    bash <(echo "$@")
-    #if it succeeds, add the hash to the list to never run it again
-    if [ $? == 0 ];then
-      echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
-      #echo "'$@' succeeded. Added to list."
-    else
-      echo "'$@' failed. Not adding hash to list."
-    fi
-    
-  fi
-  
-}
-
-#mark wine as installed, if twisteros
-runonce "
+#mark wine and box86 as installed, if twisteros
+runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
-    echo 'installed' > '${DIRECTORY}/data/status/Wine (x86)'
-  fi"
-
-#mark box86 as installed, if twisteros
-runonce "
+    echo 'disabled' > "${DIRECTORY}/data/status/Wine (x86)"
+  fi
   if [ -f /usr/local/bin/twistver ] && command -v box86 >/dev/null ;then
-    echo 'installed' > '${DIRECTORY}/data/status/Box86'
-  fi"
-
-
-#move a bunch of apps to the new multimedia category
-runonce "
-  '${DIRECTORY}/etc/categoryedit' 'Chromium Widevine' Multimedia >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'FreeTube' Multimedia >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'Sonic Pi 3.2' Multimedia >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'TBOPlayer' Multimedia >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'WACUP (new WinAmp)' Multimedia >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'YouTubuddy' Multimedia >/dev/null"
-
-#move a couple apps to tools category
-runonce "
-  '${DIRECTORY}/etc/categoryedit' 'Snapdrop' Tools >/dev/null
-  '${DIRECTORY}/etc/categoryedit' 'Node.js' Tools >/dev/null"
-
-#re-run install script on twistos lite to show select pre-hidden apps
-runonce "
-  if [ -f /usr/local/bin/twistver ] && [[ "\$"(twistver) != 'Twister OS version'* ]];then
-    '${DIRECTORY}/install'
-  fi"
-
-#remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade app
-runonce "
-  rm -rf '${DIRECTORY}/apps/Back to Chromium v86'
-  rm -rf '${DIRECTORY}/apps/Back to Chromium v78'
-  rm -rf '${DIRECTORY}/apps/FreeCAD (precompiled)'
-  rm -rf '${DIRECTORY}/apps/Chromium Media Edition'
-  rm -rf '${DIRECTORY}/apps/Cordless'
-  rm -rf '${DIRECTORY}/apps/Retropie'
-  if [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v78' 2>/dev/null) == installed ] || [ "\$"(cat '${DIRECTORY}/data/status/Back to Chromium v86' 2>/dev/null) == installed ];then
-    echo 'installed' > '${DIRECTORY}/data/status/Downgrade Chromium'
+    echo 'disabled' > "${DIRECTORY}/data/status/Box86"
   fi
-  "
+EOF
+
+#move some apps to the new multimedia category
+runonce <<"EOF"
+  "${DIRECTORY}/etc/categoryedit" "Chromium Widevine" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "FreeTube" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "Sonic Pi 3.2" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "TBOPlayer" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "WACUP (new WinAmp)" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "YouTubuddy" Multimedia >/dev/null
+  "${DIRECTORY}/etc/categoryedit" "OBS Studio" Multimedia >/dev/null
+  
+  #move some apps to tools category
+  
+  "${DIRECTORY}/etc/categoryedit" 'Snapdrop' Tools >/dev/null
+  "${DIRECTORY}/etc/categoryedit" 'Node.js' Tools >/dev/null
+EOF
+
+#re-run install script on twistos lite to re-show some previously hidden apps
+runonce <<"EOF"
+if [ -f /usr/local/bin/twistver ] && [[ "$(twistver)" != 'Twister OS version'* ]];then
+  "${DIRECTORY}/install"
+fi
+EOF
+
+#remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade" app
+runonce <<"EOF"
+  rm -rf "${DIRECTORY}/apps/Back to Chromium v86"
+  rm -rf "${DIRECTORY}/apps/Back to Chromium v78"
+  rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
+  rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
+  rm -rf "${DIRECTORY}/apps/Cordless"
+  rm -rf "${DIRECTORY}/apps/Retropie"
+  if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
+    echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
+  fi
+EOF
+
 #rename xlunch setting to xlunch-dark
-runonce "
-  if [ "\"""\$"(cat '${DIRECTORY}/data/settings/App List Style')"\"" == xlunch ];then
-    echo 'xlunch-dark' > '${DIRECTORY}/data/settings/App List Style'
+runonce <<"EOF"
+  if [ "$(cat "${DIRECTORY}/data/settings/App List Style")" == xlunch ];then
+    echo 'xlunch-dark' > "${DIRECTORY}/data/settings/App List Style"
   fi
-  "
+EOF
 
 #for old installs prior to having categories, re-run install script
-runonce "
-  if [ ! -e '${DIRECTORY}/data/categories' ];then
-    '${DIRECTORY}/install'
+runonce <<"EOF"
+  if [ ! -e "${DIRECTORY}/data/categories" ];then
+    "${DIRECTORY}/install"
   fi
-  "
+EOF
 
 install() {
-  app="$1"
+  app="$1" #one app name per line
+  
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
     title="Installing $app"
-  elif [ $linecount -le 4 ];then
-    title="Installing $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+  elif [ $linecount -lt 4 ];then
+    title="Installing $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
     title="Installing several apps"
   fi
@@ -136,13 +120,14 @@ install() {
 }
 
 uninstall() {
-  app="$1"
+  app="$1" #one app name per line
+  
   #terminal title text
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
     title="Uninstalling $app"
   elif [ $linecount -le 4 ];then
-    title="Uninstalling $(echo "$app" | tr '\n' '|' | sed -i 's/|/, /g')"
+    title="Uninstalling $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
     title="Uninstalling several apps"
   fi
@@ -259,8 +244,8 @@ while true;do
         #check for an exit status code from the running terminal
         while true; do
           if [ -f /tmp/xlunchfinished ];then
-            break
             echo "xlunch finished installing."
+            break
           elif [ -f /tmp/xlunchfailed ];then
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
@@ -352,195 +337,183 @@ $LIST"
   #output variable populated
   
   case $button in
-
-    1)
-      echo "User exited."
-      exit 0
-      ;;
-    3)
-      echo "Back"
-      prefix="$(dirname "$prefix" | tr -d '.')"
-      ;;
-    0)
-      echo "Details"
-      if echo "$output" | grep -q '/' ;then
-        #folder
-        if [ "$output" == './' ];then
-          echo "Back"
-          prefix="$(dirname "$prefix" | tr -d '.')"
-        else
-          prefix="$prefix/$output"
-          prefix="${prefix::-1}"
-          prefix="$(echo "$prefix" | sed 's+^/++')"
-        fi
-        echo "Prefix is $prefix"
-        output=''
-      else
-        #app
-        output="$(echo "$output" | head -n1)"
-        
-        if [ -f "${DIRECTORY}/data/installed-packages/${output}" ] && [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
-          installedpackages="
-This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
-        else
-          installedpackages=''
-        fi
-        
-        #text below the app icon
-        description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')$installedpackages"
-        
-        #text to the right of the app icon
-        abovetext="<b>$output</b>
-  - Current status: $(echo "$(cat "${DIRECTORY}/data/status/${output}" || echo 'Uninstalled')" | sed 's/corrupted/corrupted (installation failed)/g')"
-        if [ -f "${DIRECTORY}/apps/${output}/website" ];then
-          #show website if it exists
-          abovetext="$abovetext
-  - Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
-          
-        fi
-        
-        if [ -z "$clicklist" ];then
-          source "${DIRECTORY}/api"
-          clicklist="$(usercount)"
-        fi
-        
-        usercount="$(echo "$clicklist" | grep " $output"'$' | awk '{print $1}' | head -n1)"
-        if [ ! -z "$usercount" ] && [ "$usercount" -gt 20 ];then
-          abovetext="$abovetext
-  - <b>$(printf "%'d" "$usercount")</b> users"
-          
-          if [ "$usercount" -ge 1500 ] && [ "$usercount" -lt 10000 ];then
-            #if a lot of users, add an exclamation point!
-            abovetext="${abovetext}!"
-          elif [ "$usercount" -ge 10000 ];then
-            #if a crazy number of users, add two exclamation points!
-            abovetext="${abovetext}!!"
-          fi
-        fi
-        
-        #if already installed then no need to provide install button. And vice versa.
-        whichbutton="$(
-        if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
-          echo "--button=Edit!${DIRECTORY}/icons/edit.png:10"
-        fi
-        if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
-          echo "--button=Credits!${DIRECTORY}/icons/credits.png:12"
-        fi
-        if [ ! -f "${DIRECTORY}/data/status/${output}" ];then
-          #Taking a chance here. If status file is nonexistent, assume uninstalled.
-          echo "--button=!${DIRECTORY}/icons/install.png:4"
-        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'installed' ];then
-          echo "--button=!${DIRECTORY}/icons/uninstall.png:2"
-        elif [ "$(cat "${DIRECTORY}/data/status/${output}")" == 'uninstalled' ];then
-          echo "--button=!${DIRECTORY}/icons/install.png:4"
-        else
-          #if status is corrupted or unknown, then show both buttons
-          echo "--button=!${DIRECTORY}/icons/uninstall.png:2 --button=!${DIRECTORY}/icons/install.png:4"
-        fi
-        )"
-        
-        echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
-          --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
-          --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
-          --button=Back!"${DIRECTORY}/icons/back.png":0 \
-          --button=''!"${DIRECTORY}/icons/up.png"!'View previous App':6 \
-          --button=''!"${DIRECTORY}/icons/down.png"!'View next App':8 \
-          $whichbutton
-        button=$? #get exit code to determine which button was pressed
-        echo "Button: ${button}"
-        
-        if [ $button == 0 ];then
-          echo 'Back' #do nothing, as user requested to go back
-          #clear app var
-          output=''
-        elif [ $button == 4 ];then
-          app="$output"
-          install "$app"
-        elif [ $button == 2 ];then
-          app="$output"
-          uninstall "$app"
-        elif [ $button == 6 ] || [ $button == 8 ];then
-          #previous or next app clicked
-          lsoutput="$(echo "$LIST" | grep -v '/' | grep -v '(' | grep -v *'\n App folder' | awk -F ';' '{print $NF}' | uniq)"
-          echo "$lsoutput"
-          
-          if [ $button == 6 ];then
-            echo 'previous app'
-            
-            #convert $output into number, then subtract 1 from it
-            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-            
-            lastline="$(echo "$lsoutput" | wc -l)"
-            
-            if [ $(($number - 1)) -lt '1' ];then
-              newnumber=$lastline
-            else
-              newnumber=$(($number - 1))
-            fi
-            
-            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-          elif [ $button == 8 ];then
-            echo 'next app'
-            
-            #convert $output into number, then add 1 to it
-            number="$(echo "$lsoutput" | grep -nx "$output" | cut -f1 -d: )"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-            
-            lastline="$(echo "$lsoutput" | wc -l)"
-            
-            if [ $(($number + 1)) -gt $lastline ];then
-              newnumber=1
-            else
-              newnumber=$(($number + 1))
-            fi
-            
-            output="$(echo "$lsoutput" | sed -n "${newnumber}p")"
-            
-            echo "Line number was ${number}, but now is ${newnumber}. Name is ${output}."
-          fi
-        elif [ $button == 10 ];then
-          echo "edit $output"
-          "${DIRECTORY}/createapp" "$output"
-        elif [ $button == 12 ];then
-          echo "credits of $output"
-          cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
-            --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
-            --title="Credits of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
-            --button=Close!"${DIRECTORY}/icons/exit.png":0
-            
-        else
-          echo 'unknown button. Exiting now.'
-          exit 0
-        fi
-      fi
-      ;;
-    2)
-      #uninstall
-      if ! echo "$output" | grep -q '/' ;then
-        uninstall "$output"
-        #clear output var to prompt main window to open next
-      else
-        motd="Sorry, you can"\'"t uninstall folders."
-        prefix=''
-      fi
-      output=''
-      ;;
-    4)
-      #install
-      if ! echo "$output" | grep -q '/' ;then
-        install "$output"
-        #clear output var to prompt main window to open next
-      else
-        motd="Sorry, you can"\'"t install folders."
-        prefix=''
-      fi
-      output=''
-      ;;
-    *)
-    error "Unknown button: $button"
+  1)
+    echo "User exited."
+    exit 0
     ;;
+  3)
+    echo "Back"
+    prefix="$(dirname "$prefix" | tr -d '.')"
+    ;;
+  0)
+    echo "Details"
+    if echo "$output" | grep -q '/' ;then
+      #folder
+      if [ "$output" == './' ];then
+        echo "Back"
+        prefix="$(dirname "$prefix" | tr -d '.')"
+      else
+        prefix="$prefix/$output"
+        prefix="${prefix::-1}"
+        prefix="$(echo "$prefix" | sed 's+^/++')"
+      fi
+      echo "Prefix is $prefix"
+      output=''
+    else
+      #app
+      output="$(echo "$output" | head -n1)"
+      
+      if [ -f "${DIRECTORY}/data/installed-packages/${output}" ] && [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${output}")" ];then
+        installedpackages="
+This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/${output}" | sort | uniq | tr '\n' ' ')"
+      else
+        installedpackages=''
+      fi
+      
+      #text below the app icon
+      description="$(cat "${DIRECTORY}/apps/${output}/description" || echo 'Description unavailable')$installedpackages"
+      
+      #text to the right of the app icon
+      abovetext="<b>$output</b>
+- Current status: $(echo "$(app_status "${output}")" | sed 's/corrupted/corrupted (installation failed)/g' | sed 's/disabled/disabled (installation is prevented on your system)/g')"
+      if [ -f "${DIRECTORY}/apps/${output}/website" ];then
+        #show website if it exists
+        abovetext="$abovetext
+- Website: <a href="\""$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)"\"">$(cat "${DIRECTORY}/apps/${output}/website" | head -n1)</a>"
+        
+      fi
+      
+      if [ -z "$clicklist" ];then
+        source "${DIRECTORY}/api"
+        clicklist="$(usercount)"
+      fi
+      
+      usercount="$(echo "$clicklist" | grep " $output"'$' | awk '{print $1}' | head -n1)"
+      if [ ! -z "$usercount" ] && [ "$usercount" -gt 20 ];then
+        abovetext="$abovetext
+- <b>$(printf "%'d" "$usercount")</b> users"
+        
+        if [ "$usercount" -ge 1500 ] && [ "$usercount" -lt 10000 ];then
+          #if a lot of users, add an exclamation point!
+          abovetext="${abovetext}!"
+        elif [ "$usercount" -ge 10000 ];then
+          #if a crazy number of users, add two exclamation points!
+          abovetext="${abovetext}!!"
+        fi
+      fi
+      
+      #array holding various buttons that may be passed to yad
+      whichbutton=()
+      
+      if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
+        #if edit button enabled, show it
+        whichbutton+=("--button=Edit!${DIRECTORY}/icons/edit.png!Make changes to the app:8")
+      fi
+      if [ -f "${DIRECTORY}/apps/${output}/credits" ];then
+        #if credits file exists, display credits button
+        whichbutton+=("--button=Credits!!See who made the app and who put it on Pi-Apps:10")
+      fi
+      #display buttons based on app's status file
+      if [ "$(app_status "${output}")" == 'installed' ];then
+        #if installed, display uninstall button
+        whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2")
+      elif [ "$(app_status "${output}")" == 'uninstalled' ];then
+        #if uninstalled, display install button
+        whichbutton+=("--button=!${DIRECTORY}/icons/install.png:4")
+      elif [ "$(app_status "${output}")" == 'disabled' ];then
+        #if disabled, display no buttons
+        whichbutton+=("--button=<b>Enable</b>!!Force this app to install on your system."$'\n'"This app was disabled for a reason so if you enable it..."$'\n'"YOU HAVE BEEN WARNED.:12")
+      else
+        #if status is corrupted or unknown, then show both buttons
+        whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2" "--button=!${DIRECTORY}/icons/install.png:4")
+      fi
+      
+      echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
+        --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+        --title="Details of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+        --button=Back!"${DIRECTORY}/icons/back.png":0 \
+        --button=Scripts!"${DIRECTORY}/icons/shellscript.png"!"Feel free to see how an app is installed!"$'\n'"Perfect for learning or troubleshooting.":6 \
+        "${whichbutton[@]}"
+      button=$? #get exit code to determine which button was pressed
+      echo "Button: ${button}"
+      
+      case $button in
+      0)
+        echo 'Back' #do nothing, as user requested to go back
+        #clear app var
+        output=''
+        ;;
+      4)
+        app="$output"
+        install "$app"
+        ;;
+      2)
+        app="$output"
+        uninstall "$app"
+        ;;
+      6)
+        app="$output"
+        #determine path to app's install script
+        if [ -f "${DIRECTORY}/apps/${app}/install-${arch}" ];then
+          install_script="${DIRECTORY}/apps/${app}/install-${arch}"
+        elif [ -f "${DIRECTORY}/apps/${app}/install" ];then
+          install_script="${DIRECTORY}/apps/${app}/install"
+        fi
+        
+        uninstall_script="${DIRECTORY}/apps/${app}/uninstall"
+        
+        text_editor "$uninstall_script" &
+        sleep 0.1
+        text_editor "$install_script" &
+        ;;
+      8)
+        echo "edit $output"
+        "${DIRECTORY}/createapp" "$output"
+        ;;
+      10)
+        echo "credits of $output"
+        cat "${DIRECTORY}/apps/${output}/credits" | yad --text-info --fontname=12 --wrap \
+          --image="${DIRECTORY}/apps/${output}/icon-64.png" --image-on-top \
+          --title="Credits of ${output}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
+          --button=Close!"${DIRECTORY}/icons/exit.png":0
+        ;;
+      12)
+        echo "Enabling $output..."
+        app="$output"
+        #remove status file containing 'disabled'
+        rm -f "${DIRECTORY}/data/status/${app}"
+        ;;
+      *)
+        error 'unknown button. Exiting now.'
+        exit 1
+        ;;
+      esac
+    fi
+    ;;
+  2)
+    #uninstall
+    if ! echo "$output" | grep -q '/' ;then
+      uninstall "$output"
+      #clear output var to prompt main window to open next
+    else
+      motd="Sorry, you can't uninstall folders."
+      prefix=''
+    fi
+    output=''
+    ;;
+  4)
+    #install
+    if ! echo "$output" | grep -q '/' ;then
+      install "$output"
+      #clear output var to prompt main window to open next
+    else
+      motd="Sorry, you can"\'"t install folders."
+      prefix=''
+    fi
+    output=''
+    ;;
+  *)
+  error "Unknown button: $button"
+  ;;
   esac
 done

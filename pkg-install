@@ -1,129 +1,186 @@
 #!/bin/bash
 
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+trap "exit 1" TERM
+export TOP_PID=$$
+
+error() {
+  echo -e "\e[91m$1\e[39m" 1>&2
+  kill -w -s TERM $TOP_PID
+  exit 1
+}
+
 #$1 is a quotation-marked, space-seperated list of package names.
 #$2 is the path to the program folder being installed.
 #Example usage: ~/pi-apps/pkg-install "gparted buffer expect" ~/pi-apps/apps/Arduino
 
-PKG_LIST="$1"
-PRG="$(echo "$2" | tr '/' '\n' | tail -1)"
+PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
+app="$(basename "$2")" #remove any slashes to just get program name
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
-function error {
-  echo -e "\e[91m$1\e[39m"
-  exit 1
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
 }
 
 echo "Running pkg-install..."
 
 if [ -z "$PKG_LIST" ];then
-  echo -e "\e[91mNo packages were specified!\e[39m"
-  exit=yes
-fi
-
-if [ -z "$PRG" ];then
-  echo -e "\e[91mNo program directory specified!\e[39m"
-  exitcode=1
-elif [ ! -d "$2" ];then
-  echo -e "\e[91m$2 does not exist!\e[39m"
-  exitcode=1
-elif [ -z "$(echo "$2" | grep "pi-apps/apps")" ];then
-  echo -e "\e[33mWarning: That program directory ($PRG) is located outside of pi-apps.\e[39m"
-fi
-
-if [ ! -z $exitcode ];then
-  echo -e '$1 is a quotation-marked, space-seperated list of package names.\n$2 is the path to the program folder being installed.\nExample usage: ~/pi-apps/pkg-install '\"'gparted buffer expect'\"' ~/pi-apps/apps/Arduino'
-  echo -e "\e[91mExiting now.\e[39m"
-  exit 1
+  error "No package names specified to pkg-install!"
+elif [ -z "$app" ];then
+  error "No app name specified to pkg-install!"
 fi
 
 echo -n "Waiting until APT locks are released... "
+{
 while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-  sleep 1
+  sleep 0.5
 done
 while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-  sleep 1
+  sleep 0.5
 done
 if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
   while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-    sleep 1
+    sleep 0.5
   done
 fi
 echo "Done"
+}
 
-DEBIAN_FRONTEND=noninteractive
-LANG=C
-LC_ALL=C
+#sudo apt update
+{
+echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
 output="$(sudo LANG=C LC_ALL=C apt update 2>&1)"
 exitcode=$?
 
+#inform user about autoremovable packages
+if [ ! -z "$(echo "$output" | grep 'autoremove to remove them' )" ];then
+  echo -e "\e[33mSome packages are unnecessary.\e[39m Please consider running \e[4msudo apt autoremove\e[0m."
+fi
+
 #inform user packages are upgradeable
 if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
-  echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade -y\e[0m."
+  echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade\e[0m."
 fi
 
 #exit on apt error
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
 if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
-  echo -e "\e[91mFailed to run \e[4msudo apt update\e[0m\e[39m!"
+  echo -e "\e[91mpkg-install failed to run \e[4msudo apt update\e[0m\e[39m!"
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
   exit 1
 fi
+}
 
-#remove residual packages
-#sudo apt autoremove -y && sudo apt clean && sudo apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+#workarounds for local debs
+{
+for package in $PKG_LIST ;do
+  
+  #if package begins with / (absolute path)
+  if [[ "$package" == /* ]];then 
+    #determine the package name from the package filepath
+    packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
+    [ -z "$packagename" ] && error "pkg-install: failed to determine the package name of $package"
+    
+    #change PKG_LIST to contain package name instead of package's absolute path
+    PKG_LIST="$(echo "$PKG_LIST" | sed "s|$package|$packagename|")"
+    
+    echo -e "\e[97m\nInstalling local $packagename package...\e[39m"
+    
+    #install it and reduce apt's output and indent the output
+    (sudo LANG=C LC_ALL=C apt install -y --no-install-recommends "$package" 2>&1 || error "pkg_install: While installing local packages, $package failed to install.") | reduceapt
 
-output="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1)"
-echo "output: $output"
+    sudo apt-mark auto "$packagename" || error "pkg-install: failed to mark the $packagename package as autoremovable.\nlocal package path: $package"
+    
+  fi
+  
+done
+
+#now PKG_LIST shouldn't contain any absolute file paths
+if [[ "$PKG_LIST" == /* ]];then 
+  error "pkg_install: failed to remove all absolute paths from the package list!\nContents of PKG_LIST:\n$PKG_LIST"
+fi
+}
+
+#workarounds for regex (using '*')
+{
+for package in $PKG_LIST ;do
+
+  #if package contains *
+  if echo "$package" | grep -q '*' ;then 
+    
+    echo -e "\e[97m\n$package contains regex. Expanding it...\e[39m"
+    
+    list="$(apt-cache search "$package" | awk '{print $1}' | grep "$(echo "$package" | tr -d '*')" | tr '\n' ' ')"
+    
+    #change PKG_LIST to contain package name instead of package's absolute path
+    PKG_LIST="$(echo "$PKG_LIST" | sed "s|$(echo "$package" | sed 's/*/\\*/g')|$list|g")"
+    echo -e "\e[97m\npackage list is now: $PKG_LIST\e[39m"
+  fi
+done
+
+#now PKG_LIST shouldn't contain any * characters
+if echo "$PKG_LIST" | grep -q '*';then 
+  error "pkg_install: failed to remove all regex from the package list!\nContents of PKG_LIST:\n$PKG_LIST"
+fi
+}
+
+#format PKG_LIST - remove double spaces, preceding spaces, and trailing spaces.
+PKG_LIST="$(echo "$PKG_LIST" | sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g')"
+
+#create dummy deb
+{
+#create dummy apt package that depends on the packages this app requires
+echo -e "\e[97m\nCreating dummy deb...\e[39m"
+#to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
+appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
+
+rm -rf ~/pi-apps-$appnamehash ~/pi-apps-$appnamehash.deb
+mkdir -p ~/pi-apps-$appnamehash/DEBIAN
+echo "Maintainer: Pi-Apps team
+Name: $app
+Description: Dummy package created by pi-apps to install dependencies for the '$app' app
+Version: 1.0
+Architecture: all
+Priority: optional
+Section: custom
+Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g')
+Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
+
+dpkg-deb --build ~/pi-apps-$appnamehash || error "pkg-install: failed to create dummy deb pi-apps-$appnamehash"
+}
+
+#install dummy deb
+{
+#ensure dummy deb isn't already installed
+if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
+  echo -e "\e[97m\nDummy deb is already installed. Uninstalling it first...\e[39m"
+  sudo apt purge -y pi-apps-$appnamehash || error "Failed to purge dummy deb (pi-apps-$appnamehash)"
+  sudo apt update &>/dev/null
+fi
+
+echo -e "\e[97m\nInstalling dummy deb...\e[39m"
+output="$(sudo apt-get install -y --no-install-recommends ~/pi-apps-$appnamehash.deb 2>&1 | reduceapt | tee /dev/stderr )"
+rm -f ~/pi-apps-$appnamehash.deb
+
+echo -e "\e[97m\nApt finished.\e[39m"
 
 errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
-
 if [ ! -z "$errors" ];then
-  echo -e "\e[91mFailed to check which packages whould be installed!\e[39m"
+  echo -e "\e[91mFailed to install the packages!\e[39m"
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
   exit 1
 fi
+}
 
-INSTALL_LIST="$(echo "$output" | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
-
+#re-check package list. This time it should be blank.
+{
+INSTALL_LIST="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1 | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
 if [ ! -z "$INSTALL_LIST" ];then
-  #save that list of installed packages in the program directory for future removal
-  mkdir -p "${DIRECTORY}/data/installed-packages"
-  echo "$INSTALL_LIST" >> "${DIRECTORY}/data/installed-packages/${PRG}"
-  
-  echo -e "These packages will be installed: \e[2m$INSTALL_LIST\e[22m"
-  
-  #normal mode
-  output="$(sudo LANG=C LC_ALL=C apt-get install -y --no-install-recommends $PKG_LIST 2>&1 1>&2)"
-  exitcode=$?
-  echo 'Apt finished.'
-  echo "Output: $output"
-  
-  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
-  if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
-    echo -e "\e[91mFailed to install the packages!\e[39m"
-    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-    exit 1
-  fi
-  #re-check package list. This time it should be blank.
-  #INSTALL_LIST=''
-  #for i in $PKG_LIST
-  #do
-  #  PKG_OK="$(dpkg-query -W --showformat='${Status}\n' "$i" 2>/dev/null | grep "install ok installed")"
-  #  if [ "" == "$PKG_OK" ]; then
-  #    INSTALL_LIST="${INSTALL_LIST} ${i}" #add package to install list
-  #  fi
-  #done
-  INSTALL_LIST="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST | sed -n '/The following packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
-  
-  
-  if [ ! -z "$INSTALL_LIST" ];then
-    echo -e "\e[91mAPT did not exit with an error, but these packages failed to install somehow: $INSTALL_LIST\e[39m"
-    exit 1
-  else
-    echo -e "\e[32mAll packages were installed succesfully.\e[39m"
-  fi
+  error "APT did not exit with an error, but these packages failed to install somehow:\n$INSTALL_LIST\e[39m"
 else
-  echo -e "\e[32mNo new packages to install. Nothing to do!\e[39m"
-  echo '' >> "${DIRECTORY}/data/installed-packages/${PRG}"
+  echo -e "\e[32mAll packages were installed succesfully.\e[39m"
 fi
+}
+
+rm -rf ~/pi-apps-$appnamehash #remove dummy deb creation folder if all went well
