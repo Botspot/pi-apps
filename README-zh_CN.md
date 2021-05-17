@@ -46,3 +46,21 @@ git clone https://github.com/Botspot/pi-apps
 - [报告 Bug](https://github.com/Botspot/pi-apps/issues/new)
 - [Leepspvideo Pi-Apps 体验](https://www.youtube.com/watch?v=zxyWQ3FV98I)
 - [ETA Prime's Pi-Apps & Minecraft Java 视频](https://www.youtube.com/watch?v=oqNWJ52DLes)
+
+## 其他人对 Pi-Apps 有何评价？
+> “太棒了。谢谢您这样做。” - **[Novaspirit Tech](youtube.com/novaspirittech)** (大 RPi YouTuber)在 Discord 上发布
+
+> 非常感谢 Botspot 创造了这个程序；这是一个很棒的程序。” - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)** (大 RPi YouTuber)
+
+> “我喜欢bpi-apps。它很棒，并安装了许多人们不知道如何安装的有用软件。Botspot 很棒！” - **[RPi Projects and More](https://www.youtube.com/channel/UCkv0fW0EIUTKw6pYEnTjTbQ)** (RPi YouTuber)
+
+> “我用了 Pi-Apps 一段时间，并向其他人推荐了好几次。
+> 我们无法提供人们可能想要的所有选择，因此像您这样的人对缩小差距很有帮助。谢谢 Botspot！” - 树莓派开发人员在电子邮件中写到
+
+> “感谢出色的工作，使它对每个人都变得简单。” - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator) 在树莓派论坛上写道
+
+> “祝您和您的项目好运，Botspot，您真的在掀起波澜！” - **[Sakaki](https://github.com/sakaki-)** (RPi legend) 在电子邮件中写道
+
+> “我❤️Pi-Apps，因为它真是太棒了！我用 MacOS 主题和 Win10 主题和很多人开了玩笑！”- LEHAtupointow 在 Discord 上写道
+
+<hr>
