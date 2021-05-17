@@ -65,7 +65,7 @@ git clone https://github.com/Botspot/pi-apps
 
 <hr>
 
-# 阅读 [Wiki](https://github.com/Botspot/pi-apps/wiki) 以获得完整文档
+# 完整文档见 [Wiki](https://github.com/Botspot/pi-apps/wiki) 
 
 ### 基本用法
 - 这是**主窗口**：
