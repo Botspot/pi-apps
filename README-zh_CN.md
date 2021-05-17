@@ -61,6 +61,6 @@ git clone https://github.com/Botspot/pi-apps
 
 > “祝您和您的项目好运，Botspot，您真的在掀起波澜！” - **[Sakaki](https://github.com/sakaki-)** (RPi legend) 在电子邮件中写道
 
-> “我❤️Pi-Apps，因为它真是太棒了！我用 MacOS 主题和 Win10 主题和很多人开了玩笑！”- LEHAtupointow 在 Discord 上写道
+> “我❤️Pi-Apps，因为它真是太棒了！我用 MacOS 主题和 Win10 主题和很多人开了玩笑” - LEHAtupointow 在 Discord 上写道
 
 <hr>
