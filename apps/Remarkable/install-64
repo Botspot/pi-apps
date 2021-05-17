@@ -7,6 +7,9 @@ function error {
   exit 1
 }
 
+#I know the the manage script already does this, but I don't feel comfortable not adding this - Itai
+cd "$HOME"
+
 #downloads
 wget https://remarkableapp.github.io/files/remarkable_1.87_all.deb || error 'Failed to Download remarkable_1.87_all'
 wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-webkit-3.0_2.4.11-3_arm64.deb || error 'Failed to Download gir1.2-webkit-3.0'
@@ -19,7 +22,7 @@ wget http://ftp.br.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turb
 
 
 #installation
-"${DIRECTORY}/pkg-install" "$(pwd)/gir1.2-webkit-3.0_2.4.11-3_arm64.deb $(pwd)/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb $(pwd)/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb $(pwd)/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb $(pwd)/libenchant1c2a_1.6.0-11.1+b1_arm64.deb $(pwd)/libjpeg62-turbo_2.0.6-4_arm64.deb $(pwd)/libicu57_57.1-6+deb9u4_arm64.deb $(pwd)/remarkable_1.87_all.deb" "$(dirname "$0")" || error 'Failed to install libicu57_57.1-6+deb9u4_arm64'
+"${DIRECTORY}/pkg-install" "$(HOME)/gir1.2-webkit-3.0_2.4.11-3_arm64.deb $(HOME)/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb $(HOME)/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb $(HOME)/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb $(HOME)/libenchant1c2a_1.6.0-11.1+b1_arm64.deb $(HOME)/libjpeg62-turbo_2.0.6-4_arm64.deb $(HOME)/libicu57_57.1-6+deb9u4_arm64.deb $(HOME)/remarkable_1.87_all.deb" "$(dirname "$0")" || error 'Failed to install libicu57_57.1-6+deb9u4_arm64'
 
 #remove
 rm -f remarkable_1.87_all.deb
