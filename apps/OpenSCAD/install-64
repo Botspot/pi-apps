@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget 'https://files.openscad.org/OpenSCAD-2021.01-aarch64.AppImage' -O ~/OpenSCAD.AppImage || error "Failed to download appimage!"
+
+chmod +x ~/OpenSCAD.AppImage || error "Failed to mark as executable!"
+
+echo "[Desktop Entry]
+Name=OpenSCAD
+GenericName=The Programmers Solid 3D CAD Modeller
+Comment=OpenSCAD is a software for creating 3D CAD objects.
+Exec=bash -c 'sudo modprobe fuse; ~/OpenSCAD.AppImage'
+Icon=$(dirname $0)/icon-64.png
+Terminal=false
+Type=Application
+MimeType=application/x-openscad;
+Categories=Graphics;3DGraphics;Engineering;
+Keywords=3d;solid;geometry;csg;model;stl;
+StartupNotify=true" > ~/.local/share/applications/OpenSCAD.desktop || error "Failed to create menu button!"

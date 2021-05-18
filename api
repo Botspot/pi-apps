@@ -1,0 +1,270 @@
+#!/bin/bash
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#echo "API script thinks directory is $DIRECTORY" 1>&2
+
+repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
+
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
+  arch=64
+elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+  arch=32
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+
+list_intersect() { #Outputs only the apps that appear in both stdin and in $1
+  #                      change \n to \|     |   remove last "\|"
+  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
+list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
+  #                       change \n to \|     |   remove last "\|"
+  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
+list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
+  if [ -z "$1" ] || [ "$1" == local ];then
+    #list all apps
+    ls "${DIRECTORY}/apps"
+    
+  elif [ "$1" == installed ];then
+    #list installed apps
+    #list apps|   only show      (          list of installed apps                      | remove match string  |   basename   )
+    list_apps local | list_intersect "$(grep -rx 'installed' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
+    
+  elif [ "$1" == corrupted ];then
+    #list corrupted apps
+    #list apps|only show         (          list of corrupted apps                      | remove match string  |   basename   )
+    list_apps local | list_intersect "$(grep -rx 'corrupted' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
+    
+  elif [ "$1" == disabled ];then
+    #list corrupted apps
+    #list apps|only show         (          list of disabled apps                     | remove match string  |   basename   )
+    list_apps local | list_intersect "$(grep -rx 'disabled' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
+    
+  elif [ "$1" == uninstalled ];then
+    #list uninstalled apps
+    #list apps that have a status file containing "uninstalled"
+    list_apps local | list_intersect "$(grep -rx 'uninstalled' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
+    #also list apps that don't have a status file
+    list_apps local | list_subtract "$(ls "${DIRECTORY}/data/status")"
+    
+  elif [ "$1" == cpu_installable ];then
+    #list apps that can be installed on the device's OS architecture (32-bit or 64-bit)
+    #find all apps that have install-XX script or an install script
+    find "${DIRECTORY}/apps" -type f \( -name "install-$arch" -o -name "install" \) | sed "s+/install-$arch++g" | sed "s+/install++g" | sed "s+${DIRECTORY}/apps/++g" | sort | uniq
+    
+  elif [ "$1" == hidden ];then
+    #list apps that are hidden
+    cat "${DIRECTORY}/data/categories/structure" | grep '|hidden' | awk -F'|' '{print $1}'
+    
+  elif [ "$1" == visible ];then
+    #list apps that are in any other category but 'hidden', and aren't disabled
+    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
+    
+  elif [ "$1" == online ];then
+    #list apps that exist on the online git repo
+    if [ -d "${DIRECTORY}/update/pi-apps/apps" ];then
+      #if update folder exists, just use that
+      ls "${DIRECTORY}/update/pi-apps/apps" | grep .
+    else
+      #if update folder doesn't exist, then parse github HTML to get a list of online apps. Horrible idea, but it works!
+      wget -qO- "${repo_url}/tree/master/apps" | grep 'title=".*" data-pjax=' -o | sed 's/title="//g' | sed 's/" data-pjax=//g'
+    fi
+    
+  elif [ "$1" == online_only ];then
+    #list apps that exist only on the git repo, and not locally
+    list_apps online | list_subtract "$(list_apps local)"
+    
+  elif [ "$1" == local_only ];then
+    #list apps that exist only locally, and not on the git repo
+    list_apps local | list_subtract "$(list_apps online)"
+    
+  fi
+  
+}
+
+app_categories() { #lists all apps in a virtual filesystem based on categories file
+  #cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $2"/"$1}'
+  
+  #find apps not in categories file
+  {
+    missingapps="$(list_apps | list_subtract "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}')")"
+    
+    if [ ! -z "$missingapps" ];then
+      PREIFS="$IFS"
+      IFS=$'\n'
+      for app in $missingapps ;do
+        echo "WARNING: $app not found in categories file." 1>&2
+        
+        if list_apps online | grep -qx "$app" ;then
+          #if app found online, then use online category line
+          if [ -z "$onlinestructurefile" ];then
+            onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
+          fi
+          
+          if echo "$onlinestructurefile" | grep -q '^'"$app|" ;then
+            #if line found in online structure file
+            echo "Putting $app in the $(echo "$onlinestructurefile" | grep '^'"$app|" | awk -F'|' '{print $2}') category." 1>&2
+            
+            echo "$(echo "$onlinestructurefile" | grep '^'"$app|")" >> "${DIRECTORY}/data/categories/structure"
+          else
+            #app exists online, but no structure line found
+            echo -e "\e[33mHUGE WARNING: the $app exists on github, but no category was found for it on github!\nPlease report this to Botspot.\e[39m" 1>&2
+            
+            echo "Putting $app in the / category." 1>&2
+            #put the app in root directory - no category
+            echo "$app|" >> "${DIRECTORY}/data/categories/structure"
+          fi
+        else
+          #app not found online
+          
+          echo "Putting $app in the / category." 1>&2
+          #put the app in root directory - no category
+          echo "$app|" >> "${DIRECTORY}/data/categories/structure"
+        fi
+      done
+      IFS="$PREIFS"
+    fi
+  }
+  
+  #find apps in categories file that don't exist
+  {
+    ghostapps="$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | list_subtract "$(list_apps)")"
+    
+    if [ ! -z "$ghostapps" ];then
+      PREIFS="$IFS"
+      IFS=$'\n'
+      for app in $ghostapps ;do
+        echo "WARNING: $app does not exist but it was found in categories file." 1>&2
+        echo "Removing $app from the categories file..." 1>&2
+        #put the app in root directory - no category
+        sed -i "/$app/d" "${DIRECTORY}/data/categories/structure"
+        
+      done
+      IFS="$PREIFS"
+    fi
+  }
+  
+  #category file cleaned up past this point
+  
+  #show normal categories
+  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g'
+  
+  #show special Installed category
+  list_apps installed | sed 's+^+Installed/+g'
+  
+  #show special All Apps category
+  list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g'
+}
+
+usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
+  clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
+  
+  [ -z "$clicklist" ] && error "usercount: clicklist empty. Likely no internet connection"
+  
+  if [ -z "$1" ];then
+    echo "$clicklist"
+  else
+    # $1 is app
+    echo "$clicklist" | grep " $1"'$' | awk '{print $1}' | head -n1
+  fi
+  
+}
+
+text_editor() { #Open user-preferred text editor. $1 is file to open
+  [ -z "$1" ] && error "text_editor(): no file specified"
+  
+  #find the best text editor
+  preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+  
+  #change preferred editor if user-default doesn't exist
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=geany
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=mousepad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=leafpad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=nano
+  fi
+  
+  if [ "$preferrededitor" == nano ];then
+    #terminal-based text editor
+    "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
+  else
+    #non-terminal text editor
+    "$preferrededitor" "$1"
+  fi
+}
+
+script_name() { #returns name of install script(s) for the $1 app. outputs: '', 'install-32', 'install-64', 'install', 'install-32 install-64'
+  [ -z "$1" ] && error 'script_name: requires an argument'
+  
+  #ensure $1 is valid app name
+  [ ! -d "${DIRECTORY}/apps/$1" ] && error "script_name: '$1' is an invalid app name.\n${DIRECTORY}/apps/$1 does not exist."
+  
+  if [ -f "${DIRECTORY}/apps/$1/install-32" ] && [ ! -f "${DIRECTORY}/apps/$1/install-64" ];then
+    echo 'install-32'
+  elif [ -f "${DIRECTORY}/apps/$1/install-64" ] && [ ! -f "${DIRECTORY}/apps/$1/install-32" ];then
+    echo 'install-64'
+  elif [ -f "${DIRECTORY}/apps/$1/install-64" ] && [ -f "${DIRECTORY}/apps/$1/install-32" ];then
+    echo 'install-32 install-64'
+  elif [ -f "${DIRECTORY}/apps/$1/install" ];then
+    echo 'install'
+  fi
+  
+}
+
+app_status() {
+  # $1 is app name
+  
+  [ -z "$1" ] && error 'app_status: $1 variable empty!'
+  
+  if [ -f "${DIRECTORY}/data/status/${1}" ];then
+    cat "${DIRECTORY}/data/status/${1}"
+  else
+    echo 'uninstalled' #if app status file doesn't exist, assume uninstalled
+  fi
+}
+
+runonce() {
+  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
+  
+  #Runs a script in the form of stdin
+  
+  script="$(cat /dev/stdin)"
+  
+  runonce_hash="$(echo "$script" | sha256sum | awk '{print $1}')"
+  
+  if grep -qx '^'"$runonce_hash"'$' "${DIRECTORY}/data/runonce_hashes" ;then
+    #hash found
+    #echo "runonce: '$script' already run before. Skipping."
+    true
+  else
+    #run the script.
+    bash <(echo "$script")
+    #if it succeeds, add the hash to the list to never run it again
+    if [ $? == 0 ];then
+      echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
+      echo "'$script' succeeded. Added to list."
+    else
+      echo "'$script' failed. Not adding hash to list."
+    fi
+    
+  fi
+  
+}
+
+

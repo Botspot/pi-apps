@@ -8,12 +8,10 @@ function error {
 }
 
 cd $HOME
-#remove 5.2.50 deb if present
-rm -f ./qemu-5.2.50-armhf.deb
-#remove 5.2.90 deb if present
-rm -f ./qemu-5.2.90-armhf.deb
+#remove deb if present
+rm -f ./qemu*-armhf.deb
 #Download QEMU
-wget https://archive.org/download/macos_921_qemu_rpi/qemu-5.2.90-armhf.deb || error 'Failed to Download QEMU!'
+wget https://github.com/chunky-milk/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || error 'Failed to Download QEMU!'
 #Install QEMU
-sudo apt install --fix-broken -y ./qemu-5.2.90-armhf.deb || error 'Failed to install QEMU!'
-rm -f qemu-5.2.90-armhf.deb
+sudo apt install -fy ./qemu-6.0.50-armhf.deb || error 'Failed to install QEMU!'
+rm -f qemu-6.0.50-armhf.deb

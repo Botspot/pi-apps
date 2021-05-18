@@ -24,6 +24,8 @@ format="$1"
 
 if [ -z "$format" ];then
   format=yad
+elif [[ "$format" = xlunch* ]];then
+  format=xlunch
 elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
   error "Unknown list format '$format'!"
 fi
@@ -57,6 +59,7 @@ dir $dir $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
 format: $format
 number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
 preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
+api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
 structure shasum: $(shasum "${DIRECTORY}/data/categories/structure" | awk '{print $1}')
 ${timestamps:1}"
 }
@@ -88,63 +91,17 @@ if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
   reloadlist=1
 fi
 
-#this ensures that all apps & categories stay preloaded.
-(sleep 5;"${DIRECTORY}/etc/preload-daemon" "$format") 1>&2 &>/dev/null &
-
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
   
-  APPS="$(ls "${DIRECTORY}/apps")"
-  structure="$(cat "${DIRECTORY}/data/categories/structure")"
+  #for app_categories() and app_status() functions
+  source "${DIRECTORY}/api"
+  vfiles="$(app_categories)" #generate paps within categories as folders
   
   #generate a virtual file system with apps in folders represented as subdirectories
-  vfiles=''
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for app in $APPS
-  do
-    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    
-    if [ -z "$line" ];then
-      echo "WARNING: $app app not found in $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g') file." 1>&2
-      if [ -z "$onlinestructurefile" ];then
-        onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
-      fi
-      onlinematch="$(echo "$onlinestructurefile" | grep "$app"'|')"
-      if [ ! -z "$onlinematch" ];then
-        echo -e "Located the default category for the $app app from github.\nIt is: ${onlinematch}EOO" 1>&2
-        echo "$onlinematch" >> "${DIRECTORY}/data/categories/structure"
-      else
-        echo -e "Could not find the default category for the $app app." 1>&2
-        echo "${app}|" >> "${DIRECTORY}/data/categories/structure"
-      fi
-      #refresh structure file
-      structure="$(cat "${DIRECTORY}/data/categories/structure")"
-      line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    fi
-    
-    vfiles="$vfiles
-$line"
-  done
-  IFS="$PREIFS"
   
-  #create special directory containing installed apps
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for app in $APPS
-  do
-    line="$(echo "$structure" | grep "$app"'|' | awk -F'|' '{print $2 "/" $1}')"
-    
-    if [ -f "${DIRECTORY}/data/status/$app" ] && [ "$(cat "${DIRECTORY}/data/status/$app")" == 'installed' ];then
-      #if installed, add to list
-      vfiles="$vfiles
-Installed/$app"
-    fi
-    
-  done
-  IFS="$PREIFS"
   
-  vfiles="$(echo "$vfiles" | grep . | sed 's+^/++g' | sort | uniq)"
+  vfiles="$(echo "$vfiles" | grep . | sort | uniq)"
   #echo "$vfiles" 1>&2
   
   
@@ -155,22 +112,15 @@ Installed/$app"
   fi
   #echo "$vfiles" 1>&2
   
+  #remove apps within categories - show this layer of stuff only.
   vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
-  #                         only root file name     replace \ with /   move first / to end of line     remove duplicate entries
-  #vfiles="$(echo "$vfiles" | awk -F '/' '{print $1}' | sed 's+\\+/+g' | sed 's+^/\(.*\)+\1/+' | sort | uniq)"
   
-  #echo "$vfiles" 1>&2
-  
-  #get list of apps --------------- and exclude apps mentioned in hidelist file ---------------- remove lines containing '/'
+  #get list of apps - excluding folders
   APPS="$(echo "$vfiles" | grep -v '/')"
   
-  #get list of "directories"
+  #get list of folders - excluding apps - and hide the hidden folder.
   DIRS="$(echo "$vfiles" | grep '/' | tr -d '/' | grep -vx "hidden")"
-  #APPS="$(ls "${DIRECTORY}/apps")"
   
-  #echo -e "Apps: $APPS\nDirs: $DIRS" 1>&2
-  
-  #exit 0
   #remove apps that are not compatible with OS architecture
   PREIFS="$IFS"
   IFS=$'\n'
@@ -197,10 +147,10 @@ Installed/$app"
     LIST=''
     for i in $DIRS
     do
-      if [ "$i" == 'Installed' ];then
-        diricon="${DIRECTORY}/icons/folder-installed.png"
+      if [ -f "${DIRECTORY}/icons/categories/${i}.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${i}.png"
       else
-        diricon="${DIRECTORY}/icons/folder.png"
+        diricon="${DIRECTORY}/icons/categories/default.png"
       fi
       
       LIST="${LIST}$diricon
@@ -217,7 +167,7 @@ App folder
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 $i
-"\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$(app_status "$i")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
     done
     IFS="$PREIFS"
@@ -230,10 +180,10 @@ $i
     LIST=''
     for i in $DIRS
     do
-      if [ "$i" == 'Installed' ];then
-        diricon="${DIRECTORY}/icons/folder-installed-64.png"
+      if [ -f "${DIRECTORY}/icons/categories/${i}-64.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${i}-64.png"
       else
-        diricon="${DIRECTORY}/icons/folder-64.png"
+        diricon="${DIRECTORY}/icons/categories/default-64.png"
       fi
       
       LIST="$LIST
@@ -243,7 +193,7 @@ ${i};$diricon;${i}/"
     for i in $APPS
     do
       LIST="$LIST
-${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
+${i} "\("$(app_status "${i}")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
     done
     IFS="$PREIFS"
   fi
@@ -265,9 +215,12 @@ PREIFS="$IFS"
 IFS=$'\n'
 for icon in $(echo "$LIST" | grep icon-24)
 do
-  cat "$icon" 1>/dev/null
+  cat "$icon" &>/dev/null
   #echo "Putting $icon in cache..." 1>&2
 done
 IFS="$PREIFS" ) &
 
 echo "$LIST"
+
+#re-preload all categories in background
+"${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &

@@ -68,7 +68,7 @@ $category
   #echo -e "'$LIST'\n'$APPS'"
   
   output="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
-    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g')" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
+    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
     --separator='|' --window-icon="${DIRECTORY}/icons/logo.png" \
     --column=:IMG --column=Name --column=Category:TEXT \
     --button=Reset!"${DIRECTORY}/icons/backup.png"!"Overwrites your structure file with the default one from the Pi-Apps repository.":4 \

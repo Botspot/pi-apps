@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://greentree.cf">
+  <defs>
+    <filter id="inner-shadow-filter-1" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="inner-shadow 1 0 40 20 0.37 rgba(0,0,0,0.7)">
+      <feOffset dx="0" dy="40"/>
+      <feGaussianBlur stdDeviation="20"/>
+      <feComposite operator="out" in="SourceGraphic"/>
+      <feComponentTransfer result="choke">
+        <feFuncA type="linear" slope="0.74"/>
+      </feComponentTransfer>
+      <feFlood flood-color="rgba(0,0,0,0.7)" result="color"/>
+      <feComposite operator="in" in="color" in2="choke" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <circle style="fill: rgb(224, 224, 224); filter: url(#inner-shadow-filter-1);" cx="250" cy="250" r="246.387"/>
+  <path d="M 280.182 246.554 H 516.675 L 436.047 162.554 L 517.155 247.054 L 436.047 331.554 L 516.675 247.554 H 280.182 V 246.554 Z" style="fill: rgb(216, 216, 216); stroke: rgb(255, 255, 255); stroke-linejoin: round; stroke-width: 50px; visibility: hidden;" transform="matrix(-1, 0.00007, -0.00007, -1, 648.685791, 497.026093)" bx:shape="arrow 280.182 162.554 236.973 169 1 81.108 80.628 1@5820eb95"/>
+  <path d="M 280.182 246.554 H 516.675 L 436.047 162.554 L 517.155 247.054 L 436.047 331.554 L 516.675 247.554 H 280.182 V 246.554 Z" style="fill: rgb(216, 216, 216); stroke-linejoin: round; stroke-width: 50px; filter: none; stroke: rgb(64, 198, 104);" transform="matrix(-1, 0.00007, -0.00007, -1, 648.685791, 497.026093)" bx:shape="arrow 280.182 162.554 236.973 169 1 81.108 80.628 1@5820eb95"/>
+</svg>

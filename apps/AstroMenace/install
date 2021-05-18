@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+sudo apt-get -y install g++ cmake make ninja-build libsdl2-dev libogg-dev libvorbis-dev libopenal-dev libalut-dev libfreetype6-dev || error 'Failed to install dependencies'
+
+#download
+rm -rf master.zip astromenace-master/
+wget https://github.com/viewizard/astromenace/archive/refs/heads/master.zip || error 'Failed to download zip!'
+unzip master.zip || error 'Failed to unzip'
+rm -f master.zip
+
+#build
+cd astromenace-master/
+cmake . || error 'Failed to run cmake'
+c=nproc
+make || error 'Failed to run make'
+
+#menu button
+echo "[Desktop Entry]
+Version=1.1
+Type=Application
+Name=Astromance
+Comment=A Minecraft: Bedrock Edition
+Icon=$HOME/astromenace-master/share/astromenace_128.png
+Exec=$HOME/astromenace-master/astromenace
+Categories=Game;
+Terminal=false
+StartupNotify=true" > ~/.local/share/applications/astromenace.desktop
+

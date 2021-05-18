@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/manage" install-if-not-installed 'Wine (x86)' || error "Wine is required to run Lego Digital Desginer but it failed to install!"
+
+rm -f ~/setupldd-pc-4_3_11.exe
+
+wget 'https://github.com/Botspot/lego-digital-designer-rpi/releases/download/1/setupldd-pc-4_3_11.exe' || \
+  wget 'https://web.archive.org/web/20190622153357/https://lc-www-live-s.legocdn.com/downloads/ldd2.0/installer/setupLDD-PC-4_3_11.exe' || \
+  error "Failed to download setupLDD-PC-4_3_11.exe"
+
+wine ~/setupldd-pc-4_3_11.exe || error "Wine failed to run setupldd-pc-4_3_11.exe"
+rm -f ~/setupldd-pc-4_3_11.exe
+
+#wait until finished
+while ps aux | grep -v grep | grep wine | grep -q 'LEGO Digital Designer' ;do
+  sleep 1
+done
+
+if [ ! -f ~/'.local/share/applications/wine/Programs/LEGO Company/LEGO Digital Designer.desktop' ];then
+  error "Lego Digital Designer should be installed by now, but the menu launcher does not exist!\n$HOME/.local/share/applications/wine/Programs/LEGO Company/LEGO Digital Designer.desktop\n"
+fi
+
