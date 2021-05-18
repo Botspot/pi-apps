@@ -7,8 +7,4 @@ function error {
   exit 1
 }
 
-#use the error function often!
-#If a certain command is necessary for installation to continue, then add this to the end of it:
-# || error 'reason'
-#example below:
 curl -sSL https://git.io/JfAPE | bash || error 'Failed to install piKiss!'

@@ -94,6 +94,7 @@ fi
 if [ $reloadlist == 1 ];then
   echo "Generating list..." 1>&2
   
+  #for app_categories() and app_status() functions
   source "${DIRECTORY}/api"
   vfiles="$(app_categories)" #generate paps within categories as folders
   
@@ -166,7 +167,7 @@ App folder
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 $i
-"\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$(app_status "$i")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
 "
     done
     IFS="$PREIFS"
@@ -192,7 +193,7 @@ ${i};$diricon;${i}/"
     for i in $APPS
     do
       LIST="$LIST
-${i} "\("$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "uninstalled")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
+${i} "\("$(app_status "${i}")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
     done
     IFS="$PREIFS"
   fi
@@ -214,7 +215,7 @@ PREIFS="$IFS"
 IFS=$'\n'
 for icon in $(echo "$LIST" | grep icon-24)
 do
-  cat "$icon" 1>/dev/null
+  cat "$icon" &>/dev/null
   #echo "Putting $icon in cache..." 1>&2
 done
 IFS="$PREIFS" ) &

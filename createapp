@@ -6,6 +6,9 @@ function error {
   exit 1
 }
 
+#for text_editor() and script_name() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
 #you can specify a preexisting app with variable 1
 if [ ! -z "$1" ];then
   name="$1"
@@ -23,9 +26,6 @@ windowheight=400
 #step=3
 #start with this app name:
 #name='Email Checker'
-
-#for text_editor() and script_name() functions
-source "${DIRECTORY}/api"
 
 while true;do
   case $step in
