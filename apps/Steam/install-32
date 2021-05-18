@@ -12,7 +12,7 @@ function error {
 #install box86
 if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
   echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
+  "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
   if ! command -v box86 ;then
     error "Box86 executable does not exist!"
   else
