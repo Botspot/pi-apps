@@ -12,9 +12,9 @@ cd $HOME
 # Get dependencies
 DISTRO=$(lsb_release -is)
 if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
-  "${DIRECTORY}/pkg-install" "cmake:armhf pulseaudio-utils:armhf pulseaudio:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg0:armhf libdbus-1-3:armhf" "$(dirname "$0")" || exit 1
+  "${DIRECTORY}/pkg-install" "cmake:armhf pulseaudio-utils pulseaudio libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg0:armhf libdbus-1-3:armhf" "$(dirname "$0")" || exit 1
 elif [[ "${DISTRO}" == "Ubuntu" ]]; then
-  "${DIRECTORY}/pkg-install" "cmake:armhf pulseaudio-utils:armhf pulseaudio:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf" "$(dirname "$0")" || exit 1
+  "${DIRECTORY}/pkg-install" "cmake:armhf pulseaudio-utils pulseaudio libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf" "$(dirname "$0")" || exit 1
 else 
 	error "This script can't run on your OS! It HAS to be Debian or Ubuntu"
 fi
