@@ -12,9 +12,9 @@ cd $HOME
 # Get dependencies
 DISTRO=$(lsb_release -is)
 if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
-  "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 elif [[ "${DISTRO}" == "Ubuntu" ]]; then
-  "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 else 
 	error "This script can't run on your OS! It HAS to be Debian or Ubuntu"
 fi
