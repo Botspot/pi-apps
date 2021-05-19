@@ -16,7 +16,7 @@ if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
 elif [[ "${DISTRO}" == "Ubuntu" ]]; then
   "${DIRECTORY}/pkg-install" "cmake:armhf pulseaudio-utils pulseaudio libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf" "$(dirname "$0")" || exit 1
 else 
-	error "This script can't run on your OS! It HAS to be Debian or Ubuntu"
+	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
 fi
 
 #refresh list of libraries
