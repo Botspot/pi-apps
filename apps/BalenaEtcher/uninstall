@@ -6,7 +6,8 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-
-sudo apt purge -y balena-etcher-electron || error "failed to purge the deb file!"
+# Old deb file name, commented out
+# sudo apt purge -y balena-etcher-electron
+sudo apt purge -y balena-etcher -y || error "Failed to purge deb!"
 rm -f ~/etcher.deb &>/dev/null
 exit 0
