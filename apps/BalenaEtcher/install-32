@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-rm -f ./etcher*armv7l.deb
+rm -f ./etcher.deb
 
 wget -O ~/etcher.deb https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.120/balena-etcher_1.5.120_armv7l.deb || error "Failed to download etcher deb file!"
 
