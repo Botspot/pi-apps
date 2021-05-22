@@ -1,21 +1,6 @@
-#!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#prepare to run nvm
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-cd $NVM_DIR
-
-#Uninstall NodeJS
-nvm deactivate
-nvm uninstall default || error "Failed to purge Node.JS!"
-
-#Remove nvm
-sudo rm -rf ~/.nvm
+cd /usr/local/bin
+sudo rm -f node
+sudo rm -f npm
+sudo rm -f npx
+clear
+echo Uninstalled :D
