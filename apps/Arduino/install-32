@@ -8,12 +8,12 @@ function error {
 }
 
 cd ~/.local/share
-rm -f arduino-1.8.13-linuxarm.tar.xz
+rm -f arduino-1.8.15-linuxarm.tar.xz
 wget https://downloads.arduino.cc/arduino-1.8.15-linuxarm.tar.xz || error "failed to download!"
 
-tar -xf arduino-1.8.13-linuxarm.tar.xz || error "failed to extract with tar!"
-arduino-1.8.13/install.sh || error "failed to run install as $USER user!"
-sudo arduino-1.8.13/install.sh || error "failed run install as root user!"
+tar -xf arduino-1.8.15-linuxarm.tar.xz || error "failed to extract with tar!"
+arduino-1.8.15/install.sh || error "failed to run install as $USER user!"
+sudo arduino-1.8.15/install.sh || error "failed run install as root user!"
 
-rm -f $HOME/Desktop/arduino-arduinoide.desktop arduino-1.8.13-linuxarm.tar.xz
+rm -f $HOME/Desktop/arduino-arduinoide.desktop arduino-1.8.15-linuxarm.tar.xz
 exit 0
