@@ -2,8 +2,8 @@
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
-function error {
-  echo -e "\e[91m$1\e[39m"
+error() {
+  echo -e "\e[91m$1\e[39m" 1>&2
   exit 1
 }
 
@@ -34,6 +34,10 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
   if [ -z "$1" ] || [ "$1" == local ];then
     #list all apps
     ls "${DIRECTORY}/apps"
+    
+  elif [ "$1" == all ];then
+    #combined list of apps, both online and local. Removes duplicate apps from the list.
+    echo -e "$(list_apps local)\n$(list_apps online)" | sort | uniq
     
   elif [ "$1" == installed ];then
     #list installed apps
@@ -223,12 +227,40 @@ script_name() { #returns name of install script(s) for the $1 app. outputs: '', 
     echo 'install-32 install-64'
   elif [ -f "${DIRECTORY}/apps/$1/install" ];then
     echo 'install'
+  else
+    true
+    #error "No install script found for the $app app! Please report this to Botspot."
   fi
   
 }
 
-app_status() {
-  # $1 is app name
+script_name_cpu() { #get script name to run based on detected CPU arch
+  [ -z "$1" ] && error 'script_name_cpu: requires an argument'
+  
+  #ensure $1 is valid app name
+  if ! list_apps all | grep -q "$1" ;then
+    error "script_name_cpu: '$1' is an invalid app name."
+  fi
+  
+  #this is used by the updater so we need to check the update folder too
+  if [ -f "${DIRECTORY}/apps/$1/install-32" ] && [ $arch == 32 ];then
+    echo 'install-32'
+  elif [ -f "${DIRECTORY}/apps/$1/install-64" ] && [ $arch == 64 ];then
+    echo 'install-64'
+  elif [ -f "${DIRECTORY}/apps/$1/install" ];then
+    echo 'install'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install-32" ] && [ $arch == 32 ];then
+    echo 'install-32'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install-64" ] && [ $arch == 64 ];then
+    echo 'install-64'
+  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install" ];then
+    echo 'install'
+  else
+    true #app not compatible with current arch
+  fi
+}
+
+app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
   [ -z "$1" ] && error 'app_status: $1 variable empty!'
   
@@ -239,9 +271,24 @@ app_status() {
   fi
 }
 
-runonce() {
-  #run a command, only if it's never been run before. Useful for one-time migration or setting changes.
+will_reinstall() { #return 0 if $1 app will be reinstalled during an update, otherwise return 1.
+  [ -z "$1" ] && error 'will_reinstall: requires an argument'
   
+  #detect which installation script exists and get the hash for that one
+  scriptname="$(script_name_cpu "$1")"
+  
+  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" | awk '{print $1}')
+  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')
+  
+  #if install script was changed                              #if installed already
+  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${1}")" == 'installed' ];then
+    return 0
+  else
+    return 1
+  fi
+}
+
+runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
   script="$(cat /dev/stdin)"
@@ -267,4 +314,13 @@ runonce() {
   
 }
 
+#if this script is being run standalone, not sourced
+if [[ "$0" ==  */api ]];then
+  #if user input a function command, then run it with arguments.
+  if [ ! -z "$1" ];then
+    #Keep in mind this could run any command the user wanted, not necessarily exclusively function commands.
+    "$@"
+    #"$1" "$2" "$3" "$4" "$5" "$6"
+  fi
+fi
 
