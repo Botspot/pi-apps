@@ -7,5 +7,6 @@ function error {
   exit 1
 }
 
-sudo apt-get remove -y minecraft-pi-native &>/dev/null || true
-sudo apt-get remove -y mcpil &>/dev/null || true
+sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
+sudo apt-get remove -y gmcpil &>/dev/null || true
+sudo apt-get remove -y jmcpil &>/dev/null || true

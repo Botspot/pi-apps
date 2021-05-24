@@ -19,18 +19,32 @@ function error {
 ##
 
 if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-    error "Unsupported Debian Version! Your Debian version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid."
+    error "Unsupported RPi OS Version! Your RPi OS version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid. Consider searching how to upgrade your version to RPi OS Buster!"
 fi
 
 # Remove Old Minecraft Pi
 sudo apt-get remove -y minecraft-pi &>/dev/null || true
-sudo apt-get remove -y minecraft-pi-native &>/dev/null || true
-sudo apt-get remove -y mcpil &>/dev/null || true
+sudo apt-get remove -y mcpil-r &>/dev/null || true
+sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
 
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh || bash || error "Failed to install apt repo!"
 
-sudo apt install mcpi-reborn-native mcpil
+# Choose MCPIL to use
+PS3='Which launcher for MCPI Modded would you like to use? (Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy): '
+options=("gMCPIL (more features) (recommended)" "jMCPIL (better looking UI) (requires ~100mb installation of JRE)" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "gMCPIL (reccomended)")
+            "${DIRECTORY}/pkg-install" "gmcpil minecraft-pi-reborn-native" "$(dirname "$0")" || exit 1
+            break;;
+        "jMCPIL (better looking UI)")
+            "${DIRECTORY}/pkg-install" "jmcpil minecraft-pi-reborn-native" "$(dirname "$0")" || exit 1
+            break;;
+        "Quit")
+            break;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
 
-##
-## Install MCPIL
-##
+pip3 install mcpi
