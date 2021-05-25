@@ -108,3 +108,9 @@ rm -rf "${STORAGE}/mcpil"
 # Update Docker Permissions
 sudo groupadd -f docker
 sudo usermod -aG docker "$(id -un)"
+
+pip3 install mcpi
+
+sudo service docker start
+sudo dockerd
+sudo service docker restart
