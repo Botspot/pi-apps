@@ -11,7 +11,7 @@ function error {
 "${DIRECTORY}/pkg-install" "firefox-esr" "$(dirname "$0")" || exit 1
 
 wget https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_arm64.deb || error 'Failed to download browsh!'
-sudo dpkg -i browsh_1.6.4_linux_arm64.deb || error 'Failed to install browsh!' 
+sudo apt -yf install ./browsh_1.6.4_linux_arm64.deb || error 'Failed to install browsh!' 
 rm browsh_1.6.4_linux_arm64.deb
 echo "[Desktop Entry]
 Version=1.1
