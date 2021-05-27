@@ -7,6 +7,10 @@ function error {
 
 cd $HOME
 
+if [[ "$EUID" == 0 ]]; then
+	error "You cant install pi-apps as root! please try again as a regular user."
+fi
+
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #install yad automatically
