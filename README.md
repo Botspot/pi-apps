@@ -12,6 +12,8 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
+**IMPORTANT NOTE**: Please DO NOT install or run pi-apps with sudo/root! It will cause severe issues!!!
+
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
