@@ -68,10 +68,33 @@ git clone https://github.com/Botspot/pi-apps
 # 完整文档见 [Wiki](https://github.com/Botspot/pi-apps/wiki) 
 
 ### 基本用法
-- 这是**主窗口**：
-
+- 这是**主窗口**:  
 ![主窗口](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
-使用主窗口选择要查看的应用类别。双击打开一个类别文件夹。
-- 选择类别后，您会看到一个应用列表
-
+使用主窗口选择要查看的应用类别。双击打开一个类别文件夹。  
+- 选择类别后，您会看到一个应用列表：  
 ![应用列表](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/app%20list.png?raw=true)  
+
+- 如果您双击某个应用程序，或选择应用程序并单击![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png)，您将看到**详细信息**窗口。  
+![详细信息](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/details%20window.png?raw=true)  
+- Pi-Apps 可能会在启动时显示通知。 如果您选择查看更新，**更新程序窗口**将会出现：  
+![更新](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)  
+- Pi-Apps **设置** 可以通过启动 菜单 -> 偏好 -> Pi-Apps Settings 进行配置。  
+![设置](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)  
+
+## To-do
+
+- [X] 制作**应用创建系统**。 （用`createapp` 脚本完成）
+- [X] 将 Pi-Apps 添加到 **Twister OS**。 （通过 Twister 1.8.5 补丁于 11/2/2020 完成。）
+- [X] 支持单独的 **32-bit** 和 **64-bit** 安装脚本。
+- [X] 允许从应用列表中选择**多个应用**并同时安装。
+- [X] 应用列表增加**搜索功能**。 它仍然是实验性的：要启用它，请在 **Pi-Apps Settings** -> **App List Style** 中切换到 **xlunch**。
+- [X] 用一些**类别**来分解长长的应用程序列表。
+- [X] 添加一个包含当前 **已安装** 的所有应用程序的新类别。
+
+## 徽章
+如果您的应用程序在 Pi-Apps 上，请考虑将这个漂亮的徽章/超链接添加到您的自述文件中：
+[![徽章](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
+嵌入代码:  
+```
+[![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
+```
