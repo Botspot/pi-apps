@@ -7,6 +7,13 @@ function error {
   exit 1
 }
 
+#for the will_reinstall() and list_intersect() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+#NOTE TO SELF BOTSPOT: REMOVE THE FASTMODE VARIABLE SETTING!!!
+#fastmode=1
+
+{ # Determine if checking for updates today
 lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check")"
 if [ -z $lastupdatecheck ];then
   echo "Warning: ${DIRECTORY}/data/last-update-check does not exist!"
@@ -43,6 +50,11 @@ if [ "$lastupdatecheck" -gt "$(date +%j)" ];then
   nocheck=0
 fi
 
+#forcibly check if fastmode variable is 1
+if [ "$fastmode" == 1 ];then
+  nocheck=0
+fi
+
 #hidden flag: if $1 is 'onboot', then check for updates only for those apps that are installed.
 onboot="$1"
 if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
@@ -59,20 +71,26 @@ fi
 
 if [ $nocheck == 1 ];then
   echo "Won"\'"t check for updates today, because of the update interval is set to $updateinterval in Settings.
-  To forcibly check for updates now, press any key within the next 20 seconds."
+To forcibly check for updates now, press any key within the next 20 seconds."
   read -n 1 -t 20 || exit 0
   echo ''
 fi
 
 #write today's date to file. Format is "number of days since jan 1"
 echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
+}
 
-#generate app update status info
-updatable="$("${DIRECTORY}/manage" check-all)"
+#if fastmode is 1, then rely on previously gathered updatable app information. This information is located in data/update-status.
+if [ "$fastmode" == 1 ];then
+  updatable="$("${DIRECTORY}/manage" check-all nogenerate 2>/dev/null)"
+else
+  #otherwise, re-download apps to update folder and hash them all to determine which apps can be updated
+  updatable="$("${DIRECTORY}/manage" check-all)"
+fi
 [ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
 
 #shorten to last line
-updatable="$(echo "$updatable" | tail -1)"
+updatable="$(echo "$updatable")"
 if [ "$updatable" == '.' ];then
   updatable=''
 fi
@@ -80,80 +98,81 @@ fi
 echo "updatable: $updatable"
 
 #if check-all succeeded to download the repo to the update folder
-if [ -d "${DIRECTORY}/update" ];then
-  
-  #mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
-  
-  #list all files in update folder
-  cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
-  updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
-  
-  #list all files in main folder
-  cd "${DIRECTORY}"
-  localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'xlunch/')"
-  
-  mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq)"
-  
-  #exclude files mentioned in data/update-exclusion file
-  IFS=$'\n'                                   #exclude commented lines
-  for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]")
-  do
-    mergedfiles="$(echo "$mergedfiles" | grep -v "$file")"
-    echo "Excluding '$file' from the mergedlist."
-  done
-  IFS="|" # back to IFS='|'
-  
-  mergedfiles="$(echo "$mergedfiles" | tr '\n' '|')"
-  for file in $mergedfiles
-  do
-    newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    oldhash=$(cat "${DIRECTORY}/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-    #echo -e "newhash: $newhash\noldhash: $oldhash"
-    
-    if [ "$newhash" == "$oldhash" ];then
-      echo -e "${file} is identical\e[90m to the online version. Nothing to do!\e[39m"
-    else
-      if [ ! -f "${DIRECTORY}/${file}" ];then
-        echo -e "\e[97m${file} does not exist locally.\e[39m Adding to updatable list."
-        #in this case, add to updatable list
-        mainupdate="${mainupdate}|${file}"
-      elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
-        echo -e "\e[97m${file} only exists locally.\e[39m Will not add to updatable list."
-        #in this case, do not add to updatable list
-      else
-        echo -e "\e[97m${file} exists in both locations, but online version is newer\e[39m. Adding to updatable list."
-        #in this case, add to updatable list
-        mainupdate="${mainupdate}|${file}"
-      fi
-      
-    fi
-  done
-  IFS="$PREIFS"
-  
-  #remove initial '|' character
-  mainupdate="${mainupdate:1}"
-else
+if [ ! -d "${DIRECTORY}/update" ];then
   error "${DIRECTORY}/update does not exist. Most likely there is no Internet connection."
 fi
+
+#mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
+
+#list all files in update folder
+cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
+updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+
+#list all files in main folder
+cd "${DIRECTORY}"
+localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'xlunch/')"
+
+mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq)"
+
+#exclude files mentioned in data/update-exclusion file
+IFS=$'\n'                                   #exclude commented lines
+for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]")
+do
+  mergedfiles="$(echo "$mergedfiles" | grep -v "$file")"
+  echo "Excluding '$file' from the mergedlist."
+done
+
+mergedfiles="$(echo "$mergedfiles")"
+for file in $mergedfiles
+do
+  newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+  oldhash=$(cat "${DIRECTORY}/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
+  #echo -e "newhash: $newhash\noldhash: $oldhash"
+  
+  if [ "$newhash" == "$oldhash" ];then
+    true
+    #echo -e "${file} is identical\e[90m to the online version. Nothing to do!\e[39m"
+  else
+    if [ ! -f "${DIRECTORY}/${file}" ];then
+      echo -e "\e[97m${file} does not exist locally.\e[39m Adding to updatable list."
+      #in this case, add to updatable list
+      mainupdate="${mainupdate}|${file}"
+    elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
+      echo -e "\e[97m${file} only exists locally.\e[39m Will not add to updatable list."
+      #in this case, do not add to updatable list
+    else
+      echo -e "\e[97m${file} exists in both locations, but files do not match.\e[39m Adding to updatable list."
+      #in this case, add to updatable list
+      mainupdate="${mainupdate}
+${file}"
+    fi
+    
+  fi
+done
+IFS="$PREIFS"
+#remove initial newline character
+mainupdate="${mainupdate:1}"
 
 LIST=''
 
 PREIFS="$IFS"
-IFS="|"
-for i in $updatable
+IFS=$'\n'
+for app in $updatable #repeat for every updatable app
 do
-  LIST="${LIST}${DIRECTORY}/update/pi-apps/apps/${i}/icon-24.png
-$i "\("$([ "$(cat "${DIRECTORY}/data/update-status/${i}")" == 'new' ] && echo 'new ')app$([ "$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null)" == 'installed' ] && echo ', <b>will be reinstalled</b>')"\)"
+  LIST="${LIST}TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app "\("$([ "$(cat "${DIRECTORY}/data/update-status/${app}")" == 'new' ] && echo 'new ')app$(will_reinstall "$app" && echo ', <b>will be reinstalled</b>')"\)"
+$app
 "
 done
-for i in $mainupdate
+for file in $mainupdate #repeat for every updatable file
 do
   #determine mimetype of updatable file to display an informative icon in the list
-  if [ "$(file -b --mime-type "${DIRECTORY}/${i}")" == 'text/x-shellscript' ];then
+  if [ "$(file -b --mime-type "${DIRECTORY}/${file}")" == 'text/x-shellscript' ];then
     #if updatable file in question is a shell script, then display shellscript icon.
     mimeicon="${DIRECTORY}/icons/shellscript.png"
     mimetype='script'
-  elif [[ "${DIRECTORY}/${i}" == *.png ]];then
+  elif [[ "${DIRECTORY}/${file}" == *.png ]];then
     mimeicon="${DIRECTORY}/icons/image.png"
     mimetype='image'
   else
@@ -162,8 +181,10 @@ do
     mimetype='file'
   fi
   
-  LIST="${LIST}${mimeicon}
-$i "\("$mimetype"\)"
+  LIST="${LIST}TRUE
+${mimeicon}
+$file "\("$mimetype"\)"
+${file}
 "
 done
 IFS="$PREIFS"
@@ -172,35 +193,52 @@ if [ -z "$LIST" ];then
   echo -e '\e[92mNothing to update. Nothing to do!\e[39m'
   exit 0
 fi
-LIST="${LIST::-1}"
+LIST="${LIST::-1}" #remove last newline
 #echo "List: ${LIST}EOL"
 
 screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
 screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
 
-yad --form --text='Pi-Apps updates available.' \
-  --on-top --skip-taskbar --undecorated --close-on-unfocus \
-  --geometry=260+$((screen_width-262))+$((screen_height-150)) \
-  --image="${DIRECTORY}/icons/logo-64.png" \
-  --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":1 || exit 0
+#display notification in lower-right, only if fastmode variable is not 1
+if [ "$fastmode" != 1 ];then
+  yad --form --text='Pi-Apps updates available.' \
+    --on-top --skip-taskbar --undecorated --close-on-unfocus \
+    --geometry=260+$((screen_width-262))+$((screen_height-150)) \
+    --image="${DIRECTORY}/icons/logo-64.png" \
+    --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":1 || exit 0
+fi
 
-echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=300 --no-headers \
-  --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-  --text='Updates available:' \
-  --column=:IMG --column=Name \
+#If user clicks 'Details', then display a list of evrything updatable
+output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' \
+  --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
+  --list --checklist --separator='\n' --print-column=4 --no-headers \
+  --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
+  --column=:CHK --column=:IMG --column=Name --column=ID:HD \
   --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
-  --button='Update now'!"${DIRECTORY}/icons/download.png":0 || exit 0
+  --button='Update now'!"${DIRECTORY}/icons/download.png":0)" || exit 0
 
 PREIFS="$IFS"
-IFS="|"
-for i in $mainupdate
+IFS=$'\n'
+
+#remove empty newlines from output
+output="$(echo "$output" | grep .)"
+echo "$output" > ~/output.log
+
+#limit list of update files to those selected by user.
+#Edge case: if a file and app are named the same, they will appear in both lists if either one was selected.
+updatable="$(echo "$updatable" | list_intersect "$output")"
+#echo -e "\nWill update these apps:\n$updatable EOAPPS"
+mainupdate="$(echo "$mainupdate" | list_intersect "$output")"
+#echo "Will update these files:\n$mainupdate EOFILES"
+
+for file in $mainupdate
 do
-  mkdir -p "$(dirname "${DIRECTORY}/${i}")"
+  mkdir -p "$(dirname "${DIRECTORY}/${file}")"
   
   #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${i}" "${DIRECTORY}/${i}" || echo "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${i}\e[39m!"
+  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
   
-  echo -e "\e[92m${i} was updated successfully.\e[39m"
+  echo -e "\e[92m${file} file was copied successfully.\e[39m"
 done
 IFS="$PREIFS"
 if [ ! -z "$updatable" ];then
@@ -209,26 +247,27 @@ if [ ! -z "$updatable" ];then
     updatable="'"$updatable"'"
     trap "sleep 10" EXIT
     PREIFS="$IFS"
-    IFS="|"
+    IFS=$'\''\n'\''
     for i in $updatable
     do
       "${DIRECTORY}/manage" update "$i" nofetch
-      echo -e "\e[92m${i} was updated successfully.\e[39m"
     done
     IFS="$PREIFS"
     echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
   ' 'Updating apps...'
 fi
 #.git folder
-#move old .git folder to trash
-gio trash "${DIRECTORY}/.git" 2>/dev/null
-cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git!"
+#delete .git folder, then copy the new one
+rm -rf "${DIRECTORY}/.git"
+cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git folder!"
 
 sleep 1
 while ps -C manage &>/dev/null
 do
   sleep 0.1
 done
+#exit before displaying "Updates complete." window
+exit 0
 
 yad --text="Updates complete.
 Please close all instances of Pi-Apps to apply the update." \

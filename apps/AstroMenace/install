@@ -25,8 +25,8 @@ make || error 'Failed to run make'
 echo "[Desktop Entry]
 Version=1.1
 Type=Application
-Name=Astromance
-Comment=A Minecraft: Bedrock Edition
+Name=AstroMenace
+Comment=Hardcore 3D space scroll-shooter with spaceship upgrade possibilities.
 Icon=$HOME/astromenace-master/share/astromenace_128.png
 Exec=$HOME/astromenace-master/astromenace
 Categories=Game;
