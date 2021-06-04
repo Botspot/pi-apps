@@ -114,11 +114,11 @@ git clone https://github.com/Botspot/pi-apps
 > 但是，总有一两个应用程序需要关注，以及数十个应用程序请求。这足以让一个*团队*的开发人员忙碌起来。
 
  - Pi-Apps 是免费的吗？
-> 绝对！ Pi-Apps 不是产品或服务：欢迎任何人使用它；没有人应该感到被迫/被要求捐赠。
+> 绝对是！ Pi-Apps 不是产品或服务：欢迎任何人使用它；没有人应该感到被迫/被要求捐赠。
 
  - 我能提供什么帮助？
-> - 在论坛和评论中留下关于 Pi-Apps 的好话总是很好。除了帮助别人找到这个有用的软件，你可能会被添加到[名人堂](https://github.com/Botspot/pi-apps#what-do-others-say-about-pi-apps ）！
+> - 在论坛和评论中留下关于 Pi-Apps 的好话总是很好。除了帮助别人找到这个有用的软件，你可能会被添加到[名人堂](https://github.com/Botspot/pi-apps#what-do-others-say-about-pi-apps)！
 > - 如果你愿意，你可以[捐赠](https://paypal.me/josephmarchand)。这笔钱归我所有（减去 Paypal 费用），并帮助支持未来的开源开发。一些钱用于将 [赏金](https://github.com/ptitSeb/box86/issues/296) 放在我希望由拥有我没有的技能/时间的其他人完成的应用程序上有。
 > - 您可以查看 [应用请求列表](https://github.com/Botspot/pi-apps/issues) 并帮助为它们创建脚本。
-> - 如果您在 Youtube、Reddit 或 Facebook 上看到有人抱怨应用程序损坏，请鼓励他们加入 [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) 或 [open an issue]( https://github.com/Botspot/pi-apps/issues/new）来解决问题。 （我不经常访问这些网站。）
+> - 如果您在 Youtube、Reddit 或 Facebook 上看到有人抱怨应用程序损坏，请鼓励他们加入 [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) 或 [open an issue](https://github.com/Botspot/pi-apps/issues/new)来解决问题。 （我不经常访问这些网站。）
 > - 您可以帮助解决/诊断其他人遇到的问题。
