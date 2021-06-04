@@ -98,3 +98,27 @@ git clone https://github.com/Botspot/pi-apps
 ```
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
 ```
+### Botspot 问答
+ - 你为什么开发 Pi-Apps？
+> 长期以来，我一直为很少有人知道开源 RPi 软件项目而感到难过。其中许多项目非常有用和有益，但从来没有一种好的方式来分发它们。
+> 存储库不托管它们，而且它们通常没有很好地宣传，那么人们将如何找到它们？
+> 大多数人永远找不到它们。
+> 有一天我意识到：为什么不创建一个专门从事所有社区 RPi 软件项目的应用程序商店呢？它将帮助更多用户找到该软件，同时它将提供一种超级简单的安装方式。
+>（你更喜欢哪一个——点击一个闪亮的安装按钮，或者从一个粗略的博客教程中复制粘贴一堆命令？）
+
+ - 编写这个程序需要多长时间？
+> 大约两周几乎不间断的编码为奠定基础。从那时起，我不断优化性能、修复错误、解决问题、添加新功能并处理新的应用程序提交。
+
+ - Pi-Apps 还在开发中吗？
+> 当然是！最初的开发大部分已经完成，我没有看到更多 [主要功能](https://github.com/Botspot/pi-apps#to-do) 被添加到 Pi-Apps 的核心功能中。 （除了将来可能允许`apt`-package 应用程序）
+> 但是，总有一两个应用程序需要关注，以及数十个应用程序请求。这足以让一个*团队*的开发人员忙碌起来。
+
+ - Pi-Apps 是免费的吗？
+> 绝对！ Pi-Apps 不是产品或服务：欢迎任何人使用它；没有人应该感到被迫/被要求捐赠。
+
+ - 我能提供什么帮助？
+> - 在论坛和评论中留下关于 Pi-Apps 的好话总是很好。除了帮助别人找到这个有用的软件，你可能会被添加到[名人堂](https://github.com/Botspot/pi-apps#what-do-others-say-about-pi-apps ）！
+> - 如果你愿意，你可以[捐赠](https://paypal.me/josephmarchand)。这笔钱归我所有（减去 Paypal 费用），并帮助支持未来的开源开发。一些钱用于将 [赏金](https://github.com/ptitSeb/box86/issues/296) 放在我希望由拥有我没有的技能/时间的其他人完成的应用程序上有。
+> - 您可以查看 [应用请求列表](https://github.com/Botspot/pi-apps/issues) 并帮助为它们创建脚本。
+> - 如果您在 Youtube、Reddit 或 Facebook 上看到有人抱怨应用程序损坏，请鼓励他们加入 [Pi-Apps Discord](https://discord.gg/RXSTvaUvuu) 或 [open an issue]( https://github.com/Botspot/pi-apps/issues/new）来解决问题。 （我不经常访问这些网站。）
+> - 您可以帮助解决/诊断其他人遇到的问题。
