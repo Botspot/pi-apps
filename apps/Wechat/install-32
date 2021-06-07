@@ -52,6 +52,6 @@ Path=/home/pi/.config/wechat-prefix/dosdevices/c:/Program\ Files/Tencent/WeChat
 Icon=8A76_WeChat
 StartupWMClass=wechat.exe" > ~/Desktop/WeChat.desktop
 
-cp ~/Desktop/WeChat.desktop ~/.loca/share/applications/WeChat.desktop
+cp ~/Desktop/WeChat.desktop ~/.local/share/applications/WeChat.desktop
 
 echo 'Install complete! Open WeChat now by using the desktop shortcut in your desktop or in the start menu.'
