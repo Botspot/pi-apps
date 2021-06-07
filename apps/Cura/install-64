@@ -8,7 +8,8 @@ function error {
 }
 
 wget https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_arm64.deb
-sudo apt install -y ./stl-thumb_0.4.0_arm64.deb
+
+"${DIRECTORY}/pkg-install" "./stl-thumb_0.4.0_arm64.deb" "$(dirname "$0")" || exit 1
 rm stl-thumb_0.4.0_arm64.deb
 
 wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210522/Cura-mb-master-aarch64-20210522.AppImage || error "Failed to download!"
