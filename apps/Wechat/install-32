@@ -52,7 +52,7 @@ Exec=env BOX86_DYNAREC=0 env WINEPREFIX=~/.config/wechat-prefix wine ~/.config/w
 Type=Application
 StartupNotify=true
 Path=/home/pi/.config/wechat-prefix/dosdevices/c:/Program\ Files/Tencent/WeChat
-Icon=8A76_WeChat
+Icon=$HOME/pi-apps/apps/Wechat/icon-64.png
 StartupWMClass=wechat.exe" > ~/Desktop/WeChat.desktop
 
 cp ~/Desktop/WeChat.desktop ~/.local/share/applications/WeChat.desktop
