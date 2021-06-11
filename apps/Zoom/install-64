@@ -10,13 +10,17 @@ function error {
 cd $HOME
 
 # Get dependencies
-DISTRO=$(lsb_release -is)
-if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
-  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg0:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu67:armhf libjsoncpp24:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
-elif [[ "${DISTRO}" == "Ubuntu" ]]; then
+CODENAME=$(lsb_release -cs)
+if [[ "${CODENAME}" == "buster" ]]; then 
+  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg0:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu63:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
+elif [[ "${CODENAME}" == "focal" ]]; then
+  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu66:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
+elif [[ "${CODENAME}" == "groovy" ]]; then
+  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu67:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
+elif [[ "${CODENAME}" == "hirsute" ]]; then
   "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu67:armhf libjsoncpp24:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
 else 
-	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
+	error "this script can't run on your OS! it HAS to be Debian buster or Ubuntu 20.04, 20.10 or 21.04"
 fi
 
 #refresh list of libraries
