@@ -19,32 +19,31 @@ function error {
 ##
 
 if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-    error "Unsupported RPi OS Version! Your RPi OS version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid. Consider searching how to upgrade your version to RPi OS Buster!"
+  error "Unsupported RPi OS Version! Your RPi OS version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid. Consider searching how to upgrade your version to RPi OS Buster!"
 fi
 
 # Remove Old Minecraft Pi
 sudo apt-get remove -y minecraft-pi &>/dev/null || true
-sudo apt-get remove -y mcpil-r &>/dev/null || true
-sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
+sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh || bash || error "Failed to install apt repo!"
+wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | bash &>/dev/null || error "Failed to install apt repo!"
 
 # Choose MCPIL to use
 PS3='Which launcher for MCPI Modded would you like to use? (Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy): '
-options=("gMCPIL (more features) (recommended)" "jMCPIL (better looking UI) (requires ~100mb installation of JRE)" "Quit")
+options=("gMCPIL (recommended)" "jMCPIL (better GUI)" "Quit")
 select opt in "${options[@]}"
 do
-    case $opt in
-        "gMCPIL (reccomended)")
-            "${DIRECTORY}/pkg-install" "gmcpil minecraft-pi-reborn-native" "$(dirname "$0")" || exit 1
-            break;;
-        "jMCPIL (better looking UI)")
-            "${DIRECTORY}/pkg-install" "jmcpil minecraft-pi-reborn-native" "$(dirname "$0")" || exit 1
-            break;;
-        "Quit")
-            break;;
-        *) echo "invalid option $REPLY";;
-    esac
+  case $opt in
+    "${options[0]}")
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-native gmcpil" "$(dirname "$0")" || exit 1
+        break;;
+    "${options[1]}")
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-native jmcpil" "$(dirname "$0")" || exit 1
+        break;;
+    "${options[2]}")
+        break;;
+    *) echo "Invalid option: $REPLY";;
+  esac
 done
 
 pip3 install mcpi
