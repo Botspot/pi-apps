@@ -1,0 +1,43 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+function install_node() {
+	if [[ "$1" == "set_nvm_dir" ]]; then
+		export NVM_DIR="$2"
+	fi
+	if [[ "$3" == "message" || "$1" == message ]]; then
+		if [[ "$1" == "message" ]]; then
+			echo "$2"
+		elif [[ "$3" == message ]]; then
+			echo "$4"
+		fi
+	fi
+	nvm install --lts
+}
+
+#Checking if using armv6
+if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
+  error "armv6 cpu not supported"
+fi
+
+if ! command -v curl >/dev/null ; then
+  echo -e "\033[0;31mcurl: command not found.\e[39m
+You need to install curl first. If you are on a debian system, this command should install it:
+\e[4msudo apt install curl\e[0m"
+  exit 1
+fi
+
+#Install nvm manager:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash || error "Failed to install nvm!"
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+#Install NodeJS, if nvm fails, try again with a different 'NVM_DIR"
+install_node || install_node set_nvm_dir "$HOME/.nvm" message "failed to install node.js! trying again with different NVM_DIR..." || error "Failed to install Node.js using nvm!"
