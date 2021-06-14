@@ -12,8 +12,8 @@ cd $HOME
 #remove old deb (if exists)
 rm -f gh*linux_arm64.deb
 #download
-wget https://github.com/cli/cli/releases/download/v1.10.3/gh_1.10.3_linux_arm64.deb || error 'Failed to download github-cli!'
+wget https://github.com/cli/cli/releases/download/v1.11.0/gh_1.11.0_linux_arm64.deb || error 'Failed to download github-cli!'
 #install
-sudo apt -fy install ./gh_1.10.3_linux_arm64.deb || error "Failed to install gh!"
+sudo apt -fy install ./gh_1.11.0_linux_arm64.deb || error "Failed to install gh!"
 #clean up
 rm -f gh*linux_arm64.deb
