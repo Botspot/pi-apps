@@ -10,7 +10,7 @@ function error {
 #PACKAGES FOUND IN: https://launchpad.net/~cartes/+archive/ubuntu/ppa/+packages
 
 rm -f ~/drawing.deb
-wget -O ~/drawing.deb https://launchpadlibrarian.net/535392140/drawing_0.8.0-0ubuntu1~focal_armhf.deb || error "Failed to download drawing.deb"
+wget -O ~/drawing.deb "https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.1-0ubuntu1~hirsute_armhf.deb" || error "Failed to download drawing.deb"
 
 sudo apt install -yf ~/drawing.deb || error "APT failed to install drawing.deb"
 rm -f ~/drawing.deb
