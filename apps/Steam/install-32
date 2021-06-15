@@ -28,7 +28,7 @@ sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
 rm ~/steam.deb
 
 echo "Editing steam script to run on Raspberry Pi..."
-sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1\nBOX86_NOGTK=1/' /usr/lib/steam/bin_steam.sh
 
 echo "Creating a Steam config file so it will launch in Small Mode..."
 mkdir -p ~/.local/share/Steam/config
