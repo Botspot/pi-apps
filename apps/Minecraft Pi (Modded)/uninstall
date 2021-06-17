@@ -10,3 +10,5 @@ function error {
 sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
 sudo apt-get remove -y gmcpil &>/dev/null || true
 sudo apt-get remove -y jmcpil &>/dev/null || true
+
+sudo apt-get -y autoremove
