@@ -35,10 +35,10 @@ select opt in "${options[@]}"
 do
   case $opt in
     "${options[0]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-native gmcpil" "$(dirname "$0")" || exit 1
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client gmcpil" "$(dirname "$0")" || exit 1
         break;;
     "${options[1]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-native jmcpil" "$(dirname "$0")" || exit 1
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client jmcpil" "$(dirname "$0")" || exit 1
         break;;
     "${options[2]}")
         break;;
