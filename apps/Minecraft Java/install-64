@@ -37,7 +37,7 @@ echo '{
     "(Default)": {
       "name": "(Default)",
       "javaDir": "/opt/jdk-16.0.1+9/bin/java",
-      "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm64 -Xmx1G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M"
+      "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm64 -Xmx1G -XX:-UseAdaptiveSizePolicy -Xmn128M"
     }
   },
   "selectedProfile": "(Default)",
