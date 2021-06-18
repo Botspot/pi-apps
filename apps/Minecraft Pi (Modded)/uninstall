@@ -12,3 +12,5 @@ sudo apt-get remove -y gmcpil &>/dev/null || true
 sudo apt-get remove -y jmcpil &>/dev/null || true
 
 sudo apt-get -y autoremove
+
+sudo rm /etc/apt/sources.list.d/mcpi-revival.list
