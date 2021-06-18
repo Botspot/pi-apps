@@ -13,7 +13,7 @@ function error {
 #example below:
 
 #Download java and launcher
-mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/mikehooper/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
+mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/chunky-milk/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
 
 #Move launcher to /usr/share/
 sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraftjava/launcher.jar
@@ -36,7 +36,7 @@ echo '{
   "profiles": {
     "(Default)": {
       "name": "(Default)",
-      "javaDir": "/opt/jdk/jdk1.8.0_251/bin/java",
+      "javaDir": "/opt/jdk-16.0.1+9/bin/java",
       "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm64 -Xmx1G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M"
     }
   },
