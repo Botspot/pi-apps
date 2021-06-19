@@ -32,7 +32,7 @@ chmod +x minecraft.desktop
 cd
 
 mkdir -p ~/.minecraft
-echo '{
+echo -e '{
   "profiles": {
     "(Default)": {
       "name": "(Default)",
