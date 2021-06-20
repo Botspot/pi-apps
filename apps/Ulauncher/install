@@ -9,7 +9,7 @@ function error {
 
 "${DIRECTORY}/pkg-install" "gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket" "$(dirname "$0")" || exit 1
 
-wget 'https://github.com/Ulauncher/Ulauncher/releases/download/5.9.0/ulauncher_5.9.0_all.deb' -O ~/ulauncher.deb || error 'Failed to download ulauncher.deb!'
+wget 'https://github.com/Ulauncher/Ulauncher/releases/download/5.11.0/ulauncher_5.11.0_all.deb' -O ~/ulauncher.deb || error 'Failed to download ulauncher.deb!'
 
 sudo apt install -y --fix-missing ~/ulauncher.deb || error "APT failed to install ulauncher.deb!"
 
