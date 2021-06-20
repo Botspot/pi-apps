@@ -8,7 +8,7 @@ function error {
 cd $HOME
 
 if [[ "$(id -u)" == 0 ]]; then
-	error "You cant install pi-apps as root! please try again as a regular user."
+	error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
 fi
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
