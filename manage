@@ -355,5 +355,5 @@ elif [ "$1" == 'update-all' ];then
   IFS="$PREIFS"
   echo -e '\e[92mOperation completed successfully!\e[39m'
 else
-  error "Did not understand $1. Allowed values: 'install', 'install-if-not-installed', 'multi-install', 'multi-uninstall', 'update', 'check-all', or 'update-all'."
+  error "Did not understand $1. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
 fi
