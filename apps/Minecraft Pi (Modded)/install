@@ -22,22 +22,6 @@ if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && 
   error "Unsupported RPi OS Version! Your RPi OS version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid. Consider searching how to upgrade your version to RPi OS Buster!"
 fi
 
-# Wait for apt lock to be released
-i=0 
-tput sc 
-while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
-     case $(($i % 4)) in
-         0 ) j="-" ;;
-         1 ) j="\\" ;;
-         2 ) j="|" ;;
-         3 ) j="/" ;;
-     esac
-     tput rc
-     echo -en "\r[$j] Waiting for other software managers to finish..." 
-     sleep 0.5
-     ((i=i+1)) 
-done
-
 # Remove Old Minecraft Pi
 sudo apt-get remove -y minecraft-pi &>/dev/null || true
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
