@@ -6,21 +6,10 @@
 
 set -e
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-STORAGE="$(dirname "$0")"
-
 function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-
-##
-## Install mcpi-reborn
-##
-
-if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-  error "Unsupported RPi OS Version! Your RPi OS version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid. Consider searching how to upgrade your version to RPi OS Buster!"
-fi
 
 # Wait for apt lock to be released
 i=0
@@ -38,11 +27,10 @@ do
 done
 [[ $i -gt 0 ]] && printf "Done.\n"
 
-# Remove Old Minecraft Pi
-sudo apt-get remove -y minecraft-pi &>/dev/null || true
+# Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | bash &>/dev/null || error "Failed to install apt repo!"
+wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | bash - &>/dev/null || error "Failed to install APT repo!"
 
 # Choose MCPIL to use
 PS3='Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy'
