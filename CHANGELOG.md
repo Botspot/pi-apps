@@ -1,5 +1,5 @@
 **NOTE**: This changelog covers the major events in pi-apps like new apps being added. If every action since day one was mentioned, "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: April 24, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+Last updated: June 21, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -83,13 +83,13 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **3/8/2021** Added Snapdrop app, updated intellij IDEA and Minecraft Pi (Modded) with a FPS counter and newer build
 - **3/10/2021** Added Decent 1/2 and ppsspp apps
 - **3/11/2021** Changed box86 install to use itai's apt repository
-- **3/12/2021** Updated Tor Browser to 10.0.13, changed Node.js app to use nvm version manager and unhid BalenaEtcher on Twister OS
+- **3/12/2021** Changed Node.js app to use nvm version manager and unhid BalenaEtcher on Twister OS
 - **3/14/2021** Added Stunt Rally app, and added a "Installed" category for installed apps
 - **3/15/2021** Added Back to Chromium v86 app, and updated box86 to be installable on aarch64 OSes
 - **3/16/2021** Added Lokinet app and large upgrade to Zoom app
 - **3/17/2021** Added 64-bit support for Vivaldi
 - **3/18/2021** Added Notepad++ app and made Doom 3 run in a 64-bit kernel with a 32-bit userland
-- **3/19/2021** redesign all program icons, the Pi-Apps logo, and all screenshots.
+- **3/19/2021** Redesign all program icons, the Pi-Apps logo, and all screenshots.
 - **3/20/2021** Updated eDEX-UI to v2.2.7, completely transitioned to Itai's box86 builds for all apps, added WACUP app and made a new "Multimedia" category
 - **3/24/2021** Added Libreoffice MS Theme app, and automarked box86/Wine as installed on Twister OS
 - **3/28/2021** Hide less apps on Twister OS Lite
@@ -103,4 +103,17 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **4/9/2021** Display user count for apps and squarify icons
 - **4/10/2021** Added flameshot, Processing IDE, Scratch 2 (with flash player fixes), Heros 2 and Linux Mint's Web Apps
 - **4/12/2021** Added AstroMenace app
-- **4/13/2021** Added Lego Digital Designer app, changed Wine to add extra menu sortcuts and bumped Etcher to 1.5.117 and Minecraft Bedrock Launcher to build 658
+- **4/13/2021** Added Lego Digital Designer app and changed Wine to add extra menu sortcuts
+- **4/14-15-20/2021** Changed pkg-install to use dummy debs for depends to let APT handle depend issues
+- **4/24/2021** Forced updater to not update Wine and Steam on Twister OS
+- **5/3/2021** Added PiSafe app
+- **5/4/2021** Added blockpi and Windows Screensavers apps, numerous changes to api script and removed up/down buttons in GUI
+- **5/5/2021** Added Drawing app and updated install/uninstall GUI icons
+- **5/6/2021** Updated trash icon
+- **5/7/2021** Add Chiaki app and fixed terminal title when multi-installing apps
+- **5/9/2021** Added qterminal support to pi-apps and fix Wine precompiled kernel
+- **5/14/2021** Fixed update-exclusion and preload-daemon. Also added icon for disabled apps and made piKiss 32-bit only
+- **5/19/2021** Fixed Box86 multiarch on 64-bit
+- **5/24/2021** Allowed selecting apps to update in updater and added more api functions. 
+- **6/19/2021** Updater MCPI Modded to v2.x and use APT repo instead of pi-apps updates to allow for faster package updates
+- **6/21/2021** Added 1.17 support to MC Java
