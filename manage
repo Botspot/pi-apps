@@ -24,7 +24,9 @@ rm_esc() { #remove ANSI escape sequences from a given file
 
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
-mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
+#remove week-old logfiles
+find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then

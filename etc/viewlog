@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#this script is executed whenever you click on an entry from the logviewer script. This script handles opening a text editor to view your log file.
+
 DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
 
 file="$6"
