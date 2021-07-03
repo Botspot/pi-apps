@@ -7,9 +7,15 @@ function error {
   exit 1
 }
 
-wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210522/Cura-mb-master-aarch64-20210522.AppImage || error "Failed to download!"
+wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210629/Cura-mb-master-aarch64-20210629.AppImage || error "Failed to download!"
 
 chmod +x ~/Cura.AppImage
+
+#get stl-thumb package
+rm -f ~/stl-thumb_0.4.0_armhf.deb
+wget https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_armhf.deb
+"${DIRECTORY}/pkg-install" "$HOME/stl-thumb_0.4.0_armhf.deb" "$(dirname "$0")" || exit 1
+rm -f ~/stl-thumb_0.4.0_armhf.deb
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
