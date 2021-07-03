@@ -5,6 +5,9 @@
 DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
 
 file="$6"
+if [ -z "$file" ];then
+  file="$1"
+fi
 echo "$file" > "$DIRECTORY/data/current-viewed-logfile"
 
 if command -v mousepad ;then
@@ -20,7 +23,8 @@ else
   pid=$!
 fi
 
-while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ];do
+#while the user-selection stays the same, AND the text editor is still running, wait.
+while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ] && kill -0 $pid;do
   sleep 1
 done
 kill $pid 2>/dev/null
