@@ -237,7 +237,7 @@ do
   mkdir -p "$(dirname "${DIRECTORY}/${file}")"
   
   #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
   
   echo -e "\e[92m${file} file was copied successfully.\e[39m"
 done
