@@ -12,7 +12,7 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
-Please note that pi-apps is made for Raspberry Pi OS and it's derivitives (Twister OS, amogOS, Ubuntu, etc). pi-apps will **NOT** work with Arch Linux, OpenSUSE, or Fedora. pi-apps is designed for RPI beginners anyway.
+Please note that pi-apps is made for Raspberry Pi OS/Debian and it's derivitives (Twister OS, amogOS, Ubuntu, etc). pi-apps will **NOT** work with Arch Linux, OpenSUSE, or Fedora. pi-apps is designed for RPI beginners anyway.
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
