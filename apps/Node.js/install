@@ -7,6 +7,14 @@ function error {
   exit 1
 }
 
+function install_node() {
+	if [[ "$1" == "set_nvm_dir" ]]; then
+		export NVM_DIR="$2"
+		echo "$3"
+	fi
+	nvm install --lts
+}
+
 #Checking if using armv6
 if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
   error "armv6 cpu not supported"
@@ -20,11 +28,10 @@ You need to install curl first. If you are on a debian system, this command shou
 fi
 
 #Install nvm manager:
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash || error "Failed to install nvm!"
-export NVM_DIR="$HOME/.config/nvm"
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
+export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-#Install NodeJS:
-nvm install --lts
-#sudo npm i -g nodejs
+#Install NodeJS, if nvm fails, try again with a different 'NVM_DIR"
+install_node || install_node set_nvm_dir "$HOME/.config/nvm" "failed to install node.js! trying again with different NVM_DIR..." || error "Failed to install Node.js using nvm!"
