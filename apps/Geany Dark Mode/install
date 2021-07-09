@@ -15,13 +15,33 @@ git clone --depth 1 https://github.com/codebrainz/geany-themes || error "Failed 
 mkdir -p ~/.config/geany/colorschemes
 cp -a ~/geany-themes/colorschemes/. ~/.config/geany/colorschemes || error "Failed to copy colorschemes to $HOME/.config/geany/colorschemes"
 
-#clear geany's pre-existing color_scheme entry
-sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+#Make geany use spyder-dark color scheme
+if [ -f ~/.config/geany/geany.conf ] && [ ! -z "$(cat ~/.config/geany/geany.conf)" ];then
+  sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+  sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+else
+  echo -e '[geany]\ncolor_scheme=spyder-dark.conf' > ~/.config/geany/geany.conf
+fi
 
 #clean up
 rm -rf ~/geany-themes
 
 if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
-  echo -e "\nGeany text editor is currently running.\nPlease close Geany and launch it again to apply the new theme."
-  sleep 5
+  
+  echo -e "\nThis script was unable to change Geany's config file, because Geany is already running.\nPlease close Geany."
+  
+  while [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];do
+    sleep 1
+    echo -n '.'
+  done
+  echo
+  
+  #Make geany use spyder-dark color scheme
+  if [ -f ~/.config/geany/geany.conf ] && [ ! -z "$(cat ~/.config/geany/geany.conf)" ];then
+    sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+    sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+  else
+    echo -e '[geany]\ncolor_scheme=spyder-dark.conf' > ~/.config/geany/geany.conf
+  fi
+  
 fi

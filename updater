@@ -136,7 +136,8 @@ do
     if [ ! -f "${DIRECTORY}/${file}" ];then
       echo -e "\e[97m${file} does not exist locally.\e[39m Adding to updatable list."
       #in this case, add to updatable list
-      mainupdate="${mainupdate}|${file}"
+      mainupdate="${mainupdate}
+${file}"
     elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
       echo -e "\e[97m${file} only exists locally.\e[39m Will not add to updatable list."
       #in this case, do not add to updatable list
@@ -236,7 +237,7 @@ do
   mkdir -p "$(dirname "${DIRECTORY}/${file}")"
   
   #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
   
   echo -e "\e[92m${file} file was copied successfully.\e[39m"
 done

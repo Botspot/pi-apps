@@ -424,6 +424,13 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         #if disabled, display no buttons
         whichbutton+=("--button=<b>Enable</b>!!Force this app to install on your system."$'\n'"This app was disabled for a reason so if you enable it..."$'\n'"YOU HAVE BEEN WARNED.:12")
       else
+        #if app status is 'corrupted', and a log file exists for this app, then display a button to view the log file
+        if [ "$(app_status "${output}")" == 'corrupted' ];then
+          logfile="$(ls "$DIRECTORY/logs"/* -t | grep "fail-${output}" | head -n1)"
+          if [ ! -z "$logfile" ];then
+            whichbutton+=("--button=Errors!${DIRECTORY}/icons/log-file.png!$output failed to $(echo "$(basename "$logfile")" | awk -F'-' '{print $1}'). Click this button to view the error output saved in the log file.:14")
+          fi
+        fi
         #if status is corrupted or unknown, then show both buttons
         whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2" "--button=!${DIRECTORY}/icons/install.png:4")
       fi
@@ -482,6 +489,11 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         app="$output"
         #remove status file containing 'disabled'
         rm -f "${DIRECTORY}/data/status/${app}"
+        ;;
+      14)
+        echo "Viewing error log of $output..."
+        echo "Log filepath: $logfile"
+        "${DIRECTORY}/etc/viewlog" "$logfile"
         ;;
       *)
         error 'unknown button. Exiting now.'

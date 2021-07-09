@@ -7,10 +7,10 @@ function error {
   exit 1
 }
 
-#use the error function often!
-#If a certain command is necessary for installation to continue, then add this to the end of it:
-# || error 'reason'
-#example below:
+if [ -f "$HOME/.conkyrc" ]; then
+  error "Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again."
+fi
+
 wget -O ~/.conkyrc https://raw.githubusercontent.com/Botspot/rpi_conky/master/conkyrc || error 'Failed to download conkyrc!!'
 
 #change eth0 to wlan0 in conky config if user is currently using WiFi
@@ -23,16 +23,17 @@ fi
 # Get dependencies
 "${DIRECTORY}/pkg-install" "conky" "$(dirname "$0")" || exit 1
 
+#run conky this time
+conky &
+
+#make autostart entry to run it next time
 mkdir -p ~/.config/autostart
-echo -n '' > ~/.config/autostart/conky.desktop
 echo "[Desktop Entry]
 Name=Conky
 Type=Application
-Exec=bash -c 'sleep 5;conky'
+Exec=bash -c 'sleep 5;conky -q -d'
 Terminal=false
 Icon=${DIRECTORY}/apps/Conky/icon-64.png
 Comment=system monitoring tool.
 Categories=Utility;" > ~/.config/autostart/conky.desktop
 
-#run conky
-conky &

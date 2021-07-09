@@ -14,9 +14,19 @@ if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
+rm_esc() { #remove ANSI escape sequences from a given file
+  [ -z "$1" ] && error "rm_esc: no filename given!"
+  [ ! -f "$1" ] && error "rm_esc: given filename ($1) does not exist or is not a file!"
+  
+  sed -i 's/\x1b\[[0-9;]*m//g' "$1"
+  
+}
+
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
-mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
+#remove week-old logfiles
+find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
@@ -139,21 +149,45 @@ elif [ "$1" == 'install' ];then
   installscript="${DIRECTORY}/apps/${app}/${scriptname}"
   [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
   
-  echo -e "\e[96mInstalling $app with $scriptname script\e[39m"
+  #determine path for log file to be created
+  logfile="${DIRECTORY}/logs/install-incomplete-${app}.log"
+  if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
+    #append a number to logfile's file-extension if the original filename already exists
+    i=1
+    while true;do
+      #if variable $i is 2, then example newlogfile value: /path/to/install-Discord.log2
+      newlogfile="$logfile$i"
+      if [ ! -f "$newlogfile" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-success-+g')" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
+        logfile="${newlogfile}"
+        break
+      fi
+      i=$((i+1))
+    done
+  fi
+  #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
+  set -o pipefail
+  
+  echo -e "\e[96mInstalling $app with $scriptname script\e[39m" | tee -a "$logfile"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  if nice "$installscript" ; then
+  if nice "$installscript" 2>&1 | tee -a "$logfile" ; then
     echo 'installed' > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m"
+    echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
+    
+    rm_esc "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
     exit 0
   else
     echo -e "\n\e[41m\e[30mFailed to install ${app} with $scriptname script"\!"\e[39m\e[49m
 \e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the above error output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
-Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m"
+Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
     
+    rm_esc "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
     exit 1
   fi
+  
 elif [ "$1" == 'uninstall' ];then
   #UNINSTALL
   #for this operation, a program name must be specified.
@@ -174,15 +208,37 @@ elif [ "$1" == 'uninstall' ];then
   #analytics
   "${DIRECTORY}/etc/bitlylink" "$app" uninstall
   
-  echo -e "\e[96mUninstalling $app\e[39m"
+  #determine path for log file to be created
+  logfile="${DIRECTORY}/logs/uninstall-incomplete-${app}.log"
+  if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
+    #append a number to logfile's file-extension if the original filename already exists
+    i=1
+    while true;do
+      #if variable $i is 2, then example newlogfile value: /path/to/install-Discord.log2
+      newlogfile="$logfile$i"
+      if [ ! -f "$newlogfile" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-success-+g')" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
+        logfile="${newlogfile}"
+        break
+      fi
+      i=$((i+1))
+    done
+  fi
+  #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
+  set -o pipefail
+  
+  echo -e "\e[96mUninstalling $app\e[39m" | tee -a "$logfile"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  if "${DIRECTORY}/apps/${app}/uninstall" ; then
+  if nice "${DIRECTORY}/apps/${app}/uninstall" 2>&1 | tee -a "$logfile"; then
     echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m"
+    echo -e "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
+    rm_esc "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     exit 0
   else
-    echo -e "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m"
+    echo -e "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m" | tee -a "$logfile"
+    rm_esc "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
     exit 1
   fi
 elif [ "$1" == 'update' ];then
