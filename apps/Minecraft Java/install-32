@@ -12,7 +12,18 @@ if ! command -v modprobe >/dev/null;then
   
   if [ -f /usr/bin/apt ];then
     sudo apt update
-    sudo apt install -y modprobe || echo "Failed to install modprobe."
+    sudo apt install -y kmod || echo "Failed to install modprobe."
+  else
+    error "Failed to find any package manager to install modprobe."
+  fi
+fi
+
+#install unzip if not already installed
+if ! command -v unzip >/dev/null;then
+  
+  if [ -f /usr/bin/apt ];then
+    sudo apt update
+    sudo apt install -y unzip[ || echo "Failed to install modprobe."
   else
     error "Failed to find any package manager to install modprobe."
   fi
@@ -23,10 +34,10 @@ sudo modprobe fuse
 
 cd ~
 
-#Download client
+#Download client and afforted java stuff
 wget https://github.com/gl91306/lunar/raw/master/lunarclient-2.7.3b-armv7l.AppImage
 mkdir -p ~/.minecraft
-mv lunarclient-2.7.3b-armv7l.AppImage ~/.minecraft
+mv lunarclient-*-armv7l.AppImage ~/.minecraft
 
 if [ ! -d ~/lwjgl3arm32 ]; then
     mkdir ~/lwjgl3arm32
@@ -59,9 +70,13 @@ sudo update-alternatives --set java /opt/jdk/jdk1.8.0_251/bin/java
 sudo update-alternatives --set javac /opt/jdk/jdk1.8.0_251/bin/javac
 cd lwjgl2arm32
 wget https://github.com/gl91306/lunar/raw/master/libwebp-imageio32.so
+wget https://github.com/gl91306/lunar/raw/master/libgstreamer-lite.so
+wget https://github.com/gl91306/lunar/raw/master/libjfxmedia.so
 cd
 cd lwjgl3arm32
 wget https://github.com/gl91306/lunar/raw/master/libwebp-imageio32.so
+wget https://github.com/gl91306/lunar/raw/master/libgstreamer-lite.so
+wget https://github.com/gl91306/lunar/raw/master/libjfxmedia.so
 cd
 cd /opt/jdk/opt/jdk
 sudo cp -r jdk-16.0.1+9-jre /opt/jdk
@@ -77,9 +92,14 @@ cd
 sudo apt-get install unzip
 wget https://github.com/gl91306/lunar/raw/master/javafx-sdk-17.zip
 unzip javafx-sdk-17.zip -d /home/pi/Desktop
+cd Desktop
+cd javafx-sdk-17
+cd lib
+rm -rf libjfxwebkit.so
+wget https://github.com/gl91306/lunar/raw/master/libjfxwebkit.so
 cd
 #Change perms of Launcher
-sudo chmod +x $HOME/lunarclient-2.7.3b-armv7l.AppImage
+sudo chmod +x $HOME/.minecraft/lunarclient-*-armv7l.AppImage
 
 #Cleanup
 cd
@@ -88,10 +108,13 @@ rm -rf jdk-16.0.1+9-jre.tar.gz
 rm -rf javafx-sdk-17.zip
 rm -rf lwjgl2arm32.tar.gz
 rm -rf lwjgl3arm32.tar.gz
-
+cd
+cd lwjgl2arm32
+rm -rf libopenal.so
+cd
+cp lwjgl3arm32/libopenal.so $HOME/lwjgl2arm32
 
 #Then make menu shortcut
-
 echo "[Desktop Entry]
 Version=1.0
 Type=Application

@@ -7,11 +7,11 @@ function error {
   exit 1
 }
 
-rm -f ~/.local/share/applications/minecraft.desktop
-sudo rm -rf ~/Minecraft
+rm -f ~/.local/share/applications/minecraftjava.desktop
+rm -f ~/Desktop/minecraftjava.desktop
+rm -rf ~/.lunarclient
+
 sudo rm -rf ~/lwjgl2arm32
 sudo rm -rf ~/lwjgl3arm32
 sudo rm -rf ~/lwjgl3arm64
 sudo rm -rf ~/lwjgl2arm64
-sudo rm -rf /usr/share/minecraftjava/
-sudo rm -rf /opt/jdk-16.0.1+9 || sudo rm -rf /opt/jdk-16.0.1+4
