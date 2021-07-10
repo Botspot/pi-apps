@@ -9,7 +9,7 @@ function error {
 
 rm -rf ~/libreoffice-ms-theme
 git clone --depth=1 https://github.com/Botspot/libreoffice-ms-theme || error "Failed to git clone libreoffice-ms-theme repository!"
-~/libreoffice-ms-theme/revert.sh || error "apply.sh failed"
+~/libreoffice-ms-theme/revert.sh || error "revert.sh failed"
 rm -rf ~/libreoffice-ms-theme
 
 echo "Your original settings are now restored. Libreoffice should now behave how it was originally."
