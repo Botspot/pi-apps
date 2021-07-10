@@ -8,3 +8,6 @@ To run in a terminal: java -jar /usr/share/minecraftjava/launcher.jar
 
 This installs Lunar Launcher by Moonsworth, with built in Optifine and other mods for maximum out of the box performance.
 Lunar client website: https://www.lunarclient.com/
+
+Why lunar? It's easy to install in a self contained appimage, has optifine and other great features built in, and also can automatically switch lwjgl libraries and has Microsoft account support.
+pi-apps installs a fork of lunar at https://github.com/gl91306/lunar that is changed to work on ARM and has arm libraries.

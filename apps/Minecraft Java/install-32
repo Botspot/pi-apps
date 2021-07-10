@@ -23,9 +23,20 @@ if ! command -v unzip >/dev/null;then
   
   if [ -f /usr/bin/apt ];then
     sudo apt update
-    sudo apt install -y unzip[ || echo "Failed to install modprobe."
+    sudo apt install -y unzip || echo "Failed to install unzip."
   else
-    error "Failed to find any package manager to install modprobe."
+    error "Failed to find any package manager to install unzip."
+  fi
+fi
+
+#install svn if not already installed
+if ! sudo command -v svn >/dev/null;then
+  
+  if [ -f /usr/bin/apt ];then
+    sudo apt update
+    sudo apt install -y subversion || echo "Failed to install subversion."
+  else
+    error "Failed to find any package manager to install subversion."
   fi
 fi
 
@@ -34,10 +45,11 @@ sudo modprobe fuse
 
 cd ~
 
-#Download client and afforted java stuff
-wget https://github.com/gl91306/lunar/raw/master/lunarclient-2.7.3b-armv7l.AppImage
+#Download client and assorted java stuff
+wget https://github.com/gl91306/lunar/raw/master/lunarclient-2.7.3c-armv7l.AppImage
 mkdir -p ~/.minecraft
-mv lunarclient-*-armv7l.AppImage ~/.minecraft
+mkdir -p ~/lunarassets
+mv lunarclient-*-armv7l.AppImage ~/lunarassets
 
 if [ ! -d ~/lwjgl3arm32 ]; then
     mkdir ~/lwjgl3arm32
@@ -60,6 +72,7 @@ fi
 if [ ! -d /opt/jdk ]; then
     sudo mkdir /opt/jdk
 fi
+
 sudo tar -zxf jdk-8u251-linux-arm32-vfp-hflt.tar.gz -C /opt/jdk
 sudo tar -zxf jdk-16.0.1+9-jre.tar.gz -C /opt/jdk
 tar -zxf lwjgl3arm32.tar.gz -C ~/lwjgl3arm32
@@ -85,23 +98,37 @@ sudo rm -rf opt
 cd
 cd /opt/jdk/jdk1.8.0_251
 sudo rm -rf jre
-echo please wait a bit, as this step takes a bit
-sudo apt-get install subversion
 sudo svn checkout https://github.com/gl91306/lunar/trunk/jre
 cd
-sudo apt-get install unzip
 wget https://github.com/gl91306/lunar/raw/master/javafx-sdk-17.zip
-unzip javafx-sdk-17.zip -d /home/pi/Desktop
-cd Desktop
+unzip javafx-sdk-17.zip -d ~/lunarassets
+cd lunarassets
 cd javafx-sdk-17
 cd lib
 rm -rf libjfxwebkit.so
 wget https://github.com/gl91306/lunar/raw/master/libjfxwebkit.so
 cd
+
 #Change perms of Launcher
 sudo chmod +x $HOME/.minecraft/lunarclient-*-armv7l.AppImage
 
-#Cleanup
+#Then make menu shortcut
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Minecraft Launcher
+Comment=3D block based sandbox game
+Icon=$(dirname "$0")/icon-64.png
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 $HOME/.minecraft/lunarclient-2.7.3c-armv7l.AppImage 
+Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
+chmod +x ~/.local/share/applications/minecraftjava.desktop
+cp ~/.local/share/applications/minecraftjava.desktop ~/Desktop/
+
+echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher or with the new shortcut on your desktop!'
+echo 'Launching Lunar Client...'
+
+#Run launcher and cleanup
+$HOME/lunarclient-2.7.3c-armv7l.AppImage
 cd
 rm -rf jdk-8u251-linux-arm32-vfp-hflt.tar.gz
 rm -rf jdk-16.0.1+9-jre.tar.gz
@@ -113,17 +140,3 @@ cd lwjgl2arm32
 rm -rf libopenal.so
 cd
 cp lwjgl3arm32/libopenal.so $HOME/lwjgl2arm32
-
-#Then make menu shortcut
-echo "[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Minecraft Launcher
-Comment=3D block based sandbox game
-Icon=$(dirname "$0")/icon-64.png
-Exec=env MESA_GL_VERSION_OVERRIDE=3.3 $HOME/.minecraft/lunarclient-2.7.3b-armv7l.AppImage 
-Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
-chmod +x ~/.local/share/applications/minecraftjava.desktop
-cp ~/.local/share/applications/minecraftjava.desktop ~/Desktop/
-
-echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher or with the new shortcut on your desktop!'

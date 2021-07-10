@@ -10,8 +10,11 @@ function error {
 rm -f ~/.local/share/applications/minecraftjava.desktop
 rm -f ~/Desktop/minecraftjava.desktop
 rm -rf ~/.lunarclient
+rm -rf ~/lunarassets
 
 sudo rm -rf ~/lwjgl2arm32
 sudo rm -rf ~/lwjgl3arm32
 sudo rm -rf ~/lwjgl3arm64
 sudo rm -rf ~/lwjgl2arm64
+
+rm -f ~/.minecraft lunarclient-*.AppImage

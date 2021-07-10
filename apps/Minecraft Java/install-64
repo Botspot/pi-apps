@@ -7,51 +7,97 @@ function error {
   exit 1
 }
 
-#use the error function often!
-#If a certain command is necessary for installation to continue, then add this to the end of it:
-# || error 'reason'
-#example below:
+#install modprobe if not already installed
+if ! command -v modprobe >/dev/null;then
+  
+  if [ -f /usr/bin/apt ];then
+    sudo apt update
+    sudo apt install -y kmod || echo "Failed to install modprobe."
+  else
+    error "Failed to find any package manager to install modprobe."
+  fi
+fi
 
-#Download java and launcher
-mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/chunky-milk/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
+#install unzip if not already installed
+if ! command -v unzip >/dev/null;then
+  
+  if [ -f /usr/bin/apt ];then
+    sudo apt update
+    sudo apt install -y unzip || echo "Failed to install unzip."
+  else
+    error "Failed to find any package manager to install unzip."
+  fi
+fi
 
-#Move launcher to /usr/share/
-sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraftjava/launcher.jar
+#install svn if not already installed
+if ! sudo command -v svn >/dev/null;then
+  
+  if [ -f /usr/bin/apt ];then
+    sudo apt update
+    sudo apt install -y subversion || echo "Failed to install subversion."
+  else
+    error "Failed to find any package manager to install subversion."
+  fi
+fi
 
-#Create desktop shortcut
-cd ~/.local/share/applications/
+#Run modprobe fuse
+sudo modprobe fuse
+
+cd ~
+
+#Download client and assorted java stuff
+wget https://github.com/gl91306/lunar/raw/master/lunarclient-2.7.3c-armv7l.AppImage
+mkdir -p ~/.minecraft
+mkdir -p ~/lunarassets
+mv lunarclient-*-armv7l.AppImage ~/lunarassets
+
+if [ ! -d ~/lwjgl3arm64 ]; then
+    mkdir ~/lwjgl3arm64
+fi
+if [ ! -f jdk-16.0.1+9-jre64.tar.gz ]; then
+    wget https://github.com/gl91306/lunar/raw/master/jdk-16.0.1%2B9-jre64.gz
+fi
+if [ ! -f lwjgl3arm64.tar.gz ]; then
+    wget https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz
+fi
+if [ ! -d /opt/jdk ]; then
+    sudo mkdir /opt/jdk
+fi
+
+sudo tar -zxf jdk-16.0.1+9-jre64.tar.gz -C /opt/jdk
+tar -zxf lwjgl3arm64.tar.gz -C ~/lwjgl3arm64
+sudo update-alternatives --install /usr/bin/java java /opt/jdk/jdk-16.0.1+9-jre64/bin/java 0
+sudo update-alternatives --set java /opt/jdk/jdk-16.0.1+9-jre64/bin/java
+cd
+cd lwjgl3arm64
+wget https://github.com/gl91306/lunar/raw/master/libwebp-imageio64.so
+cd
+wget https://github.com/gl91306/lunar/raw/master/javafx-sdk-17-64.zip
+unzip javafx-sdk-17-64.zip -d $HOME/lunarassets
+cd
+
+#Change perms of Launcher
+sudo chmod +x $HOME/.minecraft/lunarclient-*-aarch64.AppImage
+
+#Then make menu shortcut
 echo "[Desktop Entry]
 Version=1.0
 Type=Application
-Name=Minecraft Launcher
+Name=Minecraft Launcher (64-bit)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=env MESA_GL_VERSION_OVERRIDE=3.3 java -jar /usr/share/minecraftjava/launcher.jar
-Categories=Game;" > minecraft.desktop
-chmod +x minecraft.desktop
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 $HOME/.minecraft/lunarclient-2.7.3c-armv7l.AppImage 
+Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
+chmod +x ~/.local/share/applications/minecraftjava.desktop
+cp ~/.local/share/applications/minecraftjava.desktop ~/Desktop/
+
+echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher or with the new shortcut on your desktop!'
+echo 'Launching Lunar Client...'
+
+#Run launcher and cleanup
+$HOME/lunarclient-2.7.3c-aarch64.AppImage
 cd
-
-mkdir -p ~/.minecraft
-echo -e '{
-  "profiles": {
-    "(Default)": {
-      "name": "(Default)",
-      "javaDir": "/opt/jdk-16.0.1+9/bin/java",
-      "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm64 -Xmx1G -XX:-UseAdaptiveSizePolicy -Xmn128M"
-    }
-  },
-  "selectedProfile": "(Default)",
-  "clientToken": "c4a6f915-4d47-47bf-a8f4-746090e7e576",
-  "authenticationDatabase": {},
-  "launcherVersion": {
-    "name": "1.6.93",
-    "format": 21,
-    "profilesFormat": 1
-  }
-}' > $HOME/.minecraft/launcher_profiles.json
-
-sudo rm -rf ~/Minecraft
-
-echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher'
-echo -e "\e[21m\e[5mWARNING:\e[0m\e[97mYou can only play Minecraft versions \e[1m1.13\e[0m and higher with your current configuration! To use lower versions, please follow the instructions at \e[96mhttps://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz\e[39m to play versions \e[1m1.12\e[0m and under!"
-
+rm -rf jdk-16.0.1+9-jre64.tar.gz
+rm -rf javafx-sdk-17-64.zip
+rm -rf lwjgl3arm64.tar.gz
+cd
