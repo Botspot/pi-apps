@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+
+git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
+cd box64 || error 'Failed to change directory'
+mkdir build || error "Failed to create build folder!"
+cd build || error "Failed to enter build folder!"
+cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to configure box64!'
+make -j4 || error 'Failed to compile'
+sudo make install || error 'Failed to install'
+sudo systemctl restart systemd-binfmt || error "Failed to restart systemd-binfmt!"
