@@ -265,7 +265,7 @@ elif [ "$1" == 'update' ];then
   [ $? == 1 ] && exit 1
   
   newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')
-  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" | awk '{print $1}')
+  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')
   
   #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
   #echo -e "newhash: $newhash\noldhash: $oldhash"
