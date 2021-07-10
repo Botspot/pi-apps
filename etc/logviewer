@@ -53,8 +53,8 @@ $file"
 done
 
 LIST="$(echo "$LIST" | grep .)"
-echo "$LIST"
-output="$(echo -e "$LIST" | yad --center --title='Log file viewer' --width=500 --height=400 \
+#echo "$LIST"
+output="$(echo -e "$LIST" | yad --center --title='Log file viewer' --width=500 --height=400 --on-top \
   --text="Review the errors from installing or uninstalling apps."$'\n'"Week-old log files will be deleted." \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --column=Day --column=I:IMG --column=A:IMG --column=R:IMG --column=Description --column=tooltip:HD \
