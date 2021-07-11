@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "cmake" "$(dirname "$0")" || exit 1
+
+rm -rf ~/box64
+git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
+cd box64 || error 'Failed to change directory'
+mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to make directory'
+make -j8 || error 'Failed to compile'
+sudo make install || error 'Failed to run "sudo make install"'
+sudo systemctl restart systemd-binfmt || exit 1
