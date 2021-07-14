@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget https://github.com/chunky-milk/raspbian_repository/blob/master/debian/pool/rpiplay_20210320-1_armhf.deb -O /tmp/rpiplay.deb|| error 'Failed to download .deb file'
+sudo apt install cmake libavahi-compat-libdnssd-dev libplist-dev libssl-dev -y || error 'Failed to install dependencies'
+sudo apt install /tmp/rpiplay.deb --fix-missing -y > || error 'Failed to install rpiplay.deb'
+sudo rm /tmp/rpiplay.deb || error 'Failed to remove rpiplay.deb due to it not being required'
+#Unaware how to use the pkg-install line so instead I have just used apt
