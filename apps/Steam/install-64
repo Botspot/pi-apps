@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
@@ -7,7 +8,9 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "libnss3:armhf libnm0:armhf libdbus-glib-1-2:armhf libudev1:armhf libnspr4:armhf libgudev-1.0-0:armhf libusb-1.0-0:armhf libappindicator1:armhf" "$(dirname "$0")" || exit 1
+
+
 
 #install box86
 if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
@@ -28,7 +31,7 @@ sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
 rm ~/steam.deb
 
 echo "Editing steam script to run on Raspberry Pi..."
-sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1\nBOX86_NOGTK=1/' /usr/lib/steam/bin_steam.sh
 
 echo "Creating a Steam config file so it will launch in Small Mode..."
 mkdir -p ~/.local/share/Steam/config
