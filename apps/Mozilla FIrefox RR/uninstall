@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+sudo rm /etc/apt/preferences.d/99bionic-updates
+sudo rm /etc/apt/sources.list.d/ubuntu.list
+sudo apt-key del 3B4FE6ACC0B21F32
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
