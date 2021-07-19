@@ -1,0 +1,49 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Warning
+echo -e "\\e[1;91m This is only the engine. 
+ To play the game, you must provide/copy ALL the folders of your copy of the game inside the install path.
+ Any kind of pirated gamedata is not supported. \\e[39m"
+echo $'\n'
+read -p Press [Enter] if you own the GTA VC and have its Gamedata or press [Ctrl + C] to cancel and exit.
+
+# Download required assets
+cd ~/
+wget http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_armhf.deb || error "Failed to download libglfw3 installer"
+wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/reVC-rel-arm.zip -O ~/reVC.zip || error "Failed to download reVC.zip"
+
+# Install dependencies and app
+sudo apt install -y ~/libglfw3_3.3.2-1_armhf.deb || error "Failed to install libglfw3"
+unzip ~/reVC.zip || error "Failed to unzip downloaded ~/reVC.zip"
+mkdir -p ${HOME}/Games/GTAVC || error "Failed to create directory ${HOME}/Games/GTAVC"
+cp ${DIRECTORY}/icon-64.png ${HOME}/Games/GTAVC/reVC.png
+mv ./reVC ${HOME}/Games/GTAVC/ || error "Failed to move reVC binary to ${HOME}/Games/GTAVC"
+
+echo -e " \\e[1;32m GTAVC succesfully installed at ${HOME}/Games/GTAVC
+ Copy all folders from your GTA VC copy (or) installation to this directory. \\e[39m"
+ 
+cat <<EOF >~/.local/share/applications/GTAVC.desktop
+[Desktop Entry]
+Name=Grand Theft Auto Vice City
+Version=1.0
+Type=Application
+Comment=Grand Theft Auto VC is a 2002 open-world video game that takes place in the middle of the 80's in a fictional place called Vice City.
+Exec=${HOME}/Games/GTAVC/reVC
+Icon=${HOME}/Games/GTAVC/reVC.png
+Path=${HOME}/Games/GTAVC/
+Terminal=false
+Categories=Game;
+EOF
+
+# Cleaning up
+rm ~/libglfw3_3.3.2-1 _armhf.deb
+rm ~/reVC.zip
+
+exit 0

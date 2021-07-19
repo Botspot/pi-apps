@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+rm -f ~/Games/GTA3/re3
+rm -f ~/.local/share/applications/GTAIII.desktop
+
+echo -e " \\e[1;32m GTA 3 successfully uninstalled, but your Gamedata and config files are still located at ${HOME}/Games/GTA3 \\e[39m"
+
+exit 0

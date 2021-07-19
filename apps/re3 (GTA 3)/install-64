@@ -1,0 +1,49 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Warning
+echo -e "\\e[1;91m This is only the engine. 
+ To play the game, you must provide/copy ALL the folders of your copy of the game inside the install path.
+ Any kind of pirated gamedata is not supported. \\e[39m"
+echo $'\n'
+read -p Press [Enter] if you own the GTA 3 and have its Gamedata or press [Ctrl + C] to cancel and exit.
+
+# Download required assets
+cd ~/
+wget http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_arm64.deb || error "Failed to download libglfw3 installer"
+wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/re3-rel-arm64.zip -O ~/re3.zip || error "Failed to download re3.zip"
+
+# Install dependencies and app
+sudo apt install -y ~/libglfw3_3.3.2-1_arm64.deb || error "Failed to install libglfw3"
+unzip ~/re3.zip || error "Failed to unzip downloaded ~/re3.zip"
+mkdir -p ${HOME}/Games/GTA3 || error "Failed to create directory ${HOME}/Games/GTA3"
+cp ${DIRECTORY}/icon-64.png ${HOME}/Games/GTA3/re3.png
+mv ./re3 ${HOME}/Games/GTA3/ || error "Failed to move re3 binary to ${HOME}/Games/GTA3"
+
+echo -e " \\e[1;32m GTA3 succesfully installed at ${HOME}/Games/GTA3
+ Copy all folders from your GTA 3 copy (or) installation to this directory. \\e[39m"
+
+cat <<EOF >~/.local/share/applications/GTAIII.desktop
+[Desktop Entry]
+Name=Grand Theft Auto III
+Version=1.0
+Type=Application
+Comment=Grand Theft Auto III is a 2001 open-world video game that is the third main entry of the Grand Theft Auto franchise.
+Exec=${HOME}/Games/GTA3/re3
+Icon=${HOME}/Games/GTA3/re3.png
+Path=${HOME}/Games/GTA3/
+Terminal=false
+Categories=Game;
+EOF
+
+# Cleaning up
+rm ~/libglfw3_3.3.2-1 _arm64.deb
+rm ~/re3.zip
+
+exit 0
