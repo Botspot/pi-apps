@@ -255,7 +255,7 @@ if [ ! -z "$updatable" ];then
     done
     IFS="$PREIFS"
     echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-  ' 'Updating apps...'
+  ' 'Updating $(echo "$updatable" | wc -l) apps...'
 fi
 #.git folder
 #delete .git folder, then copy the new one

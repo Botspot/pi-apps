@@ -7,7 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge -y puffin-internet-terminal-demo
-sudo apt purge -y puffin-internet-terminal
-
-sudo rm -f /etc/apt/sources.list.d/puffin-internet-terminal.list
+sudo apt purge min -y || error "failed to remove min package from system!"

@@ -7,14 +7,6 @@ function error {
   exit 1
 }
 
-function install_node() {
-	if [[ "$1" == "set_nvm_dir" ]]; then
-		export NVM_DIR="$2"
-		echo "$3"
-	fi
-	nvm install --lts
-}
-
 #Checking if using armv6
 if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
   error "armv6 cpu not supported"
@@ -28,10 +20,20 @@ You need to install curl first. If you are on a debian system, this command shou
 fi
 
 #Install nvm manager:
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+mkdir -p "$NVM_DIR"
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
 
-#Install NodeJS, if nvm fails, try again with a different 'NVM_DIR"
-install_node || install_node set_nvm_dir "$HOME/.config/nvm" "failed to install node.js! trying again with different NVM_DIR..." || error "Failed to install Node.js using nvm!"
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+  #armhf, so patch nvm script to forcibly use armhf
+  sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
+fi
+
+chmod u+x "$NVM_DIR/nvm.sh" "$NVM_DIR/bash_completion"
+source "$NVM_DIR/nvm.sh" || error "Failed to source $NVM_DIR/nvm.sh"
+
+source "$NVM_DIR/bash_completion" || error "Failed to source $NVM_DIR/bash_completion"
+
+nvm install --lts || error "Failed to install node.js with nvm!"
+

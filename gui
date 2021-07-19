@@ -72,6 +72,8 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
+  rm -rf "${DIRECTORY}/apps/Turbo Scratch"
+  mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp"
   if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
     echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
   fi
@@ -101,7 +103,7 @@ install() {
   elif [ $linecount -lt 4 ];then
     title="Installing $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
-    title="Installing several apps"
+    title="Installing $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
     if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
@@ -126,10 +128,10 @@ uninstall() {
   linecount="$(echo "$app" | wc -l)"
   if [ $linecount -eq 1 ];then
     title="Uninstalling $app"
-  elif [ $linecount -le 4 ];then
+  elif [ $linecount -lt 4 ];then
     title="Uninstalling $(echo -n "$app" | tr '\n' '|' | sed 's/|/, /g')"
   else
-    title="Uninstalling several apps"
+    title="Uninstalling $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
     if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
@@ -206,11 +208,10 @@ while true;do
       
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
-        #get current number of terminal-run processes
-        
         #uninstall xlunch first
         sudo rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
         
+        #signal files
         rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
         echo '' > /tmp/terminalexit
         "${DIRECTORY}/etc/terminal-run" "
@@ -254,7 +255,7 @@ while true;do
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
             #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
-            error "The xlunch compilation terminal exited."
+            error "The xlunch compilation terminal exited prematurely."
           else
             sleep 1
           fi
