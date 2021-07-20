@@ -1,0 +1,20 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Add repository source to apt sources.list
+echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/ubuntu.list || error "Failed to add repository source to apt sources.list!"
+
+# Add ubuntu keyring
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 || error "Failed to add  ubuntu keyring!"
+
+# Add preferences so the ubuntu repositories don't become your "default" repositories
+wget -O 99bionic-updates https://raw.githubusercontent.com/chunky-milk/pi-bashscripts-files/main/Files/99bionic-updates || error "wget failed!"
+sudo mv 99bionic-updates /etc/apt/preferences.d/99bionic-updates || error "MV Failed "
+
+sudo apt update && sudo apt install firefox -y || exit 1
