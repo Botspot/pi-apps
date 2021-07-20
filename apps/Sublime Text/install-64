@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#remove old archive if it exists
+rm -f sublime_text_arm64.tar.xz #should fail thats why the '-f' flag is being used (no error will be shown if it fails).
+#download new archive
+wget "https://download.sublimetext.com/sublime_text_build_4107_arm64.tar.xz" -O sublime_text_arm64.tar.xz || error "Failed to download Sublime Text!"
+#extract it
+tar -xf sublime_text_arm64.tar.xz || error "Failed to extract sublime text!"
+#remove the archive
+rm -f sublime_text_arm64.tar.xz
+#move it to /opt
+sudo mv sublime_text/ /opt/ || error "Failed to move 'sublime_text' folder to '/opt'!"
+#change directory to /opt
+cd /opt || error "Failed to change directory to /opt!"
+#copy the desktop shortcut to /usr/share/applications
+sudo cp sublime_text/sublime_text.desktop /usr/share/applications/ || error "Failed to copy desktop shortcut!"
