@@ -8,7 +8,7 @@ function error {
 }
 
 rm -f flameshot_armhf.deb
-wget -O flameshot_armhf.deb https://github.com/chunky-milk/raspbian-addons/raw/master/debian/pool/main/f/flameshot/flameshot_0.9.0-1_armhf.deb || error 'Failed to download flameshot deb file'
+wget -O flameshot_armhf.deb https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/main/f/flameshot/flameshot_0.9.0-1_armhf.deb || error 'Failed to download flameshot deb file'
 sudo apt install ./flameshot_armhf.deb -yf || error 'Failed to install flameshot'
 rm -f flameshot_armhf.deb
 
