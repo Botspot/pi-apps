@@ -30,5 +30,5 @@ Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 StartupNotify=true
 Type=Application
-Categories=Utility;" > ~/.local/share/applications/sublime-text.desktop || error "Failed to create menu button!"
+Categories=Development;Utility;" > ~/.local/share/applications/sublime-text.desktop || error "Failed to create menu button!"
 
