@@ -8,15 +8,7 @@ function error {
 }
 
 #install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 wget https://download.sublimetext.com/Sublime%20Text%202.0.2.tar.bz2 -O ~/sublime-text-2.tar.bz2 || error 'Failed to download!'
 tar -xf ~/sublime-text-2.tar.bz2 || error 'Failed to extract!'
@@ -24,11 +16,11 @@ rm -f sublime-text-2.tar.bz2
 
 echo "[Desktop Entry]
 Name=Sublime Text
-Comment=nice text editor that has native support for most programming languages.
-Exec='$HOME/Sublime Text 2/sublime_text'
+Comment=Popular text editor with native support for most programming languages.
+Exec=box86 '$HOME/Sublime Text 2/sublime_text'
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 StartupNotify=true
 Type=Application
-Categories=Development;Utility;" > ~/.local/share/applications/sublime-text.desktop || error "Failed to create menu button!"
+Categories=Development;" > ~/.local/share/applications/sublime-text.desktop || error "Failed to create menu button!"
 
