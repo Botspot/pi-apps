@@ -15,7 +15,7 @@ chmod +x ~/Cura.AppImage
 rm -f ~/stl-thumb_0.4.0_arm64.deb
 wget https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_arm64.deb
 "${DIRECTORY}/pkg-install" "$HOME/stl-thumb_0.4.0_arm64.deb" "$(dirname "$0")" || exit 1
-rm -f ~/stl-thumb_0.4.0_armhf.deb
+rm -f ~/stl-thumb_0.4.0_arm64.deb
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
