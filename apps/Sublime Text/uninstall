@@ -7,8 +7,17 @@ function error {
   exit 1
 }
 
-rm ~/.local/share/applications/sublime-text.desktop
 
-rm -rf ~/"Sublime Text 2"
+
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
+  #arch=64
+  sudo apt purge sublime-text
+elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+  #arch=32
+  rm -f ~/.local/share/applications/sublime-text.desktop
+  rm -rf ~/"Sublime Text 2"
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
 
 exit 0
