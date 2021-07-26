@@ -93,6 +93,13 @@ runonce <<"EOF"
   fi
 EOF
 
+#remove old mcpi repo
+runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && [ "$(cat /etc/apt/sources.list.d/mcpi-revival.list)" == 'deb [trusted=yes] https://mcpirevival.tk/mcpi-packages buster main' ];then
+    echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
+  fi
+EOF
+
 install() {
   app="$1" #one app name per line
   

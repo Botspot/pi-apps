@@ -9,7 +9,7 @@ function error {
 
 cd ~
 mkdir speedtest
-wget https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-armhf-linux.tgz -O ~/speedtest.tgz|| error 'Failed to download!'
+wget https://install.speedtest.net/app/cli/ookla-speedtest-1.0.0-armhf-linux.tgz -O ~/speedtest.tgz || error 'Failed to download!'
 cd speedtest
 tar -xvzf ~/speedtest.tgz || error "failed to extract files!"
 rm ~/speedtest.tgz

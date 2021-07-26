@@ -110,7 +110,7 @@ updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | 
 
 #list all files in main folder
 cd "${DIRECTORY}"
-localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'xlunch/')"
+localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'logs/' | grep -v 'xlunch/')"
 
 mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq)"
 
@@ -202,14 +202,45 @@ screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '
 
 #display notification in lower-right, only if fastmode variable is not 1
 if [ "$fastmode" != 1 ];then
-  yad --form --text='Pi-Apps updates available.' \
+  output="$(yad --form --text='Pi-Apps updates available.' --separator='\n' \
     --on-top --skip-taskbar --undecorated --close-on-unfocus \
     --geometry=260+$((screen_width-262))+$((screen_height-150)) \
     --image="${DIRECTORY}/icons/logo-64.png" \
-    --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":1 || exit 0
+    --field='Never show again':CHK FALSE \
+    --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":2)"
+  button=$?
+  
+  if [ $button != 0 ];then
+    if [ "$(echo "$output" | grep . )" == TRUE ];then
+      #User checked the 'Never show again' box, so ask to change update interval
+      curval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+      [ -z "$curval" ] && curval="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#' | head -n1)"
+      
+      params="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#')"
+      params="$(echo "$params" | grep -x "$curval" | tr '\n' '!')!$(echo "$params" | grep -vx "$curval" | tr '\n' '!')"
+      params="$(echo -e "$params" | sed 's/!!/!/g' | sed 's/!$//g' | sed 's/^!//g')"
+      
+      echo "Params: '$params'"
+      
+      output="$(yad --center --title='Change Pi-Apps update interval' --width=440 \
+        --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --text="You just requested for Pi-Apps to <i>never check for updates again</i>."$'\n'"Are you sure? If so, change the update interval to "\""<b>Never</b>"\"" below." \
+        --field='Update interval: ':CB "$params" \
+        --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+        --button=Save!"${DIRECTORY}/icons/check.png":0)"
+      button=$?
+      
+      output="$(echo "$output" | grep .)"
+      if [ $button == 0 ];then #save button clicked
+        echo "$output" > "${DIRECTORY}/data/settings/Check for updates"
+      fi
+    fi
+    #since Details was not clicked, exit now
+    exit 0
+  fi
 fi
 
-#If user clicks 'Details', then display a list of evrything updatable
+#If user clicks 'Details', then display a list of everything updatable
 output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' \
   --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
   --list --checklist --separator='\n' --print-column=4 --no-headers \
@@ -242,11 +273,16 @@ do
   echo -e "\e[92m${file} file was copied successfully.\e[39m"
 done
 IFS="$PREIFS"
+
+rm -f /tmp/pi-apps-update-pid
+
 if [ ! -z "$updatable" ];then
   "${DIRECTORY}/etc/terminal-run" '
     DIRECTORY="'"$DIRECTORY"'"
     updatable="'"$updatable"'"
     trap "sleep 10" EXIT
+    PID=$$
+    echo $PID > /tmp/pi-apps-update-pid
     PREIFS="$IFS"
     IFS=$'\''\n'\''
     for i in $updatable
@@ -255,23 +291,28 @@ if [ ! -z "$updatable" ];then
     done
     IFS="$PREIFS"
     echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-  ' 'Updating $(echo "$updatable" | wc -l) apps...'
+  ' "Updating $(echo "$updatable" | wc -l) app$([ $(echo "$updatable" | wc -l) != 1 ] && echo s)..."
 fi
 #.git folder
 #delete .git folder, then copy the new one
 rm -rf "${DIRECTORY}/.git"
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git folder!"
 
-sleep 1
-while ps -C manage &>/dev/null
-do
-  sleep 0.1
+while [ ! -f /tmp/pi-apps-update-pid ];do
+  sleep 1
 done
-#exit before displaying "Updates complete." window
-exit 0
+PID=$(cat /tmp/pi-apps-update-pid)
+echo "Pi-Apps updates in progress with PID $PID"
+while [ -d /proc/$PID ];do
+  sleep 1
+done
+echo "Pi-Apps updates complete because PID $PID has stopped."
+rm -f /tmp/pi-apps-update-pid
 
-yad --text="Updates complete.
-Please close all instances of Pi-Apps to apply the update." \
-  --text-align=center --center --title='Pi-Apps update complete' --window-icon="${DIRECTORY}/icons/logo.png" \
-  --button=OK!"${DIRECTORY}/icons/check.png":0
+yad --form --text='Pi-Apps updates complete.' \
+  --on-top --skip-taskbar --undecorated --close-on-unfocus \
+  --geometry=260+$((screen_width-262))+$((screen_height-150)) \
+  --image="${DIRECTORY}/icons/logo-64.png" \
+  --button="Close!${DIRECTORY}/icons/exit.png":1
+
 exit 0
