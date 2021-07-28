@@ -12,7 +12,7 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
-Compatible operating systems: **Raspberry Pi OS** and most other Debian-based ARM operating systems like Twister OS, Kali Linux, and Ubuntu.
+Compatible operating systems: **Raspberry Pi OS** and most other Debian-based ARM operating systems like Twister OS, MX Linux, Kali Linux, and Ubuntu.
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
