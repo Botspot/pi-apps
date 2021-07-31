@@ -48,7 +48,7 @@ rm ~/.local/share/applications/wine/Programs/WeChat/WeChat.desktop
 
 echo "[Desktop Entry]
 Name=WeChat
-Exec=env BOX86_NOBANNER=0 env WINEPREFIX=$HOME/.config/wechat-prefix wine $HOME/.config/wechat-prefix/drive_c/Program\ Files/Tencent/WeChat/WeChat.exe
+Exec=env BOX86_NOBANNER=1 env WINEPREFIX=$HOME/.config/wechat-prefix wine $HOME/.config/wechat-prefix/drive_c/Program\ Files/Tencent/WeChat/WeChat.exe
 Type=Application
 StartupNotify=true
 Path=$HOME/.config/wechat-prefix/drive_c/Program\ Files/Tencent/WeChat/
