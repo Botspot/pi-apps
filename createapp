@@ -60,6 +60,7 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
       compatibilityentry="--field=Compatibility::CB"
       compatibilitypreset="64bit and 32bit!32bit only!64bit only"
       if [ ! -z "$name" ];then
+      #if chosen app already has scripts, set cpu architecture compatibility and grey it out.
       compatibilityentry="--field=Compatibility::RO"
         if [ "$(script_name "$name")" == 'install' ] || [ "$(script_name "$name")" == 'install-32 install-64' ];then
           compatibilitypreset="64bit and 32bit"
@@ -68,6 +69,7 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
         elif [ "$(script_name "$name")" == 'install-64' ];then
           compatibilitypreset="64bit only"
         else
+          #otherwise if app contains no install scripts, make Compatibility field editable.
           compatibilityentry="--field=Compatibility::CB"
         fi
       fi
@@ -100,13 +102,21 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
         description="$(echo -e "$(echo "$output" | sed -n '5p')")"
         credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
         
-        #convert compatibility var into machine-readable
-        if [ "$compatibility" == "64bit and 32bit" ];then
-          compatibility='install-32 install-64'
-        elif [ "$compatibility" == "32bit only" ];then
-          compatibility='install-32'
-        elif [ "$compatibility" == "64bit only" ];then
-          compatibility='install-64'
+        
+        if [ -z "$(script_name "$name")" ];then
+          #if app contains no install scripts, then parse yad output
+          #convert compatibility var into machine-readable
+          if [ "$compatibility" == "64bit and 32bit" ];then
+            compatibility='install-32 install-64'
+          elif [ "$compatibility" == "64bit and 32bit" ];then
+            compatibility='install'
+          elif [ "$compatibility" == "32bit only" ];then
+            compatibility='install-32'
+          elif [ "$compatibility" == "64bit only" ];then
+            compatibility='install-64'
+          fi
+        else #app contains install scripts, so ignore yad window's setting (it was greyed out anyway) and set compatibility to whatever it was already.
+          compatibility="$(script_name "$name")"
         fi
         
         #name field must be populated
