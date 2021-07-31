@@ -84,7 +84,8 @@ Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 
 if [ ! -f ~/Desktop/pi-apps.desktop ];then
   echo "Adding Desktop shortcut..."
@@ -102,7 +103,8 @@ Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+Categories=Settings;
+StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
 
 if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
   echo "Creating autostarted updater..."
