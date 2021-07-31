@@ -254,7 +254,6 @@ IFS=$'\n'
 
 #remove empty newlines from output
 output="$(echo "$output" | grep .)"
-echo "$output" > ~/output.log
 
 #limit list of update files to those selected by user.
 #Edge case: if a file and app are named the same, they will appear in both lists if either one was selected.
