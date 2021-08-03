@@ -178,8 +178,8 @@ elif [ "$1" == 'install' ];then
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
     exit 0
   else
-    echo -e "\n\e[41m\e[30mFailed to install ${app} with $scriptname script"\!"\e[39m\e[49m
-\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the above error output or take a screenshot.
+    echo -e "\n\e[91mFailed to install ${app} with $scriptname script"\!"\e[39
+\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
     
@@ -236,7 +236,10 @@ elif [ "$1" == 'uninstall' ];then
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     exit 0
   else
-    echo -e "\n\e[41m\e[30mFailed to uninstall ${app}!\e[39m\e[49m" | tee -a "$logfile"
+    echo -e "\n\e[91mFailed to install ${app}"\!"\e[39
+\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
+Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
+Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
     rm_esc "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
     exit 1
