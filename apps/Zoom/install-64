@@ -10,17 +10,13 @@ function error {
 cd $HOME
 
 # Get dependencies
-CODENAME=$(lsb_release -cs)
-# if [[ "${CODENAME}" == "buster" ]]; then 
-#   "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg0:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu63:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
-if [[ "${CODENAME}" == "focal" ]]; then
-  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu66:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
-elif [[ "${CODENAME}" == "groovy" ]]; then
-  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu67:armhf libjsoncpp1:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
-elif [[ "${CODENAME}" == "hirsute" ]]; then
-  "${DIRECTORY}/pkg-install" "pulseaudio-utils pulseaudio gnome-themes-extra:armhf gtk2-engines-pixbuf:armhf libxcb-shape0:armhf libxcb-randr0:armhf libxcb-image0:armhf libxcb-xtest0:armhf libxcb-keysyms1:armhf libxcb-xfixes0:armhf libturbojpeg:armhf libdbus-1-3:armhf libx11-6:armhf libxtst6:armhf libsm6:armhf libicu67:armhf libjsoncpp24:armhf librhash0:armhf libsqlite3-0:armhf libssh-4:armhf libuv1:armhf libwind0-heimdal:armhf libxml2:armhf" "$(dirname "$0")" || exit 1
+DISTRO=$(lsb_release -is)
+if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+elif [[ "${DISTRO}" == "Ubuntu" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 else 
-	error "this script can't run on your OS! it HAS to be Ubuntu 20.04, 20.10 or 21.04"
+	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
 fi
 
 #refresh list of libraries
@@ -28,14 +24,11 @@ sudo ldconfig
 
 if true;then
   echo "Downloading Zoom..."
-  rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
-  wget 'https://zoom.us/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://d11yldzmag5yn.cloudfront.net/prod/5.4.53391.1108/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
+  rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz
+  wget 'https://zoom.us/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
   
-  #get outdated Zoom client from Botspot's mirror because it's more stable
-  #wget 'https://github.com/Botspot/zoom_686_mirror/raw/main/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
-  
-  tar -xf ~/zoom_i686.tar.xz || error 'Failed to extract Zoom i686!'
-  rm -f ~/zoom_i686.tar.xz #who cares if this fails
+  tar -xf ~/zoom_x86_64.tar.xz || error 'Failed to extract Zoom x86_64!'
+  rm -f ~/zoom_x86_64.tar.xz #who cares if this fails
 fi
 
 echo 'Creating launcher script'
@@ -79,3 +72,6 @@ systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
 
 echo "Installation complete!"
+
+
+
