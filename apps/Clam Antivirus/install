@@ -12,7 +12,7 @@ function error {
 # Get package clamav
 "${DIRECTORY}/pkg-install" "clamav" "$(dirname "$0")" || exit 1
 
-wget https://github.com/dave-theunsub/clamtk/releases/download/v6.11/clamtk_6.11-1_all.deb
+wget https://github.com/dave-theunsub/clamtk/releases/download/v6.13/clamtk_6.13-1_all.deb
 sudo apt install --fix-broken ./clamtk_*.deb -y
 rm clamtk_*.deb
 
