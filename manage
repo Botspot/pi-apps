@@ -167,6 +167,8 @@ elif [ "$1" == 'install' ];then
   #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
   set -o pipefail
   
+  chmod u+x "$installscript"
+  
   echo -e "\e[96mInstalling $app with $scriptname script\e[39m" | tee -a "$logfile"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
@@ -225,6 +227,8 @@ elif [ "$1" == 'uninstall' ];then
   fi
   #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
   set -o pipefail
+  
+  chmod u+x "${DIRECTORY}/apps/${app}/uninstall"
   
   echo -e "\e[96mUninstalling $app\e[39m" | tee -a "$logfile"
   cd $HOME
