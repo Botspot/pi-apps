@@ -334,6 +334,12 @@ get_device_info() { #returns information about current install and hardware
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
   fi
   
+  if [ ! -z "$LANG" ];then
+    echo "Language: $LANG"
+  elif [ ! -z "$LC_ALL" ];then
+    echo "Language: $LC_ALL"
+  fi
+  
   if [ -f "${DIRECTORY}/gui" ];then
     echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui")"
   fi
