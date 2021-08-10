@@ -360,7 +360,7 @@ send_error_report_gui() { #Ask user for permission to send error report
   export DIRECTORY
   
   yad --center --title="Send error report?" --window-icon="${DIRECTORY}/icons/logo.png" \
-    --text="$2"$'\n'"Send error report to Pi-Apps developers?"$'\n'"Help is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
+    --text="$2"$'\n'"Send anonymous error report to Pi-Apps developers?"$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
     --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
     --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent."$'\n'"Feel free to edit the file with more debug information to help us.":"bash -c 'text_editor "\""$1"\""'" \
     --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
