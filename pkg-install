@@ -68,6 +68,22 @@ errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
 if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   echo -e "\e[91mpkg-install failed to run \e[4msudo apt update\e[0m\e[39m!"
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  
+  #run some apt error diagnosis
+  if echo "$errors" | grep -q 'E: The repository' ;then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a faulty repository, and you must fix it before Pi-Apps will work.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete a file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
   exit 1
 fi
 }
