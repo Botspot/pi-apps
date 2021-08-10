@@ -1,11 +1,14 @@
 #!/bin/bash
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
 error() {
   echo -e "\e[91m$1\e[39m" 1>&2
   exit 1
 }
+
+#if this script is being run standalone, not sourced
+if [[ "$0" == */api ]];then
+  DIRECTORY="$(readlink -f "$(dirname "$0")")"
+fi
 
 #echo "API script thinks directory is $DIRECTORY" 1>&2
 
@@ -314,13 +317,68 @@ runonce() { #run command only if it's never been run before. Useful for one-time
   
 }
 
+format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
+  [ -z "$1" ] && error "format_log_file: no filename given!"
+  [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
+  
+  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g')" > "$1"
+  
+}
+
+get_device_info() { #returns information about current install and hardware
+  echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
+  echo "Kernel: $(uname -m) $(uname -r)"
+  echo "Userland CPU architecture: ${arch}-bit"
+  
+  if [ -f /etc/rpi-issue ];then
+    echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
+  fi
+  
+  if [ -f "${DIRECTORY}/gui" ];then
+    echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui")"
+  fi
+  
+}
+
+send_error_report() { #non-interactively send a Pi-Apps error log file to the Botspot discord server
+  [ -z "$1" ] && error "send_error_report(): requires an argument"
+  [ ! -f "$1" ] && error "send_error_report(): '$1' is not a valid file."
+  
+  command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
+  
+  errors="$(curl -F "file=@\"$1\";filename=\"$(basename "$1" | sed 's/\.log.*/.txt/g')\"" "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/error-log-webhook | base64 -d)" 2>&1)"
+  [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
+  
+}
+
+send_error_report_gui() { #Ask user for permission to send error report
+  [ -z "$1" ] && error "send_error_report_gui(): requires an argument for error report file!"
+  [ ! -f "$1" ] && error "send_error_report_gui(): Given error report file ($1) does not exist!"
+  [ -z "$2" ] && error "send_error_report_gui(): requires an argument for window text!"
+  
+  export -f text_editor
+  export DIRECTORY
+  
+  yad --center --title="Send error report?" --window-icon="${DIRECTORY}/icons/logo.png" \
+    --text="$2"$'\n'"Send error report to Pi-Apps developers?"$'\n'"Help is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
+    --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
+    --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent."$'\n'"Feel free to edit the file with more debug information to help us.":"bash -c 'text_editor "\""$1"\""'" \
+    --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
+  button=$?
+  #echo "Button: $button"
+  
+  if [ "$button" == 0 ];then
+    send_error_report "$1"
+  fi
+  
+}
+
 #if this script is being run standalone, not sourced
-if [[ "$0" ==  */api ]];then
-  #if user input a function command, then run it with arguments.
+if [[ "$0" == */api ]];then
   if [ ! -z "$1" ];then
+    #if user input a function command, then run it with arguments.
     #Keep in mind this could run any command the user wanted, not necessarily exclusively function commands.
     "$@"
-    #"$1" "$2" "$3" "$4" "$5" "$6"
   fi
 fi
 
