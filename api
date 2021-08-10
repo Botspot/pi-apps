@@ -329,6 +329,7 @@ get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "Kernel: $(uname -m) $(uname -r)"
   echo "Userland CPU architecture: ${arch}-bit"
+  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
   
   if [ -f /etc/rpi-issue ];then
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
@@ -361,6 +362,8 @@ send_error_report_gui() { #Ask user for permission to send error report
   [ -z "$1" ] && error "send_error_report_gui(): requires an argument for error report file!"
   [ ! -f "$1" ] && error "send_error_report_gui(): Given error report file ($1) does not exist!"
   [ -z "$2" ] && error "send_error_report_gui(): requires an argument for window text!"
+  
+  command -v curl >/dev/null || error "send_error_report_gui(): curl is not installed!"
   
   export -f text_editor
   export DIRECTORY
