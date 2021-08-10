@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "libsdl2-mixer-2.0 libsdl2-ttf-2.0" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0" "$(dirname "$0")" || exit 1
 
 mkdir ~/.fheroes2
 cd ~/.fheroes2

@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-rm -r ~/tor-browser_en-US 
-rm ~/.local/share/applications/tor.desktop
+rm -rf ~/tor-browser_en-US 
+rm -f ~/.local/share/applications/tor.desktop

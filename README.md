@@ -2,8 +2,8 @@
 ## Raspberry Pi App Store for Open Source Projects
 
 Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
-Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pies to their full, desktop PC, potential.  
-Countless **Raspberry Pies remain in disuse** for this very reason. Something must be done!  
+Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pis to their full, desktop PC, potential.  
+Countless **Raspberry Pis remain in disuse** for this very reason. Something must be done!  
 Introducing **Pi-Apps**, basically a list of pre-made apps you can install with **one click**.  
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (a very well known RPi YouTuber) says:
@@ -12,10 +12,11 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
+Compatible operating systems: **Raspberry Pi OS** and most other Debian-based ARM operating systems like Twister OS, MX Linux, Kali Linux, and Ubuntu.
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
-The install script ensures YAD is installed, creates two menu buttons, an auto-started updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside of the Pi-Apps folder.
+The install script ensures [YAD](https://github.com/v1cont/yad) is installed, creates two menu buttons, an auto-started updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside of the Pi-Apps folder.
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
@@ -47,7 +48,7 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
-> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)** (large RPi YouTuber) on Discord
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](https://www.youtube.com/novaspirittech)** (large RPi YouTuber) on Discord
 
 > Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)** (large RPi YouTuber)
 

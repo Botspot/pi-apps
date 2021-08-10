@@ -1,0 +1,39 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#Checking if using armv6
+if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
+  error "armv6 cpu not supported"
+fi
+
+if ! command -v curl >/dev/null ; then
+  echo -e "\033[0;31mcurl: command not found.\e[39m
+You need to install curl first. If you are on a debian system, this command should install it:
+\e[4msudo apt install curl\e[0m"
+  exit 1
+fi
+
+#Install nvm manager:
+export NVM_DIR="$HOME/.nvm"
+mkdir -p "$NVM_DIR"
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
+
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+  #armhf, so patch nvm script to forcibly use armhf
+  sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
+fi
+
+chmod u+x "$NVM_DIR/nvm.sh" "$NVM_DIR/bash_completion"
+source "$NVM_DIR/nvm.sh" || error "Failed to source $NVM_DIR/nvm.sh"
+
+source "$NVM_DIR/bash_completion" || error "Failed to source $NVM_DIR/bash_completion"
+
+nvm install --lts || error "Failed to install node.js with nvm!"
+

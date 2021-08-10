@@ -8,4 +8,6 @@ function error {
 }
 
 sudo apt purge -y puffin-internet-terminal-demo
-sudo apt purge -y puffin-internet-terminal 
+sudo apt purge -y puffin-internet-terminal
+
+sudo rm -f /etc/apt/sources.list.d/puffin-internet-terminal.list

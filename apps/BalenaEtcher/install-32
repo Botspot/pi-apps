@@ -7,10 +7,10 @@ function error {
   exit 1
 }
 
-rm -f ./etcher*armv7l.deb
+rm -f ./etcher.deb
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.117/balena-etcher-electron_1.5.117+39ccbbee_armhf.deb -O ~/etcher-v1.5.117_armv7l.deb || error "Failed to download!"
+wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.121/balena-etcher-electron_1.5.121+8b3f3710_armv7l.deb -O etcher.deb || error "Failed to download!"
 
-sudo apt install -fy ~/etcher-v1.5.117_armv7l.deb  || error "failed to install deb file!"
-rm -f ~/etcher-v1.5.117_armv7l.deb
+sudo apt install -fy ./etcher.deb  || error "failed to install deb file!"
+rm -f etcher.deb
 exit 0

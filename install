@@ -7,6 +7,10 @@ function error {
 
 cd $HOME
 
+if [[ "$(id -u)" == 0 ]]; then
+	error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
+fi
+
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #install yad automatically
@@ -80,7 +84,8 @@ Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 
 if [ ! -f ~/Desktop/pi-apps.desktop ];then
   echo "Adding Desktop shortcut..."
@@ -98,7 +103,8 @@ Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+Categories=Settings;
+StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
 
 if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
   echo "Creating autostarted updater..."
@@ -179,7 +185,7 @@ fi
 #pi-apps terminal command
 if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui";then
   echo "#!/bin/bash
-${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
+${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
   echo "You can now launch pi-apps from a terminal, just by running 'pi-apps'"
 fi

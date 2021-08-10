@@ -10,8 +10,14 @@ function error {
 cd $HOME
 
 # Get dependencies
-cd $HOME
-"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 cmake pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+DISTRO=$(lsb_release -is)
+if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+elif [[ "${DISTRO}" == "Ubuntu" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+else 
+	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
+fi
 
 #refresh list of libraries
 sudo ldconfig

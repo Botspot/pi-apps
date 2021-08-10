@@ -8,7 +8,7 @@ function error {
 }
 
 rm -f ~/turbowarp.deb
-wget -O ~/turbowarp.deb https://github.com/TurboWarp/desktop/releases/download/v0.3.1/TurboWarp-linux-arm64-0.3.1.deb || error "Failed to download deb!"
+wget -O ~/turbowarp.deb https://github.com/TurboWarp/desktop/releases/download/v0.8.1/TurboWarp-linux-armv7l-0.8.1.deb || error "Failed to download deb!"
 
 sudo apt install -yf ~/turbowarp.deb || error "Failed to install turbowarp.deb!"
 

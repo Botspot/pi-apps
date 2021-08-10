@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#if your app installs any packages, keep this command here so those packages will be removed.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+echo "Removing directories..."
+rm -rf ~/Screensavers ~/.screensavers ~/.local/share/applications/windows-screensavers.desktop
+
+#Stop existing screensaver.service
+if [ -f /etc/systemd/system/screensaver.service ]; then
+  echo "Removing systemd service..."
+  sudo systemctl stop screensaver
+  sudo systemctl disable screensaver
+  sudo rm /etc/systemd/system/screensaver.service
+fi
+
+echo "Reloading systemd daemon..."
+sudo systemctl daemon-reload
