@@ -317,6 +317,22 @@ runonce() { #run command only if it's never been run before. Useful for one-time
   
 }
 
+apt_lock_wait() {
+  echo -n "Waiting until APT locks are released... "
+  while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
+    sleep 0.5
+  done
+  while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
+    sleep 0.5
+  done
+  if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+    while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
+      sleep 0.5
+    done
+  fi
+  echo "Done"
+}
+
 format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
@@ -353,7 +369,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
   
-  errors="$(curl -F "file=@\"$1\";filename=\"$(basename "$1" | sed 's/\.log.*/.txt/g')\"" "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/error-log-webhook | base64 -d)" 2>&1)"
+  errors="$(bash <(base64 -d <<<"Y3VybCAtRiAiZmlsZT1AXCIK$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIK$(base64 <<<"$(basename "$1" | sed 's/\.log.*/.txt/g')")XCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIK" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
