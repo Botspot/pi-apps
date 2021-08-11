@@ -25,5 +25,3 @@ sudo apt purge lokinet-bin -y || error "Failed to uninstall \"lokinet-bin\"!"
      echo "removing lokinet-testnet.service"
      sudo rm /etc/systemd/system/lokinet-testnet.service
   fi
-
-sudo systemctl restart dhcpcd
