@@ -6,4 +6,9 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-sudo apt purge -y webcord
+
+if command -v webcord >/dev/null ;then
+  "${DIRECTORY}/api" apt_lock_wait
+  sudo apt purge -y webcord || error "APT failed to purge webcord!"
+fi
+exit 0
