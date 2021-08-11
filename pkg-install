@@ -60,7 +60,7 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
 APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
-Remove the relevant line from /etc/apt/sources.list file or delete a file in
+Remove the relevant line from /etc/apt/sources.list file or delete the file in
 the /etc/apt/sources.list.d folder.
 
 sources.list requires root permissions to edit: sudo mousepad /path/to/file
@@ -169,6 +169,17 @@ errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
 if [ ! -z "$errors" ];then
   echo -e "\e[91mFailed to install the packages!\e[39m"
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  
+  #run some apt error diagnosis
+  if echo "$errors" | grep -q "--fix-broken" ;then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a broken package, and you must fix it before Pi-Apps will work.
+
+Please run: sudo apt --fix-broken install
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
   exit 1
 fi
 }
