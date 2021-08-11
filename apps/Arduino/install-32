@@ -10,12 +10,12 @@ function error {
 VERSION=arduino-1.8.15
 
 cd ~/.local/share
-rm -f $VERSION-linuxarm.tar.xz
+rm -f $(pwd)/$VERSION-linuxarm.tar.xz
 wget https://downloads.arduino.cc/$VERSION-linuxarm.tar.xz || error "failed to download!"
 
-tar -xf $VERSION-linuxarm.tar.xz || error "failed to extract with tar!"
-$VERSION/install.sh || error "failed to run install as $USER user!"
-sudo $VERSION/install.sh || error "failed run install as root user!"
+tar -xf $(pwd)/$VERSION-linuxarm.tar.xz || error "failed to extract with tar!"
+$(pwd)/$VERSION/install.sh || error "failed to run install as $USER user!"
+sudo $(pwd)/$VERSION/install.sh || error "failed run install as root user!"
 
-rm -f $HOME/Desktop/arduino-arduinoide.desktop $VERSION-linuxarm.tar.xz
+rm -f $HOME/Desktop/arduino-arduinoide.desktop $(pwd)/$VERSION-linuxarm.tar.xz
 exit 0
