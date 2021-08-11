@@ -87,6 +87,20 @@ Please check your Internet connection and try again.
 --------------------------------------------------------------------------------
 \e[39m"
   fi
+  if echo "$errors" | grep -q 'is configured multiple times in';then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete the file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
   
   exit 1
 fi
