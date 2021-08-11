@@ -7,17 +7,17 @@ function error {
   exit 1
 }
 
-
 #change version to latest each time
 VER="1.0.7"
 
-cd $HOME || error "Failed to change directory to $HOME!"
+"${DIRECTORY}/pkg-install" "make" "$(dirname "$0")" || exit 1
+
 git clone https://gitlab.com/bztsrc/usbimager.git || error "Failed to clone USBImager repo!"
 cd usbimager/ || error "Failed to entr usbimager repo folder!"
 git checkout $VER || error "Failed to checkout version $VER!"
 cd src/
-USE_LIBUI=yes make -j$(nproc)
-make deb
+USE_LIBUI=yes make -j$(nproc) || error "Failed to compile usbimager!"
+make deb || error "Failed to make deb!"
 cd ..
 sudo apt install -fy ./usbimager*armhf.deb
 cd ..
