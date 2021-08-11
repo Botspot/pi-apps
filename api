@@ -343,8 +343,8 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
 
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
+  echo "OS architecture: ${arch}-bit"
   echo "Kernel: $(uname -m) $(uname -r)"
-  echo "Userland CPU architecture: ${arch}-bit"
   echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
   
   if [ -f /etc/rpi-issue ];then
