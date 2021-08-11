@@ -83,6 +83,7 @@ runonce <<"EOF"
   mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp"
   
   #rename 'Pi-Apps Terminal Plugin' app to 'Pi-Apps Terminal Plugin (python)'
+  rm -rf "${DIRECTORY}/apps/Pi-Apps Terminal Plugin"
   mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)"
   
 EOF
