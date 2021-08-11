@@ -17,35 +17,19 @@ error() {
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
 app="$(basename "$2")" #remove any slashes to just get program name
-
-
 reduceapt() { #remove unwanted lines from apt output
   grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
 }
 
 echo "Running pkg-install..."
-
 if [ -z "$PKG_LIST" ];then
   error "No package names specified to pkg-install!"
 elif [ -z "$app" ];then
   error "No app name specified to pkg-install!"
 fi
 
-echo -n "Waiting until APT locks are released... "
-{
-while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-  sleep 0.5
-done
-while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-  sleep 0.5
-done
-if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-    sleep 0.5
-  done
-fi
-echo "Done"
-}
+source "${DIRECTORY}/api"
+apt_lock_wait
 
 #sudo apt update
 {
