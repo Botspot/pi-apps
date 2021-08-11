@@ -10,15 +10,19 @@ function error {
 #change version to latest each time
 VER="1.0.7"
 
-"${DIRECTORY}/pkg-install" "make" "$(dirname "$0")" || exit 1
+rm -rf ~/usbimager
+mkdir -p ~/usbimager
+cd ~/usbimager
 
-git clone https://gitlab.com/bztsrc/usbimager.git || error "Failed to clone USBImager repo!"
-cd usbimager/ || error "Failed to entr usbimager repo folder!"
-git checkout $VER || error "Failed to checkout version $VER!"
-cd src/
-USE_LIBUI=yes make -j$(nproc) || error "Failed to compile usbimager!"
-make deb || error "Failed to make deb!"
-cd ..
-sudo apt install -fy ./usbimager*armhf.deb
-cd ..
-rm -rf usbimager/
+echo "Downloading..."
+wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${VER}-armv7l-linux-x11.zip || error "Failed to download usbimager.zip!"
+
+echo "Extracting..."
+unzip $(pwd)/usbimager.zip || error "Failed to extract!"
+rm -f $(pwd)/usbimager.zip
+cd ~/
+
+echo "Copying files..."
+sudo cp -av /home/pi/usbimager/* /usr || error "Failed to copy files to /usr!"
+
+rm -rf ~/usbimager
