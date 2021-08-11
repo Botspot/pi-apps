@@ -197,8 +197,7 @@ while true;do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=Search:4" \
-        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
         "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
         "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
