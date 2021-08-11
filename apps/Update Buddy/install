@@ -10,10 +10,9 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "yad" "$(dirname "$0")" || exit 1
 
-rm -rf update-buddy
+rm -rf ~/update-buddy
+git clone https://github.com/Botspot/update-buddy || error 'Failed to download update-buddy repository!'
 
-
-git clone https://github.com/Botspot/update-buddy || error 'Failed to clone example.com repository!'
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
 Name=Update Buddy
