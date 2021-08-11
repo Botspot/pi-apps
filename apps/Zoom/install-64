@@ -22,6 +22,7 @@ fi
 #refresh list of libraries
 sudo ldconfig
 
+#For testing, set to false if zoom folder is already there
 if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz
@@ -29,6 +30,11 @@ if true;then
   
   tar -xf ~/zoom_x86_64.tar.xz || error 'Failed to extract Zoom x86_64!'
   rm -f ~/zoom_x86_64.tar.xz #who cares if this fails
+  
+  wget https://github.com/chunky-milk/ZoomClient-ARM/raw/master/zoom_x64_libs.zip || error "Failed to download zoom x64 libraries!"
+  unzip zoom_x64_libs.zip || error "Failed to extract zoom libraries."
+  mv zoom_x64_libs/* zoom/ || error "Failed to move zoom x64 libraries to zoom folder."
+  rm -r $HOME/zoom_x64_libs || error "Failed to remove library folder."
 fi
 
 echo 'Creating launcher script'
@@ -44,34 +50,39 @@ if [ -z "$(ps aux | grep pulseaudio | grep -v grep)" ];then
 fi
 cd ${HOME}/zoom/
 echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
-box86 zoom' > "${HOME}/zoom/runzoom.sh"
+box64 zoom' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
 
-if command -v box86 >/dev/null;then
-  echo "Updating box86..."
+if command -v box64 >/dev/null;then
+  echo "Updating box64..."
 else
-  echo "Installing box86..."
+  echo "Installing box64..."
 fi
-"${DIRECTORY}/manage" install-if-not-installed 'Box86' || error "Box86 installation failed!"
-if ! command -v box86 >/dev/null;then
-  error "Box86 failed to install somehow!\n/usr/local/bin/box86 does not exist"
+"${DIRECTORY}/manage" install-if-not-installed 'Box64' || error "Box64 installation failed!"
+if ! command -v box64 >/dev/null;then
+  error "Box64 failed to install somehow!\n/usr/local/bin/box64 does not exist"
 fi
 
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
 Name=Zoom
-Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh"\"" 'Close this window to exit Zoom'
+Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh %u"\"" 'Close this window to exit Zoom'
 Icon=$(dirname "$0")/icon-64.png
 Path=${HOME}/zoom/
 Type=Application
-Comment=i386 version of software platform used for teleconferencing using Box86
+Comment=x86_64 version of software platform used for teleconferencing using Box64
 Categories=Network;
 StartupNotify=true" > ~/.local/share/applications/zoom.desktop
+
+#Associate with mimeapp
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'zoom.desktop')" ];then
+  echo "Associating Zoom mimetypes..."
+  echo "[Added Associations]
+x-scheme-handler/zoomus=zoom.desktop;
+x-scheme-handler/zoommtg=zoom.desktop;" >> ~/.config/mimeapps.list
+fi
 
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
 
 echo "Installation complete!"
-
-
-
