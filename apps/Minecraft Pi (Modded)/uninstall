@@ -7,5 +7,25 @@ function error {
   exit 1
 }
 
-sudo apt-get remove -y minecraft-pi-native &>/dev/null || true
-sudo apt-get remove -y mcpil &>/dev/null || true
+# Wait for apt lock to be released
+i=0
+while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock > /dev/null 2>&1
+do
+  case $(($i % 4)) in
+    0) j="-";;
+    1) j="\\";;
+    2) j="|";;
+    3) j="/";;
+  esac
+  printf "\r[$j] Waiting for other package managers to finish..."
+  sleep 0.5
+  ((i+=1))
+done
+[[ $i -gt 0 ]] && printf "Done.\n"
+
+sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+sudo apt-get -y autoremove
+
+sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list

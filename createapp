@@ -6,6 +6,9 @@ function error {
   exit 1
 }
 
+#for text_editor() and script_name() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
 #you can specify a preexisting app with variable 1
 if [ ! -z "$1" ];then
   name="$1"
@@ -24,51 +27,21 @@ windowheight=400
 #start with this app name:
 #name='Email Checker'
 
-text_editor() {
-  #$1 is file to open
-  [ -z "$1" ] && error "text_editor(): no file specified"
-  
-  #find the best text editor
-  preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
-  
-  #change preferred editor if user-default doesn't exist
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=geany
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=mousepad
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=leafpad
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=nano
-  fi
-  
-  if [ "$preferrededitor" == nano ];then
-    "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
-  else
-    #non-terminal text editor
-    "$preferrededitor" "$1"
-  fi
-  
-  
-}
-
-
 while true;do
   case $step in
-    1)
+    1) #STEP 1: introduction
       echo "Welcome to the Create App wizard!
+
 With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list.
 This wizard will save your work as you go." | yad --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
+        --text="<a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">READ THIS TUTORIAL FIRST!!</a>" \
         --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$((windowheight-100)) \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
       step=$((step+1))
       ;;
-    2)
+    2) #STEP 2: fill in initial values
       
       if [ ! -z "$name" ];then
         namelocked='yes'
@@ -87,16 +60,16 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
       compatibilityentry="--field=Compatibility::CB"
       compatibilitypreset="64bit and 32bit!32bit only!64bit only"
       if [ ! -z "$name" ];then
+      #if chosen app already has scripts, set cpu architecture compatibility and grey it out.
       compatibilityentry="--field=Compatibility::RO"
-        if [ -f "${DIRECTORY}/apps/${name}/install" ];then
+        if [ "$(script_name "$name")" == 'install' ] || [ "$(script_name "$name")" == 'install-32 install-64' ];then
           compatibilitypreset="64bit and 32bit"
-        elif [ -f "${DIRECTORY}/apps/${name}/install-64" ] && [ -f "${DIRECTORY}/apps/${name}/install-32" ];then
-          compatibilitypreset="64bit and 32bit"
-        elif [ -f "${DIRECTORY}/apps/${name}/install-64" ];then
-          compatibilitypreset="64bit only"
-        elif [ -f "${DIRECTORY}/apps/${name}/install-32" ];then
+        elif [ "$(script_name "$name")" == 'install-32' ];then
           compatibilitypreset="32bit only"
+        elif [ "$(script_name "$name")" == 'install-64' ];then
+          compatibilitypreset="64bit only"
         else
+          #otherwise if app contains no install scripts, make Compatibility field editable.
           compatibilityentry="--field=Compatibility::CB"
         fi
       fi
@@ -129,13 +102,21 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
         description="$(echo -e "$(echo "$output" | sed -n '5p')")"
         credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
         
-        #convert compatibility var into machine-readable
-        if [ "$compatibility" == "64bit and 32bit" ];then
-          compatibility='64 32'
-        elif [ "$compatibility" == "32bit only" ];then
-          compatibility='32'
-        elif [ "$compatibility" == "64bit only" ];then
-          compatibility='64'
+        
+        if [ -z "$(script_name "$name")" ];then
+          #if app contains no install scripts, then parse yad output
+          #convert compatibility var into machine-readable
+          if [ "$compatibility" == "64bit and 32bit" ];then
+            compatibility='install-32 install-64'
+          elif [ "$compatibility" == "64bit and 32bit" ];then
+            compatibility='install'
+          elif [ "$compatibility" == "32bit only" ];then
+            compatibility='install-32'
+          elif [ "$compatibility" == "64bit only" ];then
+            compatibility='install-64'
+          fi
+        else #app contains install scripts, so ignore yad window's setting (it was greyed out anyway) and set compatibility to whatever it was already.
+          compatibility="$(script_name "$name")"
         fi
         
         #name field must be populated
@@ -228,11 +209,12 @@ Do you want to edit ${name}?" --timeout=10 \
         #like clicking the X or something 
         exit 0
       fi
+      
       ;;
-    3)
-      #create install script
-      if [ "$compatibility" == "64 32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-64" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install" ];then
-        #ask if two install scripts are necessary, of if both architectures can share 1 script
+    3) #STEP 3: create install script
+      
+      #ask if two install scripts are necessary, of if both architectures can share 1 script
+      if [ "$compatibility" == "install-32 install-64" ] && [ -z "$(script_name "$name")" ];then
         echo "In the previous page, you said this app is compatible with 64bit and 32bit.
 Do you want two install scripts, one for 32bit and the other for 64bit?
 Or do you want one combined install script?" | yad --text-info --fontname=12 --wrap --show-uri \
@@ -244,101 +226,108 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
         button=$? #get exit code to determine which button was pressed
         
         if [ $button == 1 ];then
+          #button clicked: Previous
           step=$((step-1))
-          continue
-        fi
-        
-        if [ ! $button == 0 ] && [ ! $button == 2 ];then
+          continue #back to top of while loop
+        elif [ ! $button == 0 ] && [ ! $button == 2 ];then
+          #Window manager X, or escape, or terminated
           exit 0
-        fi
-        
-        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
-        if [ $button == 0 ];then
+        elif [ $button == 0 ];then
           #button clicked: '1 script'
-          true #do nothing as template has install script by default
-          compatibility=6432 #change compatibility var to show that only an install script will be created
+          compatibility=install #change compatibility var from 'install-32 install-64' to 'install', to show that only an install script will be created
         elif [ $button == 2 ];then
-          cp -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-64"
-          mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-32"
+          #button clicked: '2 scripts'
+          true #do nothing, as $compatibility already contains "install-32 install-64"
         fi
-      elif [ "$compatibility" == "32" ];then
-        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
-        mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-32"
-      elif [ "$compatibility" == "64" ];then
-        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
-        mv -n "${DIRECTORY}/apps/${name}/install" "${DIRECTORY}/apps/${name}/install-64"
+      fi #end of asking for 1 script or 2 scripts
+      
+      #copy right files from template, based on $compatibility variable
+      if [ "$compatibility" == "install-32" ];then
+        cp -n "${DIRECTORY}/apps/template/install" "${DIRECTORY}/apps/${name}/install-32"
+        
+      elif [ "$compatibility" == "install-64" ];then
+        cp -n "${DIRECTORY}/apps/template/install" "${DIRECTORY}/apps/${name}/install-64"
+        
+      elif [ "$compatibility" == "install" ];then
+        cp -n "${DIRECTORY}/apps/template/install" "${DIRECTORY}/apps/${name}/install"
+        
+      elif [ "$compatibility" == "install-32 install-64" ];then
+        cp -n "${DIRECTORY}/apps/template/install" "${DIRECTORY}/apps/${name}/install-32"
+        cp -n "${DIRECTORY}/apps/template/install" "${DIRECTORY}/apps/${name}/install-64"
       fi
       
-      if [ ! -f "${DIRECTORY}/apps/${name}/install-64" ] && [ ! -f "${DIRECTORY}/apps/${name}/install-32" ] && [ ! -f "${DIRECTORY}/apps/${name}/install" ];then
-        cp -rn "${DIRECTORY}/apps/template/." "${DIRECTORY}/apps/${name}"
-      fi
-      
-      #open the correct file
-      if [ "$compatibility" == "32" ];then
-        scriptname='install-32'
-        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
-      elif [ "$compatibility" == "64" ];then
-        scriptname='install-64'
-        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
-      elif [ "$compatibility" == "64 32" ];then
-        scriptname='' #this symbolizes that 2 scripts will be made
+      #open the correct file in text editor
+      if [ "$compatibility" == "install-32" ];then
+        text_editor "${DIRECTORY}/apps/${name}/install-32" &
+        
+      elif [ "$compatibility" == "install-64" ];then
+        text_editor "${DIRECTORY}/apps/${name}/install-64" &
+        
+      elif [ "$compatibility" == "install-32 install-64" ];then
         text_editor "${DIRECTORY}/apps/${name}/install-64" &
         text_editor "${DIRECTORY}/apps/${name}/install-32" &
-      elif [ "$compatibility" == "6432" ];then
-        scriptname='install'
-        text_editor "${DIRECTORY}/apps/${name}/${scriptname}" &
+        
+      elif [ "$compatibility" == "install" ];then
+        text_editor "${DIRECTORY}/apps/${name}/install" &
       fi
       
       #install shellcheck if not installed
-      [ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck
+      command -v shellcheck >/dev/null || sudo apt install -y shellcheck
       
       #if creating 2 scripts
-      if [ -z "$scriptname" ];then
-        #if creating 2 scripts
-        output="$(yad --form --on-top \
+      if [ "$compatibility" == 'install-32 install-64' ];then
+        
+        yad --form --on-top \
           --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
-          --text="Now it"\'"s time to make your install-32 and install-64 scripts.
-One of these scripts will be executed when somebody clicks your app"\'"s Install button.
-Two text editors should have openened and you can create your scripts." \
+          --text="Now it's time to make your install-32 and install-64 scripts.
+
+One of these scripts will be executed when somebody clicks your app's Install button.
+Two text editors should have openened and you can create your scripts.
+Need help? <a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">Read the tutorial!</a>
+Still need help? Botspot can try to help you if you <a href="\""https://github.com/Botspot/pi-apps/issues/new/choose"\"">open in issue.</a>" \
           --field="Run install-32 script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-32';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running install-32 script of $name"\""" \
           --field="Shellcheck install-32"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/install-32';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
           --field="Run install-64 script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/install-64';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running install-64 script of $name"\""" \
-          --field="Shellcheck install-64"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/install-64';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
+          --field="Shellcheck install-64"!!'Having problems? This utility locates syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/install-64';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
           --button=Previous!"${DIRECTORY}/icons/back.png":2 \
           --button=Next!"${DIRECTORY}/icons/forward.png":0 \
-          2>/dev/null)"
+          2>/dev/null
         button=$? #get exit code to determine which button was pressed
-      else
-        #if creating 1 script
-        output="$(yad --form --on-top \
+        
+      else #if creating 1 script
+        yad --form --on-top \
           --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
-          --text="Now it"\'"s time to make your ${scriptname} script. This will be executed anytime somebody clicks the Install button.
-A text editor should have openened and you can create your install script." \
-          --field="Run script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/${scriptname}';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running ${scriptname} script of $name"\""" \
-          --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/${scriptname}';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
+          --text="Now it's time to make your ${compatibility} script. This will be executed anytime somebody clicks the Install button.
+
+A text editor should have openened and you can create your install script.
+Need help? <a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">Read the tutorial!</a>
+Still need help? Botspot can try to help you if you <a href="\""https://github.com/Botspot/pi-apps/issues/new/choose"\"">open in issue.</a>" \
+          --field="Run script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/${compatibility}';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running ${compatibility} script of $name"\""" \
+          --field="Shellcheck"!!'Having problems? This utility locates syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/${compatibility}';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
           --button=Previous!"${DIRECTORY}/icons/back.png":2 \
           --button=Next!"${DIRECTORY}/icons/forward.png":0 \
-          2>/dev/null)"
+          2>/dev/null
         button=$? #get exit code to determine which button was pressed
       fi
       
       if [ $button == 0 ];then
-        #next - save changes
+        #next
         step=$((step+1))
       elif [ $button == 2 ];then
-        #previous - save changes
+        #previous
         step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
       fi
       ;;
-    4)
+    4) #STEP 4: create uninstall script
+      cp -n "${DIRECTORY}/apps/template/uninstall" "${DIRECTORY}/apps/${name}/uninstall"
       
       text_editor "${DIRECTORY}/apps/${name}/uninstall" &
       
       #install shellcheck if not installed
-      [ ! -f /usr/bin/shellcheck ]&&sudo apt install -y shellcheck
+      command -v shellcheck >/dev/null || sudo apt install -y shellcheck
       
       output="$(yad --form --on-top \
         --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
@@ -352,15 +341,17 @@ A text editor should have openened... Never mind, you know what to do.' \
       button=$? #get exit code to determine which button was pressed
       
       if [ $button == 0 ];then
+        #next
         step=$((step+1))
       elif [ $button == 2 ];then
+        #previous
         step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
       fi
       ;;
-    5)
+    5) #STEP 5: verify in app list
       LIST="${DIRECTORY}/icons/uninstalled.png
 ${DIRECTORY}/apps/${name}/icon-24.png
 $name
@@ -385,8 +376,8 @@ Here'\''s what it will look like in the app list:' \
         exit 0
       fi
       ;;
-    6)
-           
+    6) #STEP 6: verify in Details window
+      
       text="$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)
 Current status: uninstalled
 Website: $(cat "${DIRECTORY}/apps/${name}/website" || echo "unavailable")
@@ -411,7 +402,7 @@ Here'\''s a preview of the Details window:' \
         exit 0
       fi
       ;;
-    7)
+    7) #STEP 7: all done
       echo "Done!
 You app is located at ${DIRECTORY}/apps/${name}
 To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue for Botspot (the developer of Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \

@@ -2,8 +2,8 @@
 ## Raspberry Pi App Store for Open Source Projects
 
 Linux is harder to master than Windows. It's geared toward power users, and you will encounter problems if you follow tutorials.
-Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pies to their full, desktop PC, potential.  
-Countless **Raspberry Pies remain in disuse** for this very reason. Something must be done!  
+Because of the lack of available software on the `apt` repositories, most Raspberry Pi owners never use their Pis to their full, desktop PC, potential.  
+Countless **Raspberry Pis remain in disuse** for this very reason. Something must be done!  
 Introducing **Pi-Apps**, basically a list of pre-made apps you can install with **one click**.  
 
 **[ETA Prime](https://www.youtube.com/watch?v=oqNWJ52DLes)** (a very well known RPi YouTuber) says:
@@ -12,23 +12,24 @@ Introducing **Pi-Apps**, basically a list of pre-made apps you can install with 
 > I want to give the devs of Pi-Apps a big shout-out."
 
 ## To install Pi-Apps
+Compatible operating systems: **Raspberry Pi OS** and most other Debian-based ARM operating systems like Twister OS, MX Linux, Kali Linux, and Ubuntu.
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
-<details>
-<summary>Manual installation</summary>
+The install script ensures [YAD](https://github.com/v1cont/yad) is installed, creates two menu buttons, an auto-started updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside of the Pi-Apps folder.
 
-# installation
+<details>
+<summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
+To manually install Pi-Apps:
+ 
 ```
 git clone https://github.com/Botspot/pi-apps
 ~/pi-apps/install
 ```
 </details>
 
-The install script ensures YAD is installed, creates two menu buttons, an autostarted updater, and a file (`/usr/local/bin/pi-apps`) that allows pi-apps to be run from terminal. Besides those, nothing is modified outside your home directory.
-
 <details>
-<summary>To uninstall Pi-Apps</summary>
+<summary><b>To uninstall Pi-Apps</b></summary>
 To uninstall Pi-Apps:
 
 ```
@@ -47,7 +48,7 @@ Menu -> Accessories -> Pi Apps, or run `pi-apps` in a terminal. Run Pi-Apps from
 - [ETA Prime's Pi-Apps & Minecraft Java video](https://www.youtube.com/watch?v=oqNWJ52DLes)
 
 ## What do others say about Pi-Apps?
-> "Awesome. Thanks for doing this." - **[Novaspirit Tech](youtube.com/novaspirittech)** (large RPi YouTuber) on Discord
+> "Awesome. Thanks for doing this." - **[Novaspirit Tech](https://www.youtube.com/novaspirittech)** (large RPi YouTuber) on Discord
 
 > Thanks so much to Botspot for creating this; it's a great program." - **[leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I)** (large RPi YouTuber)
 
@@ -102,15 +103,18 @@ Embed code:
 > For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.  
 > The repositories don't host them, and they usually aren't advertised very well, so how will people find them?  
 > Most people never find them.  
-> One day I realized: Why not make my own app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
+> One day I realized: Why not make an app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
 > (Which would you rather do - click a shiny Install button, or copy-n-paste a bunch of commands from a sketchy blog tutorial?)
 
  - How long did it take to program this?  
-> About two weeks of nearly non-stop coding to make Pi-Apps from the ground-up. And since then, I've regularly fixed bugs, solved problems, adding new features, and handled new app submissions.
+> About two weeks of nearly non-stop coding to lay the groundwork. Since then, I've continually optimized performance, fixed bugs, solved problems, added new features, and handled new app submissions.
 
  - Is Pi-Apps still under development?
 > Sure is! Initial development is done for the most part, and I don't see any more [major features](https://github.com/Botspot/pi-apps#to-do) being added to Pi-Apps's core functionality. (besides maybe allowing `apt`-package apps in the future)
 > But, there's always an app or two that need attention, and dozens of app requests. It's enough work to keep a *team* of developers busy.
+
+ - Is Pi-Apps free?
+> Absolutely! Pi-Apps is not a product or service: Anyone is welcome to use it; no-one should feel compelled/required to donate.
 
  - How can I help?
 > - It's always nice to leave a kind word about Pi-Apps on forums and in comments. In addition to helping others find this useful software, you may just get added to [the hall of fame](https://github.com/Botspot/pi-apps#what-do-others-say-about-pi-apps)!

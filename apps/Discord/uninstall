@@ -6,4 +6,4 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-sudo apt purge -y electron-discord-webapp
+sudo apt purge -y webcord

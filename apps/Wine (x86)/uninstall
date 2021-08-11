@@ -13,11 +13,9 @@ function error {
 sudo rm -f /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot
 rm -rf ~/wine ~/.cache/winetricks ~/.cache/wine
 
-rm ~/.local/share/applications/wine-config.desktop || error 'Failed to remove winecfg menu shortcut!'
-rm ~/.local/share/applications/winetricks.desktop || error 'Failed to remove winetricks menu shortcut!'
-rm ~/.local/share/applications/wine-explorer.desktop || error 'Failed to remove wine desktop menu shortcut!'
+rm -f ~/.local/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
 
-echo -e "\e[93mYou just uninstalled the Wine app, but it's not completely gone yet.
-To prevent accidental data loss, your Wine configuration is still located in the $HOME/.wine folder. Feel free to delete it to save space or to troubleshoot problems.
+echo -e "\n\n\e[93mYou just uninstalled the Wine app, but it's not completely gone yet.
+To prevent data loss, your Wine configuration is still\nlocated in the $HOME/.wine folder. Feel free to delete it to save space or to rename the folder for troubleshooting.
 
-Thanks for reading! -Botspot\e[39m"
+Thanks for reading! -Botspot\e[39m\n"

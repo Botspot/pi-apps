@@ -21,14 +21,19 @@ if [ ! -z "$1" ];then
     echo "The $1 app is currently in the $(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}') category."
   fi
   
-  if ! echo "$structure" | grep -q '|'"$2" ;then
-    echo "The $2 category did not exist previously."
+  #check if $2 is --delete
+  if [ "$2" == '--delete' ];then
+    output="$(echo "$structure" | grep -v "$1"'|')"
+  else
+    if ! echo "$structure" | grep -q '|'"$2" ;then
+      echo "The $2 category did not exist previously."
+    fi
+    
+    echo "Putting the $1 app in the $2 category..."
+    
+    #replace any mention of the $1 app with the new line at the end of file
+    output="$(echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" | sort)"
   fi
-  
-  echo "Putting the $1 app in the $2 category..."
-  
-  #replace any mention of the $1 app with the new line at the end of file
-  output="$(echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" | sort)"
   
   #only change the structure file if something was really changed
   if [ "$output" != "$(cat "${DIRECTORY}/data/categories/structure")" ];then
@@ -63,7 +68,7 @@ $category
   #echo -e "'$LIST'\n'$APPS'"
   
   output="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
-    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed 's+/home/pi+~+g')" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
+    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
     --separator='|' --window-icon="${DIRECTORY}/icons/logo.png" \
     --column=:IMG --column=Name --column=Category:TEXT \
     --button=Reset!"${DIRECTORY}/icons/backup.png"!"Overwrites your structure file with the default one from the Pi-Apps repository.":4 \

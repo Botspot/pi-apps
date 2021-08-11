@@ -9,11 +9,11 @@ function error {
   exit 1
 }
 
-rm -f ~/etcher*arm64.deb
+rm -f ~/etcher.deb
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.116/balena-etcher-electron_1.5.116+37769efb_arm64.deb -O ~/etcher-v1.5.116_arm64.deb || error "Failed to download!"
+wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.121/balena-etcher-electron_1.5.121+8b3f3710_arm64.deb -O ~/etcher.deb || error "Failed to download!"
 
-sudo apt install -fy ~/etcher-v1.5.116_arm64.deb || error "failed to install deb file!"
-rm -f ~/etcher-v1.5.116_arm64.deb
+sudo apt install -fy ~/etcher.deb || error "failed to install deb file!"
+rm -f ~/etcher.deb
 
 exit 0

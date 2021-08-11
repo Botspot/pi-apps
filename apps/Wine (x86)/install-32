@@ -101,11 +101,13 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       rm -rf ~/linux.bak
       [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
       #download precompiled kernel
+      cd $HOME
       echo "Downloading precompiled kernel..."
-      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/3/rpi23_3g1g_kernel.tar.xz -O ~/3g1g-rpi-kernel.tar.xz || error "Failed to download prebuilt kernel!"
+      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/4.1/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
-      tar -xf ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
+      sleep 0.5 # so user has time to read what is happening
+      unzip ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
       cd linux || error "Failed to change folder to ~/linux!"
       #install the precompiled kernel
       export KERNEL=kernel7
@@ -117,7 +119,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       cd
       rm -rf linux
       #message
-      echo -e "It appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again."
+      echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
       sleep infinity
     elif [ "$answer" == 4 ];then
       exit 1
@@ -181,7 +183,7 @@ echo "[Desktop Entry]
 StartupNotify=true
 Terminal=false
 Type=Application
-Name=Wine configuration
+Name=Wine Configuration
 Exec=wine winecfg
 Icon=$(dirname "$0")/icon-64.png
 Categories=System;
@@ -194,25 +196,44 @@ Exec=bash -c 'BOX86_NOBANNER=1 box86 winetricks --gui'
 Terminal=false
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
-Categories=System;" > ~/.local/share/applications/winetricks.desktop
+Categories=System;" > ~/.local/share/applications/wine-tricks.desktop
 
 echo "[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Wine Desktop
-Comment=Graphical desktop for Wine
+Comment=Wine graphical desktop environment to mimic a Windows OS
 Icon=$(dirname "$0")/icon-64.png
-Exec=/usr/local/bin/wine explorer /desktop=shell,1280x720 explorer.exe
+Exec=wine explorer /desktop=shell,1280x720
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
 
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Program Manager
+Comment=Install/Remove Windows programs
+Icon=$(dirname "$0")/icon-64.png
+Exec=wine uninstaller
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-uninstaller.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Task Manager
+Comment=View running processes within Wine
+Icon=$(dirname "$0")/icon-64.png
+Exec=wine taskmgr
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-taskmgr.desktop
 
 # Boot wine (make fresh wineprefix in ~/.wine
 BOX86_NOBANNER=1
 setarch linux32 -L box86 ~/wine/bin/wine wineboot
 
 #wait until above process exits
-while [ ! -z "$(ps aux | grep -i 'wine C:' | grep -v grep)" ];do
+while [ ! -z "$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
 echo "First wineboot finished. Now updating wine prefix..."

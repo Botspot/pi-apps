@@ -4,107 +4,53 @@
 ## Config
 ##
 
-# Used To Trigger Updates
-MCPI_REBORN_VERSION='build_52'
-# MCPIL Version
-MCPIL_VERSION='0.1.9'
-
 set -e
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-STORAGE="$(dirname "$0")"
 
 function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
 
-function install_deb {
-  echo "Installing $1..."
-  sudo dpkg -i "$1" || : # Expected To Fail
-  sudo apt-get --fix-broken install --no-install-recommends -y || error 'Unable To Complete Install'
-}
+# Wait for apt lock to be released
+i=0
+while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock > /dev/null 2>&1
+do
+  case $(($i % 4)) in
+    0) j="-";;
+    1) j="\\";;
+    2) j="|";;
+    3) j="/";;
+  esac
+  printf "\r[$j] Waiting for other package managers to finish..."
+  sleep 0.5
+  ((i+=1))
+done
+[[ $i -gt 0 ]] && printf "Done.\n"
 
-##
-## Install mcpi-reborn
-##
+# Remove old MCPILs
+sudo apt-get remove -y mcpil-r mcpil || true
 
-if [[ "$(lsb_release -cs)" != "buster" && "$(lsb_release -cs)" != "bullseye" && "$(lsb_release -cs)" != "sid" ]]; then
-    error "Unsupported Debian Version! Your Debian version is $(lsb_release -cs), but supported versions are Buster, Bullseye, or Sid."
-fi
+wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
 
-# Remove Old Minecraft Pi
-sudo apt-get remove -y minecraft-pi &>/dev/null || true
-sudo apt-get remove -y minecraft-pi-native &>/dev/null || true
-sudo apt-get remove -y mcpil-r &>/dev/null || true
+# Choose MCPIL to use
+PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
+"
+options=("gMCPIL (recommended)" "jMCPIL (better GUI)" "Quit")
+select opt in "${options[@]}"
+do
+  case $opt in
+    "${options[0]}")
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client gmcpil" "$(dirname "$0")" || exit 1
+        break;;
+    "${options[1]}")
+        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client jmcpil" "$(dirname "$0")" || exit 1
+        break;;
+    "${options[2]}")
+        break;;
+    *) echo "Invalid option: $REPLY";;
+  esac
+done
 
-# Debian Buster Support
-if [[ "$(lsb_release -cs)" = "buster" ]]; then
-  # Uninstall Old Docker
-  sudo apt-get remove -y docker.io >/dev/null
-  
-  # Setup Backports Repo On Buster
-  if ! grep -q '^deb http://deb.debian.org/debian buster-backports main$' /etc/apt/sources.list; then
-    # Install Backports Repository
-    echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee -a /etc/apt/sources.list
-    # Sign backports repo
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 04EE7237B7D453EC
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 648ACFD622F3D138
-    # Update APT Index
-    sudo apt-get update
-    # Install Updated libseccomp2
-    sudo apt-get install --no-install-recommends -y -t buster-backports libseccomp2
-  fi
-fi
-
-# Install Docker
-if command -v docker &>/dev/null ;then
-  echo "Docker is installed at $(command -v docker)"
-else
-  echo "Docker is not installed. Running Docker install script..."
-  curl -fsSL https://get.docker.com -o "${STORAGE}/get-docker.sh" || error 'Unable To Download Docker Install Script'
-  sudo sh "${STORAGE}/get-docker.sh" || error 'Unable To Install Docker'
-  rm "${STORAGE}/get-docker.sh"
-fi
-
-# Prepare
-rm -rf "${STORAGE}/mcpi-reborn"
-mkdir "${STORAGE}/mcpi-reborn"
-
-# Download DEBs
-wget -O "${STORAGE}/mcpi-reborn/deb.zip" https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/artifact/out/deb/*zip*/deb.zip || error 'Unable To Download deb.zip! Check your internet connection and try again.'
-
-# Unzip DEBs
-unzip "${STORAGE}/mcpi-reborn/deb.zip" -d "${STORAGE}/mcpi-reborn" || error 'Unable to extract deb.zip! Check your internet connection and try again.'
-
-# Find DEB
-MCPI_DOCKER_DEB="$(find "${STORAGE}/mcpi-reborn/deb" -name 'minecraft-pi-reborn-native*.deb')"
-
-# Install DEB
-install_deb "${MCPI_DOCKER_DEB}"
-
-# Clean Up
-rm -rf "${STORAGE}/mcpi-reborn"
-
-##
-## Install MCPIL
-##
-
-MCPIL_URL="https://github.com/MCPI-Revival/MCPIL/releases/download/${MCPIL_VERSION}/mcpil_${MCPIL_VERSION}_all.deb"
-
-# Prepare
-rm -rf "${STORAGE}/mcpil"
-mkdir "${STORAGE}/mcpil"
-
-# Download DEB
-wget -O "${STORAGE}/mcpil/mcpil.deb" "${MCPIL_URL}"
-
-# Install DEB
-install_deb "${STORAGE}/mcpil/mcpil.deb"
-
-# Clean Up
-rm -rf "${STORAGE}/mcpil"
-
-# Update Docker Permissions
-sudo groupadd -f docker
-sudo usermod -aG docker "$(id -un)"
+pip3 install mcpi

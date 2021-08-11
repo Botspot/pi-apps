@@ -7,9 +7,18 @@ function error {
   exit 1
 }
 
+#change version to latest each time
+VER="1.0.7"
 
-cd Downloads || error 'Failed to change directory!'
-wget https://gitlab.com/bztsrc/usbimager/-/raw/binaries/usbimager_1.0.5-armhf.deb || error 'Failed to Download usbimager_1.0.5-armhf.deb!'
-sudo dpkg -i usbimager_1.0.5-armhf.deb || error 'Failed to install usbimager_1.0.5-armhf.deb!'
-rm usbimager_1.0.5-armhf.deb
+"${DIRECTORY}/pkg-install" "make" "$(dirname "$0")" || exit 1
 
+git clone https://gitlab.com/bztsrc/usbimager.git || error "Failed to clone USBImager repo!"
+cd usbimager/ || error "Failed to entr usbimager repo folder!"
+git checkout $VER || error "Failed to checkout version $VER!"
+cd src/
+USE_LIBUI=yes make -j$(nproc) || error "Failed to compile usbimager!"
+make deb || error "Failed to make deb!"
+cd ..
+sudo apt install -fy ./usbimager*armhf.deb
+cd ..
+rm -rf usbimager/

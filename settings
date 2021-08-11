@@ -6,62 +6,62 @@ function error {
   exit 1
 }
 
+#ensure settings dir exists
+if [ ! -d "${DIRECTORY}/data/settings" ];then
+  echo "creating settings directory"
+  mkdir -p "${DIRECTORY}/data/settings"
+  #create default files inside
+  echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
+fi
+
+#$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
+if [ "$1" == 'refresh' ];then
+  #set default settings, if they don't exist
+  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+  PREIFS="$IFS"
+  IFS='|'
+  for name in $settings
+  do
+    if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
+      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    fi
+  done
+  IFS="$PREIFS"
+  exit 0
+  
+elif [ "$1" == 'revert' ];then #If $1 equals 'revert', then overwrite all settings with the defaults and then the script will exit.
+  
+  #overwrite all settings with the defaults
+  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
+  PREIFS="$IFS"
+  IFS='|'
+  for name in $settings
+  do
+    cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+  done
+  IFS="$PREIFS"
+  exit 0
+fi
+
+if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
+  echo "Creating Settings menu button"
+  echo "[Desktop Entry]
+Name=Pi Apps Settings
+Comment=Configure Pi-Apps or create an App
+Exec=${DIRECTORY}/settings
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+Type=Application
+Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+  
+fi
+
 exitloop=''
 while [ -z $exitloop ];do
-  #ensure settings dir exists
-  if [ ! -d "${DIRECTORY}/data/settings" ];then
-    echo "creating settings directory"
-    mkdir -p "${DIRECTORY}/data/settings"
-    #create default files inside
-    echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
-  fi
   
-  #$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
-  if [ "$1" == 'refresh' ];then
-    #set default settings, if they don't exist
-    settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-    PREIFS="$IFS"
-    IFS='|'
-    for name in $settings
-    do
-      if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
-        cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
-      fi
-    done
-    IFS="$PREIFS"
-    exit 0
-  fi
-  
-  #$1 is usually left blank. If it equals 'revert', then overwrite all settings with the defaults and then the script will exit.
-  if [ "$1" == 'revert' ];then
-    #overwrite all settings with the defaults
-    settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-    PREIFS="$IFS"
-    IFS='|'
-    for name in $settings
-    do
-      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
-    done
-    IFS="$PREIFS"
-    exit 0
-  fi
-  
-  if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
-    echo "Creating Settings menu button"
-    echo "[Desktop Entry]
-  Name=Pi Apps Settings
-  Comment=Configure Pi-Apps or create an App
-  Exec=${DIRECTORY}/settings
-  Icon=${DIRECTORY}/icons/logo.png
-  Terminal=false
-  Type=Application
-  Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
-    
-  fi
-
   settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-  yadparams=''
-  tooltips=''
+  yadparams=()
+  tooltips=()
   PREIFS="$IFS"
   IFS='|'
   for name in $settings
@@ -77,7 +77,7 @@ while [ -z $exitloop ];do
     
     #order params, with selected option first
     params="$(echo "$params" | grep -x "$curval")
-$(echo "$params" | grep -v "$curval")"
+$(echo "$params" | grep -vx "$curval")"
     
     params="$(echo "$params" | tr '\n' '!')"
     params="${params::-1}"
@@ -87,24 +87,17 @@ $(echo "$params" | grep -v "$curval")"
     #echo "Params of ${name}: ${params}"
     #echo "Tooltip of ${name}: ${tooltip}"
     
-    yadparams="${yadparams}
---field=:CB
-${params}"
-    tooltips="${tooltips}
---field=${name}:!!${tooltip}:BTN
-''"
+    yadparams+=(--field=:CB "${params}")
+    tooltips+=(--field="${name}":!!"${tooltip}":BTN '')
   done
   IFS="$PREIFS"
   
-  #replace all space ' ' characters with a special kind of space: a punctuation space ( ). This way, bash won't split the strings into separate words.
-  yadparams="$(echo "$yadparams" | sed 's/ / /g')"
-  tooltips="$(echo "$tooltips" | sed 's/ / /g')"
-  
   output="$(yad --center --title='Pi-Apps Settings' --width=310 --height=300 \
     --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" --columns=2 \
-    $tooltips \
+    "${tooltips[@]}" \
     --field='Categories...'!"${DIRECTORY}/icons/categories.png":FBTN "bash -c '${DIRECTORY}/etc/categoryedit &>/dev/null'" \
-    $yadparams \
+    --field='Log files...'!"${DIRECTORY}/icons/log-file.png":FBTN "bash -c '${DIRECTORY}/etc/logviewer &>/dev/null'" \
+    "${yadparams[@]}" \
     --field='New App...'!"${DIRECTORY}/icons/create.png":FBTN "bash -c '${DIRECTORY}/createapp &>/dev/null'" \
     --button='Reset'!"${DIRECTORY}/icons/backup.png"!'Reset all settings to their defaults':2 \
     --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \

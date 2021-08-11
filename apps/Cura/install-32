@@ -7,15 +7,21 @@ function error {
   exit 1
 }
 
-wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210306/Cura-mb-master-armhf-20210306.AppImage || error "Failed to download!"
+wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20210629/Cura-mb-master-armhf-20210629.AppImage || error "Failed to download!"
 
 chmod +x ~/Cura.AppImage
+
+#get stl-thumb package
+rm -f ~/stl-thumb_0.4.0_armhf.deb
+wget https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_armhf.deb
+"${DIRECTORY}/pkg-install" "$HOME/stl-thumb_0.4.0_armhf.deb" "$(dirname "$0")" || exit 1
+rm -f ~/stl-thumb_0.4.0_armhf.deb
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
 GenericName=3D Printing Software
 Comment=Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage'
+Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage '"'\ "%f"'"
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application

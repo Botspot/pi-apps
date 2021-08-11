@@ -7,9 +7,11 @@ function error {
   exit 1
 }
 
+VERSION=arduino-1.8.15
+
 cd ~/.local/share
 
-arduino-1.8.13/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
-sudo arduino-1.8.13/uninstall.sh || error "Failed to run uninstall.sh as root user"
-rm -rf arduino-1.8.13 || error "Failed to remove arduino-1.8.13 folder"
+$VERSION/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
+sudo $VERSION/uninstall.sh || error "Failed to run uninstall.sh as root user"
+rm -rf $VERSION || error "Failed to remove arduino-1.8.13 folder"
 

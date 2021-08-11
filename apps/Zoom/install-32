@@ -7,15 +7,30 @@ function error {
   exit 1
 }
 
-cd $HOME
+if command -v box86 >/dev/null;then
+  echo "Updating box86..."
+else
+  echo "Installing box86..."
+fi
+"${DIRECTORY}/manage" install-if-not-installed 'Box86' || error "Box86 installation failed!"
+if ! command -v box86 >/dev/null;then
+  error "Box86 failed to install somehow!\n/usr/local/bin/box86 does not exist"
+fi
 
 # Get dependencies
-cd $HOME
-"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 cmake pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+DISTRO=$(lsb_release -is)
+if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+elif [[ "${DISTRO}" == "Ubuntu" ]]; then
+  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+else 
+	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
+fi
 
 #refresh list of libraries
 sudo ldconfig
 
+#For testing, set to false if zoom folder is already there
 if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
@@ -24,6 +39,7 @@ if true;then
   #get outdated Zoom client from Botspot's mirror because it's more stable
   #wget 'https://github.com/Botspot/zoom_686_mirror/raw/main/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
   
+  echo "Extracting..."
   tar -xf ~/zoom_i686.tar.xz || error 'Failed to extract Zoom i686!'
   rm -f ~/zoom_i686.tar.xz #who cares if this fails
 fi
@@ -41,23 +57,13 @@ if [ -z "$(ps aux | grep pulseaudio | grep -v grep)" ];then
 fi
 cd ${HOME}/zoom/
 echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
-box86 zoom' > "${HOME}/zoom/runzoom.sh"
+box86 zoom "$1"' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
-
-if command -v box86 >/dev/null;then
-  echo "Updating box86..."
-else
-  echo "Installing box86..."
-fi
-"${DIRECTORY}/manage" install-if-not-installed 'Box86' || error "Box86 installation failed!"
-if ! command -v box86 >/dev/null;then
-  error "Box86 failed to install somehow!\n/usr/local/bin/box86 does not exist"
-fi
 
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
 Name=Zoom
-Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh"\"" 'Close this window to exit Zoom'
+Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh %u"\"" 'Close this window to exit Zoom'
 Icon=$(dirname "$0")/icon-64.png
 Path=${HOME}/zoom/
 Type=Application
@@ -65,10 +71,15 @@ Comment=i386 version of software platform used for teleconferencing using Box86
 Categories=Network;
 StartupNotify=true" > ~/.local/share/applications/zoom.desktop
 
+#Associate with mimeapp
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'zoom.desktop')" ];then
+  echo "Associating Zoom mimetypes..."
+  echo "[Added Associations]
+x-scheme-handler/zoomus=zoom.desktop;
+x-scheme-handler/zoommtg=zoom.desktop;" >> ~/.config/mimeapps.list
+fi
+
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
 
 echo "Installation complete!"
-
-
-

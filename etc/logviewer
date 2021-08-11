@@ -1,0 +1,71 @@
+#!/bin/bash
+
+DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
+
+function error {
+  echo -e "\e[91m$1\e[39m"
+  exit 1
+}
+
+#remove week-old logfiles
+find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \;
+
+#list of all files within "$DIRECTORY/logs", newest first
+logfiles="$(ls "$DIRECTORY/logs"/* -t)"
+
+if [ ! -z "$(date +%p)" ];then
+  #system locale uses AM and PM in time/dates
+  ampm=1
+else
+  #date command didn't output anything - system locale uses 24-hour clock
+  ampm=0
+fi 
+
+IFS=$'\n'
+for file in $logfiles;do
+  #Parse various tidbits based on the filename
+  #$app: the name of the app for this logfile
+  app="$(echo "$(basename "$file")" | sed 's/^install-//g' | sed 's/^uninstall-//g' | sed 's/^incomplete-//g' | sed 's/^fail-//g' | sed 's/^success-//g' | sed 's/.log.*$//g')"
+  #$action: will be 'install' or 'uninstall'
+  action="$(echo "$(basename "$file")" | sed 's/-fail-//g' | sed 's/-success-//g' | sed 's/-incomplete-//g' | sed 's/'"$app"'.*$//g')"
+  #$result: will be 'success' or 'fail'
+  result="$(echo "$(basename "$file")" | sed 's/^install-//g' | sed 's/^uninstall-//g' | sed 's/-'"$app"'.*$//g')"
+  #$date: human-readable timestamp.
+  if [ $ampm == 1 ];then
+    #AM/PM timestamp: 'Friday 6:21 PM'
+    date="$(date -r "$file" '+%A %l:%M %p' | sed 's/  / /g' | sed "s/$(date +%A)/Today/g" | sed "s/$(date +%A --date=' 1 days ago')/Yesterday/g")"
+  else
+    #24h timestamp: 'Friday 18:21'
+    date="$(date -r "$file" '+%A %k:%M' | sed 's/  / /g' | sed "s/$(date +%A)/Today/g" | sed "s/$(date +%A --date=' 1 days ago')/Yesterday/g")"
+  fi
+  
+  #echo "$app\n  $action\n  $result\n"
+  
+  #add lines to the yad list
+  LIST="$LIST
+$date
+${DIRECTORY}/apps/${app}/icon-24.png
+$(echo $action | sed "s+^uninstall$+${DIRECTORY}/icons/uninstall-short.png+g" | sed "s+^install$+${DIRECTORY}/icons/install-short.png+g")
+$(echo $result | sed "s+^success$+${DIRECTORY}/icons/${action}ed.png+g" | sed "s+^fail$+${DIRECTORY}/icons/corrupted.png+g" | sed "s+^incomplete$+${DIRECTORY}/icons/corrupted.png+g")
+$(echo $action | sed 's/^uninstall$/Uninstalling/g' | sed 's/^install$/Installing/g') $app $(echo $result | sed 's/success/succeeded./g' | sed 's/fail/failed./g' | sed 's/incomplete/was interrupted./g')
+$file"
+  
+done
+
+LIST="$(echo "$LIST" | grep .)"
+#echo "$LIST"
+output="$(echo -e "$LIST" | yad --center --title='Log file viewer' --width=500 --height=400 --on-top \
+  --text="Review the errors from installing or uninstalling apps."$'\n'"Week-old log files will be deleted." \
+  --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+  --column=Day --column=I:IMG --column=A:IMG --column=R:IMG --column=Description --column=tooltip:HD \
+  --print-column=6 --tooltip-column=6 --select-action="$(dirname "$0")/viewlog" \
+  --button='Delete all'!"${DIRECTORY}/icons/trash.png"!"Delete all log files from $DIRECTORY/logs":0 \
+  --button=Close!"${DIRECTORY}/icons/exit.png":1
+)"
+button=$?
+
+if [ $button == 0 ];then
+   rm -rf "$DIRECTORY/logs"
+   mkdir "$DIRECTORY/logs"
+   echo "Deleted everything inside of $DIRECTORY/logs"
+fi
