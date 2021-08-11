@@ -40,6 +40,7 @@ fi
 
 echo "Updating resolvconf and starting lokinet service..."
 sudo resolvconf -u
+sudo sed '/upstream/s/^#//' -i /etc/loki/lokinet.ini || error "Failed to set upstream resolver"
 sudo systemctl restart lokinet || error "Systemd failed to restart the lokinet service!"
  
 echo "Installation complete!"
