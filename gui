@@ -66,17 +66,25 @@ EOF
 
 #remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade" app
 runonce <<"EOF"
+  #rewrk chromium downgrading apps to one single new app: 'Downgrade Chromium'
   rm -rf "${DIRECTORY}/apps/Back to Chromium v86"
   rm -rf "${DIRECTORY}/apps/Back to Chromium v78"
+  if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
+    echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
+  fi
+  
   rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
   rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
+  
+  #rename 'Turbo Scratch' app to 'Turbowarp'
   rm -rf "${DIRECTORY}/apps/Turbo Scratch"
   mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp"
-  if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
-    echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
-  fi
+  
+  #rename 'Pi-Apps Terminal Plugin' app to 'Pi-Apps Terminal Plugin (python)'
+  mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)"
+  
 EOF
 
 #rename xlunch setting to xlunch-dark
@@ -100,10 +108,16 @@ runonce <<"EOF"
   fi
 EOF
 
+#ensure curl is installed
 runonce <<"EOF"
   if ! command -v curl >/dev/null ;then
     sudo apt install -y curl
   fi
+EOF
+
+#ensure curl is installed
+runonce <<"EOF"
+  
 EOF
 
 install() {
@@ -183,7 +197,8 @@ while true;do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        buttons=("--button=Search:4" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
         "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
         "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
