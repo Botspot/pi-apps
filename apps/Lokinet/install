@@ -38,7 +38,7 @@ if [ ! -e /etc/systemd/system/lokinet.service.d/override.conf ]; then
   sudo systemctl daemon-reload
 fi
 
-echo "Installing resolvconf and configure..."
+echo "Updating resolvconf and starting lokinet service..."
 sudo resolvconf -u
 sudo systemctl restart lokinet || error "Systemd failed to restart the lokinet service!"
  
