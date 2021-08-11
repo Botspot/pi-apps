@@ -29,11 +29,25 @@ else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
 
+#Ensure running arm processor
+if uname -m | grep -q 'x86' ;then
+  error "Pi-Apps is not not supported on x86 processors."
+fi
+#check for internet connection
+if ! ping -c 1 github.com &>/dev/null ;then
+  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(ping -c 1 github.com 2>&1)"
+fi
+
 dirhash() {
   #echo "Hashing this dir: $1" 1>&2
   
-  #-------- hash every file in the folder ---------------------------------------------------- list all filenames ------------------- hash all that again
-  hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
+  if [ -d "$1" ];then
+    #-------- hash every file in the folder ---------------------------------------------------- list all filenames ------------------- hash all that again
+    hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
+  else
+    hash=''
+    #echo "dirhash(): Folder '$1' does not exist" 1>&2
+  fi
   echo "$hash"
 }
 
@@ -330,6 +344,7 @@ elif [ "$1" == 'check-all' ];then
   #if the updater script exists in update folder, then just git pull to save time
   if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
+    echo -n "The 'git pull' command says: "
     git pull 1>&2 || rm -rf "${DIRECTORY}/update"
   fi
   #re-check and if updater script does not exist then do a git clone
@@ -354,8 +369,8 @@ elif [ "$1" == 'check-all' ];then
   for app in $applist
   do
     #echo "app: $app"
-    newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
-    oldhash="$(dirhash "${DIRECTORY}/apps/${app}")"
+    newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
+    oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
     #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
     
     if [ "$newhash" == "$oldhash" ];then
@@ -369,7 +384,7 @@ elif [ "$1" == 'check-all' ];then
         updatable="${updatable}
 ${app}"
       elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
-        echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
+        #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
         echo 'local' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, do not add to updatable list
       else
