@@ -16,12 +16,7 @@ if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
 
-echo '|‾‾‾‾\(‾)          /‾\
-| |‾) |‾|         / ⧋ \ |‾'\''‾‾\|‾'\''‾‾\/‾‾‾|
-|  ‾_/| | |‾‾‾|  / ‾‾‾ \| |‾) | |‾) \ ‾‾\
-|_|‾  |_|  ‾‾‾  /_/‾‾‾\_\ .‾_/| .‾_/|‾‾ /
-                        |_|‾  |_|‾   ‾‾‾
-'
+generate_logo
 
 #check for updates in background
 "${DIRECTORY}/updater" &>/dev/null &
@@ -146,7 +141,9 @@ install() {
     title="Installing $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
-    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
+    source "'"${DIRECTORY}/api"'"
+    generate_logo
+    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ;then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -174,6 +171,8 @@ uninstall() {
     title="Uninstalling $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
+    source "'"${DIRECTORY}/api"'"
+    generate_logo
     if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
