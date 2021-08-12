@@ -15,4 +15,12 @@ cd box64 || error 'Failed to change directory'
 mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake in "build" directory'
 make -j8 || error 'Failed to compile'
 sudo make install || error 'Failed to run "sudo make install"'
-sudo systemctl restart systemd-binfmt || error "Failed to restart systemd-binfmt"
+
+if ! sudo systemctl restart systemd-binfmt ;then
+  echo "Error: systemd-binfmt failed to restart. Running debug..."
+  echo 'systemctl status systemd-binfmt.service'
+  systemctl status systemd-binfmt.service
+  echo 'systemctl status systemd-binfmt.service'
+  journalctl -xe | cat
+  error "Exiting now because systemd-binfmt failed to restart."
+fi
