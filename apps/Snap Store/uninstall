@@ -7,10 +7,7 @@ function error {
   exit 1
 }
 
-sudo snap remove snap-store || error "Unable to uninstall snap store"
-
-rm -f /usr/share/applications/snap
-
+sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd"
 
 echo -e "\e[93mNote: To prevent removing user data, uninstalling the Snap Store app does not uninstall the snapd package! To completely remove everything snap-related, run this command:
 
