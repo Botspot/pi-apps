@@ -9,7 +9,10 @@ function error {
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-sudo apt -y purge obs libfdk-aac2 libfdk-aac-dev || error "APT failed to purge OBS!"
-
-sudo rm -f /usr/bin/obs
-sudo rm -f /usr/bin/obs-exec
+if command -v obs >/dev/null ;then
+  "${DIRECTORY}/api" apt_lock_wait
+  sudo apt -y purge obs libfdk-aac2 libfdk-aac-dev || error "APT failed to purge OBS!"
+  
+  sudo rm -f /usr/bin/obs
+  sudo rm -f /usr/bin/obs-exec
+fi
