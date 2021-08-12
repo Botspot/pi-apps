@@ -337,7 +337,7 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
   
-  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | sed '/.......... .......... .......... .......... ........../d')" > "$1"
+  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
