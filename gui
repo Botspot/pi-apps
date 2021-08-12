@@ -154,8 +154,6 @@ install() {
       read enter #technically you could press Enter to exit.
     fi
     ' "$title"
-  sleep 1
-  while ps -C manage &>/dev/null;do sleep 0.1; done
   
   #re-preload all categories in background
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
@@ -184,8 +182,6 @@ uninstall() {
       read enter #technically you could press Enter to exit.
     fi
     ' "$title"
-  sleep 1
-  while ps -C manage &>/dev/null;do sleep 0.1; done
   
   #re-preload all categories in background
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
