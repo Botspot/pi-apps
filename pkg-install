@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+set -o pipefail #if any command within a pipe fails, make the whole pipe fail. Necessary for error-catching with reduceapt
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 trap "exit 1" TERM
 export TOP_PID=$$
@@ -13,12 +13,97 @@ error() {
 
 #$1 is a quotation-marked, space-seperated list of package names.
 #$2 is the path to the program folder being installed.
-#Example usage: ~/pi-apps/pkg-install "gparted buffer expect" ~/pi-apps/apps/Arduino
+#Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
 app="$(basename "$2")" #remove any slashes to just get program name
+
 reduceapt() { #remove unwanted lines from apt output
   grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
+apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix them
+  errors="$(cat /dev/stdin)"
+  
+  #check for 'E: The repository'
+  if echo "$errors" | grep -q 'E: The repository';then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a faulty repository, and you must fix it before Pi-Apps will work.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete the file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
+  #check for 'NO_PUBKEY'
+  if echo "$errors" | grep -q 'NO_PUBKEY';then
+    echo -en "\e[93m
+--------------------------------------------------------------------------------
+APT reported an unsigned repository. This script will try to repair it.
+Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
+    sleep 10
+    echo -e '\n\e[93mAttempting to sign unsigned repositories...\e[39m'
+    sudo apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
+    if [ $? == 0 ];then
+      echo -e '\e[93mDone. Please try installing the same app again.\e[39m'
+    else
+      echo -e '\e[93mAutomatic repository signing failed. You must repair the faulty repository yourself.\e[39m'
+    fi
+    echo -e "\e[93m--------------------------------------------------------------------------------\n\e[39m"
+  fi
+  
+  # check for 'Could not resolve' or 'Failed to fetch'
+  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch' || echo "$errors" | grep -q 'Temporary failure resolving';then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported an unresolvable repository.
+
+Please check your Internet connection and try again.
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
+  #check for 'is configured multiple times in'
+  if echo "$errors" | grep -q 'is configured multiple times in';then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete the file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
+  #check for "--fix-broken"
+  if echo "$errors" | grep -q "\-\-fix\-broken" ;then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+APT reported a broken package, and you must fix it before Pi-Apps will work.
+
+Please run: sudo apt --fix-broken install
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
+  
+  #check for dpkg --configure -a
+  if echo "$errors" | grep -q "dpkg \-\-configure \-a" ;then
+    echo -e "\e[93m
+--------------------------------------------------------------------------------
+Before APT or Pi-Apps will work, dpkg needs to repair your system.
+
+Please run this command: sudo dpkg --configure -a
+--------------------------------------------------------------------------------
+\e[39m"
+  fi
 }
 
 echo "Running pkg-install..."
@@ -56,52 +141,7 @@ if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
   
   #run some apt error diagnosis
-  if echo "$errors" | grep -q 'E: The repository';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a faulty repository, and you must fix it before Pi-Apps will work.
-
-To delete the repository:
-Remove the relevant line from /etc/apt/sources.list file or delete the file in
-the /etc/apt/sources.list.d folder.
-
-sources.list requires root permissions to edit: sudo mousepad /path/to/file
---------------------------------------------------------------------------------
-\e[39m"
-  fi
-  if echo "$errors" | grep -q 'NO_PUBKEY';then
-    echo -en "\e[93m
-APT reported an unsigned repository. This script will try to repair it.
-Press Ctrl+C in 5 seconds to cancel...\e[39m"
-  sleep 5
-  echo -e '\n\e[93mAutomatically signing unsigned repositories...\e[39m'
-  sudo apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
-  echo -e '\e[93mDone. Please try installing the same app again.\e[39m'
-  fi
-  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported an unresolvable repository.
-
-Please check your Internet connection and try again.
---------------------------------------------------------------------------------
-\e[39m"
-  fi
-  if echo "$errors" | grep -q 'is configured multiple times in';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
-
-To delete the repository:
-Remove the relevant line from /etc/apt/sources.list file or delete the file in
-the /etc/apt/sources.list.d folder.
-
-sources.list requires root permissions to edit: sudo mousepad /path/to/file
---------------------------------------------------------------------------------
-\e[39m"
-  fi
-  
-  
+  echo "$output" | apt_diagnose
   exit 1
 fi
 }
@@ -122,9 +162,13 @@ for package in $PKG_LIST ;do
     echo -e "\e[97m\nInstalling local $packagename package...\e[39m"
     
     apt_lock_wait
-    #install it and reduce apt's output and indent the output
-    (sudo LANG=C LC_ALL=C apt install -y --no-install-recommends "$package" 2>&1 || error "pkg_install: While installing local packages, $package failed to install.") | reduceapt
-
+    #install it and reduce apt's output
+    output="$(sudo LANG=C LC_ALL=C apt install -y --no-install-recommends "$package" 2>&1 | reduceapt | tee /dev/stderr)"
+    if [ $? != 0 ];then
+      echo "$output" | apt_diagnose
+      error "pkg_install: While installing local packages, $package failed to install."
+    fi
+    
     sudo apt-mark auto "$packagename" || error "pkg-install: failed to mark the $packagename package as autoremovable.\nlocal package path: $package"
     
   fi
@@ -171,6 +215,7 @@ echo -e "\e[97m\nCreating dummy deb...\e[39m"
 appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
 
 rm -rf ~/pi-apps-$appnamehash ~/pi-apps-$appnamehash.deb
+trap "rm -rf $HOME/pi-apps-$appnamehash $HOME/pi-apps-$appnamehash.deb" EXIT
 mkdir -p ~/pi-apps-$appnamehash/DEBIAN
 echo "Maintainer: Pi-Apps team
 Name: $app
@@ -182,7 +227,12 @@ Section: custom
 Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g')
 Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
 
-dpkg-deb --build ~/pi-apps-$appnamehash || error "pkg-install: failed to create dummy deb pi-apps-$appnamehash"
+output="$(dpkg-deb --build ~/pi-apps-$appnamehash 2>&1)"
+if [ $? != 0 ];then
+  echo "$output" | apt_diagnose
+  error "pkg-install: failed to create dummy deb pi-apps-$appnamehash"
+fi
+
 }
 
 #install dummy deb
@@ -191,13 +241,14 @@ dpkg-deb --build ~/pi-apps-$appnamehash || error "pkg-install: failed to create 
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   echo -e "\e[97m\nDummy deb is already installed. Uninstalling it first...\e[39m"
   sudo apt purge -y pi-apps-$appnamehash || error "Failed to purge dummy deb (pi-apps-$appnamehash)"
-  sudo apt update &>/dev/null
+  #sudo apt update &>/dev/null
 fi
 
 apt_lock_wait
 echo -e "\e[97m\nInstalling dummy deb...\e[39m"
 output="$(sudo apt-get install -y --no-install-recommends ~/pi-apps-$appnamehash.deb 2>&1 | reduceapt | tee /dev/stderr )"
 rm -f ~/pi-apps-$appnamehash.deb
+rm -rf ~/pi-apps-$appnamehash
 
 echo -e "\e[97m\nApt finished.\e[39m"
 
@@ -207,27 +258,8 @@ if [ ! -z "$errors" ];then
   echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
   
   #run some apt error diagnosis
-  if echo "$errors" | grep -q "\-\-fix\-broken" ;then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a broken package, and you must fix it before Pi-Apps will work.
-
-Please run: sudo apt --fix-broken install
---------------------------------------------------------------------------------
-\e[39m"
-  fi
+  echo "$output" | apt_diagnose
+  
   exit 1
 fi
 }
-
-#re-check package list. This time it should be blank.
-{
-INSTALL_LIST="$(sudo LANG=C LC_ALL=C apt-get install --no-install-recommends --dry-run $PKG_LIST 2>&1 | sed -n '/The following NEW packages/,/to remove/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
-if [ ! -z "$INSTALL_LIST" ];then
-  error "APT did not exit with an error, but these packages failed to install somehow:\n$INSTALL_LIST\e[39m"
-else
-  echo -e "\e[32mAll packages were installed succesfully.\e[39m"
-fi
-}
-
-rm -rf ~/pi-apps-$appnamehash #remove dummy deb creation folder if all went well
