@@ -114,7 +114,7 @@ elif [ "$1" == 'install-if-not-installed' ];then
     "${DIRECTORY}/manage" install "$2" || exit 1
   fi
   
-elif [ "$1" == 'install' ];then
+elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #INSTALL
   #for this operation, a program name must be specified.
   app="$2"
@@ -124,32 +124,39 @@ elif [ "$1" == 'install' ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
+  if [ "$1" == install ];then
+    mode=install
+  else
+    mode=uninstall
+  fi
+  
   #ensure not a disabled app
-  if [ -f "${DIRECTORY}/data/status/${app}" ] && [ "$(app_status "${app}")" == 'disabled' ];then
+  if [ "$mode" == install ] && [ "$(app_status "${app}")" == 'disabled' ];then
     echo -e "\e[93mNot installing the $app app. IT IS DISABLED.\e[39m"
-    sleep 1
-    echo 'Waiting 5 seconds...'
-    sleep 5
     exit 0
   fi
   
   #if already installed then ask for confirmation
-  if [ "$(app_status "${app}")" == 'installed' ];then
-    yad --text="$app is already installed. Are you sure you want to install it again?" \
+  if [ "$(app_status "${app}")" == "${mode}ed" ];then
+    yad --text="$app is already ${mode}ed. Are you sure you want to $mode it again?" \
     --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
   fi
   
   #analytics
-  "${DIRECTORY}/etc/bitlylink" "$app" install &
+  "${DIRECTORY}/etc/bitlylink" "$app" "$mode" &
   
   #determine which script to run
-  scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
-  installscript="${DIRECTORY}/apps/${app}/${scriptname}"
-  [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
-  
+  if [ "$mode" == install ];then
+    scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
+    [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
+  else #uninstall mode
+    scriptname=uninstall
+  fi
+  appscript="${DIRECTORY}/apps/${app}/${scriptname}"
+    
   #determine path for log file to be created
-  logfile="${DIRECTORY}/logs/install-incomplete-${app}.log"
+  logfile="${DIRECTORY}/logs/${mode}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
     #append a number to logfile's file-extension if the original filename already exists
     i=1
@@ -163,86 +170,29 @@ elif [ "$1" == 'install' ];then
       i=$((i+1))
     done
   fi
-  #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
+  #for piping to tee, the app script's exit code is preserved by enabling the pipefail bash builtin
   set -o pipefail
   
-  chmod u+x "$installscript"
+  chmod u+x "$appscript"
   
-  echo -e "\e[96mInstalling $app with $scriptname script\e[39m" | tee -a "$logfile"
+  echo -e "\e[96m${mode^}ing \e[1m${app}\e[0m\e[96m...\e[39m" | tee -a "$logfile"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  if nice "$installscript" 2>&1 | tee -a "$logfile" ; then
-    echo 'installed' > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30mInstalled ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
+  nice "$appscript" 2>&1 > >(tee -a "$logfile")
+  if [ $? == 0 ]; then #if app script succeeded
+    #change the status from corrupted to 'installed' or 'uninstalled'
+    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    echo -e "\n\e[42m\e[30m${mode^}ed ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
     
     format_log_file "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
     exit 0
   else
-    echo -e "\n\e[91mFailed to install ${app} with $scriptname script"\!"\e[39m
+    echo -e "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
 \e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
     
-    format_log_file "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
-    exit 1
-  fi
-  
-elif [ "$1" == 'uninstall' ];then
-  #UNINSTALL
-  #for this operation, a program name must be specified.
-  app="$2"
-  if [ -z "$app" ];then
-    error "For this operation, you must specify which app to operate on."
-  elif [ ! -d "${DIRECTORY}/apps/$app" ];then
-    error "${DIRECTORY}/apps/$app does not exist!"
-  fi
-  
-  #if already uninstalled then ask for confirmation
-  if [ "$(app_status "${app}")" == 'uninstalled' ];then
-    yad --text="$app is already uninstalled. Are you sure you want to uninstall it again?" \
-    --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
-    --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
-  fi
-  
-  #analytics
-  "${DIRECTORY}/etc/bitlylink" "$app" uninstall &
-  
-  #determine path for log file to be created
-  logfile="${DIRECTORY}/logs/uninstall-incomplete-${app}.log"
-  if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
-    #append a number to logfile's file-extension if the original filename already exists
-    i=1
-    while true;do
-      #if variable $i is 2, then example newlogfile value: /path/to/install-Discord.log2
-      newlogfile="$logfile$i"
-      if [ ! -f "$newlogfile" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-success-+g')" ] && [ ! -f "$(echo "$newlogfile" | sed 's+/-incomplete-+/-fail-+g')" ];then
-        logfile="${newlogfile}"
-        break
-      fi
-      i=$((i+1))
-    done
-  fi
-  #for piping to tee, the install script's exit code is preserved by enabling the pipefail bash builtin
-  set -o pipefail
-  
-  chmod u+x "${DIRECTORY}/apps/${app}/uninstall"
-  
-  echo -e "\e[96mUninstalling $app\e[39m" | tee -a "$logfile"
-  cd $HOME
-  echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  if nice "${DIRECTORY}/apps/${app}/uninstall" 2>&1 | tee -a "$logfile"; then
-    echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30mUninstalled ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
-    format_log_file "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
-    exit 0
-  else
-    echo -e "\n\e[91mFailed to uninstall ${app}"\!"\e[39m
-\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
-Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
-Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
     format_log_file "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
     exit 1
@@ -271,8 +221,8 @@ elif [ "$1" == 'update' ];then
   scriptname="$(script_name_cpu "$app")"
   [ $? == 1 ] && exit 1
   
-  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')
-  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')
+  newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   
   #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
   #echo -e "newhash: $newhash\noldhash: $oldhash"
