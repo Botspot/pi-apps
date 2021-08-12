@@ -121,6 +121,7 @@ for package in $PKG_LIST ;do
     
     echo -e "\e[97m\nInstalling local $packagename package...\e[39m"
     
+    apt_lock_wait
     #install it and reduce apt's output and indent the output
     (sudo LANG=C LC_ALL=C apt install -y --no-install-recommends "$package" 2>&1 || error "pkg_install: While installing local packages, $package failed to install.") | reduceapt
 
