@@ -7,10 +7,11 @@ function error {
   exit 1
 }
 
+rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
+
 # Get dependencies
 "${DIRECTORY}/pkg-install" "python3-tk python3-pil python3-pil.imagetk" "$(dirname "$0")" || exit 1
 
-rm -rf ~/CommanderPi
 git clone https://github.com/Jack477/CommanderPi || error "failed to download repository!"
 cd CommanderPi || error "failed to enter repository!"
 chmod +x install.sh || error "failed to mark install.sh as executable!"
