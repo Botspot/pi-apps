@@ -8,7 +8,8 @@ function error {
 }
 
 #Running uninstall script
-sudo chmod +x ~/.local/share/MacOSBigSurThemeConverter/uninstall.sh
-~/.local/share/MacOSBigSurThemeConverter/uninstall.sh
-
+if [ -f ~/.local/share/MacOSBigSurThemeConverter/uninstall.sh ];then
+  sudo chmod +x ~/.local/share/MacOSBigSurThemeConverter/uninstall.sh
+  ~/.local/share/MacOSBigSurThemeConverter/uninstall.sh
+fi
 
