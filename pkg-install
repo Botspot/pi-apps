@@ -22,28 +22,32 @@ reduceapt() { #remove unwanted lines from apt output
   grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
 }
 
+message_to_user() { #bright, attention-getting message to display to user
+  echo -e "\e[93m
+▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+$1
+▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+\e[39m"
+}
+
 apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix them
   errors="$(cat /dev/stdin)"
   
   #check for 'E: The repository'
   if echo "$errors" | grep -q 'E: The repository';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a faulty repository, and you must fix it before Pi-Apps will work.
+    message_to_user "APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
 Remove the relevant line from /etc/apt/sources.list file or delete the file in
 the /etc/apt/sources.list.d folder.
 
-sources.list requires root permissions to edit: sudo mousepad /path/to/file
---------------------------------------------------------------------------------
-\e[39m"
+sources.list requires root permissions to edit: sudo mousepad /path/to/file"
   fi
   
   #check for 'NO_PUBKEY'
   if echo "$errors" | grep -q 'NO_PUBKEY';then
     echo -en "\e[93m
---------------------------------------------------------------------------------
+▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 APT reported an unsigned repository. This script will try to repair it.
 Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
     sleep 10
@@ -54,55 +58,39 @@ Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
     else
       echo -e '\e[93mAutomatic repository signing failed. You must repair the faulty repository yourself.\e[39m'
     fi
-    echo -e "\e[93m--------------------------------------------------------------------------------\n\e[39m"
+    echo -e "\e[93m▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n\e[39m"
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
   if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch' || echo "$errors" | grep -q 'Temporary failure resolving';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported an unresolvable repository.
+    message_to_user "APT reported an unresolvable repository.
 
-Please check your Internet connection and try again.
---------------------------------------------------------------------------------
-\e[39m"
+Please check your Internet connection and try again."
   fi
   
   #check for 'is configured multiple times in'
   if echo "$errors" | grep -q 'is configured multiple times in';then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
+    message_to_user "APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
 
 To delete the repository:
 Remove the relevant line from /etc/apt/sources.list file or delete the file in
 the /etc/apt/sources.list.d folder.
 
-sources.list requires root permissions to edit: sudo mousepad /path/to/file
---------------------------------------------------------------------------------
-\e[39m"
+sources.list requires root permissions to edit: sudo mousepad /path/to/file"
   fi
   
   #check for "--fix-broken"
   if echo "$errors" | grep -q "\-\-fix\-broken" ;then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-APT reported a broken package, and you must fix it before Pi-Apps will work.
+    message_to_user "APT reported a broken package, and you must fix it before Pi-Apps will work.
 
-Please run: sudo apt --fix-broken install
---------------------------------------------------------------------------------
-\e[39m"
+Please run this command: sudo apt --fix-broken install"
   fi
   
   #check for dpkg --configure -a
   if echo "$errors" | grep -q "dpkg \-\-configure \-a" ;then
-    echo -e "\e[93m
---------------------------------------------------------------------------------
-Before APT or Pi-Apps will work, dpkg needs to repair your system.
+    message_to_user "Before APT or Pi-Apps will work, dpkg needs to repair your system.
 
-Please run this command: sudo dpkg --configure -a
---------------------------------------------------------------------------------
-\e[39m"
+Please run this command: sudo dpkg --configure -a"
   fi
 }
 
