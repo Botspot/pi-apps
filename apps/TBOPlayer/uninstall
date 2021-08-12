@@ -8,5 +8,8 @@ function error {
 }
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-#run uninstall script, saying 'yes' to the first question, and 'no' to the second question
-echo -e "y\nn" | /opt/tboplayer/setup.sh uninstall || error "failed to uninstall!"
+if [ -f /opt/tboplayer/setup.sh ];then
+  #run uninstall script, saying 'yes' to the first question, and 'no' to the second question
+  echo -e "y\nn" | /opt/tboplayer/setup.sh uninstall || error "failed to uninstall!"
+fi
+exit 0
