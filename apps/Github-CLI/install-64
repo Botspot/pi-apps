@@ -14,6 +14,7 @@ rm -f gh*linux_arm64.deb
 #download
 wget -O gh.deb https://github.com/cli/cli/releases/download/v1.13.1/gh_1.13.1_linux_arm64.deb || error 'Failed to download github-cli!'
 #install
+"${DIRECTORY}/api" apt_lock_wait
 sudo apt -fy install ./gh.deb || error "Failed to install gh!"
 #clean up
 rm -f gh.deb
