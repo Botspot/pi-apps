@@ -19,21 +19,10 @@ if [ -z "$app" ];then
   error "No app name specified to purge-installed!"
 fi
 
-echo -n "Waiting until APT locks are released... "
-{
-while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-  sleep 0.5
-done
-while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-  sleep 0.5
-done
-if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-    sleep 0.5
-  done
-fi
-echo "Done"
-}
+LANG=C LC_ALL=C
+
+source "${DIRECTORY}/api"
+apt_lock_wait
 
 #to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
 appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
@@ -42,6 +31,7 @@ appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   #new pkg-install implementation - using dummy debs
   
+  apt_lock_wait
   echo -e "\e[97m\nRemoving dummy deb for $app...\e[39m"
   sudo apt purge -y pi-apps-$appnamehash || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
   
