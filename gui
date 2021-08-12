@@ -12,6 +12,7 @@ function error {
 #for the text_editor(), runonce() and app_status() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
+
 if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
@@ -26,6 +27,7 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
+(
 #mark wine and box86 as installed, if twisteros
 runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
@@ -127,6 +129,7 @@ runonce <<"EOF"
     exit 1
   fi
 EOF
+) &
 
 install() {
   app="$1" #one app name per line
@@ -188,7 +191,14 @@ uninstall() {
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
 }
 
-motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
+
+if [ ! -f "${DIRECTORY}/data/announcements" ] || [ -z $(find "${DIRECTORY}/data/announcements" -mtime +1 -print) ]; then
+  motd="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
+  echo "$motd" > "${DIRECTORY}/data/announcements"
+else
+  motd="$(cat "${DIRECTORY}/data/announcements")"
+fi
+motd="$(echo -e "$motd" | shuf -n 1)"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
