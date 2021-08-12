@@ -13,9 +13,7 @@ git clone https://github.com/phoenixbyrd/Linux_Mint_Webapps || error 'Failed to 
 cd Linux_Mint_Webapps || error 'Failed to enter directory!'
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "$(pwd)/xapps-common_2.0.7-1_all.deb $(pwd)/libxapp1_2.0.7-1_armhf.deb $(pwd)/gir1.2-xapp-1.0_2.0.7-1_armhf.deb $(pwd)/libxapp-dev_2.0.7-1_armhf.deb $(pwd)/libxapp1-dbgsym_2.0.7-1_armhf.deb devhelp" "$(dirname "$0")" || error "Failed to install dependencies"
-
-sudo apt install -fy "$(pwd)/webapp-manager_1.1.1_all.deb" || error "Failed to install webapp-manager"
+"${DIRECTORY}/pkg-install" "$(pwd)/xapps-common_2.0.7-1_all.deb $(pwd)/libxapp1_2.0.7-1_armhf.deb $(pwd)/gir1.2-xapp-1.0_2.0.7-1_armhf.deb $(pwd)/libxapp-dev_2.0.7-1_armhf.deb $(pwd)/libxapp1-dbgsym_2.0.7-1_armhf.deb devhelp $(pwd)/webapp-manager_1.1.1_all.deb" "$(dirname "$0")" || error "Failed to install dependencies"
 
 #remove folder
 cd $HOME
