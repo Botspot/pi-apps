@@ -11,8 +11,8 @@ function error {
 "${DIRECTORY}/pkg-install" "snapd" "$(dirname "$0")" || exit 1
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
-sudo rm -rf /snap
 sudo snap install core || error "Unable to install core"
+
 sudo ln -s /var/lib/snapd/snap /snap || error "unable to create symbolic link between /var/lib/snapd/snap and /snap"
 sudo snap install snap-store || error "Unable to install snap store"
 sudo rm -rf /usr/share/applications/snap
