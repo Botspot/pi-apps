@@ -121,7 +121,7 @@ EOF
 
 #check if running 64-bit OS on 32-bit kernel. This should be impossible, but one error log reports it.
 runonce <<"EOF"
-  if [ $arch == 32 ] && uname -m | grep -q aarch64 ;then
+  if [ $arch == 64 ] && uname -m | grep -q armv7l ;then
     echo "Pi-Apps cannot run with a 64-bit OS but a 32-bit kernel.\nThis was never considered even possible."
     zenity --error --text="Your system is 64-bit but the kernel is 32-bit????"$'\n'"Please contact us Pi-Apps developers so we can see what's going on."$'\n'"Press OK to open our Discord server and our Github issues page." --width=500
     button=$?
