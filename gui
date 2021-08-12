@@ -80,12 +80,12 @@ runonce <<"EOF"
   
   #rename 'Turbo Scratch' app to 'Turbowarp'
   rm -rf "${DIRECTORY}/apps/Turbo Scratch"
-  mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp"
+  mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp" 2>/dev/null
   
   #rename 'Pi-Apps Terminal Plugin' app to 'Pi-Apps Terminal Plugin (python)'
   rm -rf "${DIRECTORY}/apps/Pi-Apps Terminal Plugin"
-  mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)"
-  
+  mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)" 2>/dev/null
+  true
 EOF
 
 #rename xlunch setting to xlunch-dark
