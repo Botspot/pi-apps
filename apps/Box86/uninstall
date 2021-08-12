@@ -15,21 +15,15 @@ function check-armhf() {
   ARMHF="$(dpkg --print-foreign-architectures | grep "armhf")"
 }
 
-if command -v box86 >/dev/null;then
-  echo "uninstalling box86..."
-  sudo apt purge box86 -y || error "Failed to uninstall box86!"
-fi
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 echo "removing box86 repo..."
 sudo rm -f /etc/apt/sources.list.d/box86.list || error "Failed to remove repo!"
+
 echo "removing box86 repo key..."
 sudo apt-key remove "5DBC E818 72C0 609D 3C47  61AA EB3C E9A3 37EC DFA4" || error "Failed to remove key!"
-echo "running 'sudo apt update'..."
-sudo apt update
 
 if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ]; then
-  
-  "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
   
   sudo dpkg --remove-architecture armhf || warning "armhf architecture should be removed by now, but it isn't!"
   check-armhf
