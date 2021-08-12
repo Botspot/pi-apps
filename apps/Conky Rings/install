@@ -29,7 +29,7 @@ rm -f .uuid || error "Failed to delete unnecessary .uuid file!"
 wget -O ~/.conky_rings.lua https://raw.githubusercontent.com/Botspot/rpi_conky/master/conky_rings/.conky_rings.lua || error "Failed to download conky-rings.lua!"
 
 #run conky this time
-conky -q -d -p 3 &
+setsid conky -q -d -p 3 &
 
 #make autostart entry to run it next time
 mkdir -p ~/.config/autostart
