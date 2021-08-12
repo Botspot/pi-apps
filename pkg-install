@@ -78,7 +78,7 @@ Press Ctrl+C in 5 seconds to cancel...\e[39m"
   sudo apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
   echo -e '\e[93mDone. Please try installing the same app again.\e[39m'
   fi
-  if echo "$errors" | grep -q 'Could not resolve';then
+  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch';then
     echo -e "\e[93m
 --------------------------------------------------------------------------------
 APT reported an unresolvable repository.
