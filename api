@@ -398,6 +398,20 @@ send_error_report_gui() { #Ask user for permission to send error report
   
 }
 
+generate_logo() {
+  #generate pi-apps logo
+  #https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
+  green='\e[38;5;46m'
+  red='\e[38;5;197m'
+  echo -e "   ${green}┏━━━┓
+${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  │ᑐ • ▁  ╱╲
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  │  │   ╱‾‾╲ │ᑐ │ᑐ Ｓ
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m              │  │
+\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
+\e[0m\e[0m"
+}
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
   if [ ! -z "$1" ];then
