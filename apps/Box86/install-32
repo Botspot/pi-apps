@@ -7,6 +7,17 @@ function error {
   exit 1
 }
 
+echo -n "Checking for working systemd-binfmt..."
+if ! sudo systemctl restart systemd-binfmt ;then
+  echo -e "\nError: systemd-binfmt failed to restart. Running debug..."
+  echo 'systemctl status systemd-binfmt.service'
+  systemctl status systemd-binfmt.service
+  echo 'systemctl status systemd-binfmt.service'
+  journalctl -xe | cat
+  error "Exiting now because systemd-binfmt failed to restart."
+else
+  echo "Done"
+fi
 
 sudo rm -f /etc/apt/sources.list.d/box86.list
 echo "adding box86 repo..."
