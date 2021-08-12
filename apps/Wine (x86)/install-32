@@ -107,7 +107,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
       sleep 0.5 # so user has time to read what is happening
-      unzip ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
+      unzip ~/rpi23_3g1g_kernel.zip || error "Failed to extract kernel!"
       cd linux || error "Failed to change folder to ~/linux!"
       #install the precompiled kernel
       export KERNEL=kernel7
