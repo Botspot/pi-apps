@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-wget https://github.com/dbrgn/tealdeer/releases/download/v1.4.1/tldr-linux-armv7-musleabihf || error "Failed to download tldr!"
+wget -o tldr https://github.com/dbrgn/tealdeer/releases/download/v1.4.1/tldr-linux-armv7-musleabihf || error "Failed to download tldr!"
 sudo mv tldr /usr/bin/ || error "Failed to move binary to /usr/bin/"
 sudo chmod +x /usr/bin/tldr
 tldr --update
