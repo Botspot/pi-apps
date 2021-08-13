@@ -355,7 +355,6 @@ ${app}"
     updatable='.'
   fi
   
-  echo -e "\e[97mThese apps can be updated:" 1>&2
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
   #UPDATE-ALL

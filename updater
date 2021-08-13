@@ -90,7 +90,6 @@ fi
 [ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
 
 #shorten to last line
-updatable="$(echo "$updatable")"
 if [ "$updatable" == '.' ];then
   updatable=''
 fi
@@ -273,15 +272,11 @@ do
 done
 IFS="$PREIFS"
 
-rm -f /tmp/pi-apps-update-pid
-
 if [ ! -z "$updatable" ];then
   "${DIRECTORY}/etc/terminal-run" '
     DIRECTORY="'"$DIRECTORY"'"
     updatable="'"$updatable"'"
     trap "sleep 10" EXIT
-    PID=$$
-    echo $PID > /tmp/pi-apps-update-pid
     PREIFS="$IFS"
     IFS=$'\''\n'\''
     for i in $updatable
@@ -297,16 +292,7 @@ fi
 rm -rf "${DIRECTORY}/.git"
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git folder!"
 
-while [ ! -f /tmp/pi-apps-update-pid ];do
-  sleep 1
-done
-PID=$(cat /tmp/pi-apps-update-pid)
-echo "Pi-Apps updates in progress with PID $PID"
-while [ -d /proc/$PID ];do
-  sleep 1
-done
-echo "Pi-Apps updates complete because PID $PID has stopped."
-rm -f /tmp/pi-apps-update-pid
+echo -e "\e[92mPi-Apps updates complete.\e[39m"
 
 yad --form --text='Pi-Apps updates complete.' \
   --on-top --skip-taskbar --undecorated --close-on-unfocus \
