@@ -15,9 +15,9 @@ fi
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
+if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
   arch=64
-elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
   arch=32
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
@@ -176,7 +176,7 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
 usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
   clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
   
-  [ -z "$clicklist" ] && error "usercount: clicklist empty. Likely no internet connection"
+  [ -z "$clicklist" ] && error "usercount(): clicklist empty. Likely no internet connection"
   
   if [ -z "$1" ];then
     echo "$clicklist"
@@ -217,7 +217,7 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
 }
 
 script_name() { #returns name of install script(s) for the $1 app. outputs: '', 'install-32', 'install-64', 'install', 'install-32 install-64'
-  [ -z "$1" ] && error 'script_name: requires an argument'
+  [ -z "$1" ] && error 'script_name(): requires an argument'
   
   #ensure $1 is valid app name
   [ ! -d "${DIRECTORY}/apps/$1" ] && error "script_name: '$1' is an invalid app name.\n${DIRECTORY}/apps/$1 does not exist."
@@ -238,7 +238,7 @@ script_name() { #returns name of install script(s) for the $1 app. outputs: '', 
 }
 
 script_name_cpu() { #get script name to run based on detected CPU arch
-  [ -z "$1" ] && error 'script_name_cpu: requires an argument'
+  [ -z "$1" ] && error 'script_name_cpu(): requires an argument.'
   
   #ensure $1 is valid app name
   if ! list_apps all | grep -q "$1" ;then
@@ -265,7 +265,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
 
 app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
-  [ -z "$1" ] && error 'app_status: $1 variable empty!'
+  [ -z "$1" ] && error 'app_status(): requires an argument.'
   
   if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
@@ -275,7 +275,7 @@ app_status() { #Gets the $1 app's current status. installed, uninstalled, corrup
 }
 
 will_reinstall() { #return 0 if $1 app will be reinstalled during an update, otherwise return 1.
-  [ -z "$1" ] && error 'will_reinstall: requires an argument'
+  [ -z "$1" ] && error 'will_reinstall(): requires an argument'
   
   #detect which installation script exists and get the hash for that one
   scriptname="$(script_name_cpu "$1")"
@@ -291,6 +291,25 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   fi
 }
 
+app_search() { #search all apps for $1
+  [ -z "$1" ] && error "app_search(): requires a search query."
+  
+  #search description and website
+  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g")"
+  
+  #search app names
+  results="$results
+$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$1")"
+  
+  echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort | uniq
+  
+}
+
+app_search_gui() {
+  true
+}
+
+#non-app functions below
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
@@ -317,7 +336,7 @@ runonce() { #run command only if it's never been run before. Useful for one-time
   
 }
 
-apt_lock_wait() {
+apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   echo -n "Waiting until APT locks are released... "
   while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
     sleep 0.5
