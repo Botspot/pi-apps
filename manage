@@ -20,15 +20,6 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 #remove week-old logfiles
 find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
-  arch=64
-elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
-  arch=32
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
-
 #Ensure running arm processor
 if uname -m | grep -q 'x86' ;then
   error "Pi-Apps is not not supported on x86 processors."
