@@ -62,7 +62,7 @@ Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch' || echo "$errors" | grep -q 'Temporary failure resolving';then
+  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch' || echo "$errors" | grep -q 'Temporary failure resolving' || echo "$errors" | grep -q 'Network is unreachable';then
     message_to_user "APT reported an unresolvable repository.
 
 Please check your Internet connection and try again."
@@ -80,7 +80,7 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file"
   fi
   
   #check for "--fix-broken"
-  if echo "$errors" | grep -q "\-\-fix\-broken" ;then
+  if echo "$errors" | grep -q "\-\-fix\-broken" || echo "$errors" | grep -q "needs to be reinstalled" ;then
     message_to_user "APT reported a broken package, and you must fix it before Pi-Apps will work.
 
 Please run this command: sudo apt --fix-broken install"
