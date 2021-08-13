@@ -322,6 +322,9 @@ apt_lock_wait() {
   while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
     sleep 0.5
   done
+  while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
+    sleep 0.5
+  done
   while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
     sleep 0.5
   done
@@ -337,7 +340,7 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
   
-  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
+  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
@@ -358,7 +361,7 @@ get_device_info() { #returns information about current install and hardware
   fi
   
   if [ -f "${DIRECTORY}/gui" ];then
-    echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui")"
+    echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui" +'%x %X')"
   fi
   
 }
@@ -398,7 +401,7 @@ send_error_report_gui() { #Ask user for permission to send error report
   
 }
 
-generate_logo() {
+generate_logo() { #display colorized Pi-Apps logo in terminal
   #generate pi-apps logo
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
@@ -412,6 +415,7 @@ ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m              │  │
 \e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
 \e[0m\e[0m"
 }
+
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
   if [ ! -z "$1" ];then
