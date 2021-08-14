@@ -24,7 +24,7 @@ echo "Preventing Ubuntu repository from causing apt problems..."
 sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/chunky-milk/pi-bashscripts-files/main/Files/99bionic-updates
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
-  error "wget failed to download 99bionic-updates config file!")
+  error "wget failed to download 99bionic-updates config file!"
 fi
 
 echo "Running 'sudo apt update'..."
