@@ -9,7 +9,6 @@ function error {
 
 wget -O ~/blockpi.deb https://github.com/alienzhangyw/BlockPi/releases/download/v1.2.0/blockpi_1.2.0_armv7l.deb || error 'Failed to download deb file!'
 
-# Get dependencies
-sudo apt install -fy ~/blockpi.deb || error "Failed to install blockpi.deb"
+"${DIRECTORY}/pkg-install" "$HOME/blockpi.deb" "$(dirname "$0")" || error "Failed to install blockpi.deb"
 
 rm -f ~/blockpi.deb
