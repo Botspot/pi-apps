@@ -101,7 +101,7 @@ EOF
 
 #remove old mcpi repositories
 runonce <<"EOF"
-  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && [ "$(cat /etc/apt/sources.list.d/mcpi-revival.list)" == 'deb [trusted=yes] https://mcpirevival.tk/mcpi-packages buster main' ];then
+  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -q 'https://mcpirevival.tk/mcpi-packages' ];then
     echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
   fi
   if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
@@ -113,20 +113,6 @@ EOF
 runonce <<"EOF"
   if ! command -v curl >/dev/null ;then
     sudo apt install -y curl
-  fi
-EOF
-
-#check if running 64-bit OS on 32-bit kernel. This should be impossible, but one error log reports it.
-runonce <<"EOF"
-  if [ $arch == 64 ] && uname -m | grep -q armv7l ;then
-    echo "Pi-Apps cannot run with a 64-bit OS but a 32-bit kernel.\nThis was never considered even possible."
-    zenity --error --text="Your system is 64-bit but the kernel is 32-bit????"$'\n'"Please contact us Pi-Apps developers so we can see what's going on."$'\n'"Press OK to open our Discord server and our Github issues page." --width=500
-    button=$?
-    if [ "$button" == 0 ];then
-      xdg-open https://github.com/Botspot/pi-apps/issues/new/choose &
-      xdg-open https://discord.gg/RXSTvaUvuu &
-    fi
-    exit 1
   fi
 EOF
 ) &
@@ -211,11 +197,12 @@ while true;do
   #if output is not empty then assume button pressed was Details
   button=0
   
-  while [ -z "$output" ];do
+  while [ -z "$output" ] && [ "$button" != 6 ];do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        buttons=("--button=!${DIRECTORY}/icons/search.png!Search:6" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
         "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
         "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
@@ -242,7 +229,7 @@ while true;do
         #back button
         break
       fi
-      if [ -z "$output" ];then
+      if [ -z "$output" ] && [ "$button" != 6 ];then
         echo "output variable empty!"
         yad --center --title='Pi-Apps' --width=310 \
           --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -569,6 +556,15 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
       prefix=''
     fi
     output=''
+    ;;
+  6)
+    #search
+    echo "Search"
+    output="$(app_search_gui)"
+    if [ ! -z "$output" ];then
+      prefix="$(dirname "$(app_categories | grep -v "^All Apps/" | grep -v "^Installed/" | grep "/$output"'$' | head -n1)")"
+      [ "$prefix" == '.' ] && prefix=''
+    fi
     ;;
   *)
   error "Unknown button: $button"

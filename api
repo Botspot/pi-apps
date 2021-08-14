@@ -10,7 +10,7 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
 fi
 
-#echo "API script thinks directory is $DIRECTORY" 1>&2
+echo "API script thinks directory is $DIRECTORY" 1>&2
 
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
@@ -295,18 +295,51 @@ app_search() { #search all apps for $1
   [ -z "$1" ] && error "app_search(): requires a search query."
   
   #search description and website
-  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g")"
+  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website -o -name credits \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g")"
+  #hide incompatible and hidden/disabled apps
+  results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
   #search app names
-  results="$results
-$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$1")"
+  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$1" | sort)
+$results"
   
-  echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort | uniq
+  #remove duplicate entries
+  echo "$results" | awk '!seen[$0]++'
   
 }
 
 app_search_gui() {
-  true
+  output="$(yad --title=Search --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
+    --text="Searches app names, descriptions, websites, and credits."$'\n'"Case-insensitive." \
+    --form --entry='')" || exit 0
+  
+  results="$(app_search "$output")"
+  
+  if [ ! -z "$results" ];then
+    
+    IFS=$'\n'
+    LIST=''
+    for app in $results ;do
+      LIST="$LIST
+${DIRECTORY}/apps/${app}/icon-24.png
+$app
+$(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")" | head -n1)"
+    done
+    LIST="${LIST:1}" #remove first empty newline
+    
+    
+    
+    output="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
+      --list --no-headers --column=:IMG --column=name --column=tooltip:HD \
+      --print-column=2 --tooltip-column=3 --separator='\n')" || exit 0
+    
+    echo "$output"
+  else
+    yad --title=Results --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
+      --text="No results found for "\""<b>$output</b>"\""." \
+      --button=OK:0
+    exit 0
+  fi
 }
 
 #non-app functions below
@@ -359,13 +392,18 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
   
-  echo -e "$(get_device_info)\n\nBEGINNING OF ERROR LOG:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
+  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
+  
+  if [ "$(cat /proc/self/cgroup | grep '^0:' | grep -o 'session-.*\.')" != 'session-1.' ];then
+    echo "OS is running in a container."
+  fi
+  
   echo "Kernel: $(uname -m) $(uname -r)"
   echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
   
@@ -428,9 +466,9 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   red='\e[38;5;197m'
   echo -e "   ${green}┏━━━┓
 ${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  │ᑐ • ▁  ╱╲
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  │  │   ╱‾‾╲ │ᑐ │ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m              │  │
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
+${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
 \e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
 \e[0m\e[0m"
 }
