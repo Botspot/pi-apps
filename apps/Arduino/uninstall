@@ -9,9 +9,14 @@ function error {
 
 VERSION=arduino-1.8.15
 
-cd ~/.local/share
+if [ -f ~/.local/share/$VERSION/uninstall.sh ];then
+  cd ~/.local/share
+  $VERSION/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
+  sudo $VERSION/uninstall.sh || error "Failed to run uninstall.sh as root user"
+  rm -rf $VERSION || error "Failed to remove $VERSION folder"
+  cd
+else
+  echo "WARNING: Arduino's uninstall.sh script was not found! Most likely it was never fully installed."
+fi
 
-$VERSION/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
-sudo $VERSION/uninstall.sh || error "Failed to run uninstall.sh as root user"
-rm -rf $VERSION || error "Failed to remove arduino-1.8.13 folder"
-
+exit 0
