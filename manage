@@ -18,7 +18,7 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
 #remove week-old logfiles
-find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
+find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
 #Ensure running arm processor
 if uname -m | grep -q 'x86' ;then
@@ -58,7 +58,7 @@ $app"
   done
   app_results="${app_results:1}" #remove first blank newline
   
-  for app in $failed_apps ;do
+  for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
     logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
     
     #if logfile detected, exists, and is not empty, ask permission to send error report
@@ -85,7 +85,7 @@ $app"
   done
   app_results="${app_results:1}" #remove first blank newline
   
-  for app in $failed_apps ;do
+  for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
     logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
     
     #if logfile detected, exists, and is not empty, ask permission to send error report
@@ -169,7 +169,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   echo -e "\e[96m${mode^}ing \e[1m${app}\e[0m\e[96m...\e[39m" | tee -a "$logfile"
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  nice "$appscript" 2>&1 > >(tee -a "$logfile")
+  nice "$appscript" &> >(tee -a "$logfile")
   if [ $? == 0 ]; then #if app script succeeded
     #change the status from corrupted to 'installed' or 'uninstalled'
     echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
