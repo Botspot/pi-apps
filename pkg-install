@@ -34,7 +34,7 @@ apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix
   errors="$(cat /dev/stdin)"
   
   #check for 'E: The repository'
-  if echo "$errors" | grep -q 'E: The repository';then
+  if echo "$errors" | grep -q 'E: The repository' || echo "$errors" | grep -q 'sources.list entry misspelt' ;then
     message_to_user "APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
@@ -101,7 +101,8 @@ elif [ -z "$app" ];then
   error "No app name specified to pkg-install!"
 fi
 
-LANG=C LC_ALL=C
+LANG=C
+LC_ALL=C
 
 source "${DIRECTORY}/api"
 apt_lock_wait
