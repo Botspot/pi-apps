@@ -92,6 +92,21 @@ Please run this command: sudo apt --fix-broken install"
 
 Please run this command: sudo dpkg --configure -a"
   fi
+  
+  #check for faulty dphys-swapfile package
+  if echo "$errors" | grep -q "error processing package dphys-swapfile" ;then
+    message_to_user "Before APT or Pi-Apps will work, dphys-swapfile must be fixed.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help."
+  fi
+  
+  #check for insufficient space errors
+  if echo "$errors" | grep -q "You don't have enough free space in" ;then
+    message_to_user "Package(s) failed to install because your system has insufficient disk space.
+
+Please free up some space, then try again."
+  fi
+  
 }
 
 echo "Running pkg-install..."
@@ -229,7 +244,11 @@ fi
 #ensure dummy deb isn't already installed
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   echo -e "\e[97m\nDummy deb is already installed. Uninstalling it first...\e[39m"
-  sudo apt purge -y pi-apps-$appnamehash || error "Failed to purge dummy deb (pi-apps-$appnamehash)"
+  output="$(sudo apt purge -y pi-apps-$appnamehash 2>&1 | reduceapt | tee /dev/stderr )"
+  if [ $? != 0 ];then
+    echo "$output" | apt_diagnose
+    error "Failed to purge dummy deb (pi-apps-$appnamehash)"
+  fi
   #sudo apt update &>/dev/null
 fi
 
