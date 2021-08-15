@@ -7,12 +7,10 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/api" apt_lock_wait
-
 rm -f ~/turbowarp.deb
 wget -O ~/turbowarp.deb https://github.com/TurboWarp/desktop/releases/download/v0.8.1/TurboWarp-linux-arm64-0.8.1.deb || error "Failed to download deb!"
 
-sudo apt install -yf ~/turbowarp.deb || error "Failed to install turbowarp.deb!"
+"${DIRECTORY}/pkg-install" "$HOME/turbowarp.deb" "$(dirname "$0")" || error "Failed to install turbowarp.deb!"
 
 rm -f ~/turbowarp.deb
 

@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt remove -y turbowarp-desktop || error "apt failed to purge turbowarp-desktop"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "apt failed to purge turbowarp-desktop"
