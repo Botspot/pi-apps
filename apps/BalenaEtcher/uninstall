@@ -7,6 +7,6 @@ function error {
   exit 1
 }
 
-sudo apt purge -y balena-etcher-electron || error "failed to purge the deb file!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "failed to purge the deb file!"
 rm -f ~/etcher.deb &>/dev/null
 exit 0
