@@ -88,14 +88,14 @@ Please run this command: sudo apt --fix-broken install"
   
   #check for dpkg --configure -a
   if echo "$errors" | grep -q "dpkg \-\-configure \-a" ;then
-    message_to_user "Before APT or Pi-Apps will work, dpkg needs to repair your system.
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, dpkg needs to repair your system.
 
 Please run this command: sudo dpkg --configure -a"
   fi
   
   #check for faulty dphys-swapfile package
   if echo "$errors" | grep -q "error processing package dphys-swapfile" ;then
-    message_to_user "Before APT or Pi-Apps will work, dphys-swapfile must be fixed.
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
 
 Try Googling the above errors, or ask the Pi-Apps developers for help."
   fi
@@ -107,6 +107,12 @@ Try Googling the above errors, or ask the Pi-Apps developers for help."
 Please free up some space, then try again."
   fi
   
+  #check for unconfigured boot-firmware package
+  if echo "$errors" | grep -q "missing /boot/firmware, did you forget to mount it" || echo "$errors" | grep -q "u-boot-rpi" ;then
+    message_to_user "Package(s) failed to install because your boot drive is not working.
+
+You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work."
+  fi
 }
 
 echo "Running pkg-install..."
