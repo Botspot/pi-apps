@@ -1,5 +1,6 @@
 #!/bin/bash
 
+{ #this curly brace at start and end of script prevents issues when this script edits itself. See: https://stackoverflow.com/a/19430939
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -90,7 +91,6 @@ fi
 [ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
 
 #shorten to last line
-updatable="$(echo "$updatable")"
 if [ "$updatable" == '.' ];then
   updatable=''
 fi
@@ -254,7 +254,6 @@ IFS=$'\n'
 
 #remove empty newlines from output
 output="$(echo "$output" | grep .)"
-echo "$output" > ~/output.log
 
 #limit list of update files to those selected by user.
 #Edge case: if a file and app are named the same, they will appear in both lists if either one was selected.
@@ -274,15 +273,11 @@ do
 done
 IFS="$PREIFS"
 
-rm -f /tmp/pi-apps-update-pid
-
 if [ ! -z "$updatable" ];then
   "${DIRECTORY}/etc/terminal-run" '
     DIRECTORY="'"$DIRECTORY"'"
     updatable="'"$updatable"'"
     trap "sleep 10" EXIT
-    PID=$$
-    echo $PID > /tmp/pi-apps-update-pid
     PREIFS="$IFS"
     IFS=$'\''\n'\''
     for i in $updatable
@@ -298,16 +293,7 @@ fi
 rm -rf "${DIRECTORY}/.git"
 cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git folder!"
 
-while [ ! -f /tmp/pi-apps-update-pid ];do
-  sleep 1
-done
-PID=$(cat /tmp/pi-apps-update-pid)
-echo "Pi-Apps updates in progress with PID $PID"
-while [ -d /proc/$PID ];do
-  sleep 1
-done
-echo "Pi-Apps updates complete because PID $PID has stopped."
-rm -f /tmp/pi-apps-update-pid
+echo -e "\e[92mPi-Apps updates complete.\e[39m"
 
 yad --form --text='Pi-Apps updates complete.' \
   --on-top --skip-taskbar --undecorated --close-on-unfocus \
@@ -316,3 +302,4 @@ yad --form --text='Pi-Apps updates complete.' \
   --button="Close!${DIRECTORY}/icons/exit.png":1
 
 exit 0
+} #this curly brace at start and end of script prevents issues when this script updates itself. See: https://stackoverflow.com/a/19430939

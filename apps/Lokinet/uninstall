@@ -7,10 +7,8 @@ function error {
   exit 1
 }
 
-sudo apt purge lokinet-gui -y || error "Failed to uninstall \"lokinet-gui\"!"
-sudo apt purge lokinet -y || error "Failed to uninstall \"lokinet\"!"
-sudo apt purge lokinet-bin -y || error "Failed to uninstall \"lokinet-bin\"!" 
-  
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
   if [ -e /etc/systemd/system/lokinet.service.d ]; then
      echo "removing systemd override"
      sudo rm -r /etc/systemd/system/lokinet.service.d
@@ -25,5 +23,3 @@ sudo apt purge lokinet-bin -y || error "Failed to uninstall \"lokinet-bin\"!"
      echo "removing lokinet-testnet.service"
      sudo rm /etc/systemd/system/lokinet-testnet.service
   fi
-
-sudo systemctl restart dhcpcd

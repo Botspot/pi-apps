@@ -8,4 +8,4 @@ function error {
 }
 
 #uninstall
-sudo apt -y purge gh || error "Failed to uninstall gh!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall gh!"

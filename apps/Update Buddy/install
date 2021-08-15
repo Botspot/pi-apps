@@ -7,13 +7,11 @@ function error {
   exit 1
 }
 
-# Get dependencies
-"${DIRECTORY}/pkg-install" "yad" "$(dirname "$0")" || exit 1
+rm -rf ~/update-buddy
+echo "Downloading..."
+git clone https://github.com/Botspot/update-buddy || error 'Failed to download update-buddy repository!'
 
-rm -rf update-buddy
-
-
-git clone https://github.com/Botspot/update-buddy || error 'Failed to clone example.com repository!'
+echo "Making autostart entry..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
 Name=Update Buddy
@@ -25,7 +23,8 @@ NoDisplay=false" > ~/.config/autostart/update-buddy.desktop
 
 chmod +x $HOME/update-buddy/onstartup.sh
 
+echo "Running Update Buddy for the first time..."
 #first time run
-setsid $HOME/update-buddy/onstartup.sh
+setsid $HOME/update-buddy/onstartup.sh &
 
 

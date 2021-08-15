@@ -7,17 +7,13 @@ function error {
   exit 1
 }
 
-version='1.5.0'
-
-#remove electron-discord-webapp if it still exists
-if command -v webcord >/dev/null ;then
-  sudo apt purge webcord || error "failed to first uninstall electron-discord-webapp!"
-fi
+version='1.6.1'
 
 echo "Downloading Webcord..."
-
 rm -f ~/webcord_${version}_arm64.deb
 wget https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_arm64.deb
-sudo apt -fy install ~/webcord_${version}_arm64.deb || error "Failed to install webcord deb!"
+
+echo "Installing Webcord..."
+"${DIRECTORY}/pkg-install" "$HOME/webcord_${version}_arm64.deb" "$(dirname "$0")" || error "Failed to install webcord deb!"
 
 rm -f ~/webcord_${version}_arm64.deb

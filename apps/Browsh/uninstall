@@ -7,8 +7,11 @@ function error {
   exit 1
 }
 
-sudo apt purge -y browsh || error 'Failed to remove browsh!'
-sudo rm ~/.local/share/applications/browsh.desktop
+if command -v browsh >/dev/null ;then
+  sudo apt purge -y browsh || error 'Failed to remove browsh!'
+fi
+
+sudo rm -f ~/.local/share/applications/browsh.desktop
 
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

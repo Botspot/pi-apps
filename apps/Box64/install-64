@@ -7,12 +7,20 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "cmake" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "cmake make python3 gcc" "$(dirname "$0")" || exit 1
 
 rm -rf ~/box64
 git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
 cd box64 || error 'Failed to change directory'
-mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to make directory'
+mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake in "build" directory'
 make -j8 || error 'Failed to compile'
 sudo make install || error 'Failed to run "sudo make install"'
-sudo systemctl restart systemd-binfmt || exit 1
+
+if ! sudo systemctl restart systemd-binfmt ;then
+  echo "Error: systemd-binfmt failed to restart. Running debug..."
+  echo 'systemctl status systemd-binfmt.service'
+  systemctl status systemd-binfmt.service
+  echo 'systemctl status systemd-binfmt.service'
+  journalctl -xe | cat
+  error "Exiting now because systemd-binfmt failed to restart."
+fi

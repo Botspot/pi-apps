@@ -13,11 +13,22 @@ echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /
 
 # Add ubuntu keyring
 echo "Signing ubuntu repository..."
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 || (sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list ; error "Failed to add key")
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+  error "Failed to sign the bionic-updates repository!"
+fi
 
 # Add preferences so the ubuntu repositories don't become your "default" repositories
 echo "Preventing Ubuntu repository from causing apt problems..."
-sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/chunky-milk/pi-bashscripts-files/main/Files/99bionic-updates || (sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list ; error "wget failed to download 99bionic-updates file!")
+sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/chunky-milk/pi-bashscripts-files/main/Files/99bionic-updates
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+  error "wget failed to download 99bionic-updates config file!"
+fi
 
+echo "Running 'sudo apt update'..."
 sudo apt update || error "Failed to run 'sudo apt update'!"
+
+echo "Installing Firefox package..."
 sudo apt install -t bionic-updates firefox -y || error "Failed to install firefox!"

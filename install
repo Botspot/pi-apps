@@ -11,53 +11,33 @@ if [[ "$(id -u)" == 0 ]]; then
 	error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
 fi
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
+command -v apt >/dev/null || error "apt: command not found. Most likely this system is not running Debian."
+#Ensure running arm processor
+if uname -m | grep -q 'x86' ;then
+  error "Pi-Apps is not not supported on x86 processors."
+fi
+
+sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
 #install yad automatically
 if ! command -v yad >/dev/null;then
-  
-  if [ -f /usr/bin/apt ];then
-    sudo apt update
-    sudo apt install -y yad || error "Failed to install yad."
-    updated=1
-  else
-    error "Failed to find any package manager to install yad."
-  fi
+  sudo apt install -y yad || error "Failed to install yad."
 fi
 #remove annoying YAD icon browser launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #install git
 if ! command -v git >/dev/null;then
-  
-  if [ -f /usr/bin/apt ];then
-    #only run sudo apt update if not already run
-    if [ -z "$updated" ];then
-      sudo apt update
-      updated=1
-    fi
-    sudo apt install -y git || error "Failed to install git."
-  else
-    error "Failed to find any package manager to install git."
-  fi
+  sudo apt install -y git || error "Failed to install git."
 fi
 
 #install curl
 if ! command -v curl >/dev/null;then
-  if [ -f /usr/bin/apt ];then
-  
-    #only run sudo apt update if not already run
-    if [ -z "$updated" ];then
-      sudo apt update
-      updated=1
-    fi
-    sudo apt install -y curl || error "Failed to install curl."
-  else
-    error "Failed to find any package manager to install curl."
-  fi
+  sudo apt install -y curl || error "Failed to install curl."
 fi
 
 #download pi-apps if folder missing
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
 if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
   DIRECTORY="$HOME/pi-apps"
   
@@ -69,8 +49,15 @@ if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash 
       error "Pi-Apps download failed!\ngit clone output was: $output"
     fi
   fi
+fi #Past this point, DIRECTORY variable populated with valid pi-apps directory
+
+#if chromeOS, install lxterminal
+if command -v garcon-terminal-handler >/dev/null ;then
+  echo "In order to install apps on chromeOS, a working terminal emulator is required.
+Installing lxterminal in 10 seconds... (press Ctrl+C to cancel)"
+  sleep 10
+  sudo apt install -yf lxterminal || error "Failed to install lxterminal on chromeOS!"
 fi
-#from this point in, DIRECTORY variable populated with valid pi-apps directory
 
 #menu button
 if [ ! -f ~/.local/share/applications/pi-apps.desktop ];then
@@ -84,13 +71,8 @@ Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Utility;" > ~/.local/share/applications/pi-apps.desktop
-
-if [ ! -f ~/Desktop/pi-apps.desktop ];then
-  echo "Adding Desktop shortcut..."
-fi
-cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/pi-apps.desktop
-chmod +x ~/Desktop/pi-apps.desktop
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button..."
@@ -102,7 +84,8 @@ Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 Type=Application
-Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
+Categories=Settings;
+StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
 
 if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
   echo "Creating autostarted updater..."
@@ -122,14 +105,12 @@ mkdir -p "${DIRECTORY}/data" && cd "${DIRECTORY}/data" || error "Failed to make 
 mkdir -p installed-packages preload settings status update-status categories
 cd $HOME
 
-#hide template file by default
+#hide template app by default
 "${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ] && [[ $(twistver) == "Twister OS version"* ]]; then
   #twisteros full
-  PREIFS="$IFS"
-  IFS=$'\n'
   apps="CommanderPi
 Box86
 Discord
@@ -142,14 +123,12 @@ Chromium Widevine
 Lightpad
 Wine (x86)
 Mac OS Theme"
+  PREIFS="$IFS"
+  IFS=$'\n'
   for app in $apps ;do
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   done
-  
-  #unhide chromiumv78 on twisteros
-  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' >/dev/null
-  echo "Finished hiding apps on TwisterOS."
-  
+  IFS="$PREIFS"
   
 elif [ -f /usr/local/bin/twistver ] && [[ $(twistver) != "Twister OS version"* ]]; then
   #twisteros lite
@@ -174,8 +153,6 @@ Mac OS Theme"
   "${DIRECTORY}/etc/categoryedit" Scrcpy --delete >/dev/null
   "${DIRECTORY}/etc/categoryedit" Steam --delete >/dev/null
   "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Back to Chromium v78' --delete >/dev/null
-  
   
   echo "Finished hiding apps on TwisterOS."
 fi

@@ -26,11 +26,14 @@ rm -f fonts.tar.gz || error "Failed to remove fonts archive!"
 rm -f .uuid || error "Failed to delete unnecessary .uuid file!"
 
 #get rings.lua
+echo "Downloading config..."
 wget -O ~/.conky_rings.lua https://raw.githubusercontent.com/Botspot/rpi_conky/master/conky_rings/.conky_rings.lua || error "Failed to download conky-rings.lua!"
 
+echo "Running Conky in background..."
 #run conky this time
-conky -q -d -p 3 &
+setsid -f conky -d
 
+echo "Making autostart entry..."
 #make autostart entry to run it next time
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
@@ -40,3 +43,5 @@ Exec=bash -c 'sleep 5;conky -q -d -p 3'
 Terminal=false
 Comment=system monitoring tool.
 Categories=Utility;" > ~/.config/autostart/conky.desktop || error "Failed to create desktop entry!"
+
+exit 0

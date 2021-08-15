@@ -1,0 +1,17 @@
+Pi-apps terminal is a script that lets you use pi-apps from the terminal, its written in bash.
+It has all the commands you will ever need:
+'install' - install a app available in pi-apps.
+'remove' - uninstall a app installed by pi-apps (uninstall also works).
+'multi-install' - install multiple apps.
+'multi-remove' - uninstall multiple apps (multi-uninstall also works).
+'list-all' - list all the apps in pi-apps (note that this will also list apps that are not available for your OS).
+'list-installed' - list all the apps installed by pi-apps.
+'list-uninstalled' - list all the uninstalled apps.
+'list-corrupted' - list all the corrupted apps.
+'search' - usage: search "search-term". search a app available in pi-apps (note that this will show results from the description of the 'apps as well as their name).
+'website' - usage: website "app-name". print the website of a app available in pi-apps.
+'update' - update all pi-apps components.
+'update-apps' - update all pi-apps apps only.
+'gui' - launch pi-apps regularly.
+
+and it makes life easier by eliminating the use of quotes for apps with a space in their name (unless you are using 'multi-install' or 'multi-uninstall').

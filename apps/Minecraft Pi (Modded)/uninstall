@@ -28,4 +28,4 @@ sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
 
 sudo apt-get -y autoremove
 
-sudo rm /etc/apt/sources.list.d/mcpi-revival.list
+sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
