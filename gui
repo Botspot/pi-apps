@@ -130,9 +130,10 @@ install() {
     title="Installing $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
-    source "'"${DIRECTORY}/api"'"
+    DIRECTORY="'"$DIRECTORY"'"
+    source "${DIRECTORY}/api"
     generate_logo
-    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ;then
+    if "${DIRECTORY}/manage" multi-install "'"$app"'" ;then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -158,9 +159,10 @@ uninstall() {
     title="Uninstalling $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
-    source "'"${DIRECTORY}/api"'"
+    DIRECTORY="'"$DIRECTORY"'"
+    source "${DIRECTORY}/api"
     generate_logo
-    if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
+    if "${DIRECTORY}/manage" multi-uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
