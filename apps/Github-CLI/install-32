@@ -9,14 +9,16 @@ function error {
 
 cd $HOME
 
+VERSION='1.14.0'
+
 #remove old deb (if exists)
 rm -f ~/gh.deb
 
 #download
-wget -O ~/gh.deb https://github.com/cli/cli/releases/download/v1.13.1/gh_1.13.1_linux_armv6.deb || error 'Failed to download github-cli!'
+wget -O ~/gh.deb https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_armv6.deb || error 'Failed to download github-cli!'
 
 #install
-"${DIRECTORY}/pkg-install" "$HOME/gh.deb" "$(dirname "$0")" || error "Failed to install turbowarp.deb!"
+"${DIRECTORY}/pkg-install" "$HOME/gh.deb" "$(dirname "$0")" || error "Failed to install gh.deb!"
 
 #clean up
 rm -f ~/gh.deb
