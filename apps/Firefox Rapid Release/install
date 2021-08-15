@@ -13,7 +13,7 @@ echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /
 
 # Add ubuntu keyring
 echo "Signing ubuntu repository..."
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+sudo apt-key adv --keyserver hpk://keyserver.ubuntu.com:80 --recv-keys 3B4FE6ACC0B21F32
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
   error "Failed to sign the bionic-updates repository!"
