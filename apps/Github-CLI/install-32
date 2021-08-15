@@ -10,11 +10,13 @@ function error {
 cd $HOME
 
 #remove old deb (if exists)
-rm -f gh*linux_armv6.deb
+rm -f ~/gh.deb
+
 #download
-wget -O gh.deb https://github.com/cli/cli/releases/download/v1.13.1/gh_1.13.1_linux_armv6.deb || error 'Failed to download github-cli!'
+wget -O ~/gh.deb https://github.com/cli/cli/releases/download/v1.13.1/gh_1.13.1_linux_armv6.deb || error 'Failed to download github-cli!'
+
 #install
-"${DIRECTORY}/api" apt_lock_wait
-sudo apt -fy install ./gh.deb || error "Failed to install gh!"
+"${DIRECTORY}/pkg-install" "$HOME/gh.deb" "$(dirname "$0")" || error "Failed to install turbowarp.deb!"
+
 #clean up
-rm -f gh.deb
+rm -f ~/gh.deb
