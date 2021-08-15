@@ -13,8 +13,10 @@ sudo apt purge -y qemu*
 cd $HOME
 #remove deb if present
 rm -f ./qemu*-armhf.deb
+
 #Download QEMU
 wget https://github.com/chunky-milk/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || error 'Failed to Download QEMU!'
+
 #Install QEMU
-sudo apt install -fy ./qemu-6.0.50-armhf.deb || error 'Failed to install QEMU!'
-rm -f qemu-6.0.50-armhf.deb
+"${DIRECTORY}/pkg-install" "$(pwd)/qemu-6.0.50-armhf.deb" "$(dirname "$0")" || error 'Failed to install QEMU!'
+rm -f qemu*-armhf.deb
