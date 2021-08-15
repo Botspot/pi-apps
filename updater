@@ -1,5 +1,6 @@
 #!/bin/bash
 
+{ #this curly brace at start and end of script prevents issues when this script edits itself. See: https://stackoverflow.com/a/19430939
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -301,3 +302,4 @@ yad --form --text='Pi-Apps updates complete.' \
   --button="Close!${DIRECTORY}/icons/exit.png":1
 
 exit 0
+} #this curly brace at start and end of script prevents issues when this script updates itself. See: https://stackoverflow.com/a/19430939
