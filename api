@@ -10,8 +10,6 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
 fi
 
-echo "API script thinks directory is $DIRECTORY" 1>&2
-
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
