@@ -7,10 +7,8 @@ function error {
   exit 1
 }
 
-if command -v webcord >/dev/null ;then
-  killall webcord &>/dev/null && echo "Closing Discord before uninstalling..."
-  
-  "${DIRECTORY}/api" apt_lock_wait
-  sudo apt purge -y webcord || error "APT failed to purge webcord!"
-fi
+killall webcord &>/dev/null && echo "Closing Discord before uninstalling..."
+
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "APT failed to purge webcord!"
+
 exit 0
