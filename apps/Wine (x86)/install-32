@@ -134,15 +134,7 @@ fi
 #Past this point, the pi is running a Wine-compatible kernel.
 
 #install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 pkill -9 wine
 sudo apt purge -y wine &>/dev/null &
