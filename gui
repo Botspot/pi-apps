@@ -9,13 +9,16 @@ function error {
   exit 1
 }
 
-#for the text_editor(), runonce() and app_status() functions
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-
-
 if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
+
+#launch splash screen
+yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
+splashpid=$!
+
+#for the text_editor(), runonce() and app_status() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 generate_logo
 
@@ -196,6 +199,8 @@ while true;do
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
+  (sleep 1; kill "$splashpid" 2>/dev/null) &
+  
   #if output is not empty then assume button pressed was Details
   button=0
   
@@ -285,10 +290,9 @@ while true;do
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
             error "xlunch failed to compile!"
-          elif [ -f /tmp/terminalexit ];then
+          elif [ -f /tmp/terminalexit ];then #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
-            #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
             error "The xlunch compilation terminal exited prematurely."
           else
             sleep 1
