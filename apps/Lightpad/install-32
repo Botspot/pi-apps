@@ -9,7 +9,7 @@ function error {
 
 wget https://github.com/libredeb/lightpad/releases/download/v0.0.8/lightpad_0.0.8.rev1_armhf.deb -O ~/lightpad.deb|| error "Failed to download lightpad.deb!"
 
-sudo apt install -y --fix-missing ~/lightpad.deb || error "APT failed to install lightpad.deb!"
+"${DIRECTORY}/pkg-install" "$HOME/lightpad.deb" "$(dirname "$0")" || error 'Failed to install lightpad.deb'
 
 rm -f ~/lightpad.deb
 

@@ -7,8 +7,6 @@ function error {
   exit 1
 }
 
-
-sudo apt -y purge lightpad || error "Failed to uninstall lightpad"
-sudo apt -y autoremove
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall lightpad package"
 rm -f ~/.local/share/applications/lightpad.desktop
 
