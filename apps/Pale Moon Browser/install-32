@@ -9,5 +9,5 @@ function error {
 
 echo 'deb http://download.opensuse.org/repositories/home:/stevenpusser/Raspbian_10/ /' | sudo tee /etc/apt/sources.list.d/home:stevenpusser.list >/dev/null
 curl -fsSL https://download.opensuse.org/repositories/home:stevenpusser/Raspbian_10/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_stevenpusser.gpg >/dev/null
-sudo apt update || error "Failed to run 'sudo apt update'!"
-sudo apt install palemoon -y || error "Failed to install the palemoon package!"
+
+"${DIRECTORY}/pkg-install" "palemoon" "$(dirname "$0")" || error "Failed to install the palemoon package!"
