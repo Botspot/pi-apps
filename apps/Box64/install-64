@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "cmake make python3 gcc gcc-multilib libc6-dev g++ build-essential" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "cmake make python3 gcc libc6-dev g++ build-essential" "$(dirname "$0")" || exit 1
 
 rm -rf ~/box64
 git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
