@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge -y freecad || error "apt failed to purge the freecad package!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
