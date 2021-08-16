@@ -31,7 +31,6 @@ appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   #new pkg-install implementation - using dummy debs
   
-  apt_lock_wait
   echo -e "\e[97m\nRemoving dummy deb for $app...\e[39m"
   sudo apt purge -y pi-apps-$appnamehash --autoremove || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
   
