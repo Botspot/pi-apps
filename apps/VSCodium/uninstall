@@ -7,6 +7,8 @@ function error {
   exit 1
 }
 
-sudo apt purge codium -y
-sudo rm /etc/apt/trusted.gpg.d/vscodium.gpg
-sudo rm /etc/apt/sources.list.d/vscodium.list
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+sudo rm -f /etc/apt/trusted.gpg.d/vscodium.gpg
+sudo rm -f /etc/apt/sources.list.d/vscodium.list
+
+exit 0
