@@ -23,9 +23,9 @@ do
 done
 [[ $i -gt 0 ]] && printf "Done.\n"
 
-sudo apt-get remove -y minecraft-pi-reborn-native &>/dev/null || true
+sudo apt remove -y minecraft-pi-reborn-native &>/dev/null || true
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-sudo apt-get -y autoremove
+sudo apt -y autoremove
 
-sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
+sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpi-revival.{list,gpg}
