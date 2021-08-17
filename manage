@@ -20,13 +20,9 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 #remove week-old logfiles
 find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
-#Ensure running arm processor
-if uname -m | grep -q 'x86' ;then
-  error "Pi-Apps is not not supported on x86 processors."
-fi
 #check for internet connection
-if ! ping -c 1 github.com &>/dev/null ;then
-  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(ping -c 1 github.com 2>&1)"
+if ! wget --spider github.com &>/dev/null ;then
+  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
 fi
 
 dirhash() {
@@ -42,41 +38,20 @@ dirhash() {
   echo "$hash"
 }
 
-if [ "$1" == 'multi-install' ];then
+
+if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
-  failed_apps=''
-  
-  IFS=$'\n'
-  for app in $2
-  do
-    "${DIRECTORY}/manage" install "$app"
-    if [ $? != 0 ];then
-      #this app failed to install - add it to the list of failed apps
-      failed_apps="$failed_apps
-$app"
-    fi
-  done
-  app_results="${app_results:1}" #remove first blank newline
-  
-  for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
-    logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
-    
-    #if logfile detected, exists, and is not empty, ask permission to send error report
-    if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ];then
-      send_error_report_gui "$logfile" "<b>$app</b> failed to install."
-    fi
-  done
-  if [ ! -z "$failed_apps" ];then
-    exit 1
+  if [ "$1" == 'multi-uninstall' ];then
+    action=uninstall
+  elif [ "$1" == 'multi-install' ];then
+    action=install
   fi
   
-elif [ "$1" == 'multi-uninstall' ];then
   failed_apps=''
-  
   IFS=$'\n'
   for app in $2
   do
-    "${DIRECTORY}/manage" uninstall "$app"
+    "${DIRECTORY}/manage" $action "$app"
     if [ $? != 0 ];then
       #this app failed to install - add it to the list of failed apps
       failed_apps="$failed_apps
@@ -85,14 +60,16 @@ $app"
   done
   app_results="${app_results:1}" #remove first blank newline
   
-  for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
-    logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
-    
-    #if logfile detected, exists, and is not empty, ask permission to send error report
-    if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ];then
-      send_error_report_gui "$logfile" "<b>$app</b> failed to uninstall."
-    fi
-  done
+  if [ "$supported" == yes ];then #if hardware and OS is supported
+    for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
+      logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
+      
+      #if logfile detected, exists, and is not empty, ask permission to send error report
+      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ];then
+        send_error_report_gui "$logfile" "<b>$app</b> failed to ${action}."
+      fi
+    done
+  fi
   if [ ! -z "$failed_apps" ];then
     exit 1
   fi
@@ -106,13 +83,21 @@ elif [ "$1" == 'install-if-not-installed' ];then
   fi
   
 elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
-  #INSTALL
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
   elif [ ! -d "${DIRECTORY}/apps/$app" ];then
     error "${DIRECTORY}/apps/$app does not exist!"
+  fi
+  
+  #check if hardware and OS is supported
+  if is_supported_system >/dev/null;then
+    supported=yes
+  else
+    supported=no
+    echo -e "\e[103m\e[30mWARNING: YOUR SETUP IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    sleep 10
   fi
   
   if [ "$1" == install ];then

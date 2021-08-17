@@ -386,6 +386,20 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   echo "Done"
 }
 
+is_supported_system() {
+  if uname -m | grep -q 'x86' ;then
+    echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail."
+    return 1
+  elif [[ "$(cat /etc/os-release | grep VERSION_CODENAME | tr -d '"' | awk -F= '{print $2}')" == @(stretch|wheezy|jessie) ]];then
+    echo "Pi-Apps is not supported on the outdated $(cat /etc/os-release | grep VERSION_CODENAME | tr -d '"' | awk -F= '{print $2}') operating system. Expect many apps to fail. Consider upgrading your operating system."
+    return 1
+  elif [[ "$(uname -m)" == armv6* ]];then
+    echo "Pi-Apps has not been tested on armv6 Raspberry Pi boards. Expect many apps to fail."
+    return 1
+  fi
+  return 0
+}
+
 format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
@@ -397,11 +411,7 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
-  
-  if [ "$(cat /proc/self/cgroup | grep '^0:' | grep -o 'session-.*\.')" != 'session-1.' ];then
-    echo "OS is running in a container."
-  fi
-  
+  [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
   echo "Kernel: $(uname -m) $(uname -r)"
   echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
   
@@ -413,10 +423,6 @@ get_device_info() { #returns information about current install and hardware
     echo "Language: $LANG"
   elif [ ! -z "$LC_ALL" ];then
     echo "Language: $LC_ALL"
-  fi
-  
-  if [ -f "${DIRECTORY}/gui" ];then
-    echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui" +'%x %X')"
   fi
   
 }
