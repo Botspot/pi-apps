@@ -23,6 +23,6 @@ rm -f $(pwd)/usbimager.zip
 cd ~/
 
 echo "Copying files..."
-sudo cp -av /home/pi/usbimager/* /usr || error "Failed to copy files to /usr!"
+sudo cp -av ~/usbimager/* /usr || error "Failed to copy files to /usr!"
 
 rm -rf ~/usbimager
