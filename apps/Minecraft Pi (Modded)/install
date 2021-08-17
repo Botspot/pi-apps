@@ -32,7 +32,7 @@ done
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
-wget -q -O - https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
+wget --no-cache -q -O - https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
 
 # Choose MCPIL to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
