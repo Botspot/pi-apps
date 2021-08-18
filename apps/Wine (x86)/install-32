@@ -107,7 +107,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
       sleep 0.5 # so user has time to read what is happening
-      unzip ~/3g1g-rpi-kernel.tar.xz || error "Failed to extract kernel!"
+      unzip ~/3g1g-rpi-kernel.zip || error "Failed to extract kernel!"
       cd linux || error "Failed to change folder to ~/linux!"
       #install the precompiled kernel
       export KERNEL=kernel7
@@ -117,7 +117,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
       sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
       cd
-      rm -rf linux
+      rm -rf linux ~/3g1g-rpi-kernel.zip
       #message
       echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
       sleep infinity
@@ -134,15 +134,7 @@ fi
 #Past this point, the pi is running a Wine-compatible kernel.
 
 #install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 pkill -9 wine
 sudo apt purge -y wine &>/dev/null &

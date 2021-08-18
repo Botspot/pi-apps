@@ -30,9 +30,9 @@ done
 [[ $i -gt 0 ]] && printf "Done.\n"
 
 # Remove old MCPILs
-sudo apt-get remove -y mcpil-r mcpil || true
+sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
+wget --no-cache -q -O - https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
 
 # Choose MCPIL to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
@@ -42,15 +42,16 @@ select opt in "${options[@]}"
 do
   case $opt in
     "${options[0]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client gmcpil" "$(dirname "$0")" || exit 1
+        MCPIL="gmcpil"
         break;;
     "${options[1]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client jmcpil" "$(dirname "$0")" || exit 1
+        MCPIL="jmcpil"
         break;;
     "${options[2]}")
-        break;;
+        exit 0
     *) echo "Invalid option: $REPLY";;
   esac
 done
 
+"${DIRECTORY}/pkg-install" "${MCPIL} python3-pip" "$(dirname "$0")"
 pip3 install mcpi

@@ -12,3 +12,5 @@ function error {
 rm -f ~/.config/autostart/conky.desktop ~/.conkyrc || error "Failed to remove autostart file or .conkyrc!"
 
 killall conky 2>/dev/null
+
+exit 0

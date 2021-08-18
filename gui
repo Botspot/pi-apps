@@ -9,19 +9,18 @@ function error {
   exit 1
 }
 
-#for the text_editor(), runonce() and app_status() functions
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-
 if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
 
-echo '|‾‾‾‾\(‾)          /‾\
-| |‾) |‾|         / ⧋ \ |‾'\''‾‾\|‾'\''‾‾\/‾‾‾|
-|  ‾_/| | |‾‾‾|  / ‾‾‾ \| |‾) | |‾) \ ‾‾\
-|_|‾  |_|  ‾‾‾  /_/‾‾‾\_\ .‾_/| .‾_/|‾‾ /
-                        |_|‾  |_|‾   ‾‾‾
-'
+#launch splash screen
+yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
+splashpid=$!
+
+#for the text_editor(), runonce() and app_status() functions
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+generate_logo
 
 #check for updates in background
 "${DIRECTORY}/updater" &>/dev/null &
@@ -31,6 +30,7 @@ if [ ! -z "$1" ];then
   output="$1"
 fi
 
+(
 #mark wine and box86 as installed, if twisteros
 runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
@@ -66,17 +66,26 @@ EOF
 
 #remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade" app
 runonce <<"EOF"
+  #rework chromium downgrading apps to one single new app: 'Downgrade Chromium'
   rm -rf "${DIRECTORY}/apps/Back to Chromium v86"
   rm -rf "${DIRECTORY}/apps/Back to Chromium v78"
+  if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
+    echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
+  fi
+  
   rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
   rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
+  
+  #rename 'Turbo Scratch' app to 'Turbowarp'
   rm -rf "${DIRECTORY}/apps/Turbo Scratch"
-  mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp"
-  if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
-    echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
-  fi
+  mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp" 2>/dev/null
+  
+  #rename 'Pi-Apps Terminal Plugin' app to 'Pi-Apps Terminal Plugin (python)'
+  rm -rf "${DIRECTORY}/apps/Pi-Apps Terminal Plugin"
+  mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)" 2>/dev/null
+  true
 EOF
 
 #rename xlunch setting to xlunch-dark
@@ -93,12 +102,23 @@ runonce <<"EOF"
   fi
 EOF
 
-#remove old mcpi repo
+#remove old mcpi repositories
 runonce <<"EOF"
-  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && [ "$(cat /etc/apt/sources.list.d/mcpi-revival.list)" == 'deb [trusted=yes] https://mcpirevival.tk/mcpi-packages buster main' ];then
+  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -q 'https://mcpirevival.tk/mcpi-packages' ;then
     echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
   fi
+  if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
+    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+  fi
 EOF
+
+#ensure curl is installed
+runonce <<"EOF"
+  if ! command -v curl >/dev/null ;then
+    sudo apt install -y curl
+  fi
+EOF
+) &
 
 install() {
   app="$1" #one app name per line
@@ -113,7 +133,10 @@ install() {
     title="Installing $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
-    if "'"${DIRECTORY}/manage"'" multi-install "'"$app"'" ; then
+    DIRECTORY="'"$DIRECTORY"'"
+    source "${DIRECTORY}/api"
+    generate_logo
+    if "${DIRECTORY}/manage" multi-install "'"$app"'" ;then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -121,8 +144,6 @@ install() {
       read enter #technically you could press Enter to exit.
     fi
     ' "$title"
-  sleep 1
-  while ps -C manage &>/dev/null;do sleep 0.1; done
   
   #re-preload all categories in background
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
@@ -141,7 +162,10 @@ uninstall() {
     title="Uninstalling $linecount apps"
   fi
   "${DIRECTORY}/etc/terminal-run" '
-    if "'"${DIRECTORY}/manage"'" multi-uninstall "'"$app"'" ; then
+    DIRECTORY="'"$DIRECTORY"'"
+    source "${DIRECTORY}/api"
+    generate_logo
+    if "${DIRECTORY}/manage" multi-uninstall "'"$app"'" ; then
       echo -e "\nClosing in 30 seconds."
       sleep 30
     else
@@ -149,14 +173,19 @@ uninstall() {
       read enter #technically you could press Enter to exit.
     fi
     ' "$title"
-  sleep 1
-  while ps -C manage &>/dev/null;do sleep 0.1; done
   
   #re-preload all categories in background
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
 }
 
-motd="$(echo -e "$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message | shuf -n 1)")"
+
+if [ ! -f "${DIRECTORY}/data/announcements" ] || [ -z $(find "${DIRECTORY}/data/announcements" -mtime +1 -print) ]; then
+  motd="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
+  echo "$motd" > "${DIRECTORY}/data/announcements"
+else
+  motd="$(cat "${DIRECTORY}/data/announcements")"
+fi
+motd="$(echo -e "$motd" | shuf -n 1)"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
@@ -170,14 +199,17 @@ while true;do
   #LIST="$(cat "${DIRECTORY}/data/preload/LIST")"
   #echo "$LIST"
   
+  (sleep 1; kill "$splashpid" 2>/dev/null) &
+  
   #if output is not empty then assume button pressed was Details
   button=0
   
-  while [ -z "$output" ];do
+  while [ -z "$output" ] && [ "$button" != 6 ];do
     
     if [ "$guimode" == yad ];then
       if [ -z "$prefix" ];then
-        buttons=("--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        buttons=("--button=!${DIRECTORY}/icons/search.png!Search:6" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
         "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
         "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
       else
@@ -204,7 +236,7 @@ while true;do
         #back button
         break
       fi
-      if [ -z "$output" ];then
+      if [ -z "$output" ] && [ "$button" != 6 ];then
         echo "output variable empty!"
         yad --center --title='Pi-Apps' --width=310 \
           --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -258,10 +290,9 @@ while true;do
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
             error "xlunch failed to compile!"
-          elif [ -f /tmp/terminalexit ];then
+          elif [ -f /tmp/terminalexit ];then #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
             #revert back to yad
             echo 'yad' > "{DIRECTORY}/data/settings/App List Style"
-            #if terminal doesn't start in 3 seconds, then /tmp/terminalexit will exist.
             error "The xlunch compilation terminal exited prematurely."
           else
             sleep 1
@@ -531,6 +562,15 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
       prefix=''
     fi
     output=''
+    ;;
+  6)
+    #search
+    echo "Search"
+    output="$(app_search_gui)"
+    if [ ! -z "$output" ];then
+      prefix="$(dirname "$(app_categories | grep -v "^All Apps/" | grep -v "^Installed/" | grep "/$output"'$' | head -n1)")"
+      [ "$prefix" == '.' ] && prefix=''
+    fi
     ;;
   *)
   error "Unknown button: $button"

@@ -10,14 +10,7 @@ function error {
   exit 1
 }
 
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 64)" ];then
-  arch=64
-elif [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
-  arch=32
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 #yad or xlunch format
 format="$1"

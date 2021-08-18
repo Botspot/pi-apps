@@ -7,7 +7,9 @@ function error {
   exit 1
 }
 
-sudo apt purge webapp-manager -y || error "Failed to uninstall webapp-manager"
+if command -v webapp-manager >/dev/null ;then
+  sudo apt purge webapp-manager -y || error "Failed to uninstall webapp-manager"
+fi
 
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall dependencies"

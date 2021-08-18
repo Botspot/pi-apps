@@ -7,6 +7,8 @@ function error {
   exit 1
 }
 
+rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
+
 # Get dependencies
 "${DIRECTORY}/pkg-install" "python3-tk python3-pil python3-pil.imagetk" "$(dirname "$0")" || exit 1
 

@@ -9,7 +9,7 @@ function error {
 
 #install dependencies
 if ! command -v aria2c >/dev/null ; then
-  sudo apt install aria2 -y || error "Failed to install aria2"
+  sudo apt install aria2 -yf || error "Failed to install aria2"
   ARIA2=1
 fi
 

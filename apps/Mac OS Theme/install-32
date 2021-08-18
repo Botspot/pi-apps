@@ -7,9 +7,8 @@ function error {
   exit 1
 }
 
-if [ ! -d ~/MacOSBigSurThemeConverter ];then 
-  git clone https://github.com/techcoder20/MacOSBigSurThemeConverter.git || error "failed to download github repository!"
-fi
+rm -rf ~/MacOSBigSurThemeConverter || error "Failed to first remove ~/MacOSBigSurThemeConverter folder"
+git clone https://github.com/techcoder20/MacOSBigSurThemeConverter.git || error "failed to download github repository!"
 
 #Making install script executable
 sudo chmod +x ~/MacOSBigSurThemeConverter/install.sh || error "Failed to make install script executable"

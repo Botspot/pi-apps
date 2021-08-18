@@ -7,8 +7,8 @@ function error {
   exit 1
 }
 
-rm -f flameshot_arm64.deb
-wget -O flameshot_arm64.deb https://github.com/flameshot-org/flameshot/releases/download/v0.10.1/flameshot-0.10.1-1.debian-10.arm64.deb || error 'Failed to download Flameshot deb file'
-sudo apt install ./flameshot_arm64.deb -yf || error 'Failed to install flameshot'
-rm -f flameshot_arm64.deb
+rm -f ~/flameshot_arm64.deb
+wget -O ~/flameshot_arm64.deb https://github.com/flameshot-org/flameshot/releases/download/v0.10.1/flameshot-0.10.1-1.debian-10.arm64.deb || error 'Failed to download Flameshot deb file'
+"${DIRECTORY}/pkg-install" "$HOME/flameshot_arm64.deb" "$(dirname "$0")" || error 'Failed to install flameshot_armhf.deb'
+rm -f ~/flameshot_arm64.deb
 

@@ -7,6 +7,7 @@ function error {
   exit 1
 }
 
+rm -rf ~/PiGro-Aid- || error "Failed to first remove ~/PiGro-Aid- folder!"
 git clone https://github.com/actionschnitzel/PiGro-Aid- || error "Failed to clone repository!"
 
 # Get dependencies

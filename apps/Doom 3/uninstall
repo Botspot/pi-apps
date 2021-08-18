@@ -10,7 +10,12 @@ function error {
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-#Running Uninstall script
+if [ -d ~/RPIDoom3Installer ];then
+  cd ~/RPIDoom3Installer || "Failed to Change directory"
+  echo "Running uninstall script..."
+  ./uninstall.sh || error "Failed to execute uninstall script :("
+else
+  echo "WARNING: Doing nothing as ~/RPIDoom3Installer folder does not exist!"
+fi
 
-cd ~/RPIDoom3Installer || "Failed to Change directory"
-./uninstall.sh || error "Failed to execute uninstall script :("
+exit 0

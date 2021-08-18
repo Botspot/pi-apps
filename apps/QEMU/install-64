@@ -7,6 +7,9 @@ function error {
   exit 1
 }
 
+#Remove any qemu packages first to prevent conflicting packages
+sudo apt purge -y qemu*
+
 cd $HOME
 #remove deb is exists
 rm -f ./qemu*arm64.deb

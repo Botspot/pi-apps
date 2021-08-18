@@ -7,18 +7,22 @@ function error {
   exit 1
 }
 
-
 #change version to latest each time
 VER="1.0.7"
 
-cd $HOME || error "Failed to change directory to $HOME!"
-git clone https://gitlab.com/bztsrc/usbimager.git || error "Failed to clone USBImager repo!"
-cd usbimager/ || error "Failed to entr usbimager repo folder!"
-git checkout $VER || error "Failed to checkout version $VER!"
-cd src/
-USE_LIBUI=yes make -j$(nproc)
-make deb
-cd ..
-sudo apt install -fy ./usbimager*armhf.deb
-cd ..
-rm -rf usbimager/
+rm -rf ~/usbimager
+mkdir -p ~/usbimager
+cd ~/usbimager
+
+echo "Downloading..."
+wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${VER}-armv7l-linux-x11.zip || error "Failed to download usbimager.zip!"
+
+echo "Extracting..."
+unzip $(pwd)/usbimager.zip || error "Failed to extract!"
+rm -f $(pwd)/usbimager.zip
+cd ~/
+
+echo "Copying files..."
+sudo cp -av ~/usbimager/* /usr || error "Failed to copy files to /usr!"
+
+rm -rf ~/usbimager
