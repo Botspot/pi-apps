@@ -48,7 +48,7 @@ do
         MCPIL="jmcpil"
         break;;
     "${options[2]}")
-        exit 0
+        exit 0;;
     *) echo "Invalid option: $REPLY";;
   esac
 done
