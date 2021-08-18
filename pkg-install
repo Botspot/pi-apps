@@ -11,10 +11,10 @@ error() {
   exit 1
 }
 
-#$1 is a quotation-marked, space-seperated list of package names.
-#$2 is the path to the program folder being installed.
-
-#"package0 package1 | package2" represents "package0 & package1" or "package0 & package2" (whichever is available) in $2
+# $1 is a quotation-marked, space-seperated list of package names.
+# $2 is name of the app being installed.
+# Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
+# "package1 | package2" represents "package1 or package2" (whichever is available) for $1
 
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
