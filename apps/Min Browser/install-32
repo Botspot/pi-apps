@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-version='1.20.0'
+version='1.21.0'
 wget https://github.com/chunky-milk/minbrowser-arm-builds/releases/download/${version}/min_${version}_armhf.deb || error "Failed to download Min deb file!"
 sudo apt install -yf ./min_${version}_armhf.deb || error "Failed to install min deb file!"
 rm -f ./min_${version}_armhf.deb
