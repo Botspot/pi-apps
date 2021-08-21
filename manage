@@ -38,6 +38,12 @@ dirhash() {
   echo "$hash"
 }
 
+#check if hardware and OS is supported
+if is_supported_system >/dev/null;then
+  supported=yes
+else
+  supported=no
+fi
 
 if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
@@ -92,10 +98,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   #check if hardware and OS is supported
-  if is_supported_system >/dev/null;then
-    supported=yes
-  else
-    supported=no
+  if [ "$supported" == no ];then
     echo -e "\e[103m\e[30mWARNING: YOUR SETUP IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
     sleep 10
   fi
