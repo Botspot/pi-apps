@@ -264,6 +264,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
 app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
   [ -z "$1" ] && error 'app_status(): requires an argument.'
+  [ ! -d "$DIRECTORY/apps/$1" ] && error "app_status(): app doesn't exist!" #check if app exists
   
   if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
