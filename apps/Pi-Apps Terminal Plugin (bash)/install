@@ -29,4 +29,3 @@ echo '#!/bin/bash
 sudo chmod +x /usr/local/bin/pi-apps || error "Failed to make launcher script executable!"
 echo "done"
 
-
