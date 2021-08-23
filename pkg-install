@@ -125,7 +125,7 @@ fi
 LANG=C
 LC_ALL=C
 LANGUAGE=C
-IFS=$'\n'
+IFS=$' \n'
 
 source "${DIRECTORY}/api"
 apt_lock_wait
@@ -133,7 +133,7 @@ apt_lock_wait
 #sudo apt update
 {
 echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
-output="$(sudo -E apt update 2>&1 | reduceapt | tee /dev/stderr)"
+output="$(sudo -E apt update 2>&1 | tee /dev/stderr | reduceapt)"
 exitcode=$?
 
 #inform user about autoremovable packages
@@ -165,7 +165,7 @@ fi
 for package in $PKG_LIST ;do
   
   #if package begins with / (absolute path)
-  if [[ "$package" == /* ]];then 
+  if [[ "$package" == /* ]];then
     #determine the package name from the package filepath
     packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
     [ -z "$packagename" ] && error "pkg-install: failed to determine the package name of $package"
@@ -242,6 +242,7 @@ Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
 
 output="$(dpkg-deb --build ~/pi-apps-$appnamehash 2>&1)"
 if [ $? != 0 ];then
+  echo "$output"
   echo "$output" | apt_diagnose
   error "pkg-install: failed to create dummy deb pi-apps-$appnamehash"
 fi
