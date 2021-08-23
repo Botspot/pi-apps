@@ -7,6 +7,8 @@ function error {
   exit 1
 }
 
+source "${DIRECTORY}/api"
+
 #get dependencies
 #DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
 #TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
@@ -43,9 +45,11 @@ DEBDIR="$(echo ${DEBNAME/.deb/})" || error "Failed to generate deb directory nam
 dpkg-deb -R $DEBNAME $DEBDIR || error "Failed to unpack deb!"
 rm -rf $DEBDIR/home || sudo rm -rf $DEBDIR/home
 rm -f $DEBNAME || error "Failed to delete old deb!"
+"${DIRECTORY}/api" apt_lock_wait
 dpkg-deb -b $DEBDIR || sudo dpkg-deb -b $DEBDIR || error "Failed to repack deb!"
 
 #install the deb
+"${DIRECTORY}/api" apt_lock_wait
 sudo dpkg -i $DEBNAME; sudo apt install -f -y || error "Failed to install the deb!"
 
 #fix the menu shortcut icons
