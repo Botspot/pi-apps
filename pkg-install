@@ -19,7 +19,7 @@ PKG_LIST="$1" #quotation-marked, space-seperated list of package names to instal
 app="$(basename "$2")" #remove any slashes to just get program name
 
 reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for \| changed its 'Suite' value "
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
 }
 
 message_to_user() { #bright, attention-getting message to display to user
@@ -112,6 +112,13 @@ Please free up some space, then try again."
     message_to_user "Package(s) failed to install because your boot drive is not working.
 
 You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work."
+  fi
+  
+  #check for "Release file for http://httpredir.debian.org/debian/dists/buster-backports/InRelease is not valid yet"
+  if echo "$errors" | grep -q "Release file for .* is not valid yet" ;then
+    message_to_user "One or more repositories has a release file that becomes valid in the future.
+
+Please look at the above errors to see how long you have to wait."
   fi
 }
 
