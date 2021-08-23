@@ -27,8 +27,13 @@ if [ $? != 0 ];then
   error "wget failed to download 99bionic-updates config file!"
 fi
 
+source "${DIRECTORY}/api"
+"${DIRECTORY}/api" apt_lock_wait
+
 echo "Running 'sudo apt update'..."
 sudo apt update || error "Failed to run 'sudo apt update'!"
+
+"${DIRECTORY}/api" apt_lock_wait
 
 echo "Installing Firefox package..."
 sudo apt install -t bionic-updates firefox -y || error "Failed to install firefox!"
