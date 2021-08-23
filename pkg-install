@@ -124,6 +124,8 @@ fi
 
 LANG=C
 LC_ALL=C
+LANGUAGE=C
+IFS=$'\n'
 
 source "${DIRECTORY}/api"
 apt_lock_wait
@@ -142,6 +144,8 @@ fi
 #inform user packages are upgradeable
 if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
   echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade\e[0m."
+elif [ ! -z "$(echo "$output" | grep 'package can be upgraded' )" ];then
+  echo -e "\e[33mOne package can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade\e[0m."
 fi
 
 #exit on apt error
