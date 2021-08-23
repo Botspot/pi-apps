@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-cd $HOME/Downloads
-wget https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_arm64.deb || error 'Failed to download timeshift!'
-sudo apt install -y --fix-broken ~/Downloads/timeshift_20.11.1_arm64.deb || error 'Failed to install .deb file!'
-rm -f timeshift_20.11.1_arm64.deb
+rm -f ~/timeshift.deb
+wget -O ~/timeshift.deb https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_arm64.deb || error 'Failed to download timeshift!'
+"${DIRECTORY}/pkg-install" "$HOME/timeshift.deb" "$(dirname "$0")" || error 'Failed to install .deb file!'
+rm -f ~/timeshift.deb
