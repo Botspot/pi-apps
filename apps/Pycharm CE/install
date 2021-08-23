@@ -12,45 +12,41 @@ downloadlink=https://download-cf.jetbrains.com/python/pycharm-community-2020.3.3
 name=pycharm-community
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "python-pip openjdk-11-jdk" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk" "$(dirname "$0")" || exit 1
 
-#Removing if pycharm-community-2020.3.3.tar.gz already downloaded
-rm $name.tar.gz
+echo "Downloading pycharm-community-2020.3.3.tar.gz"
+rm -f $name.tar.gz
+wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
 
-#Removing pycharm-community-2020.3.3 if already extracted
-sudo rm -r /opt/$name
-
-#Downloading pycharm-community-2020.3.3.tar.gz
-wget $downloadlink -O $name.tar.gz
-
-#Extracting pycharm-community-2020.3.3.tar.gz to /opt
-sudo mkdir /opt/$name
-sudo tar xvzf $name.tar.gz -C /opt/$name
+echo "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
+sudo rm -rf /opt/$name
+sudo mkdir -p /opt/$name
+sudo tar xvzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
+rm -f $name.tar.gz
 sudo mv /opt/$name/*/* /opt/$name/
 
-#Deleting pycharm-community-2020.3.3.tar.gz
-rm $name.tar.gz
-
-#Making file executable
+echo "Making file executable"
 sudo chmod +x /opt/$name/bin/pycharm.sh
 
-#Implementing terminal fix
-git clone https://github.com/JetBrains/pty4j.git ~/pty4j
+echo "Implementing terminal fix"
+rm -rf ~/pty4j
+git clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to download pty4j repository"
 cd ~/pty4j/native
-gcc -fPIC -c *.c
-gcc -shared -o libpty.so *.o
-sudo mkdir /opt/$name/lib/pty4j-native/linux/arm
-sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm
-sudo rm -r ~/pty4j
+gcc -fPIC -c *.c || error "command failed: gcc -fPIC -c *.c"
+gcc -shared -o libpty.so *.o || error "command failed: gcc -shared -o libpty.so *.o"
+sudo mkdir /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm"
+sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/$name/lib/pty4j-native/linux/arm"
+rm -rf ~/pty4j
+cd ~/
 
-#Creating desktop shortcut
+echo "Creating desktop shortcut"
 echo "[Desktop Entry]
 Type=Application
 Name=PyCharm Community Edition
 Icon=/opt/$name/bin/pycharm.svg
-Exec=/opt/$name/bin/pycharm.sh %f
+Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/$name/bin/pycharm.sh"\""
 Comment=Python IDE for Professional Developers
 Categories=Development;IDE;
 Terminal=false
-StartupWMClass=jetbrains-pycharm-ce" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
-
+StartupWMClass=jetbrains-pycharm-ce
+StartupNotify=true" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
