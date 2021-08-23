@@ -34,7 +34,7 @@ sudo ldconfig
 if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
-  wget 'https://zoom.us/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://d11yldzmag5yn.cloudfront.net/prod/5.4.53391.1108/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
+  wget 'https://zoom.us/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://zoom.com/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://d11yldzmag5yn.cloudfront.net/prod/5.4.53391.1108/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
   
   #get outdated Zoom client from Botspot's mirror because it's more stable
   #wget 'https://github.com/Botspot/zoom_686_mirror/raw/main/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
