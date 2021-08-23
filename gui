@@ -120,6 +120,11 @@ runonce <<"EOF"
     sudo apt install -y curl
   fi
 EOF
+
+#run sudo apt update once to fix everyone's "repo's Suite value was changed from stable to oldstable"
+runonce <<"EOF"
+  sudo apt update &>/dev/null
+EOF
 ) &
 
 install() {

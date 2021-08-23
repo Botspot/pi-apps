@@ -7,12 +7,12 @@ function error {
   exit 1
 }
 
-# Get dependencies
-"${DIRECTORY}/pkg-install" "firefox-esr" "$(dirname "$0")" || exit 1
+rm -f ~/browsh.deb
+wget -O browsh.deb https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_armv7.deb || error 'Failed to download browsh!'
 
-wget https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_armv7.deb || error 'Failed to download browsh!'
-sudo apt -yf install ./browsh_1.6.4_linux_armv7.deb || error 'Failed to install browsh!' 
-rm browsh_1.6.4_linux_armv7.deb 
+"${DIRECTORY}/pkg-install" "firefox-esr $HOME/browsh.deb" "$(dirname "$0")" || error 'Failed to install browsh.deb!'
+rm -f ~/browsh.deb
+
 echo "[Desktop Entry]
 Version=1.1
 Type=Application
@@ -22,4 +22,3 @@ Icon=$(dirname "$0")/icon-64.png
 Exec=browsh
 Terminal=true
 Categories=Network;" > ~/.local/share/applications/browsh.desktop
-
