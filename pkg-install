@@ -140,7 +140,7 @@ apt_lock_wait
 #sudo apt update
 {
 echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
-output="$(sudo -E apt update 2>&1 | tee /dev/stderr | reduceapt)"
+output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | tee /dev/stderr | reduceapt)"
 exitcode=$?
 
 #inform user about autoremovable packages
@@ -261,6 +261,7 @@ fi
 #ensure dummy deb isn't already installed
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   echo -e "\e[97m\nDummy deb is already installed. Uninstalling it first...\e[39m"
+  apt_lock_wait
   output="$(sudo -E apt purge -y pi-apps-$appnamehash 2>&1 | reduceapt | tee /dev/stderr )"
   if [ $? != 0 ];then
     echo "$output" | apt_diagnose
