@@ -97,9 +97,13 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
-  #check if hardware and OS is supported
+  #display warning if hardware and os is unsupported
   if [ "$supported" == no ];then
-    echo -e "\e[103m\e[30mWARNING: YOUR SETUP IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    echo -e "\e[103m\e[30mWARNING: YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    sleep 1
+    echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m"
+    sleep 1
+    echo -e "\e[103m\e[30mWaiting 10 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m"
     sleep 10
   fi
   
