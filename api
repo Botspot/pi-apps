@@ -402,6 +402,12 @@ is_supported_system() {
   elif [[ "$(uname -m)" == armv6* ]];then
     echo "Pi-Apps has not been tested on armv6 Raspberry Pi boards. Expect many apps to fail."
     return 1
+  elif [ "$(id -u)" == 0 ]; then
+    echo "Pi-Apps is not designed to be run as root user."
+    return 1
+  elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((1*1024*1024*1024)) ];then
+    echo "Your system drive has less than 1GB of free space. Watch out for "\""disk full"\"" errors."
+    return 1
   else
     return 0
   fi
