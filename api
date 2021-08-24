@@ -10,6 +10,11 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
 fi
 
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ];then
+  echo "api: DIRECTORY variable must be set to valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
+
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
@@ -264,7 +269,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
 app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
   [ -z "$1" ] && error 'app_status(): requires an argument.'
-  [ ! -d "$DIRECTORY/apps/$1" ] && error "app_status(): app doesn't exist!" #check if app exists
+  [ ! -d "$DIRECTORY/apps/$1" ] && error "app_status(): app $1 doesn't exist!" #check if app exists
   
   if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
