@@ -247,6 +247,9 @@ Section: custom
 Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g')
 Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
 
+#fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
+sudo chmod -R '0755' ~/pi-apps-$appnamehash
+
 output="$(dpkg-deb --build ~/pi-apps-$appnamehash 2>&1)"
 if [ $? != 0 ];then
   echo "$output"
