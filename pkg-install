@@ -38,7 +38,7 @@ apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix
     message_to_user "APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
-Remove the relevant line from /etc/apt/sources.list file or delete the file in
+Remove the relevant line from /etc/apt/sources.list file or delete one file in
 the /etc/apt/sources.list.d folder.
 
 sources.list requires root permissions to edit: sudo mousepad /path/to/file"
@@ -120,6 +120,11 @@ You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work."
 
 Please look at the above errors to see how long you have to wait."
   fi
+  
+  #check for typo in sources.list and list.d
+  if echo "$errors" | grep -q "The list of sources could not be read." ;then
+    message_to_user "One or more sources contain a typo. Before APT or Pi-Apps will work, you must look around in /etc/apt/sources.ist and /etc/apt/sources.list.d and fix the typo."
+  fi
 }
 
 echo "Running pkg-install..."
@@ -140,7 +145,7 @@ apt_lock_wait
 #sudo apt update
 {
 echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
-output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | tee /dev/stderr | reduceapt)"
+output="$(sudo -E apt update -y 2>&1 | tee /dev/stderr | reduceapt)"
 exitcode=$?
 
 #inform user about autoremovable packages
