@@ -123,7 +123,7 @@ Please look at the above errors to see how long you have to wait."
   
   #check for typo in sources.list and list.d
   if echo "$errors" | grep -q "The list of sources could not be read." ;then
-    message_to_user "One or more sources contain a typo. Before APT or Pi-Apps will work, you must look around in /etc/apt/sources.ist and /etc/apt/sources.list.d and fix the typo."
+    message_to_user "One or more sources contain a typo. Before APT or Pi-Apps will work, you must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo."
   fi
 }
 
