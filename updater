@@ -290,8 +290,8 @@ if [ ! -z "$updatable" ];then
 fi
 #.git folder
 #delete .git folder, then copy the new one
-rm -rf "${DIRECTORY}/.git"
-cp -rf "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}/.git" || error "Failed to copy new .git folder!"
+rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
+cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
 
 echo -e "\e[92mPi-Apps updates complete.\e[39m"
 
