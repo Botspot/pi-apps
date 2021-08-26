@@ -8,6 +8,6 @@ function error {
 }
 
 rm -f ~/vivaldi.deb
-wget -O ~/vivaldi.deb https://downloads.vivaldi.com/stable/vivaldi-stable_4.1.2369.11-1_armhf.deb || error 'Failed to download vivaldi!'
+wget -O ~/vivaldi.deb https://downloads.vivaldi.com/stable/vivaldi-stable_4.1.2369.21-1_armhf.deb || error 'Failed to download vivaldi!'
 "${DIRECTORY}/pkg-install" "$HOME/vivaldi.deb" "$(dirname "$0")" || error 'Failed to install vivaldi.deb!'
 rm -f ~/vivaldi.deb
