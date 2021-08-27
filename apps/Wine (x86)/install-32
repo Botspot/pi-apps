@@ -70,10 +70,13 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       #download kernel source code
       git clone --depth=1 https://github.com/raspberrypi/linux || error "Failed to git clone the raspberry pi kernel repo!"
       
+      echo "Installing necessary build packages..."
+      "${DIRECTORY}/pkg-install" "raspberrypi-kernel-headers build-essential bc git wget bison flex libssl-dev make libncurses-dev" "$(dirname "$0")" || error "Failed to install necessary packages to build kernel."
+      
       #build for pi3
-      cd linux
+      cd ~/linux || error "Failed to enter the ~/linux folder!"
       KERNEL=kernel7
-      make -j8 bcm2709_defconfig
+      make -j8 bcm2709_defconfig || error "The make command exited with failure. Full command: 'make -j8 bcm2709_defconfig'"
       
       #change memory split config
       echo "Setting memory split to 3G/1G"
@@ -83,6 +86,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       echo '' | make -j8 zImage modules dtbs || error "Failed to make bcm2709_defconfig zImage modules dtbs!"
       
       #install
+      echo "Copying new files to /boot/..."
       sudo make modules_install || error "sudo make modules_install failed!"
       sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
       sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
@@ -90,6 +94,9 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
       cd
       rm -rf ~/linux
+      
+      echo "Removing the utilities that were used to compile the kernel..."
+      "${DIRECTORY}/purge-installed" "$(dirname "$0")"
       
       #message
       echo -e "It appears the 3G/1G kernel has been built and installed successfully.\nPlease reboot and install the Wine app again."
