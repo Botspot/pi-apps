@@ -27,4 +27,15 @@ echo "adding key..."
 wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
 
 echo "installing box86..."
-"${DIRECTORY}/pkg-install" "box86" "$(dirname "$0")" || exit 1
+apt download box86 || error "Failed to download box86 package!"
+DEB="$(basename box86*.deb)"
+DEBDIR="$(echo $DEB | sed 's/.deb//')"
+
+dpkg-deb -R $DEB $DEBDIR
+rm $DEBDIR/DEBIAN/postinst || error "Failed to remove '$DEBDIR/DEBIAN/postinst' file!"
+rm $DEB # doesn't matter if fails
+dpkg-deb -b $DEBDIR $DEB
+"${DIRECTORY}/pkg-install" "$(pwd)/$DEB" "$(dirname "$0")" || exit 1
+echo 'restarting systemd-binfmt...'
+sudo systemctl restart systemd-binfmt || error "Failed to restart systemd-binfmt!"
+
