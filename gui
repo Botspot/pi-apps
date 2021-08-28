@@ -102,18 +102,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#remove old mcpi repositories
-runonce <<"EOF"
-  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -qF 'https://mcpirevival.tk/mcpi-packages' ;then
-    echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
-  elif [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -qF 'https://mcpi-revival.github.io/mcpi-packages/debs' ;then
-    echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
-  fi
-  if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
-    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
-  fi
-EOF
-
 #ensure curl is installed
 runonce <<"EOF"
   if ! command -v curl >/dev/null ;then
