@@ -125,6 +125,14 @@ Please look at the above errors to see how long you have to wait."
   if echo "$errors" | grep -q "The list of sources could not be read." ;then
     message_to_user "One or more sources contain a typo. Before APT or Pi-Apps will work, you must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo."
   fi
+  
+  #check for "files list file for package 'package-name' is missing final newline"
+  if echo "$errors" | grep -q "files list file for package .* is missing final newline" ;then
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help.
+Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecoverable-fatal-error-aborting-files-list-file-for-package-linux-ge"
+  fi
 }
 
 echo "Running pkg-install..."
