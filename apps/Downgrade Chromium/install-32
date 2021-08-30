@@ -21,16 +21,18 @@ VERSIONS="65
 if [ -z "$1" ];then
   LIST="$(echo "$VERSIONS" | sed 's/^/false\nChromium version /g')"
   
-  output="$(echo "$LIST" | yad --center --title="Choose Chromium version" --height=290 --no-headers \
-    --text="  Which Chromium version to install today?  " \
-    --radiolist --list --column=Tick --column=version --separator='\n' --print-column=2 \
-    --window-icon="$(dirname "$0")/icon-64.png" \
-    --button=!${DIRECTORY}/icons/check.png!OK:0
-  )"
-  button=$?
-  
-  [ $button != 0 ] && error "exited chromium version selection list"
-  
+  output=''
+  while [ -z "$output" ];do
+    output="$(echo "$LIST" | yad --center --title="Choose Chromium version" --height=290 --no-headers \
+      --text="  Which Chromium version to install today?  " \
+      --radiolist --list --column=Tick --column=version --separator='\n' --print-column=2 \
+      --window-icon="$(dirname "$0")/icon-64.png" \
+      --button=!${DIRECTORY}/icons/check.png!OK:0
+    )"
+    button=$?
+    
+    [ $button != 0 ] && error "exited chromium version selection list"
+  done
   #get just chromium version NUMBER
   output="$(echo "$output" | awk '{print $3}')"
 else
