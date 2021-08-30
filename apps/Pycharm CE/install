@@ -12,7 +12,7 @@ downloadlink=https://download-cf.jetbrains.com/python/pycharm-community-2020.3.3
 name=pycharm-community
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk gcc" "$(dirname "$0")" || exit 1
 
 echo "Downloading pycharm-community-2020.3.3.tar.gz"
 rm -f $name.tar.gz
