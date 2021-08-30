@@ -13,7 +13,7 @@ sudo apt install -y snapd || error "APT failed to install snapd"
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
 sudo systemctl start snapd.service
-if [ !? != 0 ];then
+if [ $? != 0 ];then
   echo "Unable to start snapd.service. Running debug..."
   echo "Running 'systemctl status snapd.service'"
   systemctl status snapd.service
