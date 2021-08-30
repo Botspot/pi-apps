@@ -133,6 +133,18 @@ Please look at the above errors to see how long you have to wait."
 Try Googling the above errors, or ask the Pi-Apps developers for help.
 Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecoverable-fatal-error-aborting-files-list-file-for-package-linux-ge"
   fi
+  
+  #check for "Command line option --allow-releaseinfo-change is not understood"
+  if echo "$errors" | grep -q "Command line option --allow-releaseinfo-change is not understood" ;then
+    message_to_user "The Debian Project recently upgraded from Buster to version Bullseye. As a result, all Raspberry Pi OS Buster users will receive APT errors saying the repositories changed from 'stable' to 'oldstable'.
+
+This error broke pi-apps. To fix it, the Pi-Apps developers added something to the 'sudo apt update' command: --allow-releaseinfo-change.
+This flag allows the repository migration to succeed, therefore allowing Pi-Apps to work again.
+
+Unfortunately for you, your operating system is too old for apt to understand this flag we added. Please upgrade your operating system for a better experience. Raspbian Stretch is unsupported and many apps will not install.
+
+Please flash your SD card with the latest release of Raspberry Pi OS: https://www.raspberrypi.org/software"
+  fi
 }
 
 echo "Running pkg-install..."
