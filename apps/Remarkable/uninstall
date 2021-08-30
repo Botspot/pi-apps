@@ -7,17 +7,4 @@ function error {
   exit 1
 }
 
-#to set $arch variable
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-if [ "$arch" == 64 ];then
-  #COMMANDS TO UNINSTALL 64BIT
-  "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-  
-elif [ "$arch" == 32 ];then
-  #COMMANDS TO UNINSTALL 32BIT
-  sudo apt purge remarkable -y || error "Failed to purge remarkable package!"
-  sudo apt autoremove -y
-  
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
