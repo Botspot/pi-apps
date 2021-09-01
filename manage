@@ -30,8 +30,8 @@ EOF
 ) &>/dev/null &
 
 if dpkg -l box86 &>/dev/null ;then
-  sudo apt purge -y box86
-  sudo apt install -y box86-no-binfmt-restart
+  sudo apt purge -y box86 1&>2
+  sudo apt install -y box86-no-binfmt-restart 1>&2
 fi
 
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
