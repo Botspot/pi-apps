@@ -23,7 +23,7 @@ fi
 sudo snap refresh
 sudo systemctl restart snapd.service || error "Unable to restart snapd.service"
 
-sudo snap install core20 || error "Snapd was unable to install core20"
+sudo snap install core18 || error "Snapd was unable to install core20"
 sudo snap install core || error "Snapd was unable to install core"
 sudo snap install snapd || error "Snapd was unable to install snapd"
 
