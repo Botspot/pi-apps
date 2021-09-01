@@ -375,20 +375,26 @@ runonce() { #run command only if it's never been run before. Useful for one-time
 
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   echo -n "Waiting until APT locks are released... "
-  while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-    sleep 0.5
+  #while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+  #  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
+  #    sleep 0.5
+  #  done
+  #fi
+  
+  while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ;do
+    sleep 1
   done
-  while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
-    sleep 0.5
-  done
-  while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-    sleep 0.5
-  done
-  if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-    while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-      sleep 0.5
-    done
-  fi
+  sleep 0.5
+  
   echo "Done"
 }
 
