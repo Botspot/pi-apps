@@ -7,6 +7,10 @@ function error {
   exit 1
 }
 
+if dpkg -l box86 &>/dev/null ;then
+  sudo apt purge -y box86
+fi
+
 sudo rm -f /etc/apt/sources.list.d/box86.list
 echo "Adding box86 repo..."
 sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
