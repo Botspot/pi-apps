@@ -27,7 +27,6 @@ if [ $? != 0 ];then
   error "wget failed to download 99bionic-updates config file!"
 fi
 
-source "${DIRECTORY}/api"
 "${DIRECTORY}/api" apt_lock_wait
 
 echo "Running 'sudo apt update'..."
