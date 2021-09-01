@@ -17,10 +17,12 @@ make -j8 || error 'Failed to compile'
 sudo make install || error 'Failed to run "sudo make install"'
 
 if ! sudo systemctl restart systemd-binfmt ;then
-  echo "Error: systemd-binfmt failed to restart. Running debug..."
+  echo "WARNING: systemd-binfmt failed to restart. Running debug..."
   echo 'systemctl status systemd-binfmt.service'
   systemctl status systemd-binfmt.service
   echo 'systemctl status systemd-binfmt.service'
   journalctl -xe | cat
-  error "Exiting now because systemd-binfmt failed to restart."
+  echo "Exiting this script as successful, but consider sending the above errors to Pi-Apps developers."
 fi
+
+exit 0
