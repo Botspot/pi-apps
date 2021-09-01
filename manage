@@ -14,6 +14,7 @@ if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
+set -a #make all functions in the api available to apps
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 #remove old mcpi repositories - this runonce is here so that terminal-only users will still receive the fix.

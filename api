@@ -496,6 +496,62 @@ ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
 \e[0m\e[0m"
 }
 
+wget() { #this function intercepts all wget commands being used in app scripts. It uses aria2c if possible.
+  local file=''
+  local url=''
+  local use=aria2c
+  if command -v aria2c; then
+    #convert wget arguments to newline-separated list
+    local IFS=$'\n'
+    local opts="$(IFS=$'\n'; echo "$*")"
+    for opt in $opts ;do
+      if [[ "$opt" == '-'* ]]; then
+        #this opt is the beginning of a flag
+        if [ "$opt" == '-qO' ] || [ "$opt" == '-O' ] || [ "$opt" == '-q' ]; then
+          true
+        else #any other wget command-flags other than '-qO', '-O', '-q'
+          use=wget
+          break
+        fi
+      elif [[ "$opt" == *'://'* ]]; then
+        #this opt is web address
+        url="$opt"
+      elif [[ "$opt" == '/'* ]]; then
+        #this opt is file output
+        if [ -z "$file" ];then
+          file="$opt"
+        else #file var already populated
+          use=wget
+          break
+        fi
+      else
+        #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
+        if [ -z "$file" ];then
+          file="$(pwd)/${opt}"
+        else #file var already populated
+          use=wget
+          break
+        fi
+      fi
+    done
+    
+  else
+    #aria2c command not found
+    use=wget
+  fi
+  
+  if [ "$use" == wget ];then
+    #run the true wget binary with all this function's args
+    command wget "$@"
+  elif [ "$use" == aria2c ];then
+    #make default filename if $file empty
+    if [ -z "$file" ];then
+      file="$(pwd)/$(basename "$url")"
+    fi
+    aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+  fi
+}
+
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
   if [ ! -z "$1" ];then
