@@ -122,6 +122,7 @@ wget -O l10n.deb "$l10n_url" || error "Failed to download $l10n_url"
 wget -O ffmpeg_extra.deb "$ffmpeg_extra_url" || error "Failed to download $ffmpeg_extra_url"
 
 echo "Installing the packages..."
+"${DIRECTORY}/api" apt_lock_wait
 sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" || error "APT failed to install the packages"
 rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
 
