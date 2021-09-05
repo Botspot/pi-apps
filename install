@@ -14,7 +14,7 @@ fi
 command -v apt >/dev/null || error "apt: command not found. Most likely this system is not running Debian."
 #Ensure running arm processor
 if uname -m | grep -q 'x86' ;then
-  error "Pi-Apps is not not supported on non-arm processor architectures like amd64 and i386."
+  error "Pi-Apps is not not supported on non-arm processor architectures like amd64 and i386. You may be interested in Pi-Apps x86, a unofficial fork of Pi-Apps for x64 and x86 systems: https://github.com/Pi-Apps-Recreates/pi-apps-x86"
 fi
 
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
