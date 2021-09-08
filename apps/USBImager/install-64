@@ -8,14 +8,14 @@ function error {
 }
 
 #change version to latest each time
-VER="1.0.7"
+VER="1.0.8"
 
 rm -rf ~/usbimager
 mkdir -p ~/usbimager
 cd ~/usbimager
 
 echo "Downloading..."
-wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.7-aarch64-linux-x11.zip || error "Failed to download usbimager.zip!"
+wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${VER}-aarch64-linux-x11.zip || error "Failed to download usbimager.zip!"
 
 echo "Extracting..."
 unzip $(pwd)/usbimager.zip || error "Failed to extract!"
