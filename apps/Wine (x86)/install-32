@@ -110,7 +110,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       #download precompiled kernel
       cd $HOME
       echo "Downloading precompiled kernel..."
-      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/4.1/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
+      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/5/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
       #extract precompiled kernel
       echo "Extracting prebuilt kernel..."
       sleep 0.5 # so user has time to read what is happening
