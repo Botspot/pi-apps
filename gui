@@ -169,9 +169,9 @@ uninstall() {
 }
 
 
-if [ ! -f "${DIRECTORY}/data/announcements" ] || [ -z $(find "${DIRECTORY}/data/announcements" -mtime +1 -print) ]; then
-  motd="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
-  echo "$motd" > "${DIRECTORY}/data/announcements"
+if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
+  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -O "${DIRECTORY}/data/announcements"
+  motd="$(cat "${DIRECTORY}/data/announcements")"
 else
   motd="$(cat "${DIRECTORY}/data/announcements")"
 fi
