@@ -8,7 +8,9 @@ function error {
 }
 
 if [ -f "$HOME/.conkyrc" ]; then
-  error "Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again."
+  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again.
+▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
 fi
 
 # Get dependencies
