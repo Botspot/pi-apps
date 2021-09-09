@@ -145,6 +145,13 @@ Unfortunately for you, your operating system is too old for apt to understand th
 
 Please flash your SD card with the latest release of Raspberry Pi OS: https://www.raspberrypi.org/software"
   fi
+  
+  #check for "installed package-name package post-installation script subprocess returned error exit status 10"
+  if echo "$errors" | grep -q "installed .* post-installation script subprocess returned error exit status 10" ;then
+    message_to_user "Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
+
+Perhaps reinstalling the package would help?"
+  fi
 }
 
 echo "Running pkg-install..."
