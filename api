@@ -500,7 +500,7 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
   local file=''
   local url=''
   local use=aria2c
-  if command -v aria2c; then
+  if command -v aria2c >/dev/null; then
     #convert wget arguments to newline-separated list
     local IFS=$'\n'
     local opts="$(IFS=$'\n'; echo "$*")"
