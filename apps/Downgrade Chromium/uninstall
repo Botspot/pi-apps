@@ -51,6 +51,7 @@ echo "chromium-browser-l10n install" | sudo dpkg --set-selections
 echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections
 
 echo "Upgrading Chromium..."
+"${DIRECTORY}/api" apt_lock_wait
 sudo apt upgrade -y --allow-downgrades chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra rpi-chromium-mods
 
 
