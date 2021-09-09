@@ -171,11 +171,9 @@ uninstall() {
 #Determine message of the day. If announcements file missing or over a day old, download it.
 if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
   wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
-  motd="$(cat "${DIRECTORY}/data/announcements")"
-else
-  motd="$(cat "${DIRECTORY}/data/announcements")"
 fi
-motd="$(echo -e "$motd" | shuf -n 1)"
+#retrieve a random line from the announcements file for this session
+motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
