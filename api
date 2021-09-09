@@ -548,7 +548,13 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
     if [ -z "$file" ];then
       file="$(pwd)/$(basename "$url")"
     fi
-    aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+    
+    #suppress output if -q flag passed
+    if echo "$@" | grep -q '\-q' ;then
+      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1 >/dev/null
+    else
+      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+    fi
   fi
 }
 
