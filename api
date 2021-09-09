@@ -505,7 +505,7 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
     local IFS=$'\n'
     local opts="$(IFS=$'\n'; echo "$*")"
     for opt in $opts ;do
-      if [[ "$opt" == '-'* ]]; then
+      if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
         #this opt is the beginning of a flag
         if [ "$opt" == '-qO' ] || [ "$opt" == '-O' ] || [ "$opt" == '-q' ]; then
           true
