@@ -7,6 +7,13 @@ function error {
   exit 1
 }
 
+if ! cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g' | grep -q 'Raspberry Pi' ;then
+  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+CommanderPi can only be installed on Raspberry Pi devices.
+Your device is: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')
+▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+fi
+
 rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
 
 # Get dependencies
