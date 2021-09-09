@@ -390,7 +390,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #  done
   #fi
   
-  while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ;do
+  while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend &>/dev/null ;do
     sleep 1
   done
   sleep 0.5
