@@ -168,9 +168,9 @@ uninstall() {
   "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
 }
 
-
+#Determine message of the day. If announcements file missing or over a day old, download it.
 if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
-  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -O "${DIRECTORY}/data/announcements"
+  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
   motd="$(cat "${DIRECTORY}/data/announcements")"
 else
   motd="$(cat "${DIRECTORY}/data/announcements")"
