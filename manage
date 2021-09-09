@@ -36,6 +36,7 @@ EOF
 ) &>/dev/null
 
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
+
 #remove week-old logfiles
 find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
@@ -106,8 +107,8 @@ $app"
     for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
       logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
       
-      #if logfile detected, exists, and is not empty, ask permission to send error report
-      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ];then
+      #if logfile detected, exists, is not empty, and does not contain a bunch of arrows (user-fault error) ask permission to send error report
+      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ] && ! grep -qF '▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼' "$logfile" ;then
         send_error_report_gui "$logfile" "<b>$app</b> failed to ${action}."
       fi
     done
