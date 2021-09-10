@@ -42,9 +42,10 @@ if [ $(date +%s) -gt $(($(cd "$DIRECTORY"; git show -s --format=%ct) + 7776000))
   cd $HOME
   rm -rf ~/pi-apps-forced-update
   git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && mv -f "${DIRECTORY}/data" ~/pi-apps-forced-update/data && rm -rf "$DIRECTORY" && mv -f ~/pi-apps-forced-update "${DIRECTORY}/data"
-  temp_logfile="$(mktemp)"
-  echo -e "Silently updated a 3-months-outdated pi-apps install.\n$(get_device_info)" >> temp_logfile
+  temp_logfile="$(mktemp).txt"
+  echo -e "Silently updated a 3-months-outdated pi-apps install.\n$(get_device_info)" >> "$temp_logfile"
   send_error_report "$temp_logfile" 1>&2
+  rm -f "$temp_logfile"
 fi
 }
 
