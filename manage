@@ -39,14 +39,19 @@ EOF
 {
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
 if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
-  echo "Your Pi-Apps github repository is somehow 3 months out-of-date. Downloading fresh version of pi-apps..." 1>&2
+  yad --icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons \
+    --text="Your Pi-Apps github repository is somehow 3 months out-of-date."$'\n'"Downloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old..." &
+  sleep 1
+  clear
+  echo "\nYour Pi-Apps github repository is somehow 3 months out-of-date.\nDownloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && mv -f "${DIRECTORY}/data" ~/pi-apps-forced-update/data && rm -rf "$DIRECTORY" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   temp_logfile="$(mktemp).txt"
   echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo:$(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
   send_error_report "$temp_logfile" 1>&2
   rm -f "$temp_logfile"
+  sleep 10
 fi
 }
 
