@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo rm /usr/bin/raspi2png
+sudo rm -f /usr/bin/raspi2png
