@@ -35,13 +35,16 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 EOF
 ) &>/dev/null
 
-#Forcibly re-download repo if github repository is over 3 months out of date
+#Silently re-download repo if github repository is over 3 months out of date
 {
 if [ $(date +%s) -gt $(($(cd "$DIRECTORY"; git show -s --format=%ct) + 7776000)) ];then
   echo "Your Pi-Apps github repository is somehow 3 months out-of-date. Downloading fresh version of pi-apps..." 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update && mv -f "${DIRECTORY}/data" ~/pi-apps-forced-update/data && rm -rf "$DIRECTORY" && mv -f ~/pi-apps-forced-update "${DIRECTORY}/data"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && mv -f "${DIRECTORY}/data" ~/pi-apps-forced-update/data && rm -rf "$DIRECTORY" && mv -f ~/pi-apps-forced-update "${DIRECTORY}/data"
+  temp_logfile="$(mktemp)"
+  echo -e "Silently updated a 3-months-outdated pi-apps install.\n$(get_device_info)" >> temp_logfile
+  send_error_report "$temp_logfile" 1>&2
 fi
 }
 
