@@ -305,23 +305,6 @@ elif [ "$1" == 'check-all' ];then
   if [ "$2" == 'installedonly' ];then
     # If $2 is 'installedonly', then only check for updates for those apps that are installed
     installedonly=1
-    
-  elif [ "$2" == 'nogenerate' ];then
-    # If $2 is 'nogenerate', then don't hash anything or git-clone anything. Simply reads out data found in data/update-status folder in the same app-per-newline format.
-    echo -e "\e[97mThese apps can be updated:" 1>&2
-    echo "${updatable}"
-    IFS=$'\n'
-    for app in $(list_apps all);do
-      
-      updatestatus="$(cat "${DIRECTORY}/data/update-status/${app}" 2>/dev/null)"
-      if [ "$updatestatus" == 'new' ] || [ "$updatestatus" == 'updatable' ];then
-        #if current app's update-status is 'new' or 'updatable', then echo it.
-        echo "$app"
-      fi
-      
-    done
-   exit 0 #the lines above have displayed a list of apps already.
-   
   fi #end of checking for hidden flags
   
   #if the updater script exists in update folder, then just git pull to save time
@@ -358,21 +341,23 @@ elif [ "$1" == 'check-all' ];then
     
     if [ "$newhash" == "$oldhash" ];then
       #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
-      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
+      #echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
+      true
     else
       if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
-        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
+        #echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
+        #echo 'new' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
 ${app}"
       elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
         #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
-        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
+        #echo 'local' > "${DIRECTORY}/data/update-status/${app}"
+        true
         #in this case, do not add to updatable list
       else
-        echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
-        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
+        #echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
+        #echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
 ${app}"
