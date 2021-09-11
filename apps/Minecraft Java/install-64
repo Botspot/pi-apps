@@ -7,12 +7,8 @@ function error {
   exit 1
 }
 
-#use the error function often!
-#If a certain command is necessary for installation to continue, then add this to the end of it:
-# || error 'reason'
-#example below:
-
 #Download java and launcher
+rm -rf ~/Minecraft || sudo rm -rf ~/Minecraft || error "Failed to first remove ~/Minecraft folder!"
 mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/chunky-milk/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
 
 #Move launcher to /usr/share/
