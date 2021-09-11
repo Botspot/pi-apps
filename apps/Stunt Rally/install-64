@@ -7,8 +7,6 @@ function error {
   exit 1
 }
 
-source "${DIRECTORY}/api"
-
 #get dependencies
 #DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
 #TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
@@ -25,12 +23,14 @@ fi
 
 #compile stunt rally
 cd $HOME
-git clone --depth=1 git://github.com/stuntrally/stuntrally.git stuntrally || error "Failed to clone stuntrally repo!"
+rm -rf ~/stuntrally || error "Failed to first remove $HOME/stuntrally"
+git clone --depth=1 https://github.com/stuntrally/stuntrally stuntrally || error "Failed to clone stuntrally repo!"
 cd stuntrally/data || error "Failed to change directory to '$DIRECTORY/stuntrally/data'!"
-git clone --depth=1 git://github.com/stuntrally/tracks.git tracks || error "Failed to clone tracks repo!"
+git clone --depth=1 https://github.com/stuntrally/tracks tracks || error "Failed to clone tracks repo!"
 cd .. || error "Failed to go one directory up!"
-mkdir build || error "Failed to create '$DIRECTORY/stuntrally/build' directory!"
-cd build || error "Failed to change directory to '$DIRECTORY/stuntrally/build'!"
+
+mkdir build || error "Failed to create '$HOME/stuntrally/build' directory!"
+cd build || error "Failed to change directory to '$HOME/stuntrally/build'!"
 cmake .. || error "Failed to run 'cmake ..'!"
 make -j$(nproc) || make || error "Failed to run 'make'!"
 #sudo make install
@@ -50,7 +50,8 @@ dpkg-deb -b $DEBDIR || sudo dpkg-deb -b $DEBDIR || error "Failed to repack deb!"
 
 #install the deb
 "${DIRECTORY}/api" apt_lock_wait
-sudo dpkg -i $DEBNAME; sudo apt install -f -y || error "Failed to install the deb!"
+sudo apt install -f -y $DEBNAME || error "Failed to install the deb!"
+rm -rf ~/stuntrally
 
 #fix the menu shortcut icons
 sudo rm /usr/share/applications/stuntrally.desktop &>/dev/null
