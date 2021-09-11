@@ -228,6 +228,7 @@ while true;do
         echo "output variable empty!"
         yad --center --title='Pi-Apps' --width=310 \
           --window-icon="${DIRECTORY}/icons/logo.png" \
+          --image="${DIRECTORY}/icons/mind-reading.png" \
           --text="Mind reading is not supported.
     (You didn"\'"t select an App)" \
           --button=OK:0
