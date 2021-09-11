@@ -341,23 +341,23 @@ elif [ "$1" == 'check-all' ];then
     
     if [ "$newhash" == "$oldhash" ];then
       #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
-      #echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
+      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
       true
     else
       if [ ! -d "${DIRECTORY}/apps/${app}" ];then
         #echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
-        #echo 'new' > "${DIRECTORY}/data/update-status/${app}"
+        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
 ${app}"
       elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
         #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
-        #echo 'local' > "${DIRECTORY}/data/update-status/${app}"
+        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
         true
         #in this case, do not add to updatable list
       else
         #echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
-        #echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
+        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
 ${app}"
