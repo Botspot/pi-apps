@@ -9,6 +9,10 @@ function error {
 
 "${DIRECTORY}/api" apt_lock_wait
 
+if test -f "/etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list"; then
+  sudo rm /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+fi
+
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
