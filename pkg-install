@@ -162,6 +162,19 @@ Google the errors above this message, or ask in the Raspberry Pi Forums.
 https://www.raspberrypi.org/forums"
   fi
   
+  #check for "dpkg: error processing package nginx-full (--configure):"
+  if echo "$errors" | grep -qF "error processing package nginx-full" ;then
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your nginx-full package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall nginx-full"
+  fi
+  
+  #check for "W: Did not understand pin type releace"
+  if echo "$errors" | grep -qF "Did not understand pin type" ;then
+    message_to_user "This error was not caused by Pi-Apps. Looks like there is a typo in your /etc/apt/sources.list"
+  fi
+  
   #no need for this function to exit with return code 1 just because the last if statement evaluated to 1
   exit 0
 }
