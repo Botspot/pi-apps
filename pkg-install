@@ -152,6 +152,18 @@ Please flash your SD card with the latest release of Raspberry Pi OS: https://ww
 
 Perhaps reinstalling the package would help?"
   fi
+  
+  #check for "installed raspberrypi-kernel package post-installation script subprocess returned error exit status 1"
+  if echo "$errors" | grep -q "installed raspberrypi-kernel package post-installation script subprocess returned error exit status 1" ;then
+    message_to_user "The raspberrypi-kernel package on your system is causing problems.
+Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
+
+Google the errors above this message, or ask in the Raspberry Pi Forums.
+https://www.raspberrypi.org/forums"
+  fi
+  
+  #no need for this function to exit with return code 1 just because the last if statement evaluated to 1
+  exit 0
 }
 
 echo "Running pkg-install..."
