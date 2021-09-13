@@ -269,7 +269,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
 app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
   [ -z "$1" ] && error 'app_status(): requires an argument.'
-  [ ! -d "$DIRECTORY/apps/$1" ] && error "app_status(): app $1 doesn't exist!" #check if app exists
+  #don't check if app exists, it may be a new app in an update
   
   if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
@@ -284,8 +284,8 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   #detect which installation script exists and get the hash for that one
   scriptname="$(script_name_cpu "$1")"
   
-  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" | awk '{print $1}')
-  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')
+  oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   
   #if install script was changed                              #if installed already
   if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${1}")" == 'installed' ];then
@@ -390,7 +390,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #  done
   #fi
   
-  while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend &>/dev/null ;do
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
     sleep 1
   done
   sleep 0.5
