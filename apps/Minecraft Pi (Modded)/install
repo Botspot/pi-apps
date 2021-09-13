@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Standard pi-apps functions and variables
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
 function error {
@@ -7,8 +8,10 @@ function error {
   exit 1
 }
 
+# Wait for apt locks to be opened
 "${DIRECTORY}/api" apt_lock_wait
 
+# Remove old depricated packagecloud repo
 if test -f "/etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list"; then
   sudo rm /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
 fi
@@ -16,12 +19,13 @@ fi
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
+# Install mcpi-packages apt repo
 wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
 
-# Choose MCPIL to use
+# Choose launcher to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
 "
-options=("gMCPIL (recommended)" "jMCPIL (better GUI)" "Quit")
+options=("gMCPIL (recommended, written in Vala and C)" "jMCPIL (better looking GUI but requires Java)")
 select opt in "${options[@]}"
 do
   case $opt in
@@ -31,11 +35,17 @@ do
     "${options[1]}")
         MCPIL="jmcpil"
         break;;
-    "${options[2]}")
-        exit 0;;
     *) echo "Invalid option: $REPLY";;
   esac
 done
 
-"${DIRECTORY}/pkg-install" "$MCPIL python3-pip" "$(dirname "$0")" || error "Failed to install ${MCPIL} and python3-pip packages!"
-pip3 install mcpi || error "The pip3 command failed to install mcpi!"
+# Install the launcher
+"${DIRECTORY}/pkg-install" "$MCPIL" "$(dirname "$0")" || error "Failed to install ${MCPIL} package!"
+
+read -p "Do you wish to install the MCPI API for the ability to run Python API mods via the mod?" choice
+case "$choice" in 
+  y|Y ) "${DIRECTORY}/pkg-install" "python3-pip" "$(dirname "$0")" || error "Failed to install python3-pip which is needed to install the API!" && pip3 install mcpi || error "The pip3 command failed to install the MCPI API!";;
+  n|N ) echo "Not installing API... proceeding";;
+  * ) echo "Invalid option! Please type 'y' or 'n'";;
+esac
+
