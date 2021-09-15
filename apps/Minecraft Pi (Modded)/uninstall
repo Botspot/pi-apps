@@ -10,3 +10,5 @@ function error {
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpi-revival.{list,gpg}
+
+echo "Not removing user data! Manually remove it with 'rm -rf ~/.minecraft-pi'. The folder contains mods, screenshots, skins, worldfiles, and overrides."
