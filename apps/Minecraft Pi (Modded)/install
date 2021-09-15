@@ -23,9 +23,9 @@ sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
 
 # Choose launcher to use
-PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
+PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy. You can also go to the github links for the respective launchers to see how they look.
 "
-options=("gMCPIL (recommended, written in Vala and C)" "jMCPIL (better looking GUI but requires Java)")
+options=("gMCPIL (recommended, written in Vala and C) (https://github.com/MCPI-Revival/gMCPIL)" "jMCPIL (better looking GUI but requires Java) (https://github.com/MCPI-Revival/jMCPIL)")
 select opt in "${options[@]}"
 do
   case $opt in
