@@ -8,13 +8,13 @@ function error {
 }
 
 #Defining Variables
-downloadlink=https://download-cf.jetbrains.com/python/pycharm-community-2020.3.3.tar.gz
+downloadlink=https://download-cf.jetbrains.com/python/pycharm-community-2021.2.1.tar.gz
 name=pycharm-community
 
 # Get dependencies
 "${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk gcc" "$(dirname "$0")" || exit 1
 
-echo "Downloading pycharm-community-2020.3.3.tar.gz"
+echo "Downloading $(basename "$downloadlink")"
 rm -f $name.tar.gz
 wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
 
@@ -34,7 +34,7 @@ git clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to dow
 cd ~/pty4j/native
 gcc -fPIC -c *.c || error "command failed: gcc -fPIC -c *.c"
 gcc -shared -o libpty.so *.o || error "command failed: gcc -shared -o libpty.so *.o"
-sudo mkdir /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm"
+sudo mkdir -p /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm"
 sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/$name/lib/pty4j-native/linux/arm"
 rm -rf ~/pty4j
 cd ~/
@@ -45,8 +45,8 @@ Type=Application
 Name=PyCharm Community Edition
 Icon=/opt/$name/bin/pycharm.svg
 Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/$name/bin/pycharm.sh"\""
-Comment=Python IDE for Professional Developers
-Categories=Development;IDE;
+Comment=Python IDE
+Categories=Development;IDE;Programming;
 Terminal=false
 StartupWMClass=jetbrains-pycharm-ce
 StartupNotify=true" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
