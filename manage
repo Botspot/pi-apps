@@ -307,18 +307,22 @@ elif [ "$1" == 'check-all' ];then
     installedonly=1
   fi #end of checking for hidden flags
   
+  echo -n "Checking for online changes... " 1>&2
+  
   #if the updater script exists in update folder, then just git pull to save time
   if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
-    echo -n "The 'git pull' command says: " 1>&2
-    git pull 1>&2 || rm -rf "${DIRECTORY}/update"
-  fi
+    git pull || rm -rf "${DIRECTORY}/update"
+  fi | grep -v "Already up to date." 1>&2
+  
   #re-check and if updater script does not exist then do a git clone
   if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
     rm -rf "${DIRECTORY}/update"
     mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
     git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2|| error "failed to clone repository to the update directory!"
   fi
+  
+  echo "Done" 1>&2
   
   if [ $installedonly == 1 ];then
     #installedonly flag enabled. Remove apps that are uninstalled, disabled, or corrupted
@@ -334,7 +338,7 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    #echo "app: $app"
+    echo -en "Scanning apps... $app\033[0K\r" 1>&2
     newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
     oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
     #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
@@ -372,6 +376,8 @@ ${app}"
   if [ -z "$updatable" ];then
     updatable='.'
   fi
+  
+  echo "Done" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
