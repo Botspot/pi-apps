@@ -108,7 +108,16 @@ runonce <<"EOF"
     sudo apt install -y curl
   fi
 EOF
+
+#install aria2c for faster downloading
+runonce <<"EOF"
+  if ! command -v aria2c >/dev/null ;then
+    sudo apt install -y aria2
+  fi
+EOF
 ) &
+
+
 
 install() {
   app="$1" #one app name per line
