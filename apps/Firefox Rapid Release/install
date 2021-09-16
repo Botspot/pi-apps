@@ -13,7 +13,7 @@ echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /
 
 # Add ubuntu keyring
 echo "Signing ubuntu repository..."
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3B4FE6ACC0B21F32
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
   error "Failed to sign the bionic-updates repository!"
@@ -27,8 +27,12 @@ if [ $? != 0 ];then
   error "wget failed to download 99bionic-updates config file!"
 fi
 
+"${DIRECTORY}/api" apt_lock_wait
+
 echo "Running 'sudo apt update'..."
 sudo apt update || error "Failed to run 'sudo apt update'!"
+
+"${DIRECTORY}/api" apt_lock_wait
 
 echo "Installing Firefox package..."
 sudo apt install -t bionic-updates firefox -y || error "Failed to install firefox!"

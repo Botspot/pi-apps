@@ -10,6 +10,11 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
 fi
 
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ];then
+  echo "api: DIRECTORY variable must be set to valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
+
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
@@ -264,6 +269,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
 app_status() { #Gets the $1 app's current status. installed, uninstalled, corrupted, disabled
   
   [ -z "$1" ] && error 'app_status(): requires an argument.'
+  #don't check if app exists, it may be a new app in an update
   
   if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
@@ -278,8 +284,8 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   #detect which installation script exists and get the hash for that one
   scriptname="$(script_name_cpu "$1")"
   
-  oldinstallhash=$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" | awk '{print $1}')
-  newinstallhash=$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')
+  oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   
   #if install script was changed                              #if installed already
   if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${1}")" == 'installed' ];then
@@ -369,21 +375,51 @@ runonce() { #run command only if it's never been run before. Useful for one-time
 
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   echo -n "Waiting until APT locks are released... "
-  while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-    sleep 0.5
+  #while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
+  #  sleep 0.5
+  #done
+  #if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+  #  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
+  #    sleep 0.5
+  #  done
+  #fi
+  
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+    sleep 1
   done
-  while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
-    sleep 0.5
-  done
-  while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-    sleep 0.5
-  done
-  if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-    while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-      sleep 0.5
-    done
-  fi
+  sleep 0.5
+  
   echo "Done"
+}
+
+is_supported_system() {
+  if uname -m | grep -q 'x86' || uname -m | grep -q 'i686' || uname -m | grep -q 'i386';then
+    echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
+    return 1
+  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'stretch\|wheezy\|jessie';then
+    echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
+    return 1
+  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'manjaro';then
+    echo "Pi-Apps is not supported on Manjaro."
+    return 1
+  elif [[ "$(uname -m)" == armv6* ]];then
+    echo "Pi-Apps is not supported on ARMv6 Raspberry Pi boards. Expect some apps to fail."
+    return 1
+  elif [ "$(id -u)" == 0 ]; then
+    echo "Pi-Apps is not designed to be run as root user."
+    return 1
+  elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((1*1024*1024*1024)) ];then
+    echo "Your system drive has less than 1GB of free space. Watch out for "\""disk full"\"" errors."
+    return 1
+  else
+    return 0
+  fi
 }
 
 format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
@@ -397,11 +433,7 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
-  
-  if [ "$(cat /proc/self/cgroup | grep '^0:' | grep -o 'session-.*\.')" != 'session-1.' ];then
-    echo "OS is running in a container."
-  fi
-  
+  [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
   echo "Kernel: $(uname -m) $(uname -r)"
   echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
   
@@ -413,10 +445,6 @@ get_device_info() { #returns information about current install and hardware
     echo "Language: $LANG"
   elif [ ! -z "$LC_ALL" ];then
     echo "Language: $LC_ALL"
-  fi
-  
-  if [ -f "${DIRECTORY}/gui" ];then
-    echo "Pi-Apps gui script datestamp: $(date -r "${DIRECTORY}/gui" +'%x %X')"
   fi
   
 }
@@ -469,6 +497,68 @@ ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ 
 ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
 \e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
 \e[0m\e[0m"
+}
+
+wget() { #this function intercepts all wget commands being used in app scripts. It uses aria2c if possible.
+  local file=''
+  local url=''
+  local use=aria2c
+  if command -v aria2c >/dev/null; then
+    #convert wget arguments to newline-separated list
+    local IFS=$'\n'
+    local opts="$(IFS=$'\n'; echo "$*")"
+    for opt in $opts ;do
+      if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
+        #this opt is the beginning of a flag
+        if [ "$opt" == '-qO' ] || [ "$opt" == '-O' ] || [ "$opt" == '-q' ]; then
+          true
+        else #any other wget command-flags other than '-qO', '-O', '-q'
+          use=wget
+          break
+        fi
+      elif [[ "$opt" == *'://'* ]]; then
+        #this opt is web address
+        url="$opt"
+      elif [[ "$opt" == '/'* ]]; then
+        #this opt is file output
+        if [ -z "$file" ];then
+          file="$opt"
+        else #file var already populated
+          use=wget
+          break
+        fi
+      else
+        #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
+        if [ -z "$file" ];then
+          file="$(pwd)/${opt}"
+        else #file var already populated
+          use=wget
+          break
+        fi
+      fi
+    done
+    
+  else
+    #aria2c command not found
+    use=wget
+  fi
+  
+  if [ "$use" == wget ];then
+    #run the true wget binary with all this function's args
+    command wget "$@"
+  elif [ "$use" == aria2c ];then
+    #make default filename if $file empty
+    if [ -z "$file" ];then
+      file="$(pwd)/$(basename "$url")"
+    fi
+    
+    #suppress output if -q flag passed
+    if echo "$@" | grep -q '\-q' ;then
+      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1 >/dev/null
+    else
+      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+    fi
+  fi
 }
 
 #if this script is being run standalone, not sourced

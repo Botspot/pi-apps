@@ -1,11 +1,5 @@
 #!/bin/bash
 
-##
-## Config
-##
-
-set -e
-
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
 function error {
@@ -13,26 +7,12 @@ function error {
   exit 1
 }
 
-# Wait for apt lock to be released
-i=0
-while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock > /dev/null 2>&1
-do
-  case $(($i % 4)) in
-    0) j="-";;
-    1) j="\\";;
-    2) j="|";;
-    3) j="/";;
-  esac
-  printf "\r[$j] Waiting for other package managers to finish..."
-  sleep 0.5
-  ((i+=1))
-done
-[[ $i -gt 0 ]] && printf "Done.\n"
+"${DIRECTORY}/api" apt_lock_wait
 
 # Remove old MCPILs
-sudo apt-get remove -y mcpil-r mcpil || true
+sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | sudo bash - || error "Failed to install APT repo!"
+wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
 
 # Choose MCPIL to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
@@ -42,15 +22,16 @@ select opt in "${options[@]}"
 do
   case $opt in
     "${options[0]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client gmcpil python3 python3-pip" "$(dirname "$0")" || exit 1
+        MCPIL="gmcpil"
         break;;
     "${options[1]}")
-        "${DIRECTORY}/pkg-install" "minecraft-pi-reborn-client jmcpil python3 python3-pip" "$(dirname "$0")" || exit 1
+        MCPIL="jmcpil"
         break;;
     "${options[2]}")
-        break;;
+        exit 0;;
     *) echo "Invalid option: $REPLY";;
   esac
 done
 
-pip3 install mcpi
+"${DIRECTORY}/pkg-install" "$MCPIL python3-pip" "$(dirname "$0")" || error "Failed to install ${MCPIL} and python3-pip packages!"
+pip3 install mcpi || error "The pip3 command failed to install mcpi!"

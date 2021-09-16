@@ -7,7 +7,8 @@ function error {
   exit 1
 }
 
-wget https://remarkableapp.github.io/files/remarkable_1.87_all.deb || error 'Failed to Download!'
+rm -f ~/remarkable.deb
+wget -O ~/remarkable.deb https://remarkableapp.github.io/files/remarkable_1.87_all.deb || error 'Failed to download remarkable.deb!'
 
-sudo apt --fix-broken -y install ./remarkable_1.87_all.deb || error 'Failed to install!'
-rm remarkable_1.87_all.deb
+"${DIRECTORY}/pkg-install" "$HOME/remarkable.deb" "$(dirname "$0")" || error "Failed to install ~/remarkable.deb!"
+rm -f ~/remarkable.deb

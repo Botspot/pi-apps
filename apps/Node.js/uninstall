@@ -21,4 +21,4 @@ nvm uninstall default || error "Failed to purge Node.JS!"
 sudo rm -rf "$NVM_DIR"
 
 #remove nvm stuff from bashrc
-sed -i '/NVM_DIR/d' /home/pi/.bashrc
+sed -i '/NVM_DIR/d' ~/.bashrc

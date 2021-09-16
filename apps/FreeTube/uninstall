@@ -7,7 +7,5 @@ function error {
   exit 1
 }
 
-
 #Uninstalling FreeTube
-sudo apt -y purge freetube || error "Failed to uninstall lightpad"
-sudo apt -y autoremove
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

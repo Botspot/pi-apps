@@ -9,16 +9,17 @@ function error {
 
 "${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
 
-#install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
+if dpkg -l steam-devices ;then
+  echo "Removing steam-devices package because it conflicts with steam-launcher..."
+  sudo apt purge -y steam-devices
 fi
+
+if dpkg -l steamlink ;then
+  echo "Removing steamlink package because it conflicts with steam-launcher..."
+  sudo apt purge -y steamlink
+fi
+
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 echo "Downloading steam.deb"
 wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"

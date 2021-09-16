@@ -11,6 +11,9 @@ function error {
   exit 1
 }
 
+LANG=C
+LC_ALL=C
+
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 echo -e "\e[97m\nRunning purge-installed...\e[39m"
@@ -31,9 +34,8 @@ appnamehash="$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
 if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   #new pkg-install implementation - using dummy debs
   
-  apt_lock_wait
   echo -e "\e[97m\nRemoving dummy deb for $app...\e[39m"
-  sudo apt purge -y pi-apps-$appnamehash --autoremove || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
+  sudo -E apt purge -y pi-apps-$appnamehash --autoremove || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
   
 elif [ -f "${DIRECTORY}/data/installed-packages/${app}" ];then
   #old pkg-install implementation
@@ -41,7 +43,7 @@ elif [ -f "${DIRECTORY}/data/installed-packages/${app}" ];then
   
   PKG_LIST="$(cat "${DIRECTORY}/data/installed-packages/${app}" | tr '\n' ' ' | sed 's/  / /g')"
   
-  PURGE_LIST="$(sudo LANG=C LC_ALL=C apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
+  PURGE_LIST="$(sudo -E apt-get purge --dry-run $PKG_LIST | sed -n '/The following packages will be REMOVED/,/to remove and/p' | sed -e '2,$!d' -e '$d' | tr -d '*' | tr '\n' ' ' | sed 's/The following.*//')"
   echo "These packages will be purged: $PURGE_LIST"
   
   #normal mode

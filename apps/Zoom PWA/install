@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo "Downloading zoom-pwa repository"
+rm -rf ~/zoom-pwa
+git clone https://github.com/Botspot/zoom-pwa
+
+echo "Running the built-in installation script"
+~/zoom-pwa/install.sh || error "The zoom-pwa/install.sh indicated a failure. Please review errors above this point."
+
+echo "Cleaning up"
+rm -rf ~/zoom-pwa

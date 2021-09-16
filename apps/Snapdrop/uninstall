@@ -6,4 +6,4 @@ function error {
 }
 
 rm -rf ~/snapdrop || error "Failed to remove install directory!"
-rm ~/.local/share/applications/snapdrop.desktop || error "Failed to remove desktop shortcut!"
+rm -f ~/.local/share/applications/snapdrop.desktop

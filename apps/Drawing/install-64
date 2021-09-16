@@ -12,5 +12,5 @@ function error {
 rm -f ~/drawing.deb
 wget -O ~/drawing.deb "https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.3-0ubuntu1~hirsute_arm64.deb" || error "Failed to download drawing.deb"
 
-sudo apt install -yf ~/drawing.deb || error "APT failed to install drawing.deb"
+"${DIRECTORY}/pkg-install" "$HOME/drawing.deb" "$(dirname "$0")" || error "APT failed to install drawing.deb"
 rm -f ~/drawing.deb

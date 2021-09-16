@@ -7,11 +7,10 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket" "$(dirname "$0")" || exit 1
-
-wget 'https://github.com/Ulauncher/Ulauncher/releases/download/5.11.0/ulauncher_5.11.0_all.deb' -O ~/ulauncher.deb || error 'Failed to download ulauncher.deb!'
-
-sudo apt install -y --fix-missing ~/ulauncher.deb || error "APT failed to install ulauncher.deb!"
 
 rm -f ~/ulauncher.deb
-exit 0
+wget -O ~/ulauncher.deb 'https://github.com/Ulauncher/Ulauncher/releases/download/5.13.0/ulauncher_5.13.0_all.deb' || error 'Failed to download ulauncher.deb!'
+
+"${DIRECTORY}/pkg-install" "gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket $HOME/ulauncher.deb" "$(dirname "$0")" || error "Failed to install ulauncher.deb and dependencies!"  
+
+rm -f ~/ulauncher.deb

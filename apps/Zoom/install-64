@@ -34,7 +34,7 @@ sudo ldconfig
 if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz
-  wget 'https://zoom.us/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
+  wget 'https://zoom.us/client/latest/zoom_x86_64.tar.xz' || wget 'https://zoom.com/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
   
   echo "Extracting..."
   tar -xf ~/zoom_x86_64.tar.xz || error 'Failed to extract Zoom x86_64!'

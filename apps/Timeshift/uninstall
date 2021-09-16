@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-sudo apt purge -y timeshift
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall timeshift package!"
 sudo rm -rf /etc/timeshift

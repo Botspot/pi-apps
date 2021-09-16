@@ -12,7 +12,7 @@ mkdir ~/eDEX-UI-RPi
 wget -O ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage' 'https://github.com/GitSquared/edex-ui/releases/download/v2.2.7/eDEX-UI-Linux-armv7l.AppImage' || error 'Failed to download 2.2.6 appimage!'
 chmod +x ~/'eDEX-UI-RPi/eDEX-UI-Linux-armv7l_2.2.7.AppImage' || error 'Failed to make the appimage executable!'
 
-
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=eDEX-UI 2.2.7
 Comment=eDEX-UI sci-fi interface

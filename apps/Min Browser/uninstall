@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge min -y || error "failed to remove min package from system!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "failed to remove min package from system!"

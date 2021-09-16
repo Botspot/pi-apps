@@ -7,9 +7,7 @@ function error {
   exit 1
 }
 
-cd ~/Downloads
-
-wget https://aka.ms/linux-arm64-deb || error 'Failed to download linux-arm64-deb!'
-sudo dpkg -i linux-arm64-deb || error 'Failed to install linux-arm64-deb!'
-rm -f linux-arm64-deb
-cd
+rm -f ~/code.deb
+wget -O ~/code.deb https://aka.ms/linux-arm64-deb || error 'Failed to download linux-arm64-deb!'
+"${DIRECTORY}/pkg-install" "$HOME/code.deb" "$(dirname "$0")" || error 'Failed to install code.deb!'
+rm -f ~/code.deb

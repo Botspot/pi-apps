@@ -8,11 +8,11 @@ function error {
 
 # Get dependencies
 sudo dpkg --add-architecture armhf
-"${DIRECTORY}/pkg-install" "curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm12:armhf" "$(dirname "$0")" || exit 1
 
 #Download file
 cd ~
-curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.2.1-661/Minecraft_Bedrock_Launcher-arm_aarch64-0.0.661.AppImage --output MCBedrock.AppImage
+curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.2.5-672/Minecraft_Bedrock_Launcher-arm_aarch64-0.0.672.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
 sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
@@ -22,7 +22,7 @@ Version=1.1
 Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
-Icon=$(dirname "$0")/icon-64.png
+Icon='"$(dirname "$0")/icon-64.png"'
 Exec=bash -c "GALLIUM_HUD=simple,fps /opt/MCBedrock.AppImage"
 Categories=Game;
 Terminal=false

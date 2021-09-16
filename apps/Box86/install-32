@@ -7,24 +7,23 @@ function error {
   exit 1
 }
 
-echo -n "Checking for working systemd-binfmt..."
-if ! sudo systemctl restart systemd-binfmt ;then
-  echo -e "\nError: systemd-binfmt failed to restart. Running debug..."
-  echo 'systemctl status systemd-binfmt.service'
-  systemctl status systemd-binfmt.service
-  echo 'systemctl status systemd-binfmt.service'
-  journalctl -xe | cat
-  error "Exiting now because systemd-binfmt failed to restart."
-else
-  echo "Done"
+if dpkg -l box86 &>/dev/null ;then
+  sudo apt purge -y box86
 fi
 
 sudo rm -f /etc/apt/sources.list.d/box86.list
-echo "adding box86 repo..."
+echo "Adding box86 repo..."
 sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
 
-echo "adding key..."
+echo "Adding key..."
 wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
 
-echo "installing box86..."
-"${DIRECTORY}/pkg-install" "box86" "$(dirname "$0")" || exit 1
+echo "Installing box86..."
+"${DIRECTORY}/pkg-install" "box86-no-binfmt-restart" "$(dirname "$0")" || exit 1
+
+if ! sudo systemctl restart systemd-binfmt ;then
+  echo -e "\nWarning: systemd-binfmt failed to restart. Getting debug info..."
+  echo "Running command: 'systemctl status systemd-binfmt.service'"
+  systemctl status systemd-binfmt.service
+  echo "Still exiting with success, but you will have to manually run all x86 applications with box86 as binfmt isn't there to do it for you."
+fi

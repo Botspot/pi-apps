@@ -22,24 +22,27 @@ if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
 fi
 
 if [ -d ~/.config/chromium.bak ];then
-  read -p "Would you like to restore the backup of Chromium's config folder? [y/n] " answer
-  
-  if [ "$answer" == y ] || [ "$answer" == Y ];then
-    echo "Restoring backup..."
+  while true;do
+    read -p "Would you like to restore the backup of Chromium's config folder? [y/n] " answer
     
-    #first remove existing
-    if [ -e ~/.config/chromium ];then
-      gio trash ~/.config/chromium || rm -rf ~/.config/chromium
+    if [ "$answer" == y ] || [ "$answer" == Y ];then
+      echo "Restoring backup..."
+      
+      #first remove existing
+      if [ -e ~/.config/chromium ];then
+        gio trash ~/.config/chromium || rm -rf ~/.config/chromium
+      fi
+      
+      #then rename the backup folder
+      mv ~/.config/chromium.bak ~/.config/chromium
+      break #exit loop
+      
+    elif [ "$answer" == n ] || [ "$answer" == N ];then
+      break #exit loop
+    else
+      echo "Unknown answer "\""$answer"\"""
     fi
-    
-    #then rename the backup folder
-    mv ~/.config/chromium.bak ~/.config/chromium
-    
-  elif [ "$answer" == n ] || [ "$answer" == N ];then
-    true #do nothing
-  else
-    error "Unknown answer "\""$answer"\"""
-  fi  
+  done
 fi
 
 echo "Allowing Chromium to be upgradable..."
@@ -48,6 +51,7 @@ echo "chromium-browser-l10n install" | sudo dpkg --set-selections
 echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections
 
 echo "Upgrading Chromium..."
-sudo apt upgrade -y --allow-downgrades chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra rpi-chromium-mods
+"${DIRECTORY}/api" apt_lock_wait
+sudo apt upgrade -y --allow-downgrades chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
 
 

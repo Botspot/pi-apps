@@ -10,4 +10,4 @@ function error {
 echo "Allowing scratch2 package to be uninstallable..."
 echo "scratch2 install" | sudo dpkg --set-selections
 
-sudo apt purge scratch2 -y || error "Failed to uninstall scratch2 package"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall scratch2 package"

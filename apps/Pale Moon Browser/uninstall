@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge palemoon -y || error "apt failed to uninstall palemoon!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "apt failed to uninstall palemoon!"

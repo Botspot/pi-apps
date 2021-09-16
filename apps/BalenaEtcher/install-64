@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#etcher debs compiled by Itai Nelken.
-
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
 function error {
@@ -10,10 +8,9 @@ function error {
 }
 
 rm -f ~/etcher.deb
+wget -O ~/etcher.deb https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.121/balena-etcher-electron_1.5.121+8b3f3710_arm64.deb || error "Failed to download!"
 
-wget https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.5.121/balena-etcher-electron_1.5.121+8b3f3710_arm64.deb -O ~/etcher.deb || error "Failed to download!"
-
-sudo apt install -fy ~/etcher.deb || error "failed to install deb file!"
+"${DIRECTORY}/pkg-install" "$HOME/etcher.deb" "$(dirname "$0")" || error "failed to install etcher.deb file!"
 rm -f ~/etcher.deb
 
 exit 0

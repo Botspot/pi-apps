@@ -7,20 +7,32 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "cmake make python3 gcc" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "cmake make python3 gcc libc6-dev g++ build-essential" "$(dirname "$0")" || exit 1
 
 rm -rf ~/box64
 git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
 cd box64 || error 'Failed to change directory'
 mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake in "build" directory'
-make -j8 || error 'Failed to compile'
+
+#determine how many threads can run without running out of memory
+if [ $(($(free -bt | tail -1 | awk '{print $2}')-$(free -bt | tail -1 | awk '{print $3}'))) -le 2000000000 ];then
+  #less than 2GB of available ram
+  threads=3
+else
+  #greater than 2GB of available ram
+  threads=5
+fi
+echo "Compiling Box64 with $threads threads..."
+make -j${threads} || error 'Failed to compile'
 sudo make install || error 'Failed to run "sudo make install"'
 
 if ! sudo systemctl restart systemd-binfmt ;then
-  echo "Error: systemd-binfmt failed to restart. Running debug..."
+  echo "WARNING: systemd-binfmt failed to restart. Running debug..."
   echo 'systemctl status systemd-binfmt.service'
   systemctl status systemd-binfmt.service
   echo 'systemctl status systemd-binfmt.service'
   journalctl -xe | cat
-  error "Exiting now because systemd-binfmt failed to restart."
+  echo "Exiting this script as successful, but consider sending the above errors to Pi-Apps developers."
 fi
+
+exit 0

@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-rm -rf ~/RPIDoom3Installer || error "Failed to first remove ~/RPIDoom3Installer folder!"
+rm -rf ~/RPIDoom3Installer || sudo rm -rf ~/RPIDoom3Installer || error "Failed to first remove ~/RPIDoom3Installer folder!"
 
 # Get dependencies
 "${DIRECTORY}/pkg-install" "libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev \
