@@ -18,13 +18,14 @@ read -p Press [Enter] if you own the GTA 3 and have its Gamedata or press [Ctrl 
 cd ~/
 wget http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_arm64.deb || error "Failed to download libglfw3 installer"
 wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/re3-rel-arm64.zip -O ~/re3.zip || error "Failed to download re3.zip"
+wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/re3-gamefiles.zip -O ~/re3-gamefiles.zip || error "Failed to download re3-gamefiles.zip"
 
 # Install dependencies and app
 sudo apt install -y ~/libglfw3_3.3.2-1_arm64.deb || error "Failed to install libglfw3"
-unzip ~/re3.zip || error "Failed to unzip downloaded ~/re3.zip"
 mkdir -p ${HOME}/Games/GTA3 || error "Failed to create directory ${HOME}/Games/GTA3"
+unzip ~/re3.zip -d ${HOME}/Games/GTA3 || error "Failed to unzip downloaded ~/re3.zip to ${HOME}/Games/GTA3"
+unzip ~/re3-gamefiles.zip -d ${HOME}/Games/GTA3 || error "Failed to unzip downloaded ~/re3-gamefiles.zip to ${HOME}/Games/GTA3"
 cp ${DIRECTORY}/icon-64.png ${HOME}/Games/GTA3/re3.png
-mv ./re3 ${HOME}/Games/GTA3/ || error "Failed to move re3 binary to ${HOME}/Games/GTA3"
 
 echo -e " \\e[1;32m GTA3 succesfully installed at ${HOME}/Games/GTA3
  Copy all folders from your GTA 3 copy (or) installation to this directory. \\e[39m"
@@ -45,5 +46,6 @@ EOF
 # Cleaning up
 rm ~/libglfw3_3.3.2-1 _arm64.deb
 rm ~/re3.zip
+rm ~/re3-gamefiles.zip
 
 exit 0
