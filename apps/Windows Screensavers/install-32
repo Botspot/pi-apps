@@ -12,6 +12,7 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "x11-utils yad xprintidle" "$(dirname "$0")" || exit 1
 
+rm -rf Screensavers
 git clone https://github.com/Botspot/Screensavers || error 'Failed to clone repository!'
 
 #create menu launcher

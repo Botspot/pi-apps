@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-sudo apt-get -y install g++ cmake make ninja-build libsdl2-dev libogg-dev libvorbis-dev libopenal-dev libalut-dev libfreetype6-dev || error 'Failed to install dependencies'
+"${DIRECTORY}/pkg-install" "g++ cmake make ninja-build libsdl2-dev libogg-dev libvorbis-dev libopenal-dev libalut-dev libfreetype6-dev" "$(dirname "$0")" || exit 1
 
 #download
 rm -rf master.zip astromenace-master/

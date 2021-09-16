@@ -7,7 +7,6 @@ function error {
   exit 1
 }
 
-rm ~/.local/share/applications/speedtest.desktop || error "failed to remove menu shortcut!"
-cd ~ 
+rm -f ~/.local/share/applications/speedtest.desktop || error "failed to remove menu shortcut!"
 rm -rf ~/speedtest
-sudo rm /usr/local/bin/speedtest
+sudo rm -f /usr/local/bin/speedtest

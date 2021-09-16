@@ -7,22 +7,13 @@ function error {
   exit 1
 }
 
-#install dependencies
-if ! command -v aria2c >/dev/null ; then
-  sudo apt install aria2 -yf || error "Failed to install aria2"
-  ARIA2=1
-fi
-
-"${DIRECTORY}/pkg-install" "libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev" "$(dirname "$0")" || exit 1
-
-
-
 #download the deb
-cd $HOME
-aria2c -x 16 https://archive.org/download/stunt-rally_armhf/stunt-rally_20210305-1_armhf.deb
+rm -f ~/stunt-rally.deb
+wget -O ~/stunt-rally.deb https://archive.org/download/stunt-rally_armhf/stunt-rally_20210305-1_armhf.deb
 #install the deb and delete it
-sudo apt -f -y install ./stunt-rally_20210305-1_armhf.deb
-rm -f stunt-rally_20210305-1_armhf.deb
+
+"${DIRECTORY}/pkg-install" "libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev $HOME/stunt-rally.deb" "$(dirname "$0")" || exit 1
+rm -f ~/stunt-rally.deb
 
 #fix menu shortcut icons
 sudo rm /usr/share/applications/stuntrally.desktop &>/dev/null
@@ -385,8 +376,3 @@ motionblurintensity = 0.400000
 softparticles = off
 ssao = off
 ' > ~/.config/stuntrally/game.cfg
-
-#clean up
-if [[ "$ARIA2" == 1 ]]; then
-  sudo apt purge -y aria2
-fi

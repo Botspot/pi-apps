@@ -9,14 +9,21 @@ function error {
 
 # Get dependencies
 "${DIRECTORY}/pkg-install" "libsquashfuse0 squashfuse fuse libgconf-2-4" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse"
-sudo apt install snapd || error "APT failed to install snapd"
+sudo apt install -y snapd || error "APT failed to install snapd"
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
-sudo systemctl start snapd.service || error "Unable to start snapd.service"
+sudo systemctl start snapd.service
+if [ $? != 0 ];then
+  echo "Unable to start snapd.service. Running debug..."
+  echo "Running 'systemctl status snapd.service'"
+  systemctl status snapd.service
+  exit 1
+fi
+
 sudo snap refresh
 sudo systemctl restart snapd.service || error "Unable to restart snapd.service"
 
-sudo snap install core20 || error "Snapd was unable to install core20"
+sudo snap install core18 || error "Snapd was unable to install core20"
 sudo snap install core || error "Snapd was unable to install core"
 sudo snap install snapd || error "Snapd was unable to install snapd"
 

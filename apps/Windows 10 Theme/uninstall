@@ -7,10 +7,10 @@ function error {
   exit 1
 }
 
-if [ ! -f ~/Windows-10/uninstall ];then
-  error "Windows 10 uninstall script missing!"
+if [ -f ~/Windows-10/uninstall ];then
+  setsid ~/Windows-10/uninstall &
+else
+  echo "WARNING: Windows 10 theme's uninstall script is missing!"
 fi
-
-setsid ~/Windows-10/uninstall &
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

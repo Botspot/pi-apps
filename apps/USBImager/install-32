@@ -8,7 +8,7 @@ function error {
 }
 
 #change version to latest each time
-VER="1.0.7"
+VER="1.0.8"
 
 rm -rf ~/usbimager
 mkdir -p ~/usbimager

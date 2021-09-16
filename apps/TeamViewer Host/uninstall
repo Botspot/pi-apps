@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge -y teamviewer-host || error "APT failed to remove teamviewer-host package."
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to remove teamviewer-host package!"

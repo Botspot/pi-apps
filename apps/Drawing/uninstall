@@ -7,6 +7,4 @@ function error {
   exit 1
 }
 
-if command -v drawing >/dev/null ;then
-  sudo apt purge -y drawing || error "apt failed to uninstall the 'drawing' package."
-fi
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1 || error "apt failed to uninstall the 'drawing' package."

@@ -7,7 +7,10 @@ function error {
   exit 1
 }
 
-version='1.20.0'
-wget https://github.com/chunky-milk/minbrowser-arm-builds/releases/download/${version}/min_${version}_armhf.deb || error "Failed to download Min deb file!"
-sudo apt install -yf ./min_${version}_armhf.deb || error "Failed to install min deb file!"
-rm -f ./min_${version}_armhf.deb
+version='1.21.0'
+rm -f ~/min.deb
+wget -O ~/min.deb https://github.com/chunky-milk/minbrowser-arm-builds/releases/download/${version}/min_${version}_armhf.deb || error "Failed to download Min deb file!"
+
+"${DIRECTORY}/pkg-install" "$HOME/min.deb" "$(dirname "$0")" || error "Failed to install min deb file!"
+rm -f version='1.21.0'
+rm -f ~/min.deb

@@ -14,6 +14,11 @@ if dpkg -l steam-devices ;then
   sudo apt purge -y steam-devices
 fi
 
+if dpkg -l steamlink ;then
+  echo "Removing steamlink package because it conflicts with steam-launcher..."
+  sudo apt purge -y steamlink
+fi
+
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 echo "Downloading steam.deb"

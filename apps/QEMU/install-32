@@ -8,15 +8,12 @@ function error {
 }
 
 #Remove any qemu packages first to prevent conflicting packages
-sudo apt purge -y qemu*
+sudo apt purge -yqq qemu* &>/dev/null
 
-cd $HOME
-#remove deb if present
-rm -f ./qemu*-armhf.deb
-
+rm -f ~/qemu.deb
 #Download QEMU
-wget https://github.com/chunky-milk/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || error 'Failed to Download QEMU!'
+wget -O ~/qemu.deb https://github.com/chunky-milk/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || error 'Failed to Download QEMU!'
 
 #Install QEMU
-"${DIRECTORY}/pkg-install" "$(pwd)/qemu-6.0.50-armhf.deb" "$(dirname "$0")" || error 'Failed to install QEMU!'
-rm -f qemu*-armhf.deb
+"${DIRECTORY}/pkg-install" "$HOME/qemu.deb" "$(dirname "$0")" || error 'Failed to install qemu.deb!'
+rm -f ~/qemu.deb

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo "Installing dependencies..."
+"${DIRECTORY}/pkg-install" "yad aria2 cabextract wimtools chntpw genisoimage exfat-fuse exfat-utils wget" "$(dirname "$0")" || exit 1
+
+echo "Downloading repository..."
+rm -rf ~/wor-flasher || error "Failed to first remove ~/wor-flasher folder!"
+git clone https://github.com/Botspot/wor-flasher || error "Failed to download wor-flasher repository!"
+
+if [ -d ~/wor-flasher-files ];then
+  echo -e "\nDuring use, WoR-flasher downloads all files to $HOME/wor-flasher-files\nThis folder exists right now.\nIf WoR-flasher is malfunctioning, deleting this folder may help.\n"
+fi
+
+echo "Creating menu button..."
+echo "[Desktop Entry]
+Type=Application
+Name=WoR Flasher
+Comment=WoR Flasher - Flash Windows 10 or 11 to your Raspberry Pi
+Categories=Utility;
+Exec=$HOME/wor-flasher/install-wor-gui.sh
+Icon=$HOME/wor-flasher/logo.png
+StartupNotify=true" > ~/.local/share/applications/wor-flasher.desktop

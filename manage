@@ -14,9 +14,49 @@ if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
 
+set -a #make all functions in the api available to apps
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
+#remove old mcpi repositories - this runonce is here so that terminal-only users will still receive the fix.
+(runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -qF 'https://mcpirevival.tk/mcpi-packages' ;then
+    echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
+  elif [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -qF 'https://mcpi-revival.github.io/mcpi-packages/debs' ;then
+    echo 'deb [trusted=yes] https://mcpi-revival.github.io/mcpi-packages/ buster main' | sudo tee /etc/apt/sources.list.d/mcpi-revival.list
+  fi
+  if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
+    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+  fi
+  
+  if dpkg -l box86 &>/dev/null ;then
+    sudo apt purge -y box86
+    sudo apt install -y box86-no-binfmt-restart
+  fi
+EOF
+) &>/dev/null
+
+#Silently re-download repo if github repository is over 3 months out of date
+{
+current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
+if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
+  yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+    --text="Your Pi-Apps github repository is somehow 3 months out-of-date."$'\n'"Downloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old..." &
+  sleep 1
+  clear
+  echo -e "\nYour Pi-Apps github repository is somehow 3 months out-of-date.\nDownloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
+  cd $HOME
+  rm -rf ~/pi-apps-forced-update
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
+  temp_logfile="$(mktemp).txt"
+  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo: $(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
+  send_error_report "$temp_logfile" 1>&2
+  rm -f "$temp_logfile"
+  sleep 10
+fi
+}
+
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
+
 #remove week-old logfiles
 find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 
@@ -38,6 +78,12 @@ dirhash() {
   echo "$hash"
 }
 
+#check if hardware and OS is supported
+if is_supported_system >/dev/null;then
+  supported=yes
+else
+  supported=no
+fi
 
 if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
@@ -47,10 +93,27 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
     action=install
   fi
   
-  failed_apps=''
+  app_list="$2" #newline-separated list of apps to install/uninstall
+  
+  #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
   IFS=$'\n'
-  for app in $2
-  do
+  for app in $app_list ;do
+    if [ "$(app_status "${app}")" == "${action}ed" ];then
+      yad --text="$app is already ${action}ed. Are you sure you want to $action it again?" \
+        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+      
+      if [ $? != 0 ];then
+        #user clicked No, so remove the app from list
+        app_list="$(echo "$app_list" | grep -vx "$app")"
+      fi
+    fi
+  done
+  
+  #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
+  failed_apps=''
+  for app in $app_list ;do
+    
     "${DIRECTORY}/manage" $action "$app"
     if [ $? != 0 ];then
       #this app failed to install - add it to the list of failed apps
@@ -58,14 +121,14 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
 $app"
     fi
   done
-  app_results="${app_results:1}" #remove first blank newline
+  failed_apps="${failed_apps:1}" #remove first blank newline
   
   if [ "$supported" == yes ];then #if hardware and OS is supported
     for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
       logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
       
-      #if logfile detected, exists, and is not empty, ask permission to send error report
-      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ];then
+      #if logfile detected, exists, is not empty, and does not contain a bunch of arrows (user-fault error) ask permission to send error report
+      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ] && ! grep -qF '▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼' "$logfile" ;then
         send_error_report_gui "$logfile" "<b>$app</b> failed to ${action}."
       fi
     done
@@ -91,15 +154,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
-  #check if hardware and OS is supported
-  if is_supported_system >/dev/null;then
-    supported=yes
-  else
-    supported=no
-    echo -e "\e[103m\e[30mWARNING: YOUR SETUP IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
-    sleep 10
-  fi
-  
   if [ "$1" == install ];then
     mode=install
   else
@@ -112,11 +166,14 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     exit 0
   fi
   
-  #if already installed then ask for confirmation
-  if [ "$(app_status "${app}")" == "${mode}ed" ];then
-    yad --text="$app is already ${mode}ed. Are you sure you want to $mode it again?" \
-    --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
-    --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0 || exit 0
+  #display warning if hardware and os is unsupported
+  if [ "$supported" == no ];then
+    echo -e "\e[103m\e[30mWARNING: YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    sleep 1
+    echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m"
+    sleep 1
+    echo -e "\e[103m\e[30mWaiting 10 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m"
+    sleep 10
   fi
   
   #analytics
@@ -248,37 +305,24 @@ elif [ "$1" == 'check-all' ];then
   if [ "$2" == 'installedonly' ];then
     # If $2 is 'installedonly', then only check for updates for those apps that are installed
     installedonly=1
-    
-  elif [ "$2" == 'nogenerate' ];then
-    # If $2 is 'nogenerate', then don't hash anything or git-clone anything. Simply reads out data found in data/update-status folder in the same app-per-newline format.
-    echo -e "\e[97mThese apps can be updated:" 1>&2
-    echo "${updatable}"
-    IFS=$'\n'
-    for app in $(list_apps all);do
-      
-      updatestatus="$(cat "${DIRECTORY}/data/update-status/${app}" 2>/dev/null)"
-      if [ "$updatestatus" == 'new' ] || [ "$updatestatus" == 'updatable' ];then
-        #if current app's update-status is 'new' or 'updatable', then echo it.
-        echo "$app"
-      fi
-      
-    done
-   exit 0 #the lines above have displayed a list of apps already.
-   
   fi #end of checking for hidden flags
+  
+  echo -n "Checking for online changes... " 1>&2
   
   #if the updater script exists in update folder, then just git pull to save time
   if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
-    echo -n "The 'git pull' command says: " 1>&2
-    git pull 1>&2 || rm -rf "${DIRECTORY}/update"
-  fi
+    git pull || rm -rf "${DIRECTORY}/update"
+  fi | grep -v "Already up to date." 1>&2
+  
   #re-check and if updater script does not exist then do a git clone
   if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
     rm -rf "${DIRECTORY}/update"
     mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
     git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2|| error "failed to clone repository to the update directory!"
   fi
+  
+  echo "Done" 1>&2
   
   if [ $installedonly == 1 ];then
     #installedonly flag enabled. Remove apps that are uninstalled, disabled, or corrupted
@@ -294,7 +338,7 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    #echo "app: $app"
+    echo -en "Scanning apps... $app\033[0K\r" 1>&2
     newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
     oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
     #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
@@ -302,9 +346,10 @@ elif [ "$1" == 'check-all' ];then
     if [ "$newhash" == "$oldhash" ];then
       #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
       echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
+      true
     else
       if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
+        #echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
         echo 'new' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
@@ -312,9 +357,10 @@ ${app}"
       elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
         #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
         echo 'local' > "${DIRECTORY}/data/update-status/${app}"
+        true
         #in this case, do not add to updatable list
       else
-        echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
+        #echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
         echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
         #in this case, add to updatable list
         updatable="${updatable}
@@ -330,6 +376,8 @@ ${app}"
   if [ -z "$updatable" ];then
     updatable='.'
   fi
+  
+  echo "Done" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then

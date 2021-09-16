@@ -11,7 +11,7 @@ function error {
 
 #Download file
 cd ~
-curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.2.1-661/Minecraft_Bedrock_Launcher-arm-0.0.661.AppImage --output MCBedrock.AppImage
+curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.2.5-672/Minecraft_Bedrock_Launcher-arm-0.0.672.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
 sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 
@@ -21,7 +21,7 @@ Version=1.1
 Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
-Icon=$(dirname "$0")/icon-64.png
+Icon='"$(dirname "$0")/icon-64.png"'
 Exec=bash -c "sudo modprobe fuse ; GALLIUM_HUD=simple,fps /opt/MCBedrock.AppImage"
 Categories=Game;
 Terminal=false

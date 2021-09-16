@@ -10,6 +10,6 @@ function error {
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-rm ~/.local/share/applications/ppsspp.desktop || error "Failed to remove desktop entry!"
+rm -f ~/.local/share/applications/ppsspp.desktop || error "Failed to remove desktop entry!"
 
 rm -rf ~/ppsspp || error "Failed to remove install directory!"

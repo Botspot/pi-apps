@@ -7,10 +7,10 @@ function error {
   exit 1
 }
 
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
 sudo rm -f /usr/share/applications/stuntrally.desktop
 sudo rm -f /usr/share/applications/sr-editor.desktop
 
-sudo apt purge stunt-rally -y || error "Failed to uninstall stunt rally!"
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+rm -rf $HOME/.config/stuntrally ~/stuntrally
 
-rm -r $HOME/.config/stuntrally/

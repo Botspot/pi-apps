@@ -27,6 +27,7 @@ git clone https://gitlab.com/gazlene/droidbuddy.git || error 'Could not clone An
 
 sudo pip3 install Pillow
 
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=AndroidBuddy
 Comment=GUI for Android device recovery and maintainence

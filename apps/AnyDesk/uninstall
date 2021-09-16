@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge -y anydesk
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1

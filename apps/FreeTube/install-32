@@ -9,10 +9,10 @@ function error {
 
 #Downloading Deb File For FreeTube
 rm -f ~/freetube.deb
-wget https://archive.org/download/freetube_0.13.2_arm64/freetube_0.13.2_armhf.deb -O ~/freetube.deb || error "Failed to download freetube.deb!"
+wget -O ~/freetube.deb https://archive.org/download/freetube_0.14.0_armv7l/freetube_0.14.0_armv7l.deb || error "Failed to download freetube.deb!"
 
 #Installing FreeTube
-sudo apt install -y --fix-missing ~/freetube.deb || error "APT failed to install freetube.deb!"
+"${DIRECTORY}/pkg-install" "$HOME/freetube.deb" "$(dirname "$0")" || error "APT failed to install freetube.deb!"
 
 #Removing Deb File
 rm -f ~/freetube.deb
