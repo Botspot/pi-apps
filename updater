@@ -21,7 +21,12 @@ if [ -z $lastupdatecheck ];then
   lastupdatecheck=0
 fi
 
-updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+#--force option
+if [ $1 == "--force" ];then
+  updateinterval="Always"
+else
+  updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+fi
 
 nocheck=0
 #allowed values: Always, Daily, Weekly, Never
