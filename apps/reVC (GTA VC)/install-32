@@ -18,13 +18,15 @@ read -p Press [Enter] if you own the GTA VC and have its Gamedata or press [Ctrl
 cd ~/
 wget http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_armhf.deb || error "Failed to download libglfw3 installer"
 wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/reVC-rel-arm.zip -O ~/reVC.zip || error "Failed to download reVC.zip"
+wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/reVC-gamefiles.zip -O ~/reVC.zip || error "Failed to download reVC-gamefiles.zip"
 
 # Install dependencies and app
 sudo apt install -y ~/libglfw3_3.3.2-1_armhf.deb || error "Failed to install libglfw3"
-unzip ~/reVC.zip || error "Failed to unzip downloaded ~/reVC.zip"
 mkdir -p ${HOME}/Games/GTAVC || error "Failed to create directory ${HOME}/Games/GTAVC"
+unzip ~/reVC.zip -d ${HOME}/Games/GTAVC || error "Failed to unzip downloaded ~/reVC.zip to ${HOME}/Games/GTAVC"
+unzip ~/reVC-gamefiles.zip -d ${HOME}/Games/GTAVC || error "Failed to unzip downloaded ~/reVC-gamefiles.zip to ${HOME}/Games/GTAVC"
+
 cp ${DIRECTORY}/icon-64.png ${HOME}/Games/GTAVC/reVC.png
-mv ./reVC ${HOME}/Games/GTAVC/ || error "Failed to move reVC binary to ${HOME}/Games/GTAVC"
 
 echo -e " \\e[1;32m GTAVC succesfully installed at ${HOME}/Games/GTAVC
  Copy all folders from your GTA VC copy (or) installation to this directory. \\e[39m"
@@ -45,5 +47,6 @@ EOF
 # Cleaning up
 rm ~/libglfw3_3.3.2-1 _armhf.deb
 rm ~/reVC.zip
+rm ~/reVC-gamefiles.zip
 
 exit 0
