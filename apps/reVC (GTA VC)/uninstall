@@ -7,7 +7,8 @@ function error {
   exit 1
 }
 
-rm -f ~/Games/GTAVC/reVC
+rm -f ~/Games/GTAVC/reVC ~/Games/GTAVC/gamecontrollerdb
+rm -rf ~/Games/GTAVC/data ~/Games/GTAVC/models ~/Games/GTAVC/neo ~/Games/GTAVC/TEXT
 rm -f ~/.local/share/applications/GTAIII.desktop
 
 echo -e " \\e[1;32m GTA VC successfully uninstalled, but your Gamedata and config files are still located at ${HOME}/Games/GTAVC \\e[39m"
