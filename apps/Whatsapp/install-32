@@ -14,6 +14,9 @@ tar -xf WhatsApp-linux-armv7l.tar.xz || error "Failed to extract!"
 rm WhatsApp-linux-armv7l.tar.xz
 mv "WhatsApp-linux-armv7l" WhatsApp
 
+#Modify run-whatsapp
+echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" WhatsApp/run-whatsapp
+
 #create menu shortcut
 echo "[Desktop Entry]
 Name=WhatsApp
