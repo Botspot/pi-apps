@@ -21,6 +21,6 @@ echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" WhatsApp/
 echo "[Desktop Entry]
 Name=WhatsApp
 Type=Application
-Exec=/home/pi/WhatsApp/run-whatsapp
+Exec=bash /home/pi/WhatsApp/run-whatsapp
 Icon=/home/pi/WhatsApp/resources/app/icon.png
 Categories=Network;Internet" >  ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
