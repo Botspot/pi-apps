@@ -15,7 +15,7 @@ rm WhatsApp-linux-armv7l.tar.xz
 mv "WhatsApp-linux-armv7l" WhatsApp
 
 #Modify run-whatsapp
-echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" WhatsApp/run-whatsapp
+echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" > WhatsApp/run-whatsapp
 
 #create menu shortcut
 echo "[Desktop Entry]
