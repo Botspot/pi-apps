@@ -12,10 +12,12 @@ rm -f WhatsApp-linux-armv7l.tar.xz
 wget https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-v1.0/WhatsApp-linux-armv7l.tar.xz || error 'Failed to download!'
 tar -xf WhatsApp-linux-armv7l.tar.xz || error "Failed to extract!"
 rm WhatsApp-linux-armv7l.tar.xz
-mv "WhatsAppWeb-linux-armv7l" WhatsApp
+mv "WhatsApp-linux-armv7l" WhatsApp
 
 #create menu shortcut
-wget https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-v1.0/whatsapp.desktop 
-sed -i "s@HOME@$HOME@g" whatsapp.desktop 
-sudo cp whatsapp.desktop .local/share/applications 
-sudo cp whatsapp.desktop $HOME/Desktop
+echo "[Desktop Entry]
+Name=WhatsApp
+Type=Application
+Exec=/home/pi/WhatsApp/run-whatsapp
+Icon=/home/pi/WhatsApp/resources/app/icon.png
+Categories=Network;Internet" >  ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
