@@ -8,7 +8,7 @@ function error {
 }
 
 cd $HOME
-rm -f WhatsAppWeb-linux-armv7l.tar.xz
+rm -f WhatsApp-linux-armv7l.tar.xz
 wget https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-v1.0/WhatsApp-linux-armv7l.tar.xz || error 'Failed to download!'
 tar -xf WhatsApp-linux-armv7l.tar.xz || error "Failed to extract!"
 rm WhatsApp-linux-armv7l.tar.xz
