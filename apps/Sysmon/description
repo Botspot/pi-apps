@@ -1,0 +1,6 @@
+Monitor your Raspberry Pi using a web browser on another computer.
+This is a background service that hosts a website at <your Pi's IP address>:6969. Using any computer on your local network, you can go to that website and view many useful statistics. (And some useless ones too)
+
+For testing purposes, you can look at the website from the Pi itself by launching Chromium browser and going to http://localhost:6969
+
+As mentioned earlier, the website is only visible to computers in the local network.
