@@ -1,0 +1,11 @@
+NOTE: For best performance, we recommend a version like 1.12.2 + Optifine or the latest Minecraft with Sodium/Lithium/Phosphor Fabric Mods.
+
+Minecraft Java MultiMC5 for the raspberry pi
+To run: Menu -> Games -> MultiMC
+To run in a terminal: ~/MultiMC/install/MultiMC
+
+the MultiMC5 install script contains OS detection (ubuntu and debian based systems supported), and automatic java 8, 11, and 16 download and installation
+
+MultiMC5 supports mojang and microsoft account login support, and minecraft versions from the old beta/alphas all the way up to 1.17+. Fabric and Forge mod loading is supported for the applicable minecraft versions
+
+A custom meta repo is used for arm32 and arm64 to provide lwjgl 2.9.4, 3.1.6, 3.2.1, and 3.2.2 native libraries
