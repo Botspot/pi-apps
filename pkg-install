@@ -11,9 +11,11 @@ error() {
   exit 1
 }
 
-#$1 is a quotation-marked, space-seperated list of package names.
-#$2 is the path to the program folder being installed.
-#Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
+# $1 is a quotation-marked, space-seperated list of package names.
+# $2 is name of the app being installed.
+# Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
+# "package1 | package2" represents "package1 or package2" (whichever is available) for $1
+
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
 app="$(basename "$2")" #remove any slashes to just get program name
@@ -336,7 +338,7 @@ Version: 1.0
 Architecture: all
 Priority: optional
 Section: custom
-Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g')
+Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g' | sed  's/, |/ |/g' | sed 's/|, /| /g')
 Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
 
 #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
