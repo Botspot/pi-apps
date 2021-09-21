@@ -8,20 +8,19 @@ function error {
 }
 
 cd $HOME
-rm -f WhatsAppWeb-linux-arm64.tar.xz
-wget https://github.com/Itai-Nelken/Nativefier-WebApps/releases/download/v3.0/WhatsAppWeb-linux-arm64.tar.xz || error 'Failed to download!'
-tar -xf WhatsAppWeb-linux-arm64.tar.xz || error "Failed to extract!"
-rm WhatsAppWeb-linux-arm64.tar.xz
-mv "WhatsAppWeb-linux-arm64" WhatsAppWeb
+rm -f WhatsApp-linux-arm64.tar.xz
+wget https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-arm64-1.0/WhatsApp-linux-arm64.tar.xz || error 'Failed to download!'
+tar -xf WhatsApp-linux-arm64.tar.xz || error "Failed to extract!"
+rm WhatsApp-linux-arm64.tar.xz
+mv "WhatsApp-linux-arm64" WhatsApp
+
+#Modify run-whatsapp to remove Service Worker before launching WhatsApp
+echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" > WhatsApp/run-whatsapp
 
 #create menu shortcut
 echo "[Desktop Entry]
-Name=Whatsapp Web
-Comment=Nativefier Whatsapp Web webapp.
-Exec=$HOME/WhatsAppWeb/WhatsAppWeb
-Path=$HOME/WhatsAppWeb
-Icon=$(dirname "$0")/icon-64.png
-Terminal=false
-StartupNotify=true
+Name=WhatsApp
 Type=Application
-Categories=Network;" > ~/.local/share/applications/whatsappweb.desktop || error "Failed to create menu button!"
+Exec=bash /home/pi/WhatsApp/run-whatsapp
+Icon=$(dirname "$0")/icon-64.png
+Categories=Network;Internet" >  ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
