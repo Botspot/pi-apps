@@ -65,19 +65,6 @@ if ! wget --spider github.com &>/dev/null ;then
   error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
 fi
 
-dirhash() {
-  #echo "Hashing this dir: $1" 1>&2
-  
-  if [ -d "$1" ];then
-    #-------- hash every file in the folder ---------------------------------------------------- list all filenames ------------------- hash all that again
-    hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
-  else
-    hash=''
-    #echo "dirhash(): Folder '$1' does not exist" 1>&2
-  fi
-  echo "$hash"
-}
-
 #check if hardware and OS is supported
 if is_supported_system >/dev/null;then
   supported=yes
@@ -247,9 +234,6 @@ elif [ "$1" == 'update' ];then
     git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
-  newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
-  oldhash="$(dirhash "${DIRECTORY}/apps/${app}")"
-  
   #detect which installation script exists and get the hash for that one
   scriptname="$(script_name_cpu "$app")"
   [ $? == 1 ] && exit 1
@@ -260,7 +244,7 @@ elif [ "$1" == 'update' ];then
   #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
   #echo -e "newhash: $newhash\noldhash: $oldhash"
   
-  if [ "$newhash" == "$oldhash" ];then
+  if diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null;then
     echo "$app is identical to the online version. Nothing to do!"
     exit 0
   fi
@@ -349,16 +333,10 @@ ${app}"
       #app only exists locally
       true
       
-    else #app folder exists in both places so hash it
-      newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
-      oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
-      #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
-      
-      if [ "$newhash" != "$oldhash" ];then
-        #if app hashes don't match, add to updatable list
-        updatable="${updatable}
+    elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
+      #if app hashes don't match, add to updatable list
+      updatable="${updatable}
 ${app}"
-      fi
     fi
   done 
   

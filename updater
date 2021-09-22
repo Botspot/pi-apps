@@ -98,17 +98,10 @@ ${file}"
         #file is missing in the update folder - local
         true #do not add to updatable_apps list
         
-      else #file exists in main-folder and in update-folder
-        #hash each file
-        newhash=$(sha1sum "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | awk '{print $1}')
-        oldhash=$(sha1sum "${DIRECTORY}/${file}" 2>/dev/null | awk '{print $1}')
-        
-        if [ "$newhash" != "$oldhash" ];then
-          #files don't match - add to updatable_files list
-          updatable_files="${updatable_files}
+      elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
+        #files don't match - add to updatable_files list
+        updatable_files="${updatable_files}
 ${file}"
-        fi
-        
       fi
     done
     #remove initial newline character
@@ -388,7 +381,7 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
   echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
   
-  "$0" get-status
+  "$0" get-status &>/dev/null
   exit $?
   
 elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes and an Update button
