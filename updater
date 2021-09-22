@@ -310,8 +310,6 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   fi
   
   updatable_apps="$(get_updatable_apps)"
-  [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
-  
   updatable_files="$(get_updatable_files)"
 
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
@@ -397,7 +395,6 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     echo "Nothing is updatable."
@@ -416,7 +413,6 @@ elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     echo "Nothing is updatable."
@@ -429,7 +425,6 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     echo "Nothing is updatable."
@@ -456,7 +451,6 @@ elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     echo "Nothing is updatable."
