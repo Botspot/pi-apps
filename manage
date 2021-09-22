@@ -339,34 +339,26 @@ elif [ "$1" == 'check-all' ];then
   for app in $applist
   do
     echo -en "Scanning apps... $app\033[0K\r" 1>&2
-    newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
-    oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
-    #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
     
-    if [ "$newhash" == "$oldhash" ];then
-      #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
-      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
-      true
-    else
-      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        #echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
-        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
-        #in this case, add to updatable list
-        updatable="${updatable}
+    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+      #add to updatable list
+      updatable="${updatable}
 ${app}"
-      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
-        #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
-        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
-        true
-        #in this case, do not add to updatable list
-      else
-        #echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
-        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
-        #in this case, add to updatable list
+      
+    elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+      #app only exists locally
+      true
+      
+    else #app folder exists in both places so hash it
+      newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
+      oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
+      #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
+      
+      if [ "$newhash" != "$oldhash" ];then
+        #if app hashes don't match, add to updatable list
         updatable="${updatable}
 ${app}"
       fi
-      
     fi
   done 
   
@@ -377,7 +369,7 @@ ${app}"
     updatable='.'
   fi
   
-  echo "Done" 1>&2
+  echo -e "Scanning apps... Done\033[0K" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
