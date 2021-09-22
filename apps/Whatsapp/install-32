@@ -7,20 +7,21 @@ function error {
   exit 1
 }
 
-cd $HOME
-rm -f WhatsApp-linux-armv7l.tar.xz
-wget https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-v1.0/WhatsApp-linux-armv7l.tar.xz || error 'Failed to download!'
-tar -xf WhatsApp-linux-armv7l.tar.xz || error "Failed to extract!"
-rm WhatsApp-linux-armv7l.tar.xz
-mv "WhatsApp-linux-armv7l" WhatsApp
+rm -rf ~/whatsapp.tar.xz ~/WhatsApp
+mkdir ~/WhatsApp
 
-#Modify run-whatsapp to remove Service Worker before launching WhatsApp
-echo "rm -rf $HOME/.config/whats*/Service* && $HOME/WhatsApp/WhatsApp" > WhatsApp/run-whatsapp
+wget -O ~/whatsapp.tar.xz https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-v1.0/WhatsApp-linux-armv7l.tar.xz || error 'Failed to download!'
+tar -xf ~/whatsapp.tar.xz -C ~/WhatsApp || error "Failed to extract!"
+rm ~/whatsapp.tar.xz
+mv ~/WhatsApp/WhatsApp-linux-armv7l/* ~/WhatsApp && rm -rf ~/WhatsApp/WhatsApp-linux-armv7l
 
 #create menu shortcut
 echo "[Desktop Entry]
 Name=WhatsApp
-Type=Application
-Exec=bash /home/pi/WhatsApp/run-whatsapp
+Exec=bash -c "\""rm -rf $HOME/.config/whats*/Service* ; $HOME/WhatsApp/WhatsApp"\""
+Path=$HOME/WhatsApp
 Icon=$(dirname "$0")/icon-64.png
-Categories=Network;Internet" >  ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Network;" > ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
