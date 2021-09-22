@@ -22,9 +22,6 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 generate_logo
 
-#check for updates in background
-"${DIRECTORY}/updater" &>/dev/null &
-
 #Variable 1 is used to view the details of the specified app
 if [ ! -z "$1" ];then
   app="$1"
