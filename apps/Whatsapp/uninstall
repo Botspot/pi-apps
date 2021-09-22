@@ -7,9 +7,9 @@ function error {
   exit 1
 }
 
-#for backwards compatibility with the chromium version
-rm -rf ~/WhatsappWeb &>/dev/null
+# for backwards compatibility with the chromium version
+# rm -rf ~/Whatsapp &>/dev/null
 
-rm -rf ~/WhatsAppWeb
-rm ~/.local/share/applications/whatsappweb.desktop
+rm -rf ~/WhatsApp
+rm ~/.local/share/applications/whatsapp.desktop
 exit 0
