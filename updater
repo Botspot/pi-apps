@@ -126,6 +126,8 @@ ${file}"
   
   #if any files were excluded by update-exclusion, list them now, after echoing "Done"
   [ ! -z "$exclusion_msg" ] && echo -e "$exclusion_msg\n" 1>&2
+  
+  return 0
 }
 
 get_updatable_apps() { #sets the updatable_apps variable
@@ -289,7 +291,7 @@ elif [ -z "$runmode" ];then
   runmode=gui
 fi
 
-#runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes, generate_yad_list
+#runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes
 
 echo "Updater mode: $runmode"
 if [ "$runmode" == autostarted ];then #if update-interval allows, and one app installed, display notification on boot
@@ -308,8 +310,9 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   fi
   
   updatable_apps="$(get_updatable_apps)"
-  updatable_files="$(get_updatable_files)"
   [ $? -ne 0 ] && error "'manage check-all' failed! Full output: $updatable_apps"
+  
+  updatable_files="$(get_updatable_files)"
 
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     echo "Nothing is updatable."
