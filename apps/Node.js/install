@@ -35,5 +35,5 @@ source "$NVM_DIR/nvm.sh" || error "Failed to source $NVM_DIR/nvm.sh"
 
 source "$NVM_DIR/bash_completion" || error "Failed to source $NVM_DIR/bash_completion"
 
-nvm install --lts || error "Failed to install node.js with nvm!"
+nvm install node || error "Failed to install node.js with nvm!"
 
