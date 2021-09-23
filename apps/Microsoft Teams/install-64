@@ -1,0 +1,28 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Get dependencies
+"${DIRECTORY}/pkg-install" "unzip" "$(dirname "$0")" || exit 1
+
+cd $HOME
+rm -rf Teams
+wget https://github.com/cycool29/microsoft-teams-for-linux/releases/download/msteams-arm64-v1.0/msteams-arm64.zip || error"Failed to download!"
+unzip msteams-arm64.zip
+
+echo "[Desktop Entry]
+Name=Teams
+Exec=$HOME/Teams-arm64/Teams-linux-arm64/Teams
+Path=$HOME/Teams-arm64/Teams-linux-arm64/
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Network;" > $HOME/Teams-arm64/Teams.desktop 
+cp $HOME/Teams-arm64/Teams.desktop $HOME/Desktop
+cp $HOME/Teams-arm64/Teams.desktop $HOME/.local/share/applications
