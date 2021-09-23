@@ -8,8 +8,12 @@ function error {
 }
 
 #for backwards compatibility with the chromium version
-rm -rf ~/WhatsappWeb &>/dev/null
+rm -rf ~/WhatsappWeb
 
+#for backwards compatibility with Itai's version
 rm -rf ~/WhatsAppWeb
-rm ~/.local/share/applications/whatsappweb.desktop
+rm -f ~/.local/share/applications/whatsappweb.desktop
+
+rm -rf ~/WhatsApp
+rm -f ~/.local/share/applications/whatsapp.desktop
 exit 0
