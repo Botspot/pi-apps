@@ -12,7 +12,8 @@ rm -rf ~/WhatsappWeb
 
 #for backwards compatibility with Itai's version
 rm -rf ~/WhatsAppWeb
+rm -f ~/.local/share/applications/whatsappweb.desktop
 
 rm -rf ~/WhatsApp
-rm ~/.local/share/applications/whatsapp.desktop
+rm -f ~/.local/share/applications/whatsapp.desktop
 exit 0
