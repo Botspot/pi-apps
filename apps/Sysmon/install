@@ -20,7 +20,7 @@ echo "[Unit]
 After=network.target
 
 [Service]
-ExecStart=sudo python3 $HOME/sysmon/main.py -p 6969 -6
+ExecStart=sudo python3 /opt/sysmon/main.py -p 6969 -6
 
 [Install]
 WantedBy=default.target" | sudo tee /etc/systemd/system/WebStationSYSMON.service >/dev/null
