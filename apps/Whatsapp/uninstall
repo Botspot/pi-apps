@@ -7,8 +7,11 @@ function error {
   exit 1
 }
 
-# for backwards compatibility with the chromium version
-# rm -rf ~/Whatsapp &>/dev/null
+#for backwards compatibility with the chromium version
+rm -rf ~/WhatsappWeb
+
+#for backwards compatibility with Itai's version
+rm -rf ~/WhatsAppWeb
 
 rm -rf ~/WhatsApp
 rm ~/.local/share/applications/whatsapp.desktop
