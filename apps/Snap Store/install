@@ -23,7 +23,18 @@ fi
 sudo snap refresh
 sudo systemctl restart snapd.service || error "Unable to restart snapd.service"
 
-sudo snap install core18 || error "Snapd was unable to install core20"
+sudo modprobe squashfs || error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+Failed to run sudo modprobe squashfs!
+
+Something is wrong with your kernel. If your kernel was upgraded, please reboot.
+
+Otherwise, try reinstalling the kernel using this command:
+sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
+
+See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963
+▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+
+sudo snap install core18 || error "Snapd was unable to install core18"
 sudo snap install core || error "Snapd was unable to install core"
 sudo snap install snapd || error "Snapd was unable to install snapd"
 
