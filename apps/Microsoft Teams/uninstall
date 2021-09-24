@@ -7,6 +7,6 @@ function error {
   exit 1
 }
 
-sudo rm -rf "${HOME}/Teams" "${HOME}/.local/share/applications/Teams.desktop" "${HOME}/Desktop/Teams.desktop" 2> /dev/null
+sudo dpkg --purge teams-for-linux || error "Failed to purge!"
 
 exit 0
