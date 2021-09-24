@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget -O ~/ms-teams.deb https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v1.0.12/teams-for-linux_1.0.12_armv7l.deb || error "Failed to download!"
+"${DIRECTORY}/pkg-install" "$HOME/ms-teams.deb" "$(dirname "$0")" || exit 1
+
+#change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
+sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop
+
+#MS Teams sometimes launches to a blank screen. Deleting these folders will fix it:
+rm -rf "$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Service Worker" "$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Cache"
+
+exit 0
