@@ -8,3 +8,5 @@ function error {
 }
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "apt failed to uninstall palemoon!"
+
+sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
