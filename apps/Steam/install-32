@@ -24,6 +24,7 @@ fi
 echo "Downloading steam.deb"
 wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
 
+"${DIRECTORY}/api" apt_lock_wait
 sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
 
 rm ~/steam.deb
