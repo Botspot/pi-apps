@@ -9,4 +9,4 @@ function error {
 
 cd $HOME
 wget https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v1.0.12/teams-for-linux_1.0.12_arm64.deb || error "Failed to download!"
-dpkg -i $HOME/teams-for-linux_1.0.12_arm64.deb
+sudo dpkg -i $HOME/teams-for-linux_1.0.12_arm64.deb
