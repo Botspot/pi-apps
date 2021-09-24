@@ -7,6 +7,4 @@ function error {
   exit 1
 }
 
-sudo dpkg --purge teams-for-linux || error "Failed to purge!"
-
-exit 0
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
