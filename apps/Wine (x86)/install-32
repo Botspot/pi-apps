@@ -22,7 +22,16 @@ if [ "$hardware" == 'pi0' ];then
 fi
 
 if [ ! -e /proc/config.gz ];then
-  sudo modprobe configs || error "Failed to run sudo modprobe configs!"
+  sudo modprobe configs || error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+Failed to run sudo modprobe configs!
+
+Something is wrong with your kernel. If your kernel was upgraded, please reboot.
+
+Otherwise, try reinstalling the kernel using this command:
+sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
+
+See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963
+▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
   if [ ! -e /proc/config.gz ];then
     error "/proc/config.gz does not exist after running sudo modprobe configs!"
   fi
