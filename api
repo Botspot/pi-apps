@@ -390,8 +390,13 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #  done
   #fi
   
-  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-    sleep 1
+  #while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+  #  sleep 1
+  #done
+  
+  #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
+  while sudo apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+    sleep 3
   done
   sleep 0.5
   
@@ -399,14 +404,18 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
 }
 
 is_supported_system() {
+  PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   if uname -m | grep -q 'x86' || uname -m | grep -q 'i686' || uname -m | grep -q 'i386';then
     echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'stretch\|wheezy\|jessie';then
+  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
-  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'manjaro';then
+  elif echo "$PRETTY_NAME" | grep -qi 'manjaro';then
     echo "Pi-Apps is not supported on Manjaro."
+    return 1
+  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16';then
+    echo "Pi-Apps is not supported on Ubuntu 16."
     return 1
   elif [[ "$(uname -m)" == armv6* ]];then
     echo "Pi-Apps is not supported on ARMv6 Raspberry Pi boards. Expect some apps to fail."
