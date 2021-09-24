@@ -82,6 +82,10 @@ runonce <<"EOF"
   #rename 'Pi-Apps Terminal Plugin' app to 'Pi-Apps Terminal Plugin (python)'
   rm -rf "${DIRECTORY}/apps/Pi-Apps Terminal Plugin"
   mv -f "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin" "${DIRECTORY}/data/status/Pi-Apps Terminal Plugin (python)" 2>/dev/null
+  
+  #rename 'Whatsapp' app to 'WhatsApp'
+  rm -rf "${DIRECTORY}/apps/Whatsapp"
+  mv -f "${DIRECTORY}/data/status/Whatsapp" "${DIRECTORY}/data/status/WhatsApp" 2>/dev/null
   true
 EOF
 
