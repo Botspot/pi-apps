@@ -7,5 +7,20 @@ function error {
   exit 1
 }
 
-# Get dependencies
+
 "${DIRECTORY}/pkg-install" "telegram-desktop" "$(dirname "$0")" || error "Failed installing Telegram!"
+
+# Change menu launcher name 
+echo "[Desktop Entry]
+Version=1.0
+Name=Telegram
+Comment=Official desktop version of Telegram messaging app
+Exec=telegram-desktop -- %u
+Icon=telegram
+Terminal=false
+StartupWMClass=TelegramDesktop
+Type=Application
+Categories=Network;InstantMessaging;Qt;
+MimeType=x-scheme-handler/tg;
+Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
+X-GNOME-UsesNotifications=true" > /usr/share/applications/telegramdesktop.desktop
