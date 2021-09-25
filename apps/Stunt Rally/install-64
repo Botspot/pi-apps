@@ -7,6 +7,9 @@ function error {
   exit 1
 }
 
+#ensure this folder exists to install stunt rally to
+sudo mkdir -p /usr/local/bin
+
 #get dependencies
 #DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
 #TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
