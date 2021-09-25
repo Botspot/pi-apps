@@ -40,7 +40,7 @@ apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix
 #------------------------------------------
   
   #check for 'E: The repository'
-  if echo "$errors" | grep -qF 'E: The repository' || echo "$errors" | grep -qF 'sources.list entry misspelt' ;then
+  if echo "$errors" | grep -qF 'E: The repository' || echo "$errors" | grep -qF 'sources.list entry misspelt' || echo "$errors" | grep -qF 'component misspelt in' ;then
     message_to_user "APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
@@ -68,7 +68,7 @@ Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if echo "$errors" | grep -qF 'Could not resolve' || echo "$errors" | grep -qF 'Failed to fetch' || echo "$errors" | grep -qF 'Temporary failure resolving' || echo "$errors" | grep -qF 'Network is unreachable';then
+  if echo "$errors" | grep -qF 'Could not resolve' || echo "$errors" | grep -qF 'Failed to fetch' || echo "$errors" | grep -qF 'Temporary failure resolving' || echo "$errors" | grep -qF 'Network is unreachable' || echo "$errors" | grep -qF 'Internal Server Error' || echo "$errors" | grep -q '404 .*Not Found' ;then
     message_to_user "APT reported an unresolvable repository.
 
 Please check your Internet connection and try again."
