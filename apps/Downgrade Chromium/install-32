@@ -99,7 +99,12 @@ case "$output" in
     l10n_url="http://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser-l10n_88.0.4324.187-rpt1_all.deb"
     ffmpeg_extra_url="http://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-codecs-ffmpeg-extra_88.0.4324.187-rpt1_armhf.deb"
     ;;
-  
+  92)
+    #this is the first RPF release of chromium arm64 debs
+    cb_url="http://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser_92.0.4515.98~buster-rpt1_armhf.deb"
+    l10n_url="http://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser-l10n_92.0.4515.98~buster-rpt1_all.deb"
+    ffmpeg_extra_url="http://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-codecs-ffmpeg-extra_92.0.4515.98~buster-rpt1_armhf.deb"
+    ;;
   *)
     error "unrecognized chromium version '$output'."
     ;;
