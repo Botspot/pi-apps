@@ -10,7 +10,7 @@ function error {
 # Install snapd first 
 "${DIRECTORY}/pkg-install" "snapd" "$(dirname "$0")" || error "Failed installing snapd!"
 
-sudo snap install telegram-desktop || snap install telegram-desktop
+( sudo snap install telegram-desktop || snap install telegram-desktop ) || error "Failed installing Telegram!"
 
 # Change menu launcher name 
-sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop || sudo sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop
+sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop || sudo sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop 
