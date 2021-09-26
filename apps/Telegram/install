@@ -7,20 +7,10 @@ function error {
   exit 1
 }
 
+# Install snapd first 
+"${DIRECTORY}/pkg-install" "snapd" "$(dirname "$0")" || error "Failed installing snapd!"
 
-"${DIRECTORY}/pkg-install" "telegram-desktop" "$(dirname "$0")" || error "Failed installing Telegram!"
+sudo snap install telegram-desktop || snap install telegram-desktop
 
 # Change menu launcher name 
-echo "[Desktop Entry]
-Version=1.0
-Name=Telegram
-Comment=Official desktop version of Telegram messaging app
-Exec=telegram-desktop -- %u
-Icon=telegram
-Terminal=false
-StartupWMClass=TelegramDesktop
-Type=Application
-Categories=Network;InstantMessaging;Qt;
-MimeType=x-scheme-handler/tg;
-Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
-X-GNOME-UsesNotifications=true" > /usr/share/applications/telegramdesktop.desktop
+sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop || sudo sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop
