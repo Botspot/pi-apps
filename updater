@@ -1,6 +1,6 @@
 #!/bin/bash
+{ #prevents errors if script was modified while in use
 
-{ #this curly brace at start and end of script prevents issues when this script edits itself. See: https://stackoverflow.com/a/19430939
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -464,4 +464,4 @@ else
 fi
 
 exit 0
-} #this curly brace at start and end of script prevents issues when this script updates itself. See: https://stackoverflow.com/a/19430939
+} #prevents errors if script was modified while in use

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+{ #prevents errors if script was modified while in use
 set -o pipefail #if any command within a pipe fails, make the whole pipe fail. Necessary for error-catching with reduceapt
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 trap "exit 1" TERM
@@ -223,9 +223,9 @@ elif [ -z "$app" ];then
   error "No app name specified to pkg-install!"
 fi
 
-LANG=C
-LC_ALL=C
-LANGUAGE=C
+export LANG=C
+export LC_ALL=C
+export LANGUAGE=C
 IFS=$' \n'
 
 source "${DIRECTORY}/api"
@@ -387,3 +387,4 @@ if [ ! -z "$errors" ];then
 fi
 exit 0
 }
+} #prevents errors if script was modified while in use
