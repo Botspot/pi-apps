@@ -331,13 +331,16 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
-    
-    
-    output="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
-      --list --no-headers --column=:IMG --column=name --column=tooltip:HD \
+    app="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
+      --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3 --separator='\n')" || exit 0
     
-    echo "$output"
+    #if only one app is listed, user should not have to select it.
+    if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
+      app="$results"
+    fi
+    
+    echo "$app"
   else
     yad --title=Results --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
       --text="No results found for "\""<b>$output</b>"\""." \
