@@ -1,9 +1,9 @@
-/* ========================================================= *
- *      Pi-Apps app preloader for YAD GUI app list style.    *
- *        Written by Itai-Nelken 09/09/2021 (MM/DD/YY).      *
- * --------------------------------------------------------- *
- *  gcc pi-apps_app-prel.c -o prel -Wall -Wextra -Wpedantic  *
- * ========================================================= */
+/* =============================================================== *
+ *      Pi-Apps app list preloader for YAD GUI app list style.     *
+ *               Written by Itai-Nelken 09/09/2021                 *
+ * --------------------------------------------------------------- *
+ *  gcc genapplist-yad.c -o prel -Wall -Wextra -Wpedantic          *
+ * =============================================================== */
 
 
 #include <stdio.h>
@@ -42,8 +42,8 @@ void getLine(const char *filename, char *out, size_t size) {
 }
 
 // get the status of a app in pi-apps
-void get_app_status(const char *app, char *status, size_t size) {
-	char path[250]={0}, st[4096]={0}, *directory=getenv("DIRECTORY");
+void get_app_status(char *directory, const char *app, char *status, size_t size) {
+	char path[250]={0}, st[4096]={0};
 	snprintf(path, 250, "%s/data/status/%s", directory, app);
 	if (!fileExists(path)) { //if 'path' exists
 		getLine(path, st, 4096);
@@ -63,8 +63,8 @@ void get_app_status(const char *app, char *status, size_t size) {
 
 // get the status of a app in pi-apps but print 'none' if the app has no status file
 // but it exists (it has a uninstall script)
-void get_app_status_with_none(const char *app, char *status, size_t size) {
-	char path[250]={0}, st[4096]={0}, *directory=getenv("DIRECTORY");
+void get_app_status_with_none(char *directory, const char *app, char *status, size_t size) {
+	char path[250]={0}, st[4096]={0};
 	snprintf(path, 250, "%s/data/status/%s", directory, app);
 	if (!fileExists(path)) { //if 'path' exists
 		getLine(path, st, 4096);
@@ -83,9 +83,9 @@ void get_app_status_with_none(const char *app, char *status, size_t size) {
 }
 
 // get the path to the status icon for a app based on the it's status
-void get_status_icon(const char *app, char *icon, size_t size) {
-	char path[300]={0}, *directory=getenv("DIRECTORY"), status[30]={0};
-	get_app_status_with_none(app, status, 30);
+void get_status_icon(char *directory, const char *app, char *icon, size_t size) {
+	char path[300]={0}, status[30]={0};
+	get_app_status_with_none(directory, app, status, 30);
 	snprintf(path, 300, "%s/icons/%s.png", directory, status);
 	if(!fileExists(path)) {
 		assert(strlen(path)<=size);
@@ -98,8 +98,8 @@ void get_status_icon(const char *app, char *icon, size_t size) {
 }
 
 // get the path to a app's icon
-void get_app_icon(const char *app, char *icon, size_t size) {
-	char path[4096]={0}, *directory=getenv("DIRECTORY");
+void get_app_icon(char *directory, const char *app, char *icon, size_t size) {
+	char path[4096]={0};
 	snprintf(path, 4096, "%s/apps/%s/icon-24.png", directory, app);
 	if(!fileExists(path)) {
 		assert(strlen(path)<=size);
@@ -111,14 +111,14 @@ void get_app_icon(const char *app, char *icon, size_t size) {
 
 // get the status and first line of the description of an app in a format like this:
 // "(<STATUS>) <SHORT DESCRIPTION>" 
-void get_app_status_and_desc(const char *app, char *out, size_t out_size) {
-	char path[4096]={0}, buffer[out_size], status[30]={0}, *directory=getenv("DIRECTORY");
+void get_app_status_and_desc(char *directory, const char *app, char *out, size_t out_size) {
+	char path[4096]={0}, buffer[out_size], status[30]={0};
 	str_zero(buffer);
 	snprintf(path, 4096, "%s/apps/%s/description", directory, app);
 	if(!fileExists(path)) {
 		getLine(path, buffer, out_size);
 		buffer[strlen(buffer)-1]='\0'; // remove newline from end
-		get_app_status(app, status, 30);
+		get_app_status(directory, app, status, 30);
 		snprintf(out, out_size+33, "(%s) %s", status, buffer);
 	} else {
 		fprintf(stderr, "ERROR: get_app_status_and_desc(): app \"%s\" doesn't have a description!\n", app);
@@ -126,30 +126,36 @@ void get_app_status_and_desc(const char *app, char *out, size_t out_size) {
 }
 
 // collect and print all the data
-void print_all(const char *app) {
+void print_all(const char *app, char *directory) {
 	char st_icon[300]={0}, app_icon[4096]={0}, desc[4096]={0};
-	get_status_icon(app, st_icon, 300);
-	get_app_icon(app, app_icon, 4096);
-	get_app_status_and_desc(app, desc, 4096);
+	get_status_icon(directory, app, st_icon, 300);
+	get_app_icon(directory, app, app_icon, 4096);
+	get_app_status_and_desc(directory, app, desc, 4096);
 	printf("%s\n%s\n%s\n%s\n%s\n", st_icon, app_icon, app, app, desc);
 }
 
 int main(void) {
-	if(!getenv("APPS")) {
+	char *dir=getenv("DIRECTORY");
+	char *apps=getenv("APPS");
+	if(!apps) {
 		fprintf(stderr, "ERROR: \"APPS\" environment variable isn't set!\n");
 		return 1;
 	}
-	if(!getenv("DIRECTORY")) {
+	if(!dir) {
 		fprintf(stderr, "ERROR: \"DIRECTORY\" environment variable isn't set!\n");
 		return 1;
+	}
+
+	if(dir[strlen(dir)-1]=='/') {
+		dir[strlen(dir)-1]='\0';
 	}
 
     char *separator="\n";
     char *parsed;
     
-    parsed=strtok(getenv("APPS"), separator);
+    parsed=strtok(apps, separator);
     while(parsed!=NULL) {
-		print_all(parsed);
+		print_all(parsed, dir);
 
         parsed=strtok(NULL, separator);
     }
