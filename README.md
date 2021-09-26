@@ -36,7 +36,13 @@ To learn more:
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true" align="right" width="230px"/>
-Supported systems: armv7l or aarch64 Debian-based operating system. Buster is the primary focus, but most apps work fine on Bullseye, Ubuntu, and Kali.  
+Supported systems:
+
+- Raspberry Pi OS 32-bit: fully supported.
+- Twister OS: fully supported.
+- Raspberry Pi OS 64-bit: fully supported.
+- Bullseye, Kali, Ubuntu: you may encounter errors for some apps.
+- Android, ChromeOS, non-ARM, non-Debian: Not supported. Your mileage may vary.
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
