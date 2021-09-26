@@ -6,4 +6,7 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
+
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+snap remove telegram-desktop --purge
