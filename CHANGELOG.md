@@ -1,5 +1,5 @@
 **NOTE**: This changelog mainly covers major events in Pi-Apps like new apps being added. If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: September 04, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+Last updated: September 27, 2021 by Botspot
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -129,6 +129,18 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **8/11/2021** Added AutoStar & CloudBuddy apps made by Botspot, (insert lots of bug fixes here too). Also added checks for non-arm architectures and also add semi-support for Chromebooks
 - **8/13/2021** Added new "Search" button to search for apps
 - **8/15/2021** Added new startup splash screen to make the wait time a little less agonizing
-- **9/1/2021** Add Windows Flasher app, and update scripts to replace wget with aria2c for faster downloads if installed as small experiment
+- **9/1/2021** Add Windows Flasher app, and translate all wget commands to aria2c for faster download speeds
+- **9/9/2021** Improve the "Get it on Pi-Apps" badge, and improve launch-time by optimizing the message of the day
+- **9/10/2021** All 3-month-old Pi-Apps installations are forcibly reinstalled
+- **9/15/2021** Add Zoom PWA app
+- **9/19/2021** Add Sysmon app
+- **9/21/2021** Rewrite the `updater` script for a better updating experience, and improve Pi-Apps launch-time with the genapplist-yad program
+- **9/22/2021** Optimize the update-checking time. Now it takes **2** seconds to check for updates instead of **15** seconds.
+- **9/23/2021** Add Microsoft Teams and XSnow apps; rename Whatsapp to WhatsApp
+- **9/24/2021** Improve the layout of the Pi-Apps README
+- **9/26/2021** Properly document Pi-Apps with the new DOCUMENTATION.md file
+- **9/27/2021** Add Telegram app
+
+
 
 
