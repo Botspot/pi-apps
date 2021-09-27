@@ -1,6 +1,6 @@
 #!/bin/bash
+{ #prevents errors if script was modified while in use
 
-{ #this curly brace at start and end of script prevents issues when this script edits itself. See: https://stackoverflow.com/a/19430939
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -216,8 +216,13 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
   for file in $updatable_files ;do
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
-    #copy new version to apps/
+    #copy new version
     cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+    
+    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    if [[ "$file" == *.c ]];then
+      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
+    fi
     
     echo -e "\e[92m${file} file was copied successfully.\e[39m"
   done
@@ -252,8 +257,13 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   for file in $updatable_files ;do
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
-    #copy new version to apps/
+    #copy new version
     cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+    
+    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    if [[ "$file" == *.c ]];then
+      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
+    fi
     
     echo -e "\e[92m${file} file was copied successfully.\e[39m"
   done
@@ -464,4 +474,4 @@ else
 fi
 
 exit 0
-} #this curly brace at start and end of script prevents issues when this script updates itself. See: https://stackoverflow.com/a/19430939
+} #prevents errors if script was modified while in use

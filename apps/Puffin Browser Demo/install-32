@@ -7,9 +7,10 @@ function error {
   exit 1
 }
 
-wget https://download.puffinbrowser.com/linux/raspbian/puffin-internet-terminal-demo_8.2.4.705_armhf.deb -O ~/puffin-internet-terminal.deb || error "Failed to download puffin-internet-terminal.deb!"
+rm -f ~/puffin.deb
+wget -O ~/puffin.deb https://download.puffinbrowser.com/linux/raspbian/puffin-internet-terminal-demo_8.2.4.705_armhf.deb || error "Failed to download puffin-internet-terminal.deb!"
 
-sudo apt install -y --fix-missing ~/puffin-internet-terminal.deb || error "APT failed to install puffin-internet-terminal.deb!"
+"${DIRECTORY}/pkg-install" ~/puffin.deb "$(dirname "$0")" || error "APT failed to install puffin-internet-terminal.deb!"
 
-rm ~/puffin-internet-terminal.deb
+rm -f ~/puffin.deb
 

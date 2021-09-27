@@ -209,8 +209,10 @@ while true;do
   
   if [ "$action" == main-window ];then
     
+    prevaction="$action" #remember the previous action we came from
+    
     #generate the list for the yad window
-    LIST="$("${DIRECTORY}/preload" $guimode "$prefix")"
+    LIST="$("${DIRECTORY}/preload" $guimode "$prefix" 2>/dev/null)"
     
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
@@ -236,8 +238,6 @@ while true;do
         "${buttons[@]}" \
       )"
       button=$? #get exit code to determine which button was pressed
-      
-      prevaction="$action" #remember the pervious action we came from
       
       case $button in
       1)
@@ -376,7 +376,6 @@ $LIST"
           #-g ~/blur.png
           )"
       fi
-      prevaction="$action" #remember the previous action we came from
       action=details
       
       if [ -z "$app" ];then
@@ -386,7 +385,7 @@ $LIST"
       
       #homepage button
       if [ "$app" == 'pi-apps-homepage1' ];then
-        chromium-browser https://github.com/Botspot/pi-apps &
+        chromium-browser "$(cat "${DIRECTORY}/etc/git_url")" &
         app=''
         action=main-window
       fi

@@ -17,11 +17,11 @@
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
     Submit an app</a>
-<p align="center"><strong>Developed with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong>
+<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
 
 ## Introduction
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
-There is no centralized software repository, except for the `apt` repositories which severely lack many desktop applications.  
+There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
 Surely there is a better way! **There is.**  
 Introducing Pi-Apps, an expanding, well-maintained collection of app installation-scripts that you can run with **one click**.  
 
@@ -36,7 +36,13 @@ To learn more:
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true" align="right" width="230px"/>
-System requirements: armv7l or aarch64 Debian-based operating system. Buster is the primary focus, but most apps work fine on Bullseye and Ubuntu.  
+Supported systems:
+
+- Raspberry Pi OS 32-bit: fully supported.
+- Twister OS: fully supported.
+- Raspberry Pi OS 64-bit: fully supported.
+- Bullseye, Kali, Ubuntu: you may encounter errors for some apps.
+- Android, ChromeOS, non-ARM, non-Debian: Not supported. Your mileage may vary.
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>

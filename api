@@ -331,13 +331,16 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
-    
-    
-    output="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
-      --list --no-headers --column=:IMG --column=name --column=tooltip:HD \
+    app="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
+      --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3 --separator='\n')" || exit 0
     
-    echo "$output"
+    #if only one app is listed, user should not have to select it.
+    if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
+      app="$results"
+    fi
+    
+    echo "$app"
   else
     yad --title=Results --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
       --text="No results found for "\""<b>$output</b>"\""." \
@@ -435,7 +438,7 @@ format_log_file() { #remove ANSI escape sequences from a given file, and add OS 
   [ -z "$1" ] && error "format_log_file: no filename given!"
   [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
   
-  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" | grep -vF '===============================================================================' | grep -vF '-------------------------------------------------------------------------------' > "$1"
+  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
@@ -555,19 +558,28 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
     command wget "$@"
+    exitcode=$?
   elif [ "$use" == aria2c ];then
-    #make default filename if $file empty
+    
+    #if $file empty, generate it based on url
     if [ -z "$file" ];then
       file="$(pwd)/$(basename "$url")"
     fi
     
+    #use this command to download files with aria2c
+    command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1)
+    
     #suppress output if -q flag passed
     if echo "$@" | grep -q '\-q' ;then
-      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1 >/dev/null
+      "${command[@]}" >/dev/null
+      exitcode=$?
     else
-      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+      "${command[@]}" | grep -v 'Download Progress Summary\|==========\|----------\|^$'
+      exitcode="${PIPESTATUS[0]}"
     fi
   fi
+  
+  return $exitcode
 }
 
 #if this script is being run standalone, not sourced
