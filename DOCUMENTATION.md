@@ -1,12 +1,30 @@
 # Inside Pi-Apps: everything a power-user should know
 This guide will attempt to explain how Pi-Apps works. By nature, this cannot be complete, so feel free to look through the scripts yourself and ask the Pi-Apps developers questions.
+## Table of contents
+- [Introduction](#introduction)
+- [The app-folder](#the-app-folder)
+- [The main Pi-Apps folder](#the-main-pi-apps-folder)
+- [The App Status folder](#the-app-status-folder)
+- [The `manage` script](#the-manage-script)
+- [The `pkg-install` script](#the-pkg-install-script)
+- [The `updater` script](#the-updater-script)
+- [The `api` script](#the-api-script)
+- [The `gui` script](#the-gui-script)
+- [The `createapp` script](#the-createapp-script)
+- [The `settings` script](#the-settings-script)
+- [The `preload` script](#the-preload-script)
+- [The `preload-daemon` script](#the-preload-daemon-script)
+- [The `terminal-run` script](#the-terminal-run-script)
+- [The `categoryedit` script](#the-categoryedit-script)
+- [The `logviewer` script](#the-logviewer-script)
+- [The `viewlog` script](#the-viewlog-script)
+# How Pi-Apps works
 ## Introduction
 - Pi-Apps is written in **`bash`**. This is a scripting language for Linux, with origins in the 80s. Bash is not a compiled language like C, it's an interpreted language, similar to Python and Windows .bat files.
   Bash serves a different purpose than a compiled language: orchestrating OS-level events and prioritizing programming-time over execution-time. It is system-dependent and architecture-dependent.
   You probably interact with `bash` without even realizing it! Nearly all Linux distributions today use a **bash terminal**. *If you have ever opened a terminal, you have interacted with bash.*
 - Pi-Apps is comprised of **bash scripts**. These are text files that are filled with bash commands. To illustrate this, you can often *open* a bash script, *copy* the contents, and *paste* it into a bash terminal. And it will work exactly the same as if you executed the file! In fact, if Pi-Apps was reorganized into a single standalone bash script, you could *copy and paste the entire thing* into a terminal and have a working app store!
 - If Pi-Apps is only bash scripts, **how does it display a GUI**? (graphical user interface) Good question. When Pi-Apps was just a concept, I knew that bash was the obvious choice for installing apps. And that makes sense: if you normally install an application by running commands in a *bash-terminal*, it only makes sense to use a *bash-script*. Bash was the best choice for installing apps, but what about the GUI? Most GUIs are made in C, C++, Python or JavaScript with GTK, Qt, or Electron. These were workable options, but for long-term maintainability and convenience I wanted to only use **one language for the whole thing**. Someone suggested `zenity` - a simple dialog program meant for bash scripts. I tried it, but was soon frustrated by its limitations. Then I discovered **`yad`** - an improved version of zenity with many more options. Pi-Apps uses `yad` for everything.
-# How Pi-Apps works
 ## The app-folder
 It makes sense to start here. After all, what is an app store without apps?  
 Basically, for every app, there is a **folder**. This folder is called an "**app-folder**". On a default pi-apps installation, all app-folders are located in `/home/pi/pi-apps/apps`.  
@@ -64,20 +82,20 @@ Now we're getting somewhere! You just installed the Arduino app.
 The `manage` script supports these **modes**:
 - `install`: installs the specified app.
   Several things occur before the app's installation script is run:
-  1. The specified app must exist.
-  2. The app must not be disabled. If it is, the `manage` script exits with an exit-code of zero.
-  3. If your system is unsupported (determined by the `is_supported_system` function in the api script), a warning will appear, along with a 10-second wait-time.
-  4. The app's installation script is determined. Depending on the app and on your system's CPU architecture, the script-name may be "`install`", "`install-32`", or "`install-64`".
-  5. Determine a unique filename for the log-file to be generated. (This file will store the entire output of the installation process.)
-  6. Finally, the app's installation script is executed.
-      - It is executed with the `nice` command, to lower the priority of the process so that the rest of the system remains responsive, even while compiling.
-      - Its output is redirected to the log-file, *and* to stdout. (usually the terminal)
-  7. If the app's installation script **succeeded** (if it exited with a return code of `0`):
-      - The the log-file is renamed to `install-success-$app`
-      - The `manage` script exits with a return code of `0`.
-  8. However, if the app's installation script failed (any return code except `0`):
-      - The the log-file will be renamed to `install-fail-$app`.
-      - The `manage` script exits with a return code of `1`.
+  - The specified app must exist.
+  - The app must not be disabled. If it is, the `manage` script exits with an exit-code of zero.
+  - If your system is unsupported (determined by the `is_supported_system` function in the api script), a warning will appear, along with a 10-second wait-time.
+  - The app's installation script is determined. Depending on the app and on your system's CPU architecture, the script-name may be "`install`", "`install-32`", or "`install-64`".
+  - Determine a unique filename for the log-file to be generated. (This file will store the entire output of the installation process.)
+  - Finally, the app's installation script is executed.
+    - It is executed with the `nice` command, to lower the priority of the process so that the rest of the system remains responsive, even while compiling.
+    - Its output is redirected to the log-file, *and* to stdout. (usually the terminal)
+  - If the app's installation script **succeeded** (if it exited with a return code of `0`):
+    - The the log-file is renamed to `install-success-$app`
+    - The `manage` script exits with a return code of `0`.
+  - However, if the app's installation script failed (any return code except `0`):
+    - The the log-file will be renamed to `install-fail-$app`.
+    - The `manage` script exits with a return code of `1`.
 - `uninstall`: exactly like the `install` mode except that it uninstalls the specified app.
   - These two modes are so similar that they share the same code!
 - `install-if-not-installed`: Installs the specified app, only if it has not already been installed.
@@ -94,29 +112,29 @@ The `manage` script supports these **modes**:
   Downgrade Chromium"
   ```
   Note about `multi-install`: This mode includes GUI elements.
-  1. Before installing anything, `manage` will check if any apps are **already installed**. If so, a `yad` dialog will appear and ask if you *really* want to install that app again.
+  - Before installing anything, `manage` will check if any apps are **already installed**. If so, a `yad` dialog will appear and ask if you *really* want to install that app again.
       - If you choose "No", the app is removed from the list of apps to install.
-  2. Then, each app will be installed, one at a time.
+  - Then, each app will be installed, one at a time.
       - It does this by running the manage script in the `install` mode, once for each app
-  4. If any apps fail to install, a `yad` dialog will appear and ask permission to send the error log to Pi-Apps developers.
+  - If any apps fail to install, a `yad` dialog will appear and ask permission to send the error log to Pi-Apps developers.
 - `multi-uninstall`: exactly like `multi-install` except that it uninstalls the list of apps.
   - These two modes are so similar that they share the same code!
 - `check-all`: This mode is the Pi-Apps equivalent to an `apt update`. It lists updatable apps.
-  1. It downloads the latest pi-apps repository to the `update/pi-apps` folder. (using `git clone` or `git pull`, as appropriate) Now, there are two versions of Pi-Apps on the local filesystem: the "**local version**" and the "**latest version**".
-  2. Each app-folder is compared.
+  - It downloads the latest pi-apps repository to the `update/pi-apps` folder. (using `git clone` or `git pull`, as appropriate) Now, there are two versions of Pi-Apps on the local filesystem: the "**local version**" and the "**latest version**".
+  - Each app-folder is compared.
       - If the app-folder ***only*** exists in the local version, then no action is taken.
       - If the app-folder ***only*** exists in the online version, then it must be a new app and is added to the list of updatable apps.
       - If the app-folder exists in both locations and the **contents do match**, then no action is taken.
       - If the app-folder exists in both locations but the **contents don't match**, the online version must have received an update. As a result, the app is added to the list of updatable apps.
-  3. Finally, the list of updatable apps (one app per line) is written to standard output and the script exits.
+  - Finally, the list of updatable apps (one app per line) is written to standard output and the script exits.
 - `update`: This mode will update a single app. (like an `apt upgrade`)
   It copies the new version from the update folder to the main folder, reinstalling if necessary.
-  1. First, the app may need to be installed, or it may not:
+  - First, the app may need to be installed, or it may not:
       - If the app is currently installed, *and* its current installation script does not match the online version, then the app is uninstalled.
-  2. Then the current (old) app-folder is sent to the system's **Trash** folder.
+  - Then the current (old) app-folder is sent to the system's **Trash** folder.
       - This is a failsafe: just in case you made changes to the app-folder, you have an option to restore those changes. (as opposed to permanent deletion)
-  3. The app-folder is copied from the `update/pi-apps/apps` folder to the main `apps` folder.
-  4. If the app was uninstalled earlier, it will now be installed back.
+  - The app-folder is copied from the `update/pi-apps/apps` folder to the main `apps` folder.
+  - If the app was uninstalled earlier, it will now be installed back.
 - `update-all`: This mode will check for app-updates and install them without any user-interaction.
   The `manage` script will run itself in the `check-all` mode, then, for every app that `check-all` mentioned, it will `update` each app.
 
@@ -373,16 +391,16 @@ To start Pi-Apps on a specific category:
 3. The pi-apps logo is displayed in the terminal (using the `generate_logo` function)
 4. A series of `runonce` entries are executed in the background.
 5. The message of the day is determined.
-    - To save time, it's stored in `data/announcements`.
-    - If that file is missing or it's more than a day old, it is downloaded from [the pi-apps-announcements repository](https://github.com/Botspot/pi-apps-announcements).
-    - One random line is taken from the file and used as the message for this session.
+  - To save time, it's stored in `data/announcements`.
+  - If that file is missing or it's more than a day old, it is downloaded from [the pi-apps-announcements repository](https://github.com/Botspot/pi-apps-announcements).
+  - One random line is taken from the file and used as the message for this session.
 6. We now come to a `while` loop that runs the GUI. Inside is an `if` statement that obeys the following values of the `$action` variable:
-    - `main-window` - Handles the app list.
-      - This may be a yad window or an xlunch window, depending on the "App List Style" setting.
-      - Xlunch is compiled, if necessary.
-    - `details` - Displays the details of the current app.
-    - `search` - Sets the `$app` variable to the output of the `app_search_gui` function.
-    - The rest of the modes need no explanation. They are: `exit`, `back`, `install`, `uninstall`, `scripts`, `edit`, `credits`, `enable`, `viewlog`, `mind-reading`, `view-updates`, `unknown`.
+  - `main-window` - Handles the app list.
+    - This may be a yad window or an xlunch window, depending on the "App List Style" setting.
+    - Xlunch is compiled, if necessary.
+  - `details` - Displays the details of the current app.
+  - `search` - Sets the `$app` variable to the output of the `app_search_gui` function.
+  - The rest of the modes need no explanation. They are: `exit`, `back`, `install`, `uninstall`, `scripts`, `edit`, `credits`, `enable`, `viewlog`, `mind-reading`, `view-updates`, `unknown`.
 ## The `createapp` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/createapp`. 
@@ -468,8 +486,8 @@ To generate the app-list for xlunch for the main page (no category)
 #### How it works:
 This script is designed for maximum speed. As a result, it uses many tricks to run faster.
 1. Compile the `genapplist-yad` program. This is a C program designed to improve preloading times, but if it fails, a bash-based fallback is used.
-	- It uses `gcc` to compile the `/etc/genapplist-yad.c`file to the `/etc/genapplist-yad` binary.
-	- This program is tested; if it fails to produce 5 lines of output for one input app, the program is deleted to use the bash-based fallback.
+    - It uses `gcc` to compile the `/etc/genapplist-yad.c`file to the `/etc/genapplist-yad` binary.
+    - This program is tested; if it fails to produce 5 lines of output for one input app, the program is deleted to use the bash-based fallback.
 2. Determine if it's **necessary** to generate the app-list.
     - If nothing has been modified in the `apps` folder, the `settings` folder, the `update-status` folder, the `etc` folder, the `api` script, the `preload` script, and the `categories` file, **skip** generating the app-list, **return the contents** of the previous app-list in the `data/preload` folder, and **exit**.
 3. If it is necessary to generate the app-list, use the `app_categories` function to generate a list of all apps in their respective categories.
@@ -479,8 +497,8 @@ This script is designed for maximum speed. As a result, it uses many tricks to r
 6. Remove apps that are not compatible with the operating system's CPU architecture.
 7. Generate the list of visible categories.
 8. Generate the list of visible apps.
-	- If the GUI-mode is yad, use the `genapplist-yad` program if it exists.
-	- Otherwise, generate the list of apps the slower bash-based way.
+    - If the GUI-mode is yad, use the `genapplist-yad` program if it exists.
+    - Otherwise, generate the list of apps the slower bash-based way.
 9. Save the resulting app-list to a file in the `data/preload` folder. (so that next time `preload` is run, it might not have to generate anything)
 10. In the background, place all app-icons in the disk cache. This improves load-time.
 11. Output the resulting app-list.
@@ -519,7 +537,7 @@ sudo apt upgrade' "Upgrading your packages"
 The `terminal-run` script will not exit until the terminal closes.
 #### How it works:
 As mentioned earlier, this script supports running a ***list*** of commands in a terminal. That may sound easy enough, but it's not.
--  Terminals are not designed to support this. Most terminals can, with some clever tricks, but it varies on a case-by-case basis.
+- Terminals are not designed to support this. Most terminals can, with some clever tricks, but it varies on a case-by-case basis.
 
 As mentioned earlier, this script will keep running until the terminal has been closed. How is that possible?
 - Before running any commands in a terminal, a special file is created in the `/tmp` folder. This file is empty for now.
