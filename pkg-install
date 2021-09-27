@@ -234,7 +234,7 @@ apt_lock_wait
 #sudo apt update
 {
 echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
-output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | tee /dev/stderr | reduceapt)"
+output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | reduceapt | tee /dev/stderr)"
 exitcode=$?
 
 #inform user about autoremovable packages
