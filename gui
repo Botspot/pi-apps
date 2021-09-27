@@ -22,11 +22,6 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 generate_logo
 
-#Variable 1 is used to view the details of the specified app
-if [ ! -z "$1" ];then
-  app="$1"
-fi
-
 (
 #mark wine and box86 as installed, if twisteros
 runonce <<"EOF"
@@ -191,8 +186,14 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 [ -z "$guimode" ] && guimode=yad
 #mode=yad
 
+#Variable 1 is used to view the details of the specified app
+if [ ! -z "$1" ];then
+  app="$1"
+  action='details'
+else
+  action='main-window'
+fi
 prefix=''
-action='main-window'
 
 while true;do
   
@@ -494,6 +495,9 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         #if status is corrupted or unknown, then show both buttons
         whichbutton+=("--button=!${DIRECTORY}/icons/uninstall.png:2" "--button=!${DIRECTORY}/icons/install.png:4")
       fi
+      
+      #kill the splash screen
+      (sleep 1; kill "$splashpid" 2>/dev/null) &
       
       echo "$description" | yad --text-info --fontname=12 --wrap --show-uri --text="$(echo "$abovetext" | sed 's/&/&amp;/g')" \
         --image="${DIRECTORY}/apps/${app}/icon-64.png" --image-on-top \
