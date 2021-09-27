@@ -7,8 +7,13 @@ function error {
   exit 1
 }
 
+#this may end up removing flatpack.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-( sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y ) || error "Failed uninstalling Telegram!"
+#if flatpak still exists, then uninstall telegram.
+if command -v flatpak >/dev/null ;then
+  sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y || error "Flatpak failed to uninstall org.telegram.desktop!"
+fi
 
-sudo rm -f ~/.local/share/applications/telegram.desktop || exit 0
+rm -f ~/.local/share/applications/telegram.desktop
+exit 0
