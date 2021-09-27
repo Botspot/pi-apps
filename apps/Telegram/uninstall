@@ -9,4 +9,4 @@ function error {
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-( sudo snap remove telegram-desktop --purge || snap remove telegram-desktop --purge ) || error "Failed uninstalling Telegram!"
+( sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y ) || error "Failed uninstalling Telegram!"
