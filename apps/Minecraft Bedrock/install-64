@@ -8,7 +8,7 @@ function error {
 
 # Get dependencies
 sudo dpkg --add-architecture armhf
-"${DIRECTORY}/pkg-install" "curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm12:armhf" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm9:armhf" "$(dirname "$0")" || exit 1
 
 #Download file
 cd ~
