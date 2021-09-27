@@ -11,5 +11,4 @@ function error {
 
 ( sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y ) || error "Failed uninstalling Telegram!"
 
-# remove menu shortcut
-rm ~/.local/share/applications/telegram.desktop
+sudo rm -f ~/.local/share/applications/telegram.desktop || exit 0
