@@ -412,6 +412,8 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   
   update_now_gui
   
+  "$0" set-status
+  
 elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   
   updatable_apps="$(get_updatable_apps)"
