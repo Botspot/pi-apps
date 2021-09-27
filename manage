@@ -164,7 +164,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   #analytics
-  "${DIRECTORY}/etc/bitlylink" "$app" "$mode" &
+  bitly_link "$app" "$mode" &
   
   #determine which script to run
   if [ "$mode" == install ];then
@@ -174,7 +174,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     scriptname=uninstall
   fi
   appscript="${DIRECTORY}/apps/${app}/${scriptname}"
-    
+  
   #determine path for log file to be created
   logfile="${DIRECTORY}/logs/${mode}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
@@ -303,7 +303,7 @@ elif [ "$1" == 'check-all' ];then
   if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
     rm -rf "${DIRECTORY}/update"
     mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2|| error "failed to clone repository to the update directory!"
+    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2 || error "failed to clone repository to the update directory!"
   fi
   
   echo "Done" 1>&2
