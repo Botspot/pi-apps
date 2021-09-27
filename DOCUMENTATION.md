@@ -1,7 +1,7 @@
 # Inside Pi-Apps: everything a power-user should know
 This guide will attempt to explain how Pi-Apps works. By nature, this cannot be complete, so feel free to look through the scripts yourself and ask the Pi-Apps developers questions.
 ## Introduction
-- Pi-Apps is written in **`bash`**. This is a scripting language for Linux, with origins in the 80s. Bash is not a compiled language like C, it's a scripting language, similar to Python and Windows .bat files.
+- Pi-Apps is written in **`bash`**. This is a scripting language for Linux, with origins in the 80s. Bash is not a compiled language like C, it's an interpreted language, similar to Python and Windows .bat files.
   Bash serves a different purpose than a compiled language: orchestrating OS-level events and prioritizing programming-time over execution-time. It is system-dependent and architecture-dependent.
   You probably interact with `bash` without even realizing it! Nearly all Linux distributions today use a **bash terminal**. *If you have ever opened a terminal, you have interacted with bash.*
 - Pi-Apps is comprised of **bash scripts**. These are text files that are filled with bash commands. To illustrate this, you can often *open* a bash script, *copy* the contents, and *paste* it into a bash terminal. And it will work exactly the same as if you executed the file! In fact, if Pi-Apps was reorganized into a single standalone bash script, you could *copy and paste the entire thing* into a terminal and have a working app store!
@@ -43,7 +43,8 @@ Each file in this folder will contain one of these possible values:
 - `disabled` - The app is in a disabled state: it will not be installed under any circumstances. 
   - This status is useful for TwisterOS where Box86 comes pre-installed. We don't want Pi-Apps installing Box86 under any circumstances, even if another app requires it to be installed.
 
-As mentioned earlier, Pi-Apps runs on bash scripts. Each script has a certain job to do, and together they make Pi-Apps work. Below is a concise explanation for how each script works:
+As mentioned earlier, Pi-Apps runs on bash scripts. Each script has a certain job to do, and together they make Pi-Apps work.  
+Below is a concise explanation for how each script works:
 ## The `manage` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/manage`. 
@@ -219,8 +220,8 @@ This script is a collection of **functions** that do various things. Functions a
 ```bash
 source ~/pi-apps/api
 ```
-You can now run any of the functions inside the api script as if they were real commands.
-Alternatively, the `api` script supports running a single function without being sourced:
+You can now run any of the functions inside the api script as if they were real commands.  
+Alternatively, the `api` script supports running a single function *without* being sourced:
 ```bash
 ~/pi-apps/api apt_lock_wait
 ```
@@ -397,8 +398,8 @@ To edit an existing app:
 ~/pi-apps/createapp Arduino
 ```
 #### How it works:
-This script is one long `while` loop with a `case` statement for each step. (similar to the `gui` script)
-Each dialog allows you to go forward or backward and the current step is stored in the `$step` variable.
+This script is one long `while` loop with a `case` statement for each step. (similar to the `gui` script)  
+Each dialog allows you to go forward or backward and the current step is stored in the `$step` variable.  
 That's about it. View the script to see how each step works.
 ## The `settings` script
 #### Location:
@@ -486,7 +487,7 @@ This script is designed for maximum speed. As a result, it uses many tricks to r
 12. Run the `preload-daemon` script in the background to preload other categories. That way, when using Pi-Apps, by the time you click any category, it has just been preloaded and is ready-to-go.
 ## The `preload-daemon` script
 #### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/preload-daemon`.
+On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/preload-daemon`.  
 This file is located in the `etc` folder because it's one of the smaller scripts.
 #### Purpose:
 To generate the app-list for all categories.
@@ -501,7 +502,7 @@ Preload all categories for `xlunch` only once:
 ```
 ## The `terminal-run` script
 #### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/terminal-run`.
+On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/terminal-run`.  
 This file is located in the `etc` folder because it's one of the smaller scripts.
 #### Purpose:
 This script may be Botspot's *greatest contribution to the open-source world*. Apart from this script, there is no reliable way to:
@@ -541,10 +542,10 @@ Debug mode: if you set the `DEBUG` variable to `1`, `terminal-run` will output t
 - This is useful for debugging, when no terminal appears and we want to know which terminal was being used.
 ## The `categoryedit` script
 #### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/categoryedit`.
+On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/categoryedit`.  
 This file is located in the `etc` folder because it's one of the smaller scripts.
 #### Purpose:
-Manage Pi-Apps categories.
+Manage Pi-Apps categories.  
 The file containing categories is located in `data/categories/structure`.
 #### Usage:
 Run the category editor:
@@ -561,7 +562,7 @@ Remove the Arduino app from the list of categories:
 ```
 ## The `logviewer` script
 #### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/logviewer`.
+On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/logviewer`.  
 This file is located in the `etc` folder because it's one of the smaller scripts.
 #### Purpose:
 Browse the list of log files, opening any files that you click on with the `viewlog` script.
@@ -571,7 +572,7 @@ Browse the list of log files, opening any files that you click on with the `view
 ```
 ## The `viewlog` script
 #### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/viewlog`.
+On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/etc/viewlog`.  
 This file is located in the `etc` folder because it's one of the smaller scripts.
 #### Purpose:
 View the specified log file in a text editor.
@@ -582,4 +583,4 @@ View the specified log file in a text editor.
 Notes:
 - This script will kill previous instances of itself.
 - This script does not obey the "Preferred text editor" setting.
-  - Viewing a log in ***`geany`*** (the default editor) is cumbersome and breaks the whole concept of closing the editor once you click on a new logfile.
+  - Viewing a log in ***`geany`*** (the default "Preferred text editor" setting) is cumbersome and breaks the whole concept of closing the editor once you click on a new logfile.
