@@ -212,6 +212,11 @@ sudo apt install --reinstall nginx-full"
     message_to_user "This error was not caused by Pi-Apps, it is caused by your libwine-development package."
   fi
   
+  #check for "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1"
+  if echo "$errors" | grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" ;then
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your firmware-microbit-micropython-dl package."
+  fi
+  
   #no need for this function to exit with return code 1 just because the last if statement evaluated as false
   return 0
 }
