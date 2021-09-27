@@ -28,9 +28,10 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
     sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
   fi
   
-  if dpkg -l box86 &>/dev/null ;then
-    sudo apt purge -y box86
-    sudo apt install -y box86-no-binfmt-restart
+  if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
+    sudo apt purge -y box86-no-binfmt-restart
+    sudo apt update
+    sudo apt install -y box86
   fi
 EOF
 ) &>/dev/null
