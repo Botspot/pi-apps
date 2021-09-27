@@ -390,15 +390,13 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #  done
   #fi
   
-  #while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-  #  sleep 1
-  #done
-  
   #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 3
   done
-  sleep 0.5
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+    sleep 1
+  done
   
   echo "Done"
 }
