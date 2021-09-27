@@ -7,10 +7,17 @@ function error {
   exit 1
 }
 
-# Install snapd first 
-"${DIRECTORY}/pkg-install" "snapd" "$(dirname "$0")" || error "Failed installing snapd!"
+# Install flatpak first 
+"${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || error "Failed installing Flatpak!"
 
-( sudo snap install telegram-desktop || snap install telegram-desktop ) || error "Failed installing Telegram!"
+( sudo flatpak install flathub org.telegram.desktop -y || flatpak install flathub org.telegram.desktop -y ) || error "Failed installing Telegram!"
 
-# Change menu launcher name 
-sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop || sudo sed -i s/"Name=Telegram Desktop"/"Name=Telegram"/g /usr/share/applications/snap/telegram-desktop_telegram-desktop.desktop 
+# Create menu shortcut
+echo "[Desktop Entry]
+Name=Telegram
+Exec=flatpak run org.telegram.desktop
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Network;" > ~/.local/share/applications/telegram.desktop || error "Failed to create menu shortcut!"
