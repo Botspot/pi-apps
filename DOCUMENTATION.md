@@ -112,7 +112,8 @@ The `manage` script supports these **modes**:
   CloudBuddy
   Downgrade Chromium"
   ```
-  Note about `multi-install`: This mode includes GUI elements.
+  Note about `multi-install`: This mode includes 
+  elements.
   - Before installing anything, `manage` will check if any apps are **already installed**. If so, a `yad` dialog will appear and ask if you *really* want to install that app again.
       - If you choose "No", the app is removed from the list of apps to install.
   - Then, each app will be installed, one at a time.
@@ -198,7 +199,7 @@ DIRECTORY=$HOME/pi-apps
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/updater`. 
 #### Purpose:
-This script handles Pi-Apps updates, both for apps and for files.
+This script handles Pi-Apps updates, both for apps and for files. Apps do not have version numbers, so updating involves comparing the installation-script of the existing app-folder with the installation-script of the new app-folder.
 #### Usage:
 ```bash
 ~/pi-apps/updater
@@ -392,16 +393,16 @@ To start Pi-Apps on a specific category:
 3. The pi-apps logo is displayed in the terminal (using the `generate_logo` function)
 4. A series of `runonce` entries are executed in the background.
 5. The message of the day is determined.
-  - To save time, it's stored in `data/announcements`.
-  - If that file is missing or it's more than a day old, it is downloaded from [the pi-apps-announcements repository](https://github.com/Botspot/pi-apps-announcements).
-  - One random line is taken from the file and used as the message for this session.
+    - To save time, it's stored in `data/announcements`.
+    - If that file is missing or it's more than a day old, it is downloaded from [the pi-apps-announcements repository](https://github.com/Botspot/pi-apps-announcements).
+    - One random line is taken from the file and used as the message for this session.
 6. We now come to a `while` loop that runs the GUI. Inside is an `if` statement that obeys the following values of the `$action` variable:
-  - `main-window` - Handles the app list.
-    - This may be a yad window or an xlunch window, depending on the "App List Style" setting.
-    - Xlunch is compiled, if necessary.
-  - `details` - Displays the details of the current app.
-  - `search` - Sets the `$app` variable to the output of the `app_search_gui` function.
-  - The rest of the modes need no explanation. They are: `exit`, `back`, `install`, `uninstall`, `scripts`, `edit`, `credits`, `enable`, `viewlog`, `mind-reading`, `view-updates`, `unknown`.
+    - `main-window` - Handles the app list.
+      - This may be a yad window or an xlunch window, depending on the "App List Style" setting.
+      - Xlunch is compiled, if necessary.
+    - `details` - Displays the details of the current app.
+    - `search` - Sets the `$app` variable to the output of the `app_search_gui` function.
+    - The rest of the modes need no explanation. They are: `exit`, `back`, `install`, `uninstall`, `scripts`, `edit`, `credits`, `enable`, `viewlog`, `mind-reading`, `view-updates`, `unknown`.
 ## The `createapp` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/createapp`. 
