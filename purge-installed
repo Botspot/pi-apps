@@ -11,9 +11,6 @@ function error {
   exit 1
 }
 
-LANG=C
-LC_ALL=C
-
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 echo -e "\e[97m\nRunning purge-installed...\e[39m"
@@ -22,7 +19,9 @@ if [ -z "$app" ];then
   error "No app name specified to purge-installed!"
 fi
 
-LANG=C LC_ALL=C
+export LANG=C
+export LC_ALL=C
+export LANGUAGE=C
 
 source "${DIRECTORY}/api"
 apt_lock_wait
