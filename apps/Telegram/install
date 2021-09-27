@@ -1,0 +1,32 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Install flatpak first 
+"${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || error "Failed installing Flatpak!"
+
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+sudo flatpak install flathub org.telegram.desktop -y || flatpak install flathub org.telegram.desktop -y || error "Flatpak failed to install org.telegram.desktop!"
+sudo rm -f /var/lib/flatpak/app/org.telegram.desktop/current/active/export/share/applications/org.telegram.desktop.desktop
+
+# Create menu shortcut
+echo "[Desktop Entry]
+Version=1.0
+Name=Telegram 
+Comment=Official desktop version of Telegram messaging app
+Exec=/usr/bin/flatpak run --branch=stable --arch=arm --command=telegram-desktop --file-forwarding org.telegram.desktop -- @@u %u @@
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupWMClass=TelegramDesktop
+Type=Application
+Categories=Chat;Network;InstantMessaging;Qt;
+MimeType=x-scheme-handler/tg;
+Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
+X-GNOME-UsesNotifications=true
+X-Flatpak=org.telegram.desktop" > ~/.local/share/applications/telegram.desktop || error "Failed to create menu shortcut!"
