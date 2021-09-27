@@ -5,37 +5,6 @@ error() {
   exit 1
 }
 
-#if this script is being run standalone, not sourced
-if [[ "$0" == */api ]];then
-  DIRECTORY="$(readlink -f "$(dirname "$0")")"
-fi
-
-if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ];then
-  echo "api: DIRECTORY variable must be set to valid pi-apps folder. Default folder: $HOME/pi-apps"
-  return 1
-fi
-
-repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
-
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
-  arch=64
-elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
-  arch=32
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
-
-list_intersect() { #Outputs only the apps that appear in both stdin and in $1
-  #                      change \n to \|     |   remove last "\|"
-  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
-}
-
-list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
-  #                       change \n to \|     |   remove last "\|"
-  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
-}
-
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
   if [ -z "$1" ] || [ "$1" == local ];then
     #list all apps
@@ -100,6 +69,16 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     
   fi
   
+}
+
+list_intersect() { #Outputs only the apps that appear in both stdin and in $1
+  #                      change \n to \|     |   remove last "\|"
+  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
+list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
+  #                       change \n to \|     |   remove last "\|"
+  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
 }
 
 app_categories() { #lists all apps in a virtual filesystem based on categories file
@@ -174,6 +153,24 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   
   #show special All Apps category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g'
+}
+
+bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+  #This cannot possibly be used to identify you, or any information about you.
+  #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+  app="$1"
+  trigger="$2"
+  
+  [ -z "$app" ] && error "bitly_link(): requires an app argument"
+  [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
+  
+  #if the 'Enable Analytics' setting is enabled
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+    #determine the name of the link to "click"
+    bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
+    #click it
+    curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
+  fi
 }
 
 usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
@@ -299,7 +296,7 @@ app_search() { #search all apps for $1
   [ -z "$1" ] && error "app_search(): requires a search query."
   
   #search description and website
-  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website -o -name credits \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g")"
+  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website -o -name credits \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g" | sed "s+/credits++g")"
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
@@ -406,7 +403,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   echo "Done"
 }
 
-is_supported_system() {
+is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   if uname -m | grep -q 'x86' || uname -m | grep -q 'i686' || uname -m | grep -q 'i386';then
     echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
@@ -434,14 +431,6 @@ is_supported_system() {
   fi
 }
 
-format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
-  [ -z "$1" ] && error "format_log_file: no filename given!"
-  [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
-  
-  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
-  
-}
-
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
@@ -458,6 +447,14 @@ get_device_info() { #returns information about current install and hardware
   elif [ ! -z "$LC_ALL" ];then
     echo "Language: $LC_ALL"
   fi
+  
+}
+
+format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
+  [ -z "$1" ] && error "format_log_file: no filename given!"
+  [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
+  
+  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
@@ -511,7 +508,7 @@ ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
 \e[0m\e[0m"
 }
 
-wget() { #this function intercepts all wget commands being used in app scripts. It uses aria2c if possible.
+wget() { #this function intercepts all wget commands being used in app scripts. When possible, it uses aria2c.
   local file=''
   local url=''
   local use=aria2c
@@ -567,7 +564,7 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
     fi
     
     #use this command to download files with aria2c
-    command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1)
+    command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=5 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
     
     #suppress output if -q flag passed
     if echo "$@" | grep -q '\-q' ;then
@@ -581,6 +578,27 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
   
   return $exitcode
 }
+
+#if this script is being run standalone, not sourced
+if [[ "$0" == */api ]];then
+  DIRECTORY="$(readlink -f "$(dirname "$0")")"
+fi
+
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+  echo "api: DIRECTORY variable must be set to valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
+
+repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
+
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
+  arch=64
+elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
+  arch=32
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
 
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
