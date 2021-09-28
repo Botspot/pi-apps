@@ -8,7 +8,7 @@ function error {
 }
 
 # Uninstall nodejs, node and npm from other sources first
-echo "Uninstall nodejs, node and npm from other sources first ..."
+echo "Uninstalling Nodejs, node and npm from other sources first ..."
 sudo snap remove node --purge 2&> /dev/null
 sudo rm -rf $NVM_DIR ~/.npm ~/.bower 2&> /dev/null
 sed -i '/NVM_DIR/d' ~/.bashrc  2&> /dev/null
