@@ -7,7 +7,14 @@ function error {
   exit 1
 }
 
-# Add Nodesource keyring
+# Uninstall nodejs, node and npm from other sources first
+echo "Uninstall nodejs, node and npm from other sources first ..."
+sudo snap remove node --purge > /dev/null
+sudo rm -rf $NVM_DIR ~/.npm ~/.bower > /dev/null
+sed -i '/NVM_DIR/d' ~/.bashrc  > /dev/null
+sudo apt purge node npm nodejs -y  > /dev/null # I can't find a script in pi-apps to uninstall package in installation script 
+
+# Add Nodesource  apt key 
 ( curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash - ) || error "Failed adding nodesource keyring!"
 
 # Install Node.js
