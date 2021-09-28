@@ -7,18 +7,10 @@ function error {
   exit 1
 }
 
-#prepare to run nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-cd $NVM_DIR
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-#Uninstall NodeJS
-nvm deactivate
-nvm uninstall default || error "Failed to purge Node.JS!"
+# Remove source list
+rm -fv /etc/apt/sources.list.d/nodesource*
 
-#Remove nvm
-sudo rm -rf "$NVM_DIR"
-
-#remove nvm stuff from bashrc
-sed -i '/NVM_DIR/d' ~/.bashrc
+# Remove nodesource apt key
+apt-key del 1655A0AB68576280
