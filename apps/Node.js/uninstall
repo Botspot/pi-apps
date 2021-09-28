@@ -9,8 +9,11 @@ function error {
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
+# The `purge-installed` script seems unable to purge nodejs 
+sudo apt purge -y nodejs
+
 # Remove source list
-rm -fv /etc/apt/sources.list.d/nodesource*
+sudo rm -fv /etc/apt/sources.list.d/nodesource*
 
 # Remove nodesource apt key
-apt-key del 1655A0AB68576280
+sudo apt-key del 1655A0AB68576280
