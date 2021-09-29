@@ -7,16 +7,20 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 "${DIRECTORY}/pkg-install" "libappindicator1 libnm0" "$(dirname "$0")" || exit 1
 
 if dpkg -l steam-devices ;then
   echo "Removing steam-devices package because it conflicts with steam-launcher..."
-  sudo apt purge -y steam-devices
+  sudo apt purge -y steam-devices 2>&1 | reduceapt
 fi
 
 if dpkg -l steamlink ;then
   echo "Removing steamlink package because it conflicts with steam-launcher..."
-  sudo apt purge -y steamlink
+  sudo apt purge -y steamlink 2>&1 | reduceapt
 fi
 
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
