@@ -7,10 +7,14 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-sudo apt purge -y steam-launcher
+sudo apt purge -y steam-launcher 2>&1 | reduceapt
 
 sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam ~/Desktop/steam.desktop
 exit 0
