@@ -24,8 +24,8 @@ export NVM_DIR="$HOME/.nvm"
 mkdir -p "$NVM_DIR"
 wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
 
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+source "${DIRECTORY}/api"
+if [ "$arch" == 32 ];then
   #armhf, so patch nvm script to forcibly use armhf
   sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
 fi
