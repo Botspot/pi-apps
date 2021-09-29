@@ -7,11 +7,15 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 #get java
 if [ -f "${DIRECTORY}/pkg-install" ];then
   "${DIRECTORY}/pkg-install" "openjdk-11-jdk" "$(dirname "$0")" || exit 1
 else
-  apt install -y openjdk-11-jdk || sudo apt install -y openjdk-11-jdk || error "Failed to install openjdk-11-jdk."
+  apt install -y openjdk-11-jdk 2>&1 | reduceapt || sudo apt install -y openjdk-11-jdk 2>&1 | reduceapt || error "Failed to install openjdk-11-jdk."
 fi
 
 rm -rf ~/jgrasp.zip ~/jgrasp
