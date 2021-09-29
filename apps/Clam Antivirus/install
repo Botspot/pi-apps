@@ -9,17 +9,21 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 # Get package clamav
 "${DIRECTORY}/pkg-install" "clamav" "$(dirname "$0")" || exit 1
 
 wget https://github.com/dave-theunsub/clamtk/releases/download/v6.13/clamtk_6.13-1_all.deb
-sudo apt install --fix-broken ./clamtk_*.deb -y
+sudo apt install --fix-broken ./clamtk_*.deb -y 2>&1 | reduceapt 
 rm clamtk_*.deb
 
 #if thunar file manager installed then also install clamtk thunar extension
 if [ -f /usr/bin/thunar ];then
   wget https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
-  sudo apt install ./thunar-sendto-clamtk_0.06-1_all.deb -y
+  sudo apt install ./thunar-sendto-clamtk_0.06-1_all.deb -y 2>&1 | reduceapt
   rm ./thunar-sendto-clamtk_0.06-1_all.deb
 fi
 exit 0
