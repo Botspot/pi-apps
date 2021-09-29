@@ -7,6 +7,10 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 #variable for all chromium versions supported
 VERSIONS="65
 72
@@ -128,7 +132,7 @@ wget -O ffmpeg_extra.deb "$ffmpeg_extra_url" || error "Failed to download $ffmpe
 
 echo "Installing the packages..."
 "${DIRECTORY}/api" apt_lock_wait
-sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" || error "APT failed to install the packages"
+sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" 2>&1 | reduceapt || error "APT failed to install the packages"
 rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
 
 echo "Holding Chromium version so it won't upgrade..."
