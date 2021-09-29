@@ -7,6 +7,10 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 #Remove deb files if already downloaded
 rm -f ~/libfdk-aac2_2.0.1-1_armhf.deb ~/libfdk-aac-dev_2.0.1-1_armhf.deb ~/obs_armhf.deb
 
@@ -18,7 +22,7 @@ wget https://github.com/techcoder20/RPIObsInstaller/blob/main/obs_armhf.deb?raw=
 #remove obs-studio package first
 if dpkg -l obs-studio &>/dev/null ;then
   echo "Removing obs-studio package first..."
-  sudo apt purge -y obs-studio
+  sudo apt purge -y obs-studio 2>&1 | reduceapt
 fi
 
 #Install all debs. Local dependencies, obs_armhf.deb, normal dependencies, and libxcb*
