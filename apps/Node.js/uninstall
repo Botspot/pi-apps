@@ -18,7 +18,10 @@ nvm deactivate
 nvm uninstall default || error "Failed to purge Node.JS!"
 
 #Remove nvm
-sudo rm -rf "$NVM_DIR"
+sudo rm -rf "$NVM_DIR" ~/.npm ~/.bower
+
+# Remove nvm initialisation script
+sudo rm -f  ~/.node_bashrc
 
 #remove nvm stuff from bashrc
-sed -i '/NVM_DIR/d' ~/.bashrc
+sed -i '/node_bashrc/d' ~/.bashrc
