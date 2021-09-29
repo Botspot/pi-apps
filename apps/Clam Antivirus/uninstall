@@ -6,11 +6,15 @@ function error {
   exit 1
 }
 
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 if [ -f /usr/bin/thunar ];then
-  sudo apt purge thunar-sendto-clamtk -y
+  sudo apt purge thunar-sendto-clamtk -y 2>&1 | reduceapt
 fi
 
 exit 0
