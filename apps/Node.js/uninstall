@@ -7,17 +7,21 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
+#prepare to run nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+cd $NVM_DIR
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+#Uninstall NodeJS
+nvm deactivate
+nvm uninstall default || error "Failed to purge Node.JS!"
 
-# The `purge-installed` script seems unable to purge nodejs 
-sudo apt purge -y nodejs 2>&1 | reduceapt || error "Failed purge Node.js!" 
+#Remove nvm
+sudo rm -rf "$NVM_DIR" ~/.npm ~/.bower
 
-# Remove source list
-sudo rm -f /etc/apt/sources.list.d/nodesource* || error "Failed remove nodesource source list!"
+# Remove nvm initialisation script
+sudo rm ~/.node_bashrc
 
-# Remove nodesource apt key
-sudo apt-key del 1655A0AB68576280 || error "Failed delete Nodesource apt key!"
+#remove nvm stuff from bashrc
+sed -i '/node_bashrc/d' ~/.bashrc
