@@ -148,6 +148,13 @@ Unfortunately for you, your operating system is too old for apt to understand th
 Please flash your SD card with the latest release of Raspberry Pi OS: https://www.raspberrypi.org/software"
   fi
   
+  #check for corrupted package: "lzma error: compressed data is corrupt"
+  if echo "$errors" | grep -qF "lzma error: compressed data is corrupt" ;then
+    message_to_user "A package failed to install because it appears corrupted.
+Try installing the same app again and if the problem persists please reach out to the Pi-Apps developers."
+
+  fi
+  
 #------------------------------------------
 #apt/dpkg issues above, package issues below
 #------------------------------------------
