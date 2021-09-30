@@ -7,15 +7,9 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
-"${DIRECTORY}/pkg-install" "libconfig9 xcompmgr" "$(dirname "$0")" || exit 1
-
 wget https://sonic-pi.net/files/releases/v3.2.2/sonic-pi_3.2.2_4_armhf.deb || error "Failed to download deb file!"
 
-sudo apt install -y --no-install-recommends ./sonic-pi_3.2.2_4_armhf.deb 2>&1 | reduceapt || error "Failed to install Sonic Pi package!"
+"${DIRECTORY}/pkg-install" "libconfig9 xcompmgr ./sonic-pi_3.2.2_4_armhf.deb" "$(dirname "$0")" || exit 1
 
 rm -f sonic-pi_3.2.2_4_armhf.deb
 
