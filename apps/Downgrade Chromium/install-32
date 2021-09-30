@@ -132,7 +132,7 @@ wget -O ffmpeg_extra.deb "$ffmpeg_extra_url" || error "Failed to download $ffmpe
 
 echo "Installing the packages..."
 "${DIRECTORY}/api" apt_lock_wait
-sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" 2>&1 | reduceapt || error "APT failed to install the packages"
+"${DIRECTORY}/pkg-install" "$(pwd)/cb.deb $(pwd)/l10n.deb $(pwd)/ffmpeg_extra.deb" "$(dirname "$0")" || error "APT failed to install the packages"
 rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
 
 echo "Holding Chromium version so it won't upgrade..."
