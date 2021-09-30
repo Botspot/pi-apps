@@ -23,7 +23,7 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 generate_logo
 
 (
-#mark wine and box86 as installed, if twisteros
+#mark wine and box86 as disabled, if twisteros
 runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
     echo 'disabled' > "${DIRECTORY}/data/status/Wine (x86)"
@@ -81,6 +81,11 @@ runonce <<"EOF"
   #rename 'Whatsapp' app to 'WhatsApp'
   rm -rf "${DIRECTORY}/apps/Whatsapp"
   mv -f "${DIRECTORY}/data/status/Whatsapp" "${DIRECTORY}/data/status/WhatsApp" 2>/dev/null
+  
+  #rename 'Sonic Pi 3.2' to 'Sonic Pi'
+  rm -rf "${DIRECTORY}/apps/Sonic Pi 3.2"
+  mv -f "${DIRECTORY}/data/status/Sonic Pi 3.2" "${DIRECTORY}/data/status/Sonic Pi" 2>/dev/null
+  
   true
 EOF
 
@@ -117,10 +122,17 @@ runonce <<"EOF"
   rm -f "${DIRECTORY}/etc/bitlylink"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
     sudo dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && sudo apt update && sudo apt install box86 -y
-  else
-    true
   fi
+  
+  #if box86 is supposedly installed, but box86 command not found, reinstall box86
+  if [ "$(app_status Box86)" == 'installed' ] && ! command -v box86 >/dev/null;then
+    rm -f "${DIRECTORY}/data/status/Box86"
+    "${DIRECTORY}/manage" uninstall Box86
+    "${DIRECTORY}/manage" install Box86
+  fi
+  true
 EOF
+
 ) &
 
 #check for updates in background
@@ -432,7 +444,14 @@ $LIST"
       action='main-window'
     else
       #app
-      app="$(echo "$app" | head -n1)"
+      
+      #if an icon exists but it's not named correctly, resize it and create proper icon-names
+      if [ ! -f "${DIRECTORY}/apps/$app/icon-64.png" ] && [ ! -f "${DIRECTORY}/apps/$app/icon-24.png" ] && [ -f "${DIRECTORY}/apps/$app/"*.png ] && command -v convert >/dev/null ;then
+        origicon="$(echo "${DIRECTORY}/apps/$app/"*.png)"
+        echo "Converting $origicon to icon-64.png and icon-24.png"
+        convert "$origicon" -resize 64x64 "${DIRECTORY}/apps/${app}/icon-64.png"
+        convert "$origicon" -resize 24x24 "${DIRECTORY}/apps/${app}/icon-24.png"
+      fi
       
       if [ -f "${DIRECTORY}/data/installed-packages/${app}" ] && [ ! -z "$(cat "${DIRECTORY}/data/installed-packages/${app}")" ];then
         installedpackages="
@@ -476,6 +495,9 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
       #array holding various buttons that may be passed to yad
       whichbutton=()
       
+      if [ -f "${DIRECTORY}/apps/$app/uninstall" ] || [ -f "${DIRECTORY}/apps/$app/install" ] || [ -f "${DIRECTORY}/apps/$app/install-$arch" ];then
+        whichbutton+=("--button=Scripts!${DIRECTORY}/icons/shellscript.png!Feel free to see how an app is installed!"$'\n'"Perfect for learning or troubleshooting.:6")
+      fi
       if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
         #if edit button enabled, show it
         whichbutton+=("--button=Edit!${DIRECTORY}/icons/edit.png!Make changes to the app:8")
@@ -513,7 +535,6 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
         --image="${DIRECTORY}/apps/${app}/icon-64.png" --image-on-top \
         --title="Details of ${app}" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=300 \
         --button=Back!"${DIRECTORY}/icons/back.png":0 \
-        --button=Scripts!"${DIRECTORY}/icons/shellscript.png"!"Feel free to see how an app is installed!"$'\n'"Perfect for learning or troubleshooting.":6 \
         "${whichbutton[@]}"
       button=$? #get exit code to determine which button was pressed
       

@@ -7,8 +7,6 @@ function error {
   exit 1
 }
 
-sudo apt purge -y sonic-pi
-
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
