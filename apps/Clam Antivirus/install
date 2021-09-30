@@ -9,15 +9,12 @@ function error {
   exit 1
 }
 
-# Get package clamav
-"${DIRECTORY}/pkg-install" "clamav" "$(dirname "$0")" || exit 1
-
-wget https://github.com/dave-theunsub/clamtk/releases/download/v6.13/clamtk_6.13-1_all.deb
-sudo apt install --fix-broken ./clamtk_*.deb -y
-rm clamtk_*.deb
+wget -O ~/clamtk.deb 'https://github.com/dave-theunsub/clamtk/releases/download/v6.13/clamtk_6.13-1_all.deb' || error "Failed to download clamtk.deb"
+"${DIRECTORY}/pkg-install" "clamav $HOME.clamtk.deb" "$(dirname "$0")" || exit 1
+rm -f ~/clamtk.deb
 
 #if thunar file manager installed then also install clamtk thunar extension
-if [ -f /usr/bin/thunar ];then
+if command -v thunar >/dev/null ;then
   wget https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
   sudo apt install ./thunar-sendto-clamtk_0.06-1_all.deb -y
   rm ./thunar-sendto-clamtk_0.06-1_all.deb
