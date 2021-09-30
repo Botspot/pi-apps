@@ -7,10 +7,6 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
 # Get dependencies
 "${DIRECTORY}/pkg-install" "snapd libsquashfuse0 squashfuse fuse libgconf-2-4" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse snapd"
 
