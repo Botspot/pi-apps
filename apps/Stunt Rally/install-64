@@ -7,10 +7,6 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
 #ensure this folder exists to install stunt rally to
 sudo mkdir -p /usr/local/bin
 
@@ -24,7 +20,7 @@ echo "Installing dependencies..."
 
 if ! command -v checkinstall >/dev/null ; then
   wget https://archive.org/download/macos_921_qemu_rpi/checkinstall_20210126-1_arm64.deb || error "Failed to download checkinstall!"
-  sudo apt install ./checkinstall_20210126-1_arm64.deb -y 2>&1 | reduceapt || error "Failed to install checkinstall!"
+  "${DIRECTORY}/pkg-install" "./checkinstall_20210126-1_arm64.deb" "$(dirname "$0")" || error "Failed to install checkinstall!"
   CHECKINSTALL=1
 fi
 
