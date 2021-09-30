@@ -13,7 +13,7 @@ killall webcord &>/dev/null && echo "Closing Discord first..."
 
 echo "Downloading Webcord..."
 rm -f ~/webcord.deb
-wget -O ~/webcord.deb https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_arm64.deb
+wget -O ~/webcord.deb https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_arm64.deb || error "Failed to download webcord.deb"
 
 echo "Installing Webcord..."
 "${DIRECTORY}/pkg-install" "$HOME/webcord.deb" "$(dirname "$0")" || error "Failed to install webcord.deb!"
