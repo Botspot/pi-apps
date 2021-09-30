@@ -13,6 +13,9 @@ wget -O ~/ms-teams.deb https://github.com/IsmaelMartinez/teams-for-linux/release
 #change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
 sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop
 
+#fix MS Teams showing up in two categories
+sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop
+
 #MS Teams sometimes launches to a blank screen. Deleting these folders will fix it:
 rm -rf "$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Service Worker" "$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Cache"
 
