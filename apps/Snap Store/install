@@ -12,8 +12,7 @@ reduceapt() { #remove unwanted lines from apt output
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libsquashfuse0 squashfuse fuse libgconf-2-4" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse"
-sudo apt install -y snapd 2>&1 | reduceapt || error "APT failed to install snapd"
+"${DIRECTORY}/pkg-install" "snapd libsquashfuse0 squashfuse fuse libgconf-2-4" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse snapd"
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
 sudo systemctl start snapd.service
