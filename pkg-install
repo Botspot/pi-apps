@@ -331,7 +331,7 @@ fi
 #mark ALL packages as autoremovable
 {
 for package in $PKG_LIST ;do
-  sudo -E apt-mark auto "$packagename" || error "pkg-install: failed to mark the $packagename package as autoremovable."
+  sudo -E apt-mark auto "$package" || error "pkg-install: failed to mark the $package package as autoremovable."
 done
 }
 
