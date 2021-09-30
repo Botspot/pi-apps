@@ -7,13 +7,9 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
 cd $HOME
 wget https://github.com/angryip/ipscan/releases/download/3.7.6/ipscan_3.7.6_all.deb
 # Get dependencies
 "${DIRECTORY}/pkg-install" "openjdk-11-jdk rpm fakeroot" "$(dirname "$0")" || exit 1
-sudo apt --fix-broken -y install ~/ipscan_3.7.6_all.deb 2>&1 | reduceapt
-rm ~/ipscan_3.7.6_all.deb
+"${DIRECTORY}/pkg-install" "~/ipscan_3.7.6_all.deb" "$(dirname "$0")" || exit 1
+rm -f ~/ipscan_3.7.6_all.deb
