@@ -1,0 +1,46 @@
+#!/bin/bash
+{ #prevents errors if script was modified while in use
+set -o pipefail #if any command within a pipe fails, make the whole pipe fail. Necessary for error-catching with reduceapt
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+trap "exit 1" TERM
+export TOP_PID=$$
+
+error() {
+  echo -e "\e[91m$1\e[39m" 1>&2
+  kill -w -s TERM $TOP_PID
+  exit 1
+}
+
+app="$(basename "$1")" #remove any slashes to just get program name
+PURGED_LIST="$(cat "${DIRECTORY}/data/purged-packages/${app}")" #get the list of purged-packages for $app
+
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
+echo "Running restore-purged" 
+if [ ! -f "${DIRECTORY}/data/purged-packages/${app}" ]; then
+  error "purged-packages data file not found for ${app}"
+elif [ -z "$PURGED_LIST" ]; then
+  error "No packages found to restore-purged!"
+elif [ -z "$app" ];then
+  error "No app name specified to restore-purged!"
+fi
+
+
+source "${DIRECTORY}/api"
+apt_lock_wait
+
+ 
+output="$(sudo -E LANG=C LC_ALL=C LANGUAGE=C apt install $PURGED_LIST -y 2>&1 | reduceapt)"
+exitcode=$?
+
+errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+  echo -e "\e[91mFailed to install the packages!\e[39m"
+  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  exit 1
+else
+  rm -f "${DIRECTORY}/data/purged-packages/${app}"
+fi 
+}
