@@ -7,10 +7,6 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
 "${DIRECTORY}/pkg-purge" "ipscan" "$(dirname "$0")" || error "Failed to purge Angry IP Scanner!"
 
 #if your app installs any packages, keep this command here so those packages will be removed.
