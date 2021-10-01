@@ -14,7 +14,7 @@ reduceapt() { #remove unwanted lines from apt output
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 if [ -f /usr/bin/thunar ];then
-  sudo apt purge thunar-sendto-clamtk -y 2>&1 | reduceapt
+  "${DIRECTORY}/pkg-purge" "thunar-sendto-clamtk" "$(dirname "$0")" || exit 1
 fi
 
 exit 0
