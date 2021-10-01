@@ -7,12 +7,8 @@ function error {
   exit 1
 }
 
-reduceapt() { #remove unwanted lines from apt output
-  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
-}
-
 if command -v webapp-manager >/dev/null ;then
-  sudo apt purge webapp-manager -y 2>&1 | reduceapt || error "Failed to uninstall webapp-manager"
+  "${DIRECTORY}/pkg-purge" "webapp-manager" "$(dirname "$0")" || error "Failed to uninstall webapp-manager"
 fi
 
 #if your app installs any packages, keep this command here so those packages will be removed.
