@@ -1,0 +1,45 @@
+#!/bin/bash
+{ #prevents errors if script was modified while in use
+set -o pipefail #if any command within a pipe fails, make the whole pipe fail. Necessary for error-catching with reduceapt
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+trap "exit 1" TERM
+export TOP_PID=$$
+
+error() {
+  echo -e "\e[91m$1\e[39m" 1>&2
+  kill -w -s TERM $TOP_PID
+  exit 1
+}
+
+PURGE_LIST="$1" #quotation-marked, space-seperated list of package names to install
+app="$(basename "$2")" #remove any slashes to just get program name
+
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
+
+echo "Running pkg-purge" 
+if [ -z "$PURGE_LIST" ];then
+  error "No package names specified to pkg-purge!"
+elif [ -z "$app" ];then
+  error "No app name specified to pkg-purge!"
+fi
+
+
+source "${DIRECTORY}/api"
+apt_lock_wait
+
+ 
+output="$(sudo -E LANG=C LC_ALL=C LANGUAGE=C apt purge $1 --autoremove -y 2>&1 | reduceapt)"
+exitcode=$?
+
+errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+  echo -e "\e[91mFailed to uninstall the packages!\e[39m"
+  echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+  exit 1
+else
+  echo $PURGE_LIST > "${DIRECTORY}/data/purged-packages/${app}"
+fi 
+}
+
