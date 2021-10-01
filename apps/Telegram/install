@@ -20,7 +20,7 @@ echo "[Desktop Entry]
 Version=1.0
 Name=Telegram 
 Comment=Official desktop version of Telegram messaging app
-Exec=/usr/bin/flatpak run --branch=stable --arch=arm --command=telegram-desktop --file-forwarding org.telegram.desktop -- @@u %u @@
+Exec=flatpak run --command=telegram-desktop --file-forwarding org.telegram.desktop -- @@u %u @@
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 StartupWMClass=TelegramDesktop
