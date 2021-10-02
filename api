@@ -388,32 +388,32 @@ runonce() { #run command only if it's never been run before. Useful for one-time
 }
 
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
-  echo -n "Waiting until APT locks are released... "
-  #while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-  #  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-  #    sleep 0.5
-  #  done
-  #fi
+  
+  #only display a message if there was an apt lock
+  local displayed=0
   
   #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+    
+    #display a message to user only once
+    if [ "$displayed" == 0 ];then
+      echo -n "Waiting until APT locks are released... "
+      displayed=1
+    fi
     sleep 3
   done
   while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-    sleep 1
+    #display a message to user only once
+    if [ "$displayed" == 0 ];then
+      echo -n "Waiting until APT locks are released... "
+      displayed=1
+    fi
   done
   
-  echo "Done"
+  [ "$displayed" == 1 ] && echo "Done"
+  true
 }
+
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
