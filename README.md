@@ -103,11 +103,11 @@ You can also join our cheerful community: <img src="https://img.shields.io/disco
 ## To-do
 
 - [X] Make an **app-creation assistant**. (completed with the `createapp` script)  
-- [X] Add Pi-Apps to **Twister OS**. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
-- [X] Support individual **32-bit** and **64-bit** install scripts.  
+- [Done] Add Pi-Apps to **Twister OS**. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
+- [Done] Support individual **32-bit** and **64-bit** install scripts.  
 - [X] Allow **multiple apps** to be selected from the app list and installed sequentially.  
 - [X] Add a **search function** to the app list. To enable it, switch to an **xlunch** theme in **Pi-Apps Settings** -> **App List Style**.
-- [X] Break up the long app list with some **categories**.  
+- [Done] Break up the long app list with some **categories**.  
 - [X] Add a new category containing all apps currently **installed**.
 - [X] Make updates display directly in the app-list.
 
