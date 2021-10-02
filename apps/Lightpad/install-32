@@ -9,6 +9,8 @@ function error {
 
 wget https://github.com/Pi-Apps-Coders/files/raw/main/lightpad_0.0.8rev1_armhf.deb -O ~/lightpad.deb || error "Failed to download lightpad.deb!"
 
+"${DIRECTORY}/api" apt_lock_wait
+
 "${DIRECTORY}/pkg-install" "$HOME/lightpad.deb" "$(dirname "$0")" || error 'Failed to install lightpad.deb'
 
 rm -f ~/lightpad.deb
