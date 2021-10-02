@@ -28,7 +28,7 @@ sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #install git
 if ! command -v git >/dev/null;then
-  sudo apt install -y git || error "Failed to install git."
+  sudo apt install -y git libssl-dev || error "Failed to install git."
 fi
 
 #install curl
