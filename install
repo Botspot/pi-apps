@@ -31,6 +31,13 @@ if ! command -v git >/dev/null;then
   sudo apt install -y git libssl-dev || error "Failed to install git."
 fi
 
+#remove libssl1.0-dev if it's installed to prevent git clone issues laster
+
+if [ $(dpkg-query -W -f='${Status}' libssl1.0-dev 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+  sudo apt purge -y libssl1.0-dev
+fi
+
 #install curl
 if ! command -v curl >/dev/null;then
   sudo apt install -y curl || error "Failed to install curl."
