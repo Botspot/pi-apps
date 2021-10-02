@@ -2,7 +2,7 @@
  *      Pi-Apps app list preloader for YAD GUI app list style.     *
  *               Written by Itai-Nelken 09/09/2021                 *
  * --------------------------------------------------------------- *
- *  gcc genapplist-yad.c -o prel -Wall -Wextra -Wpedantic          *
+ *      gcc genapplist-yad.c -o prel -Wall -Wextra -Wpedantic      *
  * =============================================================== */
 
 
@@ -12,7 +12,13 @@
 #include <string.h>
 #include <assert.h>
 
-// check if a file exists
+/******
+ * Check if a file exists
+ * 
+ * @param path The path to the file to check.
+ * 
+ * @return 0: exists, 1: doesn't exist
+ ******/
 int fileExists(const char *path) {
 	FILE *file=fopen(path, "rb");
 	if (!file) {
@@ -22,7 +28,11 @@ int fileExists(const char *path) {
     return 0;
 }
 
-// fill a string with nul characters ('\0')
+/******
+ * Fill a string with nul (\0) characters
+ * 
+ * @param str The string to fill.
+ ******/
 void str_zero(char *str) {
 	char *s=str;
 	while(*s++) {
@@ -30,7 +40,13 @@ void str_zero(char *str) {
 	}
 }
 
-// get a single line from a file
+/******
+ * Get a single line from a file.
+ * 
+ * @param filename The path to the file to get the line from.
+ * @param out The char array to put the line in.
+ * @param size The size of 'out'.
+ ******/
 void getLine(const char *filename, char *out, size_t size) {
 	FILE *f=fopen(filename, "r");
 	if(!f) {
@@ -41,7 +57,14 @@ void getLine(const char *filename, char *out, size_t size) {
 	}
 }
 
-// get the status of a app in pi-apps
+/******
+ * get the status of a app in pi-apps
+ * 
+ * @param directory The path to the pi-apps folder (e.g /home/pi/pi-apps)
+ * @param app The app to get it's status.
+ * @param status The char array to put the status in.
+ * @param size The size of 'status'.
+ ******/
 void get_app_status(char *directory, const char *app, char *status, size_t size) {
 	char path[250]={0}, st[4096]={0};
 	snprintf(path, 250, "%s/data/status/%s", directory, app);
@@ -51,18 +74,18 @@ void get_app_status(char *directory, const char *app, char *status, size_t size)
 		assert(strlen(st)<=size);
 		snprintf(status, size, "%s", st);
 	} else {
-		snprintf(path, 250, "%s/apps/%s/uninstall", directory, app);
-		if(!fileExists(path)) {
-			assert(strlen("uninstalled")<=size);
-			snprintf(status, size, "uninstalled");
-		} else {
-			fprintf(stderr, "ERROR: get_app_status(): No such app: \"%s\"!\n", app);
-		}
+    snprintf(status, size, "uninstalled");
 	}
 }
 
-// get the status of a app in pi-apps but print 'none' if the app has no status file
-// but it exists (it has a uninstall script)
+/******
+ * get the status of a app in pi-apps but if it doesn't have a status file but it exists, use "none"
+ * 
+ * @param directory The path to the pi-apps folder (e.g /home/pi/pi-apps)
+ * @param app The app to get it's status.
+ * @param status The char array to put the status in.
+ * @param size The size of 'status'.
+ ******/
 void get_app_status_with_none(char *directory, const char *app, char *status, size_t size) {
 	char path[250]={0}, st[4096]={0};
 	snprintf(path, 250, "%s/data/status/%s", directory, app);
@@ -72,17 +95,19 @@ void get_app_status_with_none(char *directory, const char *app, char *status, si
 		assert(strlen(st)<=size);
 		snprintf(status, size, "%s", st);
 	} else {
-		snprintf(path, 250, "%s/apps/%s/uninstall", directory, app);
-		if(!fileExists(path)) {
-			assert(strlen("none")<=size);
 			snprintf(status, size, "none");
-		} else {
-			fprintf(stderr, "ERROR: get_app_status(): No such app: \"%s\"!\n", app);
 		}
 	}
 }
 
-// get the path to the status icon for a app based on the it's status
+/******
+ * get the path to the status icon for a app based on the it's status.
+ * 
+ * @param directory The path to the pi-apps folder (e.g /home/pi/pi-apps)
+ * @param app The app to get it's status icon.
+ * @param status The char array to put the status icon in.
+ * @param size The size of 'icon'.
+ ******/
 void get_status_icon(char *directory, const char *app, char *icon, size_t size) {
 	char path[300]={0}, status[30]={0};
 	get_app_status_with_none(directory, app, status, 30);
@@ -97,7 +122,14 @@ void get_status_icon(char *directory, const char *app, char *icon, size_t size) 
 	}
 }
 
-// get the path to a app's icon
+/******
+ * get the path to a apps icon.
+ * 
+ * @param directory The path to the pi-apps folder (e.g /home/pi/pi-apps)
+ * @param app The app to get it's icon path.
+ * @param icon The char array to put the status in.
+ * @param size The size of 'icon'.
+ ******/
 void get_app_icon(char *directory, const char *app, char *icon, size_t size) {
 	char path[4096]={0};
 	snprintf(path, 4096, "%s/apps/%s/icon-24.png", directory, app);
@@ -109,8 +141,14 @@ void get_app_icon(char *directory, const char *app, char *icon, size_t size) {
 	}
 }
 
-// get the status and first line of the description of an app in a format like this:
-// "(<STATUS>) <SHORT DESCRIPTION>" 
+/******
+ * get the status and first line of the description of an app in the following format: '(STATUS) DESCRIPTION'
+ * 
+ * @param directory The path to the pi-apps folder (e.g /home/pi/pi-apps)
+ * @param app The app
+ * @param out The char array to put the output in.
+ * @param size The size of 'out'.
+ ******/
 void get_app_status_and_desc(char *directory, const char *app, char *out, size_t out_size) {
 	char path[4096]={0}, buffer[out_size], status[30]={0};
 	str_zero(buffer);
@@ -125,7 +163,12 @@ void get_app_status_and_desc(char *directory, const char *app, char *out, size_t
 	}
 }
 
-// collect and print all the data
+/******
+ * Collect and print to stdout all the data for a app.
+ * 
+ * @param app the app to use
+ * @param directory the path to the pi-apps folder (e.g /home/pi/pi-apps)
+ ******/
 void print_all(const char *app, char *directory) {
 	char st_icon[300]={0}, app_icon[4096]={0}, desc[4096]={0};
 	get_status_icon(directory, app, st_icon, 300);
@@ -135,8 +178,12 @@ void print_all(const char *app, char *directory) {
 }
 
 int main(void) {
+	// get pointers to the DIRECTORY and APPS environment variables
+	// They should be set when running this program
 	char *dir=getenv("DIRECTORY");
 	char *apps=getenv("APPS");
+
+	// If they don't existt, print an error and exit.
 	if(!apps) {
 		fprintf(stderr, "ERROR: \"APPS\" environment variable isn't set!\n");
 		return 1;
@@ -146,15 +193,18 @@ int main(void) {
 		return 1;
 	}
 
+	// remove the trailing '/' from DIRECTORY if it exists
 	if(dir[strlen(dir)-1]=='/') {
 		dir[strlen(dir)-1]='\0';
 	}
 
-    char *separator="\n";
+	// separator for strok()
+    const char *separator="\n";
     char *parsed;
     
+    // get the first "token"
     parsed=strtok(apps, separator);
-    while(parsed!=NULL) {
+    while(parsed!=NULL) { // print all the data for every app in APPS
 		print_all(parsed, dir);
 
         parsed=strtok(NULL, separator);
