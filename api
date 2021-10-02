@@ -1,9 +1,23 @@
 #!/bin/bash
 
-error() {
+#informational functions below
+error() { #red text and exit 1
   echo -e "\e[91m$1\e[39m" 1>&2
   exit 1
 }
+
+warning() { #yellow text
+  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1"
+}
+
+status() { #cyan text to indicate what is happening
+  echo -e "\e[96m$1\e[39m"
+}
+
+status_green() { #announce the success of a major action
+  echo -e "\e[92m$1\e[39m"
+}
+#end of informational functions
 
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
   if [ -z "$1" ] || [ "$1" == local ];then
