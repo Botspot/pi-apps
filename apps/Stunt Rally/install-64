@@ -52,8 +52,7 @@ rm -f $DEBNAME || error "Failed to delete old deb!"
 dpkg-deb -b $DEBDIR || sudo dpkg-deb -b $DEBDIR || error "Failed to repack deb!"
 
 #install the deb
-"${DIRECTORY}/api" apt_lock_wait
-sudo apt install -f -y $DEBNAME || error "Failed to install the deb!"
+"${DIRECTORY}/pkg-install" "$(pwd)/$DEBNAME" "$(dirname "$0")" || error "Failed to install the deb!"
 rm -rf ~/stuntrally
 
 #fix the menu shortcut icons
