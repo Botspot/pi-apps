@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-VERSION=arduino-1.8.15
+VERSION=arduino-1.8.16
 
 if [ -f ~/.local/share/$VERSION/uninstall.sh ];then
   cd ~/.local/share

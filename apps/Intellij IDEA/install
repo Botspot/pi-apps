@@ -9,14 +9,14 @@ function error {
 
 # Get dependencies
 "${DIRECTORY}/pkg-install" "openjdk-11-jdk" "$(dirname "$0")" || exit 1
-rm -f ideaIC-2021.1.1.tar.gz 2>/dev/null
+rm -f ideaIC-2021.2.2.tar.gz 2>/dev/null
 
 rm -rf ~/idea_ic 2>/dev/null
 mkdir ~/idea_ic || error "Failed to make idea_ic folder!"
 cd ~/idea_ic
-wget https://download.jetbrains.com/idea/ideaIC-2021.1.1.tar.gz || error "Failed to download!"
-tar xf ideaIC-2021.1.1.tar.gz --strip-components=1 || error "Failed to extract!"
-rm -f ideaIC-2021.1.1.tar.gz 2>/dev/null
+wget https://download.jetbrains.com/idea/ideaIC-2021.2.2.tar.gz || error "Failed to download!"
+tar xf ideaIC-2021.2.2.tar.gz --strip-components=1 || error "Failed to extract!"
+rm -f ideaIC-2021.2.2.tar.gz 2>/dev/null
 
 echo "[Desktop Entry]
 Type=Application

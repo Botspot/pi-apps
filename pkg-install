@@ -129,6 +129,13 @@ Please run this command: sudo apt --fix-broken install"
 Please run this command: sudo dpkg --configure -a"
   fi
   
+  #check for "dpkg: error: fgets gave an empty string from '/var/lib/dpkg/triggers/File'"
+  if echo "$errors" | grep -qF "dpkg: error: fgets gave an empty string from" ;then
+    message_to_user "Something strange is going on with your system and dpkg won't work. This is not a bug in Pi-Apps.
+
+Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error-when-trying-to-install-packages-with-apt"
+  fi
+  
   #check for insufficient space errors
   if echo "$errors" | grep -qF "You don't have enough free space in" ;then
     message_to_user "Package(s) failed to install because your system has insufficient disk space.
@@ -216,12 +223,18 @@ sudo apt install --reinstall nginx-full"
   
   #check for "installed libwine-development:arm64 package post-installation script subprocess returned error exit status 1"
   if echo "$errors" | grep -qF "libwine-development:arm64 package post-installation script subprocess returned error exit status" ;then
-    message_to_user "This error was not caused by Pi-Apps, it is caused by your libwine-development package."
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your libwine-development package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall libwine-development"
   fi
   
   #check for "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1"
   if echo "$errors" | grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" ;then
-    message_to_user "This error was not caused by Pi-Apps, it is caused by your firmware-microbit-micropython-dl package."
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your firmware-microbit-micropython-dl package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall firmware-microbit-micropython-dl"
   fi
   
   #no need for this function to exit with return code 1 just because the last if statement evaluated as false
