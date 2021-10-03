@@ -2,20 +2,20 @@
 
 #informational functions below
 error() { #red text and exit 1
-  echo -e "\e[91m$1\e[39m" 1>&2
+  echo -e "\e[91m$1\e[0m" 1>&2
   exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1"
+  echo -e "\e[93m\e[5m 🔺\e[25m WARNING: $1"
 }
 
 status() { #cyan text to indicate what is happening
-  echo -e "\e[96m$1\e[39m"
+  echo -e "\e[96m$1\e[0m"
 }
 
 status_green() { #announce the success of a major action
-  echo -e "\e[92m$1\e[39m"
+  echo -e "\e[92m$1\e[0m"
 }
 #end of informational functions
 
