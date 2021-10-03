@@ -19,7 +19,7 @@ get_date() {
 check_update_interval() { #return 0 if update-interval allows update-checking today, exit 1 otherwise
   local lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check" 2>/dev/null)"
   if [ -z $lastupdatecheck ];then
-    warning "Warning: ${DIRECTORY}/data/last-update-check does not exist!" 1>&2
+    warning "${DIRECTORY}/data/last-update-check does not exist!" 1>&2
     lastupdatecheck=0
   fi
   
