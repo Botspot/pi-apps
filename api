@@ -7,7 +7,7 @@ error() { #red text and exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m 🔺\e[25m WARNING: $1"
+  echo -e "\e[93m\e[5m 🔺\e[25m WARNING: $1\e[0m"
 }
 
 status() { #cyan text to indicate what is happening
