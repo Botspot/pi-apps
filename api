@@ -2,20 +2,20 @@
 
 #informational functions below
 error() { #red text and exit 1
-  echo -e "\e[91m$1\e[39m" 1>&2
+  echo -e "\e[91m$1\e[0m" 1>&2
   exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1"
+  echo -e "\e[93m\e[5m 🔺\e[25m WARNING: $1\e[0m"
 }
 
 status() { #cyan text to indicate what is happening
-  echo -e "\e[96m$1\e[39m"
+  echo -e "\e[96m$1\e[0m"
 }
 
 status_green() { #announce the success of a major action
-  echo -e "\e[92m$1\e[39m"
+  echo -e "\e[92m$1\e[0m"
 }
 #end of informational functions
 
@@ -256,7 +256,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
   
   #ensure $1 is valid app name
   if ! list_apps all | grep -q "$1" ;then
-    error "script_name_cpu: '$1' is an invalid app name."
+    error "script_name_cpu: '$1' is an invalid app name.\n"
   fi
   
   #this is used by the updater so we need to check the update folder too

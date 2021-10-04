@@ -73,6 +73,8 @@ else
   supported=no
 fi
 
+
+
 if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   if [ "$1" == 'multi-uninstall' ];then
@@ -80,6 +82,8 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   elif [ "$1" == 'multi-install' ];then
     action=install
   fi
+  
+  echo
   
   app_list="$2" #newline-separated list of apps to install/uninstall
   
@@ -127,6 +131,8 @@ $app"
   
 elif [ "$1" == 'install-if-not-installed' ];then
   
+  echo
+  
   #if not installed
   if [ "$(app_status "$2")" != installed ];then
     #install it
@@ -134,6 +140,7 @@ elif [ "$1" == 'install-if-not-installed' ];then
   fi
   
 elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
+  echo
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
@@ -150,13 +157,13 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   #ensure not a disabled app
   if [ "$mode" == install ] && [ "$(app_status "${app}")" == 'disabled' ];then
-    echo -e "\e[93mNot installing the $app app. IT IS DISABLED.\e[39m"
+    warning "Not installing the $app app. IT IS DISABLED."
     exit 0
   fi
   
   #display warning if hardware and os is unsupported
   if [ "$supported" == no ];then
-    echo -e "\e[103m\e[30mWARNING: YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    warning "YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)"
     sleep 1
     echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m"
     sleep 1
@@ -196,23 +203,25 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   chmod u+x "$appscript"
   
-  echo -e "\e[96m${mode^}ing \e[1m${app}\e[0m\e[96m...\e[39m" | tee -a "$logfile"
+  status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
+  echo
   cd $HOME
   echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
   nice "$appscript" &> >(tee -a "$logfile")
   if [ $? == 0 ]; then #if app script succeeded
     #change the status from corrupted to 'installed' or 'uninstalled'
     echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30m${mode^}ed ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
+    status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
     
     format_log_file "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
+    echo
     exit 0
   else
-    echo -e "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
+    echo -e  "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
 \e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
-Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
+Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
     format_log_file "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
@@ -220,12 +229,20 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$
   fi
   
 elif [ "$1" == 'update' ];then
+  echo
   #UPDATE
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
   fi
+  
+  #detect which installation script exists and get the hash for that one
+  scriptname="$(script_name_cpu "$app")"
+  [ $? == 1 ] && exit 1
+  
+  status "Updating \e[1m${app}\e[0m\e[96m..."
+  echo
   
   #HIDDEN FEATURE - if $3 equals nofetch, then don't download github repo. Useful for updating multiple apps at maximum speed
   if [ "$3" == 'nofetch' ] && [ -d "${DIRECTORY}/update" ];then
@@ -235,9 +252,7 @@ elif [ "$1" == 'update' ];then
     git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
-  #detect which installation script exists and get the hash for that one
-  scriptname="$(script_name_cpu "$app")"
-  [ $? == 1 ] && exit 1
+  echo
   
   newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
@@ -246,17 +261,20 @@ elif [ "$1" == 'update' ];then
   #echo -e "newhash: $newhash\noldhash: $oldhash"
   
   if diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null;then
-    echo "$app is identical to the online version. Nothing to do!"
+    status_green "$app is identical to the online version. Nothing to do!"
+    echo
     exit 0
   fi
   #else
-  echo "$app is not identical to the online version."
+  status_green "$app is not identical to the online version."
   installback=no
+  
+  echo
   
   #if install script was changed                                                    #if installed already
   if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
     installback=yes
-    echo "$app's install script has been updated. Reinstalling $app..."
+    status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it using a recursive script instance
     "${DIRECTORY}/manage" uninstall "$app"
     
@@ -275,13 +293,26 @@ elif [ "$1" == 'update' ];then
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   
   if [ "$installback" == 'yes' ];then
-    echo "$app was originally installed before updating. Reinstalling the new version now."
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$app"
+    if [ $? == 0 ]; then
+      failed=true
+    else
+      failed=false
+    fi
   fi
-  echo -e "\e[92m${app} was updated successfully.\e[39m"
+  
+  if [ "$failed" == 'true' ]; then
+    echo -e "\e[91mFailed to update ${app}.\e[0m"
+  else
+    status_green "${app} was updated successfully."
+  fi
+  echo
   
 elif [ "$1" == 'check-all' ];then
+  
+  echo 
+  
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
   
@@ -352,6 +383,9 @@ ${app}"
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
+
+  echo
+
   #UPDATE-ALL
   #for this operation, a program name cannot be specified.
   IFS=$'\n'
@@ -362,12 +396,12 @@ elif [ "$1" == 'update-all' ];then
   echo "Updatable: ${updatable}EOU"
   for updateapp in $updatable
   do
-    echo "updating $updateapp"
+    status "updating $updateapp"
     #update it using a recursive script instance
     echo "${DIRECTORY}/manage update $updateapp"
     "${DIRECTORY}/manage" update "$updateapp" || exit 1
   done
-  echo -e '\e[92mOperation completed successfully!\e[39m'
+  status_green "Operation completed successfully!"
 else
-  error "Did not understand $1. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
+  error "Invalid argument. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
 fi

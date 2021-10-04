@@ -19,7 +19,7 @@ get_date() {
 check_update_interval() { #return 0 if update-interval allows update-checking today, exit 1 otherwise
   local lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check" 2>/dev/null)"
   if [ -z $lastupdatecheck ];then
-    echo "Warning: ${DIRECTORY}/data/last-update-check does not exist!" 1>&2
+    warning "${DIRECTORY}/data/last-update-check does not exist!" 1>&2
     lastupdatecheck=0
   fi
   
@@ -44,9 +44,9 @@ check_update_interval() { #return 0 if update-interval allows update-checking to
   elif [ "$updateinterval" == 'Always' ];then
     return 0
   elif [ -z "$updateinterval" ];then
-    echo "Something isn't right. Does '${DIRECTORY}/data/settings/Check for updates' exist?" 1>&2
+    warning "Something isn't right. Does '${DIRECTORY}/data/settings/Check for updates' exist?" 1>&2
   else
-    echo "Warning: Unrecognized update interval!" 1>&2
+    echo -e "\e[91mUnrecognized update interval! \e[0m" 1>&2
   fi
   
   return 0
@@ -188,7 +188,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   #echo "List: ${LIST}EOL"
   
   if [ -z "$LIST" ];then
-    echo -e '\e[92mNothing to update. Nothing to do!\e[39m'
+    status_green "mNothing to update. Nothing to do!"
     exit 0
   fi
   
@@ -217,14 +217,15 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
     #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
     #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
       rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
     fi
     
-    echo -e "\e[92m${file} file was copied successfully.\e[39m"
+    echo
+    status_green "${file} file was copied successfully."
   done
   IFS="$PREIFS"
   
@@ -248,7 +249,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
   rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
   cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
   
-  echo -e "\e[92mPi-Apps updates complete.\e[39m"
+  status_green "\nPi-Apps updates complete.\n"
 }
 
 update_now_cli() { #input: updatable_files and updatable_apps variables
@@ -258,14 +259,14 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
     #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
     #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
       rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
     fi
     
-    echo -e "\e[92m${file} file was copied successfully.\e[39m"
+    status_green "${file} file was copied successfully."
   done
   
   for app in $updatable_apps ;do
@@ -276,7 +277,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
   cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
   
-  echo -e "\e[92mPi-Apps updates complete.\e[39m"
+  status_green "\nPi-Apps updates complete."
 }
 
 screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
@@ -296,19 +297,19 @@ fi
 
 #runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes
 
-echo "Updater mode: $runmode"
+status "\nUpdater mode: $runmode\n"
 if [ "$runmode" == autostarted ];then #if update-interval allows, and one app installed, display notification on boot
   
   #check if update interval allows update-checks, otherwise exit
   check_update_interval
   if [ $? != 0 ];then
-    echo "Won't check for updates today, because of the update interval is set to '$(cat "${DIRECTORY}/data/settings/Check for updates")' in Settings."
+    status "Won't check for updates today, because of the update interval is set to '$(cat "${DIRECTORY}/data/settings/Check for updates")' in Settings."
     exit 0
   fi
   
   #check that at least one app has been installed by the user
   if [ "$(ls "${DIRECTORY}/data/status" | wc -l)" == 0 ];then
-    echo "No apps have been installed yet, so exiting now."
+    status "No apps have been installed yet, so exiting now."
     exit 0
   fi
   
@@ -316,11 +317,11 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   updatable_files="$(get_updatable_files)"
 
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "Nothing is updatable."
+    status "Nothing is updatable."
     exit 0
   fi
   
-  echo "Displaying notification in lower-right of screen..."
+  status "Displaying notification in lower-right of screen..."
   { #display notification in lower-right
     output="$(yad --form --text='Pi-Apps updates available.' --separator='\n' \
       --on-top --skip-taskbar --undecorated --close-on-unfocus \
@@ -363,7 +364,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   
   list_updates_gui
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "User did not allow anything to be updated."
+    status "User did not allow anything to be updated."
     exit 0
   fi
   
@@ -400,13 +401,16 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   updatable_files="$(get_updatable_files)"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "Nothing is updatable."
+    status "Nothing is updatable."
     exit 0
   fi
   
+  echo
+  
   list_updates_gui
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "User did not allow anything to be updated."
+    status "User did not allow anything to be updated."
+    echo
     exit 0
   fi
   
@@ -420,7 +424,7 @@ elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   updatable_files="$(get_updatable_files)"
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "Nothing is updatable."
+    status "Nothing is updatable."
     exit 0
   fi
   
@@ -430,50 +434,83 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
+  echo 
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "Nothing is updatable."
+    status "Nothing is updatable."
     exit 0
   fi
   
-  echo "These apps can be updated:"
-  echo -n "$updatable_apps" | sed 's/^/  - /g'
-  echo
+  if [ -z "$updatable_apps" ];then
+    status "No apps is updatable."
+    echo
+  else
+    status "These apps can be updated:"
+    echo
+    echo "$updatable_apps" | sed 's/^/  - /g'
+    echo
+  fi
   
-  echo "These files can be updated:"
-  echo -n "$updatable_files" | sed 's/^/  - /g'
-  echo
+  if [ -z "$updatable_files" ];then
+    status "No files is updatable"
+    echo
+  else
+    status "These files can be updated:"
+    echo
+    echo "$updatable_files" | sed 's/^/  - /g'
+    echo
+  fi
   
-  read -p "Update now? [Y/n] " answer
+  read -p "$(status 'Update now? [Y/n] ')" answer
   
   if [ "$answer" == n ] || [ "$answer" == N ];then
+    echo
+    echo "Exiting now."
+    echo
     exit 0
   fi
   
+  echo
   update_now_cli
   
 elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
+  echo 
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    echo "Nothing is updatable."
+    status "Nothing is updatable."
     exit 0
   fi
   
-  echo "These apps can be updated:"
-  echo -n "$updatable_apps" | sed 's/^/  - /g'
+  if [ -z "$updatable_apps" ];then
+    status "No apps is updatable."
+    echo
+  else
+    status "These apps can be updated:"
+    echo
+    echo "$updatable_apps" | sed 's/^/  - /g'
+    echo
+  fi
   
-  echo "These files can be updated:"
-  echo -n "$updatable_files" | sed 's/^/  - /g'
+  if [ -z "$updatable_files" ];then
+    status "No files is updatable"
+    echo
+  else
+    status "These files can be updated:"
+    echo
+    echo "$updatable_files" | sed 's/^/  - /g'
+    echo
+  fi
+  
   echo
-  
   update_now_cli
   
 else
-  error "updater: unknown run mode."
+  error "updater: unknown run mode. Exiting now.\n"
 fi
 
+echo 
 exit 0
 } #prevents errors if script was modified while in use
