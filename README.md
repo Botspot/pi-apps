@@ -66,6 +66,10 @@ This will not uninstall any apps that you installed through Pi-Apps.
 - From the start menu: Accessories -> Pi Apps
 - Use the terminal-command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
+## To Update Pi-Apps
+- Pi-apps will update automatically
+- To forcefully update run `~/pi-apps/updater gui`
+- Or if you prefer cli interface `~/pi-apps/updater cli`
 
 ## What do others say about Pi-Apps?
 > "This is an awesome application for your Pi to install applications like WoR-flasher." - **[Novaspirit Tech](https://youtu.be/9dO448vYv18?t=164)** (large RPi YouTuber)
