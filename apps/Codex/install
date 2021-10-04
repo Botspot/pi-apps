@@ -9,32 +9,31 @@ function error {
 
 # Install Node.js first
 "${DIRECTORY}/manage" install-if-not-installed "Node.js" "$(dirname "$0")" || error "Failed to install Node.js"
-"${DIRECTORY}/pkg-install" "git" "$(dirname "$0")" || exit 1 
-
 
 cd $HOME
-# Remove Coedx folder first
+# Remove Codex folder first
 rm -rf Codex || sudo rm -rf Codex
 # Clone Codex repo
-git clone https://github.com/jcv8000/Codex
-cd ./Codex
+git clone https://github.com/jcv8000/Codex 2>&1 
+cd Codex 
 CODEX_DIR=$(pwd)
 
-# One time use, since `source ~/.bashrc` not working
+# One time use, since `source ~/.bashrc` and `. ~/.node_bashrc` not working
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
 
 # Install Codex
-( npm install || sudo npm install ) 2>&1 | grep -v "deprecated popper.js"
+( npm install || sudo npm install ) 2>&1 | grep -v "deprecated popper.js" # Remove unwanted lines from npm
 
 # Create run-codex script
 echo "export NVM_DIR='$HOME/.nvm'
-[ -s '$NVM_DIR/nvm.sh' ] && \. '$NVM_DIR/nvm.sh'  # This loads nvm
-[ -s '$NVM_DIR/bash_completion' ] && \. '$NVM_DIR/bash_completion'  # This loads nvm bash_completion
+[ -s '$NVM_DIR/nvm.sh' ] && \. '$NVM_DIR/nvm.sh' 
+[ -s '$NVM_DIR/bash_completion' ] && \. '$NVM_DIR/bash_completion' 
 cd $CODEX_DIR
-npm start" > $CODEX_DIR/run-codex.sh
+npm start || sudo npm start " > $CODEX_DIR/run-codex.sh
 
+# Make run script executable
 chmod +x $CODEX_DIR/run-codex.sh || sudo chmod +x $CODEX_DIR/run-codex.sh
 
 # Create desktop entry
