@@ -46,7 +46,7 @@ check_update_interval() { #return 0 if update-interval allows update-checking to
   elif [ -z "$updateinterval" ];then
     warning "Something isn't right. Does '${DIRECTORY}/data/settings/Check for updates' exist?" 1>&2
   else
-    error "Unrecognized update interval!" 1>&2
+    echo -e "\e[91mUnrecognized update interval! \e[0m" 1>&2
   fi
   
   return 0
@@ -217,7 +217,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
     #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${file}!"
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
     #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
@@ -259,7 +259,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
     #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || error "Failed to copy ${DIRECTORY}/update/pi-apps/${file}!"
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
     #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
@@ -461,8 +461,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
     echo
   fi
   
-  question=$(status 'Update now? [Y/n] ')
-  read -p "$question" answer
+  read -p "$(status 'Update now? [Y/n] ')" answer
   
   if [ "$answer" == n ] || [ "$answer" == N ];then
     echo
