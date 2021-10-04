@@ -96,7 +96,6 @@ void get_app_status_with_none(char *directory, const char *app, char *status, si
 		snprintf(status, size, "%s", st);
 	} else {
 			snprintf(status, size, "none");
-		}
 	}
 }
 
