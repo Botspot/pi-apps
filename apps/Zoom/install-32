@@ -63,7 +63,7 @@ chmod +x "${HOME}/zoom/runzoom.sh"
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
 Name=Zoom
-Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh %u"\"" 'Close this window to exit Zoom'
+Exec=$HOME/zoom/runzoom.sh %u
 Icon=$(dirname "$0")/icon-64.png
 Path=${HOME}/zoom/
 Type=Application
