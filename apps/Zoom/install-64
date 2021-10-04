@@ -61,7 +61,7 @@ fi
 cd ${HOME}/zoom/
 echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
 box64 zoom' > "${HOME}/zoom/runzoom.sh"
-chmod +x "${HOME}/zoom/runzoom.sh"
+chmod +x "${HOME}/zoom/runzoom.sh" || sudo chmod +x "${HOME}/zoom/runzoom.sh"
 
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
