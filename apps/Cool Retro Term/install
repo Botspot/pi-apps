@@ -9,6 +9,9 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "build-essential qmlscene qt5-qmake qt5-default qtdeclarative5-dev qml-module-qtquick-controls qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel" "$(dirname "$0")" || exit 1
 
+# Remove cool-retro-term folder first
+rm -rf cool-retro-term || sudo rm -rf cool-retro-term 
+
 # Get CRT from github
 git clone --recursive https://github.com/Swordfish90/cool-retro-term || error "failed to clone repository!"
 
