@@ -218,10 +218,10 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     echo
     exit 0
   else
-    error "\nFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
+    echo -e  "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
 \e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
-Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu" | tee -a "$logfile"
+Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
     format_log_file "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
@@ -303,7 +303,7 @@ elif [ "$1" == 'update' ];then
   fi
   
   if [ "$failed" == 'true' ]; then
-    error "Failed to update ${app}."
+    echo -e "\e[91mFailed to update ${app}.\e[0m"
   else
     status_green "${app} was updated successfully."
   fi
