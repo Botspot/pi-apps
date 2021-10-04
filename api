@@ -256,7 +256,7 @@ script_name_cpu() { #get script name to run based on detected CPU arch
   
   #ensure $1 is valid app name
   if ! list_apps all | grep -q "$1" ;then
-    error "script_name_cpu: '$1' is an invalid app name."
+    error "script_name_cpu: '$1' is an invalid app name.\n"
   fi
   
   #this is used by the updater so we need to check the update folder too
