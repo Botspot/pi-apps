@@ -18,7 +18,7 @@
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
     Submit an app</a>
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
-    
+
 ## Introduction
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
 There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
