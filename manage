@@ -375,10 +375,6 @@ ${app}"
   #remove initial newline character
   updatable="${updatable:1}"
   
-  if [ -z "$updatable" ];then
-    updatable='.'
-  fi
-  
   echo -e "Scanning apps... Done\033[0K" 1>&2
   
   echo "${updatable}"
@@ -390,9 +386,6 @@ elif [ "$1" == 'update-all' ];then
   #for this operation, a program name cannot be specified.
   IFS=$'\n'
   updatable="$("${DIRECTORY}/manage" check-all)"
-  if [ "$updatable" == '.' ];then
-    updatable=''
-  fi
   echo "Updatable: ${updatable}EOU"
   for updateapp in $updatable
   do

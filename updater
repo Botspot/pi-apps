@@ -133,9 +133,6 @@ get_updatable_apps() { #sets the updatable_apps variable
     
     updatable_apps="$("${DIRECTORY}/manage" check-all)"
     local exitcode=$?
-    
-    #if manage output is '.', then clear the variable
-    [ "$updatable_apps" == '.' ] && updatable_apps=''
     echo "$updatable_apps"
     
     exit $exitcode #return the same code that the manage script exited with
