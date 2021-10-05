@@ -8,7 +8,7 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "compton plank xfwm4 xfce4-settings nautilus yad xfce4-panel xfce4-appmenu-plugin xfce4-statusnotifier-plugin xfce4-pulseaudio-plugin blueman figlet lolcat python-pil.imagetk python3-pil python3-pil.imagetk network-manager network-manager-gnome" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "compton plank xfwm4 xfce4-settings nautilus yad xfce4-panel xfce4-appmenu-plugin xfce4-statusnotifier-plugin xfce4-pulseaudio-plugin blueman figlet lolcat python3-pil python3-pil.imagetk network-manager network-manager-gnome" "$(dirname "$0")" || exit 1
 
 
 rm -rf ~/MacOSBigSurThemeConverter || error "Failed to first remove ~/MacOSBigSurThemeConverter folder"
