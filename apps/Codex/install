@@ -1,0 +1,49 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+# Install Node.js first
+"${DIRECTORY}/manage" install-if-not-installed "Node.js" "$(dirname "$0")" || error "Failed to install Node.js"
+
+cd $HOME
+# Remove Codex folder first
+rm -rf Codex || sudo rm -rf Codex
+# Clone Codex repo
+git clone https://github.com/jcv8000/Codex 2>&1 
+cd Codex 
+CODEX_DIR=$(pwd)
+
+# One time use, since `source ~/.bashrc` and `. ~/.node_bashrc` not working
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
+
+# Install Codex
+( npm install || sudo npm install ) 2>&1 | grep -v "deprecated popper.js" # Remove unwanted lines from npm
+
+# Create run-codex script
+echo "export NVM_DIR='$HOME/.nvm'
+[ -s '$NVM_DIR/nvm.sh' ] && \. '$NVM_DIR/nvm.sh' 
+[ -s '$NVM_DIR/bash_completion' ] && \. '$NVM_DIR/bash_completion' 
+cd $CODEX_DIR
+npm start || sudo npm start " > $CODEX_DIR/run-codex.sh
+
+# Make run script executable
+chmod +x $CODEX_DIR/run-codex.sh || sudo chmod +x $CODEX_DIR/run-codex.sh
+
+# Create desktop entry
+echo "[Desktop Entry]
+Name=Codex
+Exec=$CODEX_DIR/run-codex.sh
+Icon=${DIRECTORY}/apps/Codex/icon-64.png
+Type=Application
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/codex.desktop
+
+
+
