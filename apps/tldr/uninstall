@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-tldr --clear-cache
-sudo rm /usr/bin/tldr
+tldr --clear-cache &>/dev/null
+rm -f /usr/bin/tldr || sudo rm -f /usr/bin/tldr &>/dev/null
