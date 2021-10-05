@@ -39,6 +39,3 @@ elif [ "$arch" == 32 ]; then
 else
   error "Can't detect OS architecture! something is very wrong!"
 fi
-
-echo "running 'sudo apt update'..."
-sudo apt update
