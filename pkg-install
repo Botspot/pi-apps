@@ -341,9 +341,21 @@ if echo "$PKG_LIST" | grep -q '*';then
 fi
 }
 
-#mark ALL packages as autoremovable
+#get manually installed packages and save to temporary .txt file
+apt-mark showmanual > /tmp/manual_installs.txt
+printf '%s\n' $PKG_LIST > /tmp/pkg_list.txt
+sort /tmp/manual_installs.txt > /tmp/manual_installs_sorted.txt
+sort  /tmp/pkg_list.txt >  /tmp/pkg_list_sorted.txt
+
+PKG_LIST_AUTOREMOVABLE=$(comm -23 --nocheck-order /tmp/pkg_list_sorted.txt /tmp/manual_installs_sorted.txt)
+rm -rf /tmp/manual_installs.txt
+rm -rf /tmp/pkg_list.txt
+rm -rf /tmp/manual_installs_sorted.txt
+rm -rf /tmp/pkg_list_sorted.txt
+
+#mark ONLY packages not already marked as manually installed as autoremovable
 {
-for package in $PKG_LIST ;do
+for package in $PKG_LIST_AUTOREMOVABLE ;do
   sudo -E apt-mark auto "$package" || error "pkg-install: failed to mark the $package package as autoremovable."
 done
 }
