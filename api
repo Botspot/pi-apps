@@ -591,6 +591,19 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
   return $exitcode
 }
 
+git() {  #remove target folder first before git clone
+  args=$*
+  if [[ $args == *"clone"* ]]; then 
+    for arg in $args; do
+      if [[ $arg == *"://"* ]]; then #check if arg is a link 
+        link=$arg
+      fi
+    done
+    rm -rf $(echo $( echo $link | awk -F "/" '{print $NF}' | sed 's/.git//g')) || sudo rm -rf $(echo $( echo $link | awk -F "/" '{print $NF}' | sed 's/.git//g')) #parse the link and get the folder name 
+  fi
+  command git $args
+}
+
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
