@@ -10,7 +10,7 @@ function error {
 rm -f ~/freecad.deb
 
 #download file
-wget -O ~/freecad.deb https://github.com/chunky-milk/freecad-rpi/releases/download/v0.19.2/freecad_0.19.2_armhf.deb || error "Failed to download freecad.deb"
+wget -O ~/freecad.deb https://github.com/ryanfortner/freecad-rpi/releases/download/v0.19.2/freecad_0.19.2_armhf.deb || error "Failed to download freecad.deb"
 
 #install freecad
 "${DIRECTORY}/pkg-install" "$HOME/freecad.deb" "$(dirname "$0")" || error "apt failed to install freecad.deb"
