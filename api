@@ -592,16 +592,28 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
 }
 
 git() {  #remove target folder first before git clone
+  
   args=$*
+  
   if [[ $args == *"clone"* ]]; then 
     for arg in $args; do
-      if [[ $arg == *"://"* ]]; then #check if arg is a link 
-        link=$arg
+      if [[ $arg == *"://"* ]]; then #check if arg is a url
+        url=$arg
       fi
     done
-    rm -rf $(echo $( echo $link | awk -F "/" '{print $NF}' | sed 's/.git//g')) || sudo rm -rf $(echo $( echo $link | awk -F "/" '{print $NF}' | sed 's/.git//g')) #parse the link and get the folder name 
+    
+	[ -z "$url" ] && error "No repository URL specified! "
+	
+	folder=$(echo $( echo $url | awk -F "/" '{print $NF}' | sed 's/.git//g')) #parse the url and get the folder name
+	
+	[ -d "$folder" ] && status -n "Removing $folder directory... " && (rm -rf $(pwd)/$folder || sudo rm -rf $(pwd)/$folder) && status_green "Done"
+	
+  status -n "Cloning $url repository... "
+	local errors="$(command git $* &> /dev/null)" || error "\nFailed to clone $url repository.\nErrors: $errors"
+	status_green "Done"
+  else
+	  command git $*
   fi
-  command git $args
 }
 
 #if this script is being run standalone, not sourced
