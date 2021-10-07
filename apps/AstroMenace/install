@@ -18,7 +18,6 @@ rm -f master.zip
 #build
 cd astromenace-master/
 cmake . || error 'Failed to run cmake'
-c=nproc
 make || error 'Failed to run make'
 
 #menu button
