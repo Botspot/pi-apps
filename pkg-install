@@ -308,6 +308,8 @@ for package in $PKG_LIST ;do
       error "pkg_install: While installing local packages, $package failed to install."
     fi
     
+    sudo -E apt-mark auto "$packagename" || error "pkg-install: failed to mark the $packagename package as autoremovable.\nlocal package path: $package"
+    
   fi
   
 done
@@ -339,13 +341,6 @@ done
 if echo "$PKG_LIST" | grep -q '*';then 
   error "pkg_install: failed to remove all regex from the package list!\nContents of PKG_LIST:\n$PKG_LIST"
 fi
-}
-
-#mark ALL packages as autoremovable
-{
-for package in $PKG_LIST ;do
-  sudo -E apt-mark auto "$package" || error "pkg-install: failed to mark the $package package as autoremovable."
-done
 }
 
 #format PKG_LIST - remove double spaces, preceding spaces, and trailing spaces.
