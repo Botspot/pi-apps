@@ -10,10 +10,10 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip" "$(dirname "$0")" || exit 1
 cd ~/
-rm -f ppsspp_1.12_armhf.zip
-wget https://github.com/ryanfortner/ppsspp-rpi/releases/download/1.12/ppsspp_1.12_armhf.zip || error "Failed to download zip!"
-unzip ppsspp_1.12_armhf.zip || error "Failed to unzip PPSSPP!"
-rm ppsspp_1.12_armhf.zip || error "Failed to remove zip!"
+rm -f ppsspp_1.12_arm64.zip
+wget https://github.com/ryanfortner/ppsspp-rpi/releases/download/1.12/ppsspp_1.12_arm64.zip || error "Failed to download zip!"
+unzip ppsspp_1.12_arm64.zip || error "Failed to unzip PPSSPP!"
+rm ppsspp_1.12_arm64.zip || error "Failed to remove zip!"
 
 # Desktop entry
 echo "[Desktop Entry]
@@ -24,4 +24,3 @@ Comment=PSP emulator
 Icon=$(dirname "$0")/icon-64.png
 Exec=$HOME/ppsspp/PPSSPPSDL
 Categories=Game;" > ~/.local/share/applications/ppsspp.desktop || error "Failed to create desktop entry!"
-
