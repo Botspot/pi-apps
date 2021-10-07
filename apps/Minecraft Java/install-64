@@ -7,6 +7,8 @@ function error {
   exit 1
 }
 
+"${DIRECTORY}/pkg-install" "openjdk-11-jdk" "$(dirname "$0")" || exit 1
+
 #Download java and launcher
 rm -rf ~/Minecraft || sudo rm -rf ~/Minecraft || error "Failed to first remove ~/Minecraft folder!"
 mkdir ~/Minecraft && cd ~/Minecraft && wget https://github.com/ryanfortner/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
