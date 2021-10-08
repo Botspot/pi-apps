@@ -7,15 +7,15 @@ function error {
   exit 1
 }
 
-if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
+source $DIRECTORY/api
+
+if [ $arch == '32' ];then
 	# Removes menu shortcut
-	( rm -f $HOME/.local/share/applications/quartz-browser.desktop &> /dev/null || sudo rm -f $HOME/.local/share/applications/quartz-browser.desktop ) || error "Failed to remove menu shortcut!"
+	( rm -f $HOME/.local/share/applications/quartz-browser.desktop || sudo rm -f $HOME/.local/share/applications/quartz-browser.desktop ) &> /dev/null || error "Failed to remove menu shortcut!"
 	# Removes AppImage
-	( rm -f /usr/local/bin/Quartz_Browser.AppImage &> /dev/null || sudo rm -f /usr/local/bin/Quartz_Browser.AppImage ) || error "Failed to remove Quartz Browser!"
-elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
+	( rm -f /usr/local/bin/Quartz_Browser.AppImage || sudo rm -f /usr/local/bin/Quartz_Browser.AppImage ) &> /dev/null || error "Failed to remove Quartz Browser!"
+elif [ $arch == '64' ];then
 	( pip3 uninstall quartz-browser -y || sudo pip3 uninstall quartz-browser -y ) || error "Failed to uninstall Quartz Browser!"
 	rm -rf $HOME/quartz-browser-qt5 &> /dev/null || sudo rm -rf $HOME/quartz-browser-qt5 
 	"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 0
-else
-	error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
