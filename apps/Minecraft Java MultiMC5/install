@@ -203,22 +203,22 @@ if grep -iE 'raspberry' <<< $model > /dev/null; then
     sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
 [Desktop Entry]
 Type=Application
-Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 /home/$USER/MultiMC/install/MultiMC
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 $HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=/home/$USER/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
 Categories=Game
 _EOF_"
 else
     sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
 [Desktop Entry]
 Type=Application
-Exec=/home/$USER/MultiMC/install/MultiMC
+Exec=$HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=/home/$USER/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
 Categories=Game
 _EOF_"
 fi
