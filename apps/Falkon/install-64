@@ -21,3 +21,5 @@ wget http://ftp.debian.org/debian/pool/main/f/falkon/falkon_3.0.0-3_arm64.deb
 
 "${DIRECTORY}/pkg-install" "$HOME/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/falkon_3.0.0-3_armhf.deb" "$(dirname "$0")" || error "Failed to install webcord deb!"
 
+# Remove files after install
+( rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* || sudo rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* ) &> /dev/null
