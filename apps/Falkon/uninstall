@@ -1,5 +1,4 @@
 #! /bin/bash
-# This is the uninstall script for the All Is Well script
 # Removes shortcuts
 rm -f ~/.local/share/applications/aiw.desktop
 # Removes main folder
