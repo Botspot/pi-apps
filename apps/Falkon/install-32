@@ -7,19 +7,17 @@ function error {
   exit 1
 }
 
+cd $HOME
 
-cd $HOME 
+wget -O ~/.local/share/Quartz_Browser.AppImage 'https://github.com/ksharindam/quartz-browser-qt5/releases/download/v2.3.7/Quartz_Browser-armhf.AppImage'
 
-( rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* || sudo rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* ) &> /dev/null
+chmod u+x ~/.local/share/Quartz_Browser.AppImage
 
-# libqt5webenginecore5
-wget http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb
-# libqt5webenginewidgets5
-wget http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb
-# falkon
-wget http://ftp.debian.org/debian/pool/main/f/falkon/falkon_3.0.0-3_armhf.deb
-
-"${DIRECTORY}/pkg-install" "$HOME/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/falkon_3.0.0-3_armhf.deb" "$(dirname "$0")" || error "Failed to install webcord deb!"
-
-# Remove files after install
-( rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* || sudo rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* ) &> /dev/null
+echo "[Desktop Entry]
+Type=Application
+Name=Quartz Browser
+Comment=Light weight web browser
+Categories=Network;WebBrowser
+Exec=bash -c 'sudo modprobe fuse; ~/.local/share/Quartz_Browser.AppImage '"'\ "%U"'"
+Icon=$(dirname "$0")/icon-64.png
+StartupWMClass=Quartz-Browser" > ~/.local/share/applications/quartz-browser.desktop
