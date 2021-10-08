@@ -583,10 +583,6 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
       command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --quiet "$url" --dir '/' -o "${file:1}" --allow-overwrite)
       "${command[@]}" 
       exitcode=$?
-    elif echo "$@" | grep -qe "-q0-[[:space:]]" ;then
-      command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --quiet "$url" --dir '/' -o "${file:1}" --allow-overwrite)
-      "${command[@]}" 
-      exitcode=$?
     else
       echo -e "Downloading \e[1m$url\e[0m..." #let user know what's happening instead of hanging there
       command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
