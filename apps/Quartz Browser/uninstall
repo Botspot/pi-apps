@@ -15,7 +15,7 @@ if [ $arch == '32' ];then
   # Removes AppImage
   rm -f ~/.local/share/Quartz_Browser.AppImage || error "Failed to remove Quartz Browser!"
 elif [ $arch == '64' ];then
-  ( pip3 uninstall quartz-browser -y || sudo pip3 uninstall quartz-browser -y ) || error "Failed to uninstall Quartz Browser!"
-  rm -rf $HOME/quartz-browser-qt5 &> /dev/null || sudo rm -rf $HOME/quartz-browser-qt5 
+  sudo pip3 uninstall quartz-browser -y || error "Failed to uninstall Quartz Browser!"
+  rm -rf $HOME/quartz-browser-qt5 &>/dev/null || sudo rm -rf $HOME/quartz-browser-qt5 
   "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 0
 fi
