@@ -576,19 +576,30 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
     fi
     
     #use this command to download files with aria2c
-    command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=5 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+    #aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=5 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
     
-    #suppress output if -q flag passed
-    if echo "$@" | grep -q '\-q' ;then
-      "${command[@]}" >/dev/null
+    #suppress output if -q and -q0- flag passed
+    if echo "$@" | grep -qe "-q[[:space:]]" ;then
+      command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --quiet "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+      "${command[@]}" 
+      exitcode=$?
+    elif echo "$@" | grep -qe "-q0-[[:space:]]" ;then
+      command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --quiet "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+      "${command[@]}" 
       exitcode=$?
     else
-      "${command[@]}" | grep -v 'Download Progress Summary\|==========\|----------\|^$'
-      exitcode="${PIPESTATUS[0]}"
+      echo -e "Downloading \e[1m$url\e[0m..." #let user know what's happening instead of hanging there
+      command=(aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite --on-download-error='echo "aborted" && return 1')
+      "${command[@]}" 
+      exitcode=$?
     fi
   fi
   
-  return $exitcode
+  if [ $exitcode != 0 ]; then
+    exit 1
+  else
+    return 0
+  fi
 }
 
 #if this script is being run standalone, not sourced
