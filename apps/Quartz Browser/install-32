@@ -9,15 +9,15 @@ function error {
 
 cd $HOME
 
-wget https://github.com/ksharindam/quartz-browser-qt5/releases/download/v2.3.7/Quartz_Browser-armhf.AppImage -O Quartz_Browser.AppImage
+wget -O ~/.local/share/Quartz_Browser.AppImage 'https://github.com/ksharindam/quartz-browser-qt5/releases/download/v2.3.7/Quartz_Browser-armhf.AppImage'
 
-mv -f Quartz_Browser.AppImage /usr/local/bin &> /dev/null || sudo mv -f Quartz_Browser.AppImage /usr/local/bin
+chmod u+x ~/.local/share/Quartz_Browser.AppImage
 
 echo "[Desktop Entry]
 Type=Application
 Name=Quartz Browser
 Comment=Light weight web browser
 Categories=Network;WebBrowser
-Exec=/usr/local/bin/Quartz_Browser.AppImage
+Exec=bash -c 'sudo modprobe fuse; ~/.local/share/Quartz_Browser.AppImage '"'\ "%U"'"
 Icon=$(dirname "$0")/icon-64.png
-StartupWMClass=Quartz-Browser" > $HOME/.local/share/applications/quartz-browser.desktop
+StartupWMClass=Quartz-Browser" > ~/.local/share/applications/quartz-browser.desktop
