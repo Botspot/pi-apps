@@ -31,7 +31,7 @@ rm -f ~/jdk-16.tar.gz
 
 echo "Setting up lwjgl3arm64 folder"
 echo "- Downloading lwjgl3arm64.tar.gz"
-errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2&>1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
+errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
 echo "- Extracting lwjgl3arm64.tar.gz"
 tar -zxf ~/lwjgl3arm64.tar.gz -C ~/lwjgl3arm64 || error "Failed to extract lwjgl3arm64.tar.gz"
 rm -f ~/lwjgl3arm64.tar.gz
