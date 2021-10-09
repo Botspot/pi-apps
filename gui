@@ -226,7 +226,7 @@ motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
-[ -z "$guimode" ] && guimode=yad
+[ -z "$guimode" ] && guimode=system-default
 #mode=yad
 
 #Variable 1 is used to view the details of the specified app
@@ -260,8 +260,9 @@ while true;do
     
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
-    
-    if [ "$guimode" == yad ];then
+
+    if [ "$guimode" == system-default ];then #
+      
       if [ -z "$prefix" ];then
         buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
         "--button=!${DIRECTORY}/icons/install.png!Install:4" \
@@ -309,7 +310,111 @@ while true;do
         action=unknown
         ;;
       esac
+    
+    elif [ "$guimode" == yad-light ];then
       
+      export GTK_THEME=PiXflat
+      
+      if [ -z "$prefix" ];then
+        buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
+      else
+        buttons=("--button=!${DIRECTORY}/icons/back.png!Back:3" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!Details:0" )
+      fi
+      
+      app="$(echo -e "$LIST" | yad --center --title='Pi-Apps'"$([ ! -z "$prefix" ] && echo ": $(echo "$prefix" | tr '/' '>')")" --width=310 --height=400 --no-headers \
+        --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+        --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+        --print-column=4 --tooltip-column=5 \
+        "${buttons[@]}" \
+      )"
+      button=$? #get exit code to determine which button was pressed
+      
+      case $button in
+      1)
+        action=exit
+        ;;
+      252)
+        action=exit
+        ;;
+      3)
+        action=back
+        ;;
+      0)
+        action=details
+        ;;
+      2)
+        action=uninstall
+        ;;
+      4)
+        action=install
+        ;;
+      5)
+        action=search
+        ;;
+      *)
+        action=unknown
+        ;;
+      esac
+
+    elif [ "$guimode" == yad-dark ];then
+      
+      export GTK_THEME=Adwaita-dark
+      
+      if [ -z "$prefix" ];then
+        buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!View more about the selected software:0" )
+      else
+        buttons=("--button=!${DIRECTORY}/icons/back.png!Back:3" \
+        "--button=!${DIRECTORY}/icons/install.png!Install:4" \
+        "--button=!${DIRECTORY}/icons/uninstall.png!Uninstall:2" \
+        "--button=!${DIRECTORY}/icons/info.png!Details:0" )
+      fi
+      
+      app="$(echo -e "$LIST" | yad --center --title='Pi-Apps'"$([ ! -z "$prefix" ] && echo ": $(echo "$prefix" | tr '/' '>')")" --width=310 --height=400 --no-headers \
+        --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+        --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+        --print-column=4 --tooltip-column=5 \
+        "${buttons[@]}" \
+      )"
+      button=$? #get exit code to determine which button was pressed
+      
+      case $button in
+      1)
+        action=exit
+        ;;
+      252)
+        action=exit
+        ;;
+      3)
+        action=back
+        ;;
+      0)
+        action=details
+        ;;
+      2)
+        action=uninstall
+        ;;
+      4)
+        action=install
+        ;;
+      5)
+        action=search
+        ;;
+      *)
+        action=unknown
+        ;;
+      esac      
+
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
         #uninstall xlunch first
