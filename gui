@@ -86,6 +86,27 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Sonic Pi 3.2"
   mv -f "${DIRECTORY}/data/status/Sonic Pi 3.2" "${DIRECTORY}/data/status/Sonic Pi" 2>/dev/null
   
+  
+  #rename 'Min Browser' to 'Min'
+  rm -rf "${DIRECTORY}/apps/Min Browser"
+  mv -f "${DIRECTORY}/data/status/Min Browser" "${DIRECTORY}/data/status/Min" 2>/dev/null
+  
+  #rename 'Pale Moon Browser' to 'Pale Moon'
+  rm -rf "${DIRECTORY}/apps/Pale Moon Browser"
+  mv -f "${DIRECTORY}/data/status/Pale Moon Browser" "${DIRECTORY}/data/status/Pale Moon" 2>/dev/null
+  
+  #rename 'Puffin Browser Demo' to 'Puffin'
+  rm -rf "${DIRECTORY}/apps/Puffin Browser Demo"
+  mv -f "${DIRECTORY}/data/status/Puffin Browser Demo" "${DIRECTORY}/data/status/Puffin" 2>/dev/null
+  
+  #rename 'Quartz Browser' to 'Quartz'
+  rm -rf "${DIRECTORY}/apps/Quartz Browser"
+  mv -f "${DIRECTORY}/data/status/Quartz Browser" "${DIRECTORY}/data/status/Quartz" 2>/dev/null
+  
+  #rename 'Tor Browser' to 'Tor'
+  rm -rf "${DIRECTORY}/apps/Tor Browser"
+  mv -f "${DIRECTORY}/data/status/Tor Browser" "${DIRECTORY}/data/status/Tor" 2>/dev/null
+  
   true
 EOF
 
