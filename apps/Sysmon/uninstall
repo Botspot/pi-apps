@@ -10,7 +10,7 @@ function error {
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-sudo systemctl stop WebStationSYSMON.service || error "Failed to stop sysmon service!"
-sudo systemctl disable WebStationSYSMON.service || error "Failed to disable sysmon service!"
+sudo systemctl stop WebStationSYSMON.service &>/dev/null
+sudo systemctl disable WebStationSYSMON.service &>/dev/null
 sudo systemctl daemon-reload || error "Failed to run systemctl daemon-reload!"
 sudo rm -rf /opt/sysmon
