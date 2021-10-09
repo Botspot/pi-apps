@@ -13,4 +13,4 @@ cd $HOME
 rm -rf quartz-browser-qt5 || sudo rm -rf quartz-browser-qt5 
 git clone https://github.com/ksharindam/quartz-browser-qt5
 cd quartz-browser-qt5
-sudo pip3 install . 
+pip3 install . || sudo pip3 install . 
