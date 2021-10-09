@@ -333,7 +333,8 @@ $results"
 }
 
 app_search_gui() { #search apps using a GUI
-  local output="$(yad "${yadflags[@]}" --title=Search --width=310 \
+  local output=''
+  output="$(yad "${yadflags[@]}" --title=Search --width=310 \
     --text="Search for apps."$'\n'"Not case-sensitive." \
     --form --field='' '' \
     --field='Search description':CHK 'TRUE' \
