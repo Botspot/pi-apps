@@ -306,16 +306,25 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   fi
 }
 
-app_search() { #search all apps for $1
-  [ -z "$1" ] && error "app_search(): requires a search query."
+app_search() { #search all apps for $1, with filenames in $2 (space-separated and optional)
+  local query="$1"
+  [ -z "$query" ] && error "app_search(): requires a search query."
+  
+  #you can change which app-files are searched. Default: description, website, credits
+  local search_files="$(echo "$2" | sed 's/^ //g' | sed 's/ $//g' | sed 's/  / /g')"
+  [ -z "$search_files" ] && search_files="description website credits"
+  
+  #generate syntax for the find command. Example output: "-name description -o -name website -o -name credits"
+  local find_syntax="$(echo "$search_files" | sed 's/ / -o -name /g')"
+  echo "search pattern: $find_syntax" 1>&2
   
   #search description and website
-  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website -o -name credits \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g" | sed "s+/credits++g")"
+  local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g')"
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
   #search app names
-  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$1" | sort)
+  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$query" | sort)
 $results"
   
   #remove duplicate entries
@@ -323,12 +332,28 @@ $results"
   
 }
 
-app_search_gui() {
-  output="$(yad --title=Search --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
-    --text="Searches app names, descriptions, websites, and credits."$'\n'"Case-insensitive." \
-    --form --entry='')" || exit 0
+app_search_gui() { #search apps using a GUI
+  local output="$(yad "${yadflags[@]}" --title=Search --width=310 \
+    --text="Search for apps."$'\n'"Not case-sensitive." \
+    --form --field='' '' \
+    --field='Search description':CHK 'TRUE' \
+    --field='Search website':CHK 'TRUE' \
+    --field='Search credits':CHK 'TRUE' \
+    --field='Search scripts':CHK 'FALSE')" || exit 0
   
-  results="$(app_search "$output")"
+  local query="$(echo "$output" | sed -n 1p)"
+  
+  search_files='description website credits scripts'
+  
+  search_files=''
+  echo "$output" | sed -n 2p | grep -q 'TRUE' && search_files+='description '
+  echo "$output" | sed -n 3p | grep -q 'TRUE' && search_files+='website '
+  echo "$output" | sed -n 4p | grep -q 'TRUE' && search_files+='credits '
+  echo "$output" | sed -n 5p | grep -q 'TRUE' && search_files+='install install-32 install-64 uninstall '
+  
+  #echo -e "query: $query\nsearch_files: $search_files"
+  
+  results="$(app_search "$query" "$search_files")"
   
   if [ ! -z "$results" ];then
     
@@ -342,9 +367,9 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
-    app="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
+    app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
       --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
-      --print-column=2 --tooltip-column=3 --separator='\n')" || exit 0
+      --print-column=2 --tooltip-column=3)" || exit 0
     
     #if only one app is listed, user should not have to select it.
     if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
@@ -353,8 +378,8 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     
     echo "$app"
   else
-    yad --title=Results --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
-      --text="No results found for "\""<b>$output</b>"\""." \
+    yad "${yadflags[@]}" --title=Results --width=310 \
+      --text="No results found for "\""<b>$query</b>"\""." \
       --button=OK:0
     exit 0
   fi
@@ -602,6 +627,9 @@ if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];t
 fi
 
 repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
+
+#this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
+yadflags=(--center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
