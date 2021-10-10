@@ -80,7 +80,16 @@ case "$__os_id" in
 
         # download java 8 from adoptium github tar.gz as a workaround
         case "$arch" in
-            "64") "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1 ;;
+            "64")
+                "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+                mkdir -p ~/MultiMC/install/java || exit 1
+                cd ~/MultiMC/install/java && wget https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz && tar -xzf OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz
+                mv jdk8u302-b08 java-8-temurin-aarch64
+                rm -rf OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz
+                # check if java is working and remove if broken
+                ./java-8-temurin-aarch64/bin/java -version || ( warning "The downloaded java 8 version does not work, removing it now..." && warning "It is up to you to download and install a working java 8 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8" && rm -rf java-8-temurin-aarch64 )
+                cd ~
+                ;;
             "32") 
                 "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
                 mkdir -p ~/MultiMC/install/java || exit 1
