@@ -618,7 +618,7 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
 
   
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
-[ -z "$guimode" ] && guimode=system-default 
+[ -z "$guimode" ] && guimode=yad-default 
  
 if [ "$guimode" == yad-dark ]; then
   export GTK_THEME=Adwaita-dark
