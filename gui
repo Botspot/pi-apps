@@ -226,7 +226,7 @@ motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
-[ -z "$guimode" ] && guimode=yad
+[ -z "$guimode" ] && guimode=yad-default
 #mode=yad
 
 #Variable 1 is used to view the details of the specified app
@@ -260,8 +260,9 @@ while true;do
     
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
-    
-    if [ "$guimode" == yad ];then
+
+    if [[ "$guimode" == yad* ]];then 
+      
       if [ -z "$prefix" ];then
         buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
         "--button=!${DIRECTORY}/icons/install.png!Install:4" \
@@ -309,7 +310,8 @@ while true;do
         action=unknown
         ;;
       esac
-      
+
+
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
         #uninstall xlunch first

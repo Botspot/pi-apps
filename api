@@ -617,6 +617,16 @@ wget() { #this function intercepts all wget commands being used in app scripts. 
   return $exitcode
 }
 
+  
+guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+[ -z "$guimode" ] && guimode=yad-default 
+ 
+if [ "$guimode" == yad-dark ]; then
+  export GTK_THEME=Adwaita-dark
+elif [ "$guimode" == yad-light ]; then
+  export GTK_THEME=PiXflat
+fi
+    
 #if this script is being run standalone, not sourced
 if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
