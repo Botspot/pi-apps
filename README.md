@@ -12,13 +12,14 @@
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md">
     Report an error</a>
   |
-  <a href="https://hacktoberfest.digitalocean.com">
-      <img src=https://img.shields.io/badge/hacktoberfest-friendly-orange></a>
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md">
     Submit a suggestion</a>
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
     Submit an app</a>
+  |
+  <a href="https://hacktoberfest.digitalocean.com">
+      <img src=https://img.shields.io/badge/hacktoberfest-friendly-orange></a>
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
 
 ## Introduction
