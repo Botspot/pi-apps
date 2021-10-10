@@ -12,6 +12,8 @@
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md">
     Report an error</a>
   |
+  <a href="https://hacktoberfest.digitalocean.com">
+      <img src=https://img.shields.io/badge/hacktoberfest-friendly-orange></a>
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md">
     Submit a suggestion</a>
   |
