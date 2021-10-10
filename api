@@ -413,10 +413,26 @@ runonce() { #run command only if it's never been run before. Useful for one-time
   
 }
 
+add_english() {  # add en_US locale for more accurate error 
+  english_supported=$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )
+  if [ "$english_supported" == "en_US.UTF-8" ]; then 
+    locale=$(locale -a | grep -o 'en_US.utf8')
+    if [ "$locale" != 'en_US.utf8' ]; then
+      echo -n "Adding en_US locale for better logging... "
+      sudo sed -i '/en_US.UTF-8/s/^#[ ]//g' /etc/locale.gen
+      sudo locale-gen &>/dev/null
+      echo "Done"
+    fi
+  fi
+  export LANGUAGE=en_us  #this variable will override LC_ALL, LC_* and LANG
+}
+
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
   #only display a message if there was an apt lock
   local displayed=0
+  
+  add_english
   
   #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
@@ -480,7 +496,11 @@ get_device_info() { #returns information about current install and hardware
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
   fi
   
-  if [ ! -z "$LANG" ];then
+  if command -v localectl &>/dev/null; then
+    echo "Language: $(localectl | grep "System Locale" | tail -c 12)"
+  elif [ ! -z "$LANGUAGE" ];then
+    echo "Language: $LANGUAGE"
+  elif [ ! -z "$LANG" ];then
     echo "Language: $LANG"
   elif [ ! -z "$LC_ALL" ];then
     echo "Language: $LC_ALL"
