@@ -21,8 +21,6 @@ elif [[ "$format" = xlunch* ]];then
   format=xlunch
 elif [[ "$format" = yad* ]];then
   format=yad
-elif [[ "$format" = system-default ]];then
-  format=yad
 elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
   error "Unknown list format '$format'!"
 fi
