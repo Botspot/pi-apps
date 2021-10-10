@@ -261,7 +261,7 @@ while true;do
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
 
-    if [ "$guimode" == system-default ] || [[ "$guimode" == yad* ]];then 
+    if [[ "$guimode" == yad* ]];then 
       
       if [ -z "$prefix" ];then
         buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
