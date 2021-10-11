@@ -7,5 +7,5 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "amiberry" "$(dirname "$0")" || error "failed to remove amiberry package from the system!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to purge the amiberry package!"
 
