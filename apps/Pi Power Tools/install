@@ -8,6 +8,6 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "yad systemd-container xserver-xephyr expect" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "systemd-container xserver-xephyr expect" "$(dirname "$0")" || exit 1
 
 wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
