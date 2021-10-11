@@ -9,7 +9,7 @@ function error {
 
 rm -f amiberry.deb
 
-wget https://github.com/chunky-milk/chunky-milk/releases/download/1002/amiberry_4.1.4-1_arm64.deb -O amiberry.deb || error "Failed to download Amiberry deb file!"
+wget https://github.com/ryanfortner/ryanfortner/releases/download/1002/amiberry_4.1.4-1_arm64.deb -O amiberry.deb || error "Failed to download Amiberry deb file!"
 
 "${DIRECTORY}/pkg-install" "$HOME/amiberry.deb" "$(dirname "$0")" || error "failed to install amiberry.deb file!"
 
