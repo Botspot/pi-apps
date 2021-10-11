@@ -217,6 +217,8 @@ cd
 mkdir -p  ~/.local/share/applications
 # detect if script is running on RPi and if so override MESA GL Version
 if grep -iE 'raspberry' <<< $model > /dev/null; then
+    warning "You are running a Raspberry Pi, note that OpenGL 3.3 is not fully supported but it necessary to run Minecraft 1.17+."
+    warning "Vannilla 1.17.1 and 1.17 have been tested to work but there is no guarantee that future versions and rendering mods will continute to work"
     sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
 [Desktop Entry]
 Type=Application
@@ -241,3 +243,4 @@ _EOF_"
 fi
 
 status_green 'Installation is now done! You can open the launcher by going to Menu > Games > MultiMC'
+status "Make sure to visit the MultiMC5 wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
