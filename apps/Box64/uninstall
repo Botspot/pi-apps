@@ -7,13 +7,8 @@ function error {
   exit 1
 }
 
-if [ ! -e ~/box64 ];then
-  echo "The $HOME/box64 folder does not exist. Nothing to do!"
-  exit 0
-fi
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-cd ~/box64/build || error "Failed to enter ~/box64/build!"
-sudo make uninstall || error "Failed to uninstall box64!"
+sudo rm -f /etc/apt/sources.list.d/box64.list || error "Failed to remove repo!"
 
-rm -rf ~/box64 || error "Failed to delete the $HOME/box64 directory!"
-
+sudo apt-key del "DF9A 1B85 23C3 2EEE FF2A  6CDA 7759 FA1D 9FEC AC9E" || error "Failed to remove GPG key!"
