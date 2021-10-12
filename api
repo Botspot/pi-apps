@@ -1396,10 +1396,10 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   
   #determine if being run silently (if the '-q' flag was passed)
   local quiet=0
-  echo "$@" | grep -q '\-q' && quiet=1
+  echo "$@" | grep -qe "-q[[:space:]]" && quiet=1
   
   if [ "$quiet" == 0 ];then
-    status -n "Downloading $(basename "$url")... "
+    status "Downloading $(basename "$url")... "
   fi
   
   #now, perform the download using the chosen method
@@ -1415,16 +1415,17 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use this command to download files with aria2c
-    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --show-console-readout=false --console-log-level=error --summary-interval=5 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+
+    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
-      aria2c "${aria2_flags[@]}" >/dev/null
+      aria2c "${aria2_flags[@]}" --quiet
       local exitcode=$?
     else
       #run aria2c and reduce its output
-      aria2c "${aria2_flags[@]}" | grep -v --line-buffered 'Download Progress Summary\|==========\|----------\|^$'
-      local exitcode="${PIPESTATUS[0]}"
+      aria2c "${aria2_flags[@]}" 
+      local exitcode=$?
     fi
   fi
   
