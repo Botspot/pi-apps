@@ -8,7 +8,7 @@ function error {
 }
 
 echo "Installing dependencies"
-${DIRECTORY}/pkg-install" "kmod zip unzip" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "kmod zip unzip" "$(dirname "$0")" || exit 1
 
 echo "Creating directories"
 mkdir -p ~/.minecraft ~/lwjgl3arm64 ~/lwjgl2arm64 ~/lunarassets
@@ -31,12 +31,10 @@ rm -f ~/jdk-16.tar.gz
 
 echo "Setting up lwjgl3arm64 folder"
 echo "- Downloading lwjgl3arm64.tar.gz"
-errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2&>1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
+errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
 echo "- Extracting lwjgl3arm64.tar.gz"
 tar -zxf ~/lwjgl3arm64.tar.gz -C ~/lwjgl3arm64 || error "Failed to extract lwjgl3arm64.tar.gz"
 rm -f ~/lwjgl3arm64.tar.gz
-echo "- libwebp-imageio64.so"
-errors="$(wget -O ~/lwjgl3arm32/libwebp-imageio32.so 'https://github.com/gl91306/lunar/raw/master/libwebp-imageio64.so' 2&>1)" || error "Failed to download libwebp-imageio64.so\nErrors:\n$errors"
 
 echo "Downloading javafx-sdk-17-64.zip"
 errors="$(wget -O ~/javafx-sdk-17-64.zip 'https://github.com/gl91306/lunar/raw/master/javafx-sdk-17-64.zip' 2>&1)" || error "Failed to download javafx-sdk-17-64.zip\nErrors:\n$errors"

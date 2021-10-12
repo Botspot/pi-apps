@@ -202,7 +202,7 @@ On a default pi-apps installation, you will find this script at `/home/pi/pi-app
 This script handles Pi-Apps updates, both for apps and for files. Apps do not have version numbers, so updating involves comparing the installation-script of the existing app-folder with the installation-script of the new app-folder.
 #### Usage:
 ```bash
-~/pi-apps/updater
+~/pi-apps/updater gui
 ```
 This will check for updatable apps and files, then will display them in a graphical list, (using `yad` of course), and will give you the option to update certain items and not others.  
 But that's not all you can do with this script. The `updater` script supports multiple **modes**, useful for a variety of situations:
@@ -231,6 +231,12 @@ But that's not all you can do with this script. The `updater` script supports mu
   - This is based on the **length** of the `updatable-files` and `updatable-apps` files.
   - Doing it this way allows for an **instant** update-check - necessary for a gui to run quickly. Nobody wants to wait for an update-check to finish before Pi-Apps will launch.
   - The script will exit with code `0` if updates are available, otherwise `1`.
+
+Updater also supports a **fast mode**. This is necessary for the Pi-Apps GUI, where you don't want to wait a few seconds after clicking the "Updates" category. Using the fast mode will rely on the previous update-check. It won't check for updates, it will simply display them.  
+To use the fast mode:
+```bash
+~/pi-apps/updater gui fast
+```
 ## The `api` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/api`. 

@@ -1,6 +1,8 @@
 #!/bin/bash
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
 function error {
   echo -e "\e[91m$1\e[39m"
   exit 1

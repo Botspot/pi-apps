@@ -13,6 +13,9 @@ temp_pid_file="$(mktemp -u)"
 commands="echo "\$""\$" > $temp_pid_file
 $commands"
 
+#reset the GTK theme so terminals follow the system GTK theme
+export GTK_THEME=''
+
 function error {
   echo -e "\e[91m$1\e[39m"
   exit 1

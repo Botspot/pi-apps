@@ -86,6 +86,27 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Sonic Pi 3.2"
   mv -f "${DIRECTORY}/data/status/Sonic Pi 3.2" "${DIRECTORY}/data/status/Sonic Pi" 2>/dev/null
   
+  
+  #rename 'Min Browser' to 'Min'
+  rm -rf "${DIRECTORY}/apps/Min Browser"
+  mv -f "${DIRECTORY}/data/status/Min Browser" "${DIRECTORY}/data/status/Min" 2>/dev/null
+  
+  #rename 'Pale Moon Browser' to 'Pale Moon'
+  rm -rf "${DIRECTORY}/apps/Pale Moon Browser"
+  mv -f "${DIRECTORY}/data/status/Pale Moon Browser" "${DIRECTORY}/data/status/Pale Moon" 2>/dev/null
+  
+  #rename 'Puffin Browser Demo' to 'Puffin'
+  rm -rf "${DIRECTORY}/apps/Puffin Browser Demo"
+  mv -f "${DIRECTORY}/data/status/Puffin Browser Demo" "${DIRECTORY}/data/status/Puffin" 2>/dev/null
+  
+  #rename 'Quartz Browser' to 'Quartz'
+  rm -rf "${DIRECTORY}/apps/Quartz Browser"
+  mv -f "${DIRECTORY}/data/status/Quartz Browser" "${DIRECTORY}/data/status/Quartz" 2>/dev/null
+  
+  #rename 'Tor Browser' to 'Tor'
+  rm -rf "${DIRECTORY}/apps/Tor Browser"
+  mv -f "${DIRECTORY}/data/status/Tor Browser" "${DIRECTORY}/data/status/Tor" 2>/dev/null
+  
   true
 EOF
 
@@ -205,7 +226,7 @@ motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
-[ -z "$guimode" ] && guimode=yad
+[ -z "$guimode" ] && guimode=yad-default
 #mode=yad
 
 #Variable 1 is used to view the details of the specified app
@@ -239,8 +260,9 @@ while true;do
     
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
-    
-    if [ "$guimode" == yad ];then
+
+    if [[ "$guimode" == yad* ]];then 
+      
       if [ -z "$prefix" ];then
         buttons=("--button=!${DIRECTORY}/icons/search.png!Search:5" \
         "--button=!${DIRECTORY}/icons/install.png!Install:4" \
@@ -288,7 +310,8 @@ while true;do
         action=unknown
         ;;
       esac
-      
+
+
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
         #uninstall xlunch first

@@ -73,8 +73,6 @@ else
   supported=no
 fi
 
-
-
 if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   if [ "$1" == 'multi-uninstall' ];then
@@ -82,8 +80,6 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   elif [ "$1" == 'multi-install' ];then
     action=install
   fi
-  
-  echo
   
   app_list="$2" #newline-separated list of apps to install/uninstall
   
@@ -115,7 +111,61 @@ $app"
   done
   failed_apps="${failed_apps:1}" #remove first blank newline
   
-  if [ "$supported" == yes ];then #if hardware and OS is supported
+  #diagnose every failed app's logfile
+  for app in $(echo "$failed_apps") ;do
+    logfile="$(get_logfile "$app")"
+    #given the app's logfile, categorize the error and set the error_type variable
+    diagnosis="$(log_diagnose "$logfile")"
+    
+    error_type="$(echo "$diagnosis" | head -n1)" #first line of diagnosis is the type of error
+    error_caption="$(echo "$diagnosis" | tail -n +2)" #subsequent lines of diagnosis are caption(s)
+    
+    #set the window-text
+    if [ "$error_type" == unknown ];then
+      text="<b>${app^}</b> failed to $action for an <b>unknown</b> reason."
+    else
+      text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
+    fi
+    
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the system setup is supported, then enable the "Send report button"
+    if ! [[ "$error_type" =~ ^(system|internet|package)$ ]] && list_apps online | grep -q "$app" && [ "$supported" == yes ];then
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+    else
+      #inform user why 'send report' button is missing
+      text+=$'\n'"Your 'Send report' button is gone because "
+      if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+        text+="it's not an issue with Pi-Apps."
+      elif ! list_apps online | grep -q "$app" ;then
+        text+="this app is not in the official repository."
+      elif [ "$supported" == no ];then
+        text+="your system is unsupported."
+      fi
+    fi
+    text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    
+    #if the error_caption is empty, display logfile instead
+    if [ -z "$error_caption" ];then
+      text+=$'\n'"You can view the $([ "$action" == install ] && echo 'installation' || echo 'uninstall') output below."
+      error_caption="$(cat "$logfile")"
+    else
+      text+=$'\n'"Below, Pi-Apps explains the error."
+    fi
+    
+    echo "$error_caption" | yad "${yadflags[@]}" --text-info --width=700 --height=300 --title="Error occured when ${action}ing $app" \
+      --image="${DIRECTORY}/icons/error.png" --image-on-top \
+      --text="$text" --fontname=12 \
+      --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
+      "${send_button[@]}" \
+      --button=Close
+    button=$?
+    
+    if [ $button == 2 ];then
+      #send error log
+      send_error_report "$logfile"
+    fi
+  done
+  
+  if [ "$supported" == yes ]; then #if hardware and OS is supported
     for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
       logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
       
@@ -131,8 +181,6 @@ $app"
   
 elif [ "$1" == 'install-if-not-installed' ];then
   
-  echo
-  
   #if not installed
   if [ "$(app_status "$2")" != installed ];then
     #install it
@@ -140,7 +188,6 @@ elif [ "$1" == 'install-if-not-installed' ];then
   fi
   
 elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
-  echo
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
@@ -171,18 +218,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     sleep 10
   fi
   
-  #analytics
-  bitly_link "$app" "$mode" &
-  
-  #determine which script to run
-  if [ "$mode" == install ];then
-    scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
-    [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
-  else #uninstall mode
-    scriptname=uninstall
-  fi
-  appscript="${DIRECTORY}/apps/${app}/${scriptname}"
-  
   #determine path for log file to be created
   logfile="${DIRECTORY}/logs/${mode}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
@@ -198,38 +233,73 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
       i=$((i+1))
     done
   fi
-  #for piping to tee, the app script's exit code is preserved by enabling the pipefail bash builtin
-  set -o pipefail
   
-  chmod u+x "$appscript"
+  #analytics
+  bitly_link "$app" "$mode" &
+  
+  #if this app has scripts, determine which script to run
+  if [ "$(app_type "$app")" == standard ];then
+    if [ "$mode" == install ];then
+      scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
+      [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
+    else #uninstall mode
+      scriptname=uninstall
+    fi
+    appscript=("${DIRECTORY}/apps/${app}/${scriptname}")
+    chmod u+x "$appscript" >/dev/null
+  #if this app just lists a package-name, set the appscript to install that package
+  else
+    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
+  fi
   
   status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
   echo
   cd $HOME
-  echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  nice "$appscript" &> >(tee -a "$logfile")
-  if [ $? == 0 ]; then #if app script succeeded
-    #change the status from corrupted to 'installed' or 'uninstalled'
-    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+  nice "${appscript[@]}" &> >(tee -a "$logfile")
+  exitcode="${PIPESTATUS[0]}"
+  #if app script succeeded
+  if [ $exitcode == 0 ];then
     status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
     
-    format_log_file "$logfile" #remove escape sequences from logfile
+    format_logfile "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
     echo
-    exit 0
   else
-    echo -e  "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
-\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
+    echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
+\e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
-    format_log_file "$logfile" #remove escape sequences from logfile
+    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet, system, package
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
+      echo "corrupted" > "${DIRECTORY}/data/status/${app}"
+    fi
+    
+    format_logfile "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
-    exit 1
   fi
   
+  #determine what status the app should now be
+  if [ "$(app_type "$app")" == standard ];then
+    #if the app is standard, and succeeded, mark it as installed/uninstalled
+    if [ "$exitcode" == 0 ];then
+      echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    #if the app is standard and failed, AND diagnostics don't determine it to be internet/system/package, mark it as corrupted
+    else
+      #set the app's status to 'corrupted' if diagnostics determine that the error is NOT internet, system, package
+      if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
+        echo "corrupted" > "${DIRECTORY}/data/status/${app}"
+      fi
+    fi
+  #if the app is a package, set its status to whatever dpkg thinks it is
+  elif [ "$(app_type "$app")" == package ];then
+    refresh_pkgapp_status "$app"
+  fi
+  
+  #exit the manage script with the same exit-code of the app's script
+  exit $exitcode
+  
 elif [ "$1" == 'update' ];then
-  echo
   #UPDATE
   #for this operation, a program name must be specified.
   app="$2"
