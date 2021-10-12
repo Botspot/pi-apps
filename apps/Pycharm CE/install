@@ -14,32 +14,37 @@ name=pycharm-community
 # Get dependencies
 "${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk gcc" "$(dirname "$0")" || exit 1
 
-echo "Downloading $(basename "$downloadlink")"
 rm -f $name.tar.gz
 wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
 
-echo "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
+status "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
 sudo rm -rf /opt/$name
 sudo mkdir -p /opt/$name
 sudo tar xvzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
 rm -f $name.tar.gz
 sudo mv /opt/$name/*/* /opt/$name/
 
-echo "Making file executable"
-sudo chmod +x /opt/$name/bin/pycharm.sh
+chmod +x /opt/$name/bin/pycharm.sh
 
-echo "Implementing terminal fix"
+status "Implementing terminal fix"
 rm -rf ~/pty4j
-git clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to download pty4j repository"
+git_clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to download pty4j repository."
 cd ~/pty4j/native
 gcc -fPIC -c *.c || error "command failed: gcc -fPIC -c *.c"
 gcc -shared -o libpty.so *.o || error "command failed: gcc -shared -o libpty.so *.o"
-sudo mkdir -p /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm"
-sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/$name/lib/pty4j-native/linux/arm"
+sudo mkdir -p /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm."
+sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/$name/lib/pty4j-native/linux/arm."
 rm -rf ~/pty4j
-cd ~/
+cd $HOME
 
-echo "Creating desktop shortcut"
+status "Compiling file watcher"
+git_clone https://github.com/cycool29/fsnotifier-pycharm-rpi
+cd fsnotifier-pycharm-rpi
+bash $HOME/fsnotifier-pycharm-rpi/make.sh || error "Failed to compile file watcher."
+mv $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.2/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.2/."
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.2/fsnotifier" > $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties."
+
+status "Creating desktop shortcut"
 echo "[Desktop Entry]
 Type=Application
 Name=PyCharm Community Edition
