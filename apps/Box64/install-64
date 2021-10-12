@@ -7,7 +7,16 @@ function error {
   exit 1
 }
 
-sudo wget https://ryanfortner.github.io/box64-debs/box64.list -O /etc/apt/sources.list.d/box64.list || error "Failed to add box64.list file!"
-wget -qO- https://ryanfortner.github.io/box64-debs/KEY.gpg | sudo apt-key add - || error "Failed to add KEY.gpg to APT keyring!"
+sudo wget https://ryanfortner.github.io/box64-debs/box64.list -O /etc/apt/sources.list.d/box64.list
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box64.list
+  error "Failed to add box64.list file!"
+fi
+
+wget -qO- https://ryanfortner.github.io/box64-debs/KEY.gpg | sudo apt-key add -
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box64.list
+  error "Failed to add KEY.gpg to APT keyring!"
+fi
 
 "${DIRECTORY}/pkg-install" "box64" "$(dirname "$0")" || exit 1
