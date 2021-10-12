@@ -9,6 +9,9 @@ function error {
 
 
 git clone https://github.com/open-sorcerer64/stacer-on-pi.git || error 'failed to clone repository'
-cd /home/pi/stacer-on-pi
-"${DIRECTORY}/pkg-install" "libqt5charts5 fonts-inter.deb stacer.deb" "$(dirname "$0")" || error 'failed to install'
-sudo rm -rf  /home/pi/stacer-on-pi || exit 1 
+
+cd $HOME/stacer-on-pi
+
+"${DIRECTORY}/pkg-install" "libqt5charts5 $HOME/stacer-on-pi/fonts-inter.deb $HOME/stacer-on-pi/stacer.deb" "$(dirname "$0")" || error 'Failed to install Stacer.'
+
+sudo rm -rf  $HOME/stacer-on-pi || exit 1 
