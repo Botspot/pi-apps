@@ -205,10 +205,6 @@ case "$arch" in
     *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
-warning "MultiMC5 does not give support for custom builds"
-warning "Only bugs that can be reproduced on official MultiMC5 builds should be posted to https://github.com/MultiMC/MultiMC5/issues"
-warning "Bugs which only appear on this build should be posted to https://github.com/Botspot/pi-apps/issues"
-
 # build & install (use -j with the number of cores your CPU has)
 status "Starting Compilation"
 make -j$(nproc) install || error "Make install failed"
@@ -243,4 +239,10 @@ _EOF_"
 fi
 
 status_green 'Installation is now done! You can open the launcher by going to Menu > Games > MultiMC'
+
+warning "MultiMC5 does not give support for custom builds"
+warning "Only bugs that can be reproduced on official MultiMC5 builds should be posted to https://github.com/MultiMC/MultiMC5/issues"
+warning "Bugs which only appear on this build should be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Discord Server"
+
 status "Make sure to visit the MultiMC5 wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
+status "If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine"

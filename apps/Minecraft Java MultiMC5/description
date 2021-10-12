@@ -1,16 +1,17 @@
-NOTE: For best performance, we recommend a version like 1.12.2 + Optifine or the latest Minecraft with Sodium/Lithium/Phosphor Fabric Mods.
+NOTE: For best performance, we recommend a version like 1.12.2 + Optifine or the latest Minecraft with Optifabric or Sodium/Lithium/Phosphor Fabric Mods.
 
-Minecraft Java MultiMC5 for the raspberry pi
+Minecraft Java MultiMC5 for the Raspberry Pi
 To run: Menu -> Games -> MultiMC
 To run in a terminal: ~/MultiMC/install/MultiMC
 
 The MultiMC5 Wiki can be found here: https://github.com/MultiMC/MultiMC5/wiki
+If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine
 
-the MultiMC5 install script contains OS detection (ubuntu and debian based systems supported), and automatic java 8, 11, and 16 download and installation
+the MultiMC5 install script contains OS detection (ubuntu and debian/raspbian based systems supported), and automatic java 8, 11, and 16 download and installation
 
 MultiMC5 supports mojang and microsoft account login support, and minecraft versions from the old beta/alphas all the way up to 1.17+. Fabric and Forge mod loading is supported for the applicable minecraft versions
 
-A custom meta repo is used for arm32 and arm64 to provide lwjgl 2.9.4, 3.1.2(fake), 3.1.6, 3.2.1, 3.2.2, and 3.2.3(unused) native libraries
+A custom meta repo is used for arm32 and arm64 to provide lwjgl 2.9.4, 3.1.2(fake), 3.1.6, 3.2.1, 3.2.2, and 3.2.3(unused) native libraries. (https://github.com/theofficialgman/meta-multimc)
 This supports all currently released versions of minecraft.
 
 Note: MultiMC5 does not give support for custom builds
