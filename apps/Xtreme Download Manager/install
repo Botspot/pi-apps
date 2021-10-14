@@ -27,3 +27,6 @@ sudo mv -f ./ffmpeg-git-20211009-armhf-static/ffmpeg /opt/xdman/ || error "Faile
 # Delete unwanted files after installation
 cd $HOME
 rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
+
+# Reminder for users to install browser extensiom
+echo -e "\nYou may want to install the XDM browser extension. For more info, see here \e[4mhttps://github.com/subhra74/xdm#features\e[0m"
