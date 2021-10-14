@@ -29,4 +29,4 @@ cd $HOME
 rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
 
 # Reminder for users to install browser extensiom
-echo -e "\nYou may want to install the XDM browser extension. For more info, see here \e[4mhttps://github.com/subhra74/xdm#features\e[0m"
+echo -e "\nYou may want to install the XDM browser extension. Simply install it from \e[4mXDM Menu -> Tools -> Browser Monitoring\e[0m page."
