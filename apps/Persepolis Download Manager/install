@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+cd $HOME
+wget -O persepolis.deb https://github.com/persepolisdm/persepolis/releases/download/3.2.0/persepolis_3.2.0.2_all.deb 
+"${DIRECTORY}/pkg-install" "aria2 adwaita-qt sound-theme-freedesktop libnotify-bin python3-pyqt5 libqt5svg5 python3-requests python3-setproctitle python3-setuptools python3-psutil youtube-dl ffmpeg python3-pyqt5.qtsvg" "$(dirname "$0")" || error "Failed installing Persepolis Download Manager!"

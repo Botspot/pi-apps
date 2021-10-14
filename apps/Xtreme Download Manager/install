@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "openjdk-11-jdk" "$(dirname "$0")" || error "Failed installing openjdk!"
+
+cd $HOME
+mkdir -p xdm 
+cd xdm
+wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/7.2.11/xdm-setup-7.2.11.tar.xz || error "Failed to download XDM setup tar file!"
+tar -xf xdm.tar.xz || error "Failed to extract XDM setup tar file!"
+sudo ./install.sh | grep -v "Installation completed" || error "Failed to execute XDM setup script!"
+
+# Use system java
+sudo sed -i s=/opt/xdman/jre/bin/java=java=g /opt/xdman/xdman || error "Failed to change to system Java runtime!"
+
+# Fix 'Download failed. Failed to append/convert file parts, please check if the drive is full or write protected'
+wget -O ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-armhf-static.tar.xz || error "Failed to download ffmpeg!"
+tar -xf ffmpeg.tar.xz || error "Failed to extract ffmpeg!"
+sudo mv -f ./ffmpeg-git-20211009-armhf-static/ffmpeg /opt/xdman/ || error "Failed to move ffmpeg binary file to /opt/xdman/xdman/ !"
+
+# Delete unwanted files after installation
+cd $HOME
+rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
