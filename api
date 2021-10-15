@@ -1410,9 +1410,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     use=wget
   fi
   
-  #determine if being run silently (if the '-q' flag was passed)
+  #determine if being run silently (-q flag) or if data is written to stdout (-O- flag)
   local quiet=0
-  echo "$@" | grep -qe "-q[[:space:]]" && quiet=1
+  echo "$@" | grep -q '\-q\|O-' && quiet=1
   
   if [ "$quiet" == 0 ];then
     status "Downloading $(basename "$url")... "
