@@ -1366,7 +1366,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
   status 'Done'
 }
 
-wget() { #Intercept all wget commands. When possible, uses aria2c.
+get_custom() { #Intercept all wget commands. When possible, uses aria2c.
   local file=''
   local url=''
   local use=aria2c
