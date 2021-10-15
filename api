@@ -12,21 +12,21 @@ error() { #red text and exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1"
+  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1" 1>&2
 }
 
 status() { #cyan text to indicate what is happening
   
   #detect if a flag was passed, and if so, pass it on to the echo command
   if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-    echo -e $1 "\e[96m$2\e[39m"
+    echo -e $1 "\e[96m$2\e[39m" 1>&2
   else
-    echo -e "\e[96m$1\e[39m"
+    echo -e "\e[96m$1\e[39m" 1>&2
   fi
 }
 
 status_green() { #announce the success of a major action
-  echo -e "\e[92m$1\e[39m"
+  echo -e "\e[92m$1\e[39m" 1>&2
 }
 
 generate_logo() { #display colorized Pi-Apps logo in terminal
@@ -1007,6 +1007,13 @@ Please run this command: sudo dpkg --configure -a")
     error_type="system"
   fi
   
+  if grep -qF "package is in a very bad inconsistent state;" <<<"$errors" ;then
+    error_caption+=("Something is wrong with another package on your system.
+
+Refer to this information while troubleshooting: https://askubuntu.com/questions/148715")
+    error_type="system"
+  fi
+  
   if grep -qF "dpkg: error: fgets gave an empty string from" <<<"$errors" ;then
     error_caption+=("Something strange is going on with your system and dpkg won't work.
 
@@ -1144,8 +1151,6 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  
-  
   if grep -q "modprobe: FATAL: Module .* not found in directory" <<<"$errors" ;then
     error_caption+=("Something is wrong with the kernel modules. Try rebooting if your kernel was upgraded.
 
@@ -1153,6 +1158,12 @@ Otherwise, try reinstalling the kernel using this command:
 sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
 
 See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
+    error_type="system"
+  fi
+  
+  #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
+  if grep -q "^User error: " <<<"$errors" ;then
+    error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
     error_type="system"
   fi
   
@@ -1369,19 +1380,27 @@ git_clone() { #silently clone a git repository but display the output if an erro
 wget() { #Intercept all wget commands. When possible, uses aria2c.
   local file=''
   local url=''
+  #determine the download manager to use
   local use=aria2c
+  #determine if being run silently (if the '-q' flag was passed)
+  local quiet=0
   
   #convert wget arguments to newline-separated list
   local IFS=$'\n'
   local opts="$(IFS=$'\n'; echo "$*")"
   for opt in $opts ;do
     if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
-      #this opt is the beginning of a flag
-      if [ "$opt" == '-qO' ] || [ "$opt" == '-O' ] || [ "$opt" == '-q' ]; then
+      #this opt is a flag
+      if [ "$opt" == '-qO-' ] || [ "$opt" == '-' ];then
+        #writing to stdout, use wget and hide output
+        use=wget
+        quiet=1
+      elif [ "$opt" == '-O' ];then
         true
+      elif [ "$opt" == '-q' ];then
+        quiet=1
       else #any other wget command-flags other than '-qO', '-O', '-q'
         use=wget
-        break
       fi
     elif [[ "$opt" == *'://'* ]]; then
       #this opt is web address
@@ -1390,9 +1409,10 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       #this opt is file output
       if [ -z "$file" ];then
         file="$opt"
+        #if output file is /dev/stdout, enable quiet mode
+        [ "$file" == /dev/stdout ] && quiet=1
       else #file var already populated
         use=wget
-        break
       fi
     else
       #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
@@ -1400,7 +1420,6 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
         file="$(pwd)/${opt}"
       else #file var already populated
         use=wget
-        break
       fi
     fi
   done
@@ -1410,12 +1429,8 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     use=wget
   fi
   
-  #determine if being run silently (-q flag) or if data is written to stdout (-O- flag)
-  local quiet=0
-  echo "$@" | grep -q '\-q\|O-' && quiet=1
-  
   if [ "$quiet" == 0 ];then
-    status "Downloading $(basename "$url")... "
+    status -n "Downloading $(basename "$url")... " 1>&2
   fi
   
   #now, perform the download using the chosen method
@@ -1447,9 +1462,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
-    status_green "Done"
+    status_green "Done" 1>&2
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
-    error "\nFailed to download: $url"
+    error "\nFailed to download: $url" 1>&2
   fi
   
   return $exitcode
