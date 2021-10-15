@@ -1432,7 +1432,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #use this command to download files with aria2c
 
-    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
