@@ -1391,7 +1391,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   for opt in $opts ;do
     if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
       #this opt is a flag
-      if [ "$opt" == '-qO-' ] || [ "$opt" == '-' ];then
+      if [ "$opt" == '-qO-' ] || [ "$opt" == '-' ] || [[ "$opt" == *'O-' ]];then
         #writing to stdout, use wget and hide output
         use=wget
         quiet=1
@@ -1399,7 +1399,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
         true
       elif [ "$opt" == '-q' ];then
         quiet=1
-      else #any other wget command-flags other than '-qO', '-O', '-q'
+      else #any other wget command-flags
         use=wget
       fi
     elif [[ "$opt" == *'://'* ]]; then
