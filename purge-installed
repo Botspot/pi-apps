@@ -23,11 +23,8 @@ if [ -z "$app" ];then
   error "No app name specified to purge-installed!"
 fi
 
-export LANG=C
-export LC_ALL=C
-export LANGUAGE=C
+source "${DIRECTORY}/api" || error "Failed to source $DIRECTORY/api."
 
-source "${DIRECTORY}/api"
 apt_lock_wait
 
 #to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt

@@ -45,11 +45,27 @@ ${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
 }
 #end of output functions
 
+add_english() {  # add en_US locale for more accurate error 
+  if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
+    locale=$(locale -a | grep -oF 'en_US.utf8')
+    if [ "$locale" != 'en_US.utf8' ]; then
+      echo -n "Adding en_US locale for better logging... "
+      sudo sed -i '/en_US.UTF-8/s/^#[ ]//g' /etc/locale.gen
+      sudo locale-gen &>/dev/null
+      echo "Done"
+    fi
+  fi
+  export LANGUAGE=en_us  #this variable will override LC_ALL, LC_* and LANG
+}
+
 #apt functions
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
   #only display a message if there was an apt lock
   local displayed=0
+  
+  #make sure english locale is added first
+  add_english
   
   #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
@@ -1456,10 +1472,7 @@ unzip() { #say what is being extracted
 }
 #end of command interceptors
 
-#set language to the C locale for consistency
-export LANG=C
-export LC_ALL=C
-export LANGUAGE=C
+add_english
 
 #set the system GTK theme for yad windows
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style" || echo yad-default)"

@@ -16,6 +16,7 @@ error() {
 # Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
 # "package1 | package2" represents "package1 or package2" (whichever is available) for $1
 
+source "${DIRECTORY}/api" || error "Failed to source $DIRECTORY/api."
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
 app="$(basename "$2")" #remove any slashes to just get program name
@@ -248,12 +249,8 @@ elif [ -z "$app" ];then
   error "No app name specified to pkg-install!"
 fi
 
-export LANG=C
-export LC_ALL=C
-export LANGUAGE=C
 IFS=$' \n'
 
-source "${DIRECTORY}/api"
 apt_lock_wait
 
 #sudo apt update
