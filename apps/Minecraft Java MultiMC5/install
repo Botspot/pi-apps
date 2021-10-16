@@ -200,8 +200,8 @@ cd build
 rm -rf CMakeCache.txt
 status "Generating the CMake File"
 case "$arch" in
-    "64") cmake -DMultiMC_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DMultiMC_BUILD_PLATFORM="$model" -DMultiMC_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DMultiMC_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DMultiMC_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DMultiMC_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
-    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMultiMC_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DMultiMC_BUILD_PLATFORM="$model" -DMultiMC_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DMultiMC_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DMultiMC_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DMultiMC_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
+    "64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
+    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
     *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
@@ -211,6 +211,10 @@ make -j$(nproc) install || error "Make install failed"
 
 cd
 mkdir -p  ~/.local/share/applications
+mkdir -p  ~/.local/share/icons/MultiMC
+# copy icon to .local folder
+cp "${DIRECTORY}/apps/Minecraft Java MultiMC5/icon-64.png" "$HOME/.local/share/icons/MultiMC/icon-64.png"
+
 # detect if script is running on RPi and if so override MESA GL Version
 if grep -iE 'raspberry' <<< $model > /dev/null; then
     warning "You are running a Raspberry Pi, note that OpenGL 3.3 is not fully supported but it necessary to run Minecraft 1.17+."
@@ -222,7 +226,7 @@ Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 $HOME/MultiM
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
 else
@@ -233,7 +237,7 @@ Exec=$HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
 fi
