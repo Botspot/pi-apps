@@ -9,7 +9,7 @@ function error {
 
 rm -f blockbench.deb
 
-wget -O ~/blockbench.deb "https://ftp.halifax.rwth-aachen.de/osdn/storage/g/r/ra/raspbian-addons/debian/pool/blockbench_3.9.3_arm64.deb" || error "Failed to download deb file!"
+wget -O ~/blockbench.deb "http://storage.osdn.net/storage/g/r/ra/raspbian-addons/debian/pool/blockbench_3.9.3_arm64.deb" || error "Failed to download deb file!"
 
 "${DIRECTORY}/pkg-install" "$HOME/blockbench.deb" "$(dirname "$0")" || exit 1
 
