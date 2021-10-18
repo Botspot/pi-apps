@@ -7,16 +7,9 @@ function error {
   exit 1
 }
 
-#install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+"${DIRECTORY}/pkg-install" "libssl1.0-dev" "$(dirname "$0")" || exit 1
+
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
 
