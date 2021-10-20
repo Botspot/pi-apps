@@ -16,7 +16,7 @@ sudo mkdir -p /opt/jdk
 
 #Download client and assorted java stuff
 echo "Downloading lunarclient.AppImage"
-errors="$(wget -O ~/lunarassets/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.7.3c-aarch64.AppImage' 2>&1)" || error "Failed to download lunarclient.AppImage\nErrors:\n$errors"
+errors="$(wget -O ~/lunarassets/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.8.0-arm64.AppImage' 2>&1)" || error "Failed to download lunarclient.AppImage\nErrors:\n$errors"
 chmod +x ~/lunarassets/lunarclient.AppImage || error "Failed to make lunarclient.AppImage executable!"
 
 echo "Downloading lunarclient.png"
