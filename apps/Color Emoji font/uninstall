@@ -7,6 +7,4 @@ function error {
   exit 1
 }
 
-rm -f "$HOME/.fonts/Noto Color Emoji.ttf" "$HOME/.fonts/Segoe UI.ttf"
-
-exit 0
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to run purge-installed!"
