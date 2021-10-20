@@ -11,9 +11,24 @@ function error {
 "${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || error "Failed installing Flatpak!"
 
 # Add flathub remote
-sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!" 
+( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
 
-sudo flatpak install flathub org.telegram.desktop -y || flatpak install flathub org.telegram.desktop -y || error "Flatpak failed to install org.telegram.desktop!"
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted." 
+
+( sudo flatpak install flathub org.telegram.desktop -y || flatpak install flathub org.telegram.desktop -y || error "Flatpak failed to install org.telegram.desktop!" ) | grep -v "Note that the directories 
+
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted." 
+
 sudo rm -f /var/lib/flatpak/app/org.telegram.desktop/current/active/export/share/applications/org.telegram.desktop.desktop
 
 # Create menu shortcut
