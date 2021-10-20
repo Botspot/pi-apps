@@ -153,8 +153,9 @@ mkdir -p install
 
 # clone the complete source
 status "Downloading the MultiMC5 Source Code"
-git clone --recursive https://github.com/MultiMC/MultiMC5.git src # You can clone from MultiMC's main repo, no need to use a fork.
+git clone --recursive https://github.com/MultiMC/Launcher.git src # You can clone from MultiMC's main repo, no need to use a fork.
 cd src
+git remote set-url origin https://github.com/MultiMC/Launcher.git
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
 
 # add secrets files
@@ -197,6 +198,7 @@ set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
 set(Launcher_DisplayName "${Launcher_CommonName} 5" PARENT_SCOPE)
 set(Launcher_UserAgent "${Launcher_CommonName}/5.0" PARENT_SCOPE)
 set(Launcher_ConfigFile "multimc.cfg" PARENT_SCOPE)
+set(Launcher_Git "https://github.com/MultiMC/Launcher" PARENT_SCOPE)
 
 set(Launcher_Branding_ICNS "notsecrets/Launcher.icns" PARENT_SCOPE)
 set(Launcher_Branding_WindowsRC "notsecrets/launcher.rc" PARENT_SCOPE)
