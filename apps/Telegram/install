@@ -10,7 +10,8 @@ function error {
 # Install flatpak first 
 "${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || error "Failed installing Flatpak!"
 
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+# Add flathub remote
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!" 
 
 sudo flatpak install flathub org.telegram.desktop -y || flatpak install flathub org.telegram.desktop -y || error "Flatpak failed to install org.telegram.desktop!"
 sudo rm -f /var/lib/flatpak/app/org.telegram.desktop/current/active/export/share/applications/org.telegram.desktop.desktop
