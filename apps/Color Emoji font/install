@@ -7,18 +7,14 @@ function error {
   exit 1
 }
 
-cd $HOME
-rm -r ~/tmp &>/dev/null
-mkdir -p ~/tmp
-cd tmp || error "Failed to enter $HOME/tmp directory!"
-wget https://fontsdata.com/zipdown-segoeuiemoji-132714.htm || error "Failed to download Segoe UI Emoji font!"
-wget https://noto-website.storage.googleapis.com/pkgs/NotoColorEmoji-unhinted.zip || error "Failed to download Noto Color Emoji font!"
-mv zipdown-segoeuiemoji-132714.htm segoeuiemoji.zip
-unzip segoeuiemoji.zip || error "Failed to extract Segoe UI Emoji font!"
-unzip NotoColorEmoji-unhinted.zip || error "Failed to extract Noto Color Emoji font!"
-rm "$HOME/.fonts/Segoe UI.ttf" "$HOME/.fonts/Noto Color Emoji.ttf" &>/dev/null
-mkdir -p ~/.fonts &>/dev/null
-mv seguiemj.ttf "$HOME/.fonts/Segoe UI.ttf" || error "Failed to move Segoe UI font to .fonts folder!"
-mv NotoColorEmoji.ttf "$HOME/.fonts/Noto Color Emoji.ttf" || error "Failed to move Noto Color Emoji font to .fonts folder!"
-fc-cache -f -v &>/dev/null
-rm -r ~/tmp
+rm -rf color-emoji-fonts
+mkdir color-emoji-fonts
+cd color-emoji-fonts
+
+wget http://ftp.us.debian.org/debian/pool/main/f/fonts-noto-color-emoji/fonts-noto-color-emoji_2.028-1_all.deb
+wget https://github.com/eosrei/twemoji-color-font/releases/download/v13.1.0/fonts-twemoji-svginot_13.1.0-1_all.deb 
+
+"${DIRECTORY}/pkg-install" "$HOME/color-emoji-fonts/fonts-noto-color-emoji_2.028-1_all.deb $HOME/color-emoji-fonts/fonts-twemoji-svginot_13.1.0-1_all.deb" "$(dirname "$0")" || error "Failed to install fonts-noto-color-emoji and fonts-twemoji-svginot!"
+
+# Cleanup
+rm -rf $HOME/color-emoji-fonts
