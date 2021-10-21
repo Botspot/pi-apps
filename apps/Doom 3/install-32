@@ -22,4 +22,4 @@ echo "Making scripts executable..."
 sudo chmod +x install.sh uninstall.sh || error "Failed To make install script and uninstall script executable"  
 
 echo "Running install script..."
-setarch linux32 ./install.sh || error "Failed to run install script :("
+setarch linux32 ./install.sh no-apt || error "Failed to run install script :("

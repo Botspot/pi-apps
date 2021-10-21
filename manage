@@ -246,7 +246,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
       scriptname=uninstall
     fi
     appscript=("${DIRECTORY}/apps/${app}/${scriptname}")
-    chmod u+x "$appscript" >/dev/null
+    chmod u+x "$appscript" &>/dev/null
   #if this app just lists a package-name, set the appscript to install that package
   else
     appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
