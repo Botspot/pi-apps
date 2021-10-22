@@ -1373,7 +1373,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
   
   status -n "Downloading $repo_name repository... "
   
-  rm -rf "$folder"
+   rm -rf "$repo_name"
   local errors="$(git clone "$@" 2>&1)" 
   local exitcode=$?
   #filter error messages
