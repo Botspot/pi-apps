@@ -8,7 +8,7 @@ function error {
 }
 
 #Defining Variables
-downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.2.tar.gz
+downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.3.tar.gz
 name=pycharm-community
 
 # Get dependencies
@@ -17,7 +17,7 @@ name=pycharm-community
 rm -f $name.tar.gz
 wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
 
-status "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
+status "Extracting $(basename $downloadlink) to /opt"
 sudo rm -rf /opt/$name
 sudo mkdir -p /opt/$name
 sudo tar xvzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
