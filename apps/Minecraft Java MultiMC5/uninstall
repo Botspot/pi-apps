@@ -12,5 +12,6 @@ find ./MultiMC/install -mindepth 1 ! -regex '^./MultiMC/install/instances\(/.*\)
 sudo rm -rf ~/MultiMC/src
 sudo rm -rf ~/MultiMC/build
 sudo rm -rf ~/.local/share/applications/MultiMC.desktop
+sudo rm -rf ~/.local/share/icons/MultiMC/icon-64.png
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
