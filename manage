@@ -165,16 +165,6 @@ $app"
     fi
   done
   
-  if [ "$supported" == yes ]; then #if hardware and OS is supported
-    for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
-      logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
-      
-      #if logfile detected, exists, is not empty, and does not contain a bunch of arrows (user-fault error) ask permission to send error report
-      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ] && ! grep -qF '▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼' "$logfile" ;then
-        send_error_report_gui "$logfile" "<b>$app</b> failed to ${action}."
-      fi
-    done
-  fi
   if [ ! -z "$failed_apps" ];then
     exit 1
   fi
@@ -380,8 +370,6 @@ elif [ "$1" == 'update' ];then
   echo
   
 elif [ "$1" == 'check-all' ];then
-  
-  echo 
   
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
