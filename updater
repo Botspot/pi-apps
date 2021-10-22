@@ -439,7 +439,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   fi
   
   if [ -z "$updatable_apps" ];then
-    status "No apps is updatable."
+    status "No apps are updatable."
     echo
   else
     status "These apps can be updated:"
@@ -449,7 +449,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   fi
   
   if [ -z "$updatable_files" ];then
-    status "No files is updatable"
+    status "No files are updatable"
     echo
   else
     status "These files can be updated:"
