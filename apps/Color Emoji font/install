@@ -7,14 +7,7 @@ function error {
   exit 1
 }
 
-rm -rf color-emoji-fonts
-mkdir color-emoji-fonts
-cd color-emoji-fonts
-
-wget http://ftp.us.debian.org/debian/pool/main/f/fonts-noto-color-emoji/fonts-noto-color-emoji_2.028-1_all.deb
-wget https://github.com/eosrei/twemoji-color-font/releases/download/v13.1.0/fonts-twemoji-svginot_13.1.0-1_all.deb 
-
-"${DIRECTORY}/pkg-install" "$HOME/color-emoji-fonts/fonts-noto-color-emoji_2.028-1_all.deb $HOME/color-emoji-fonts/fonts-twemoji-svginot_13.1.0-1_all.deb" "$(dirname "$0")" || error "Failed to install fonts-noto-color-emoji and fonts-twemoji-svginot!"
-
-# Cleanup
-rm -rf $HOME/color-emoji-fonts
+mkdir -p $HOME/.fonts
+cd $HOME/.fonts
+wget https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf
+fc-cache -f -v &>/dev/null || error "Failed to build font caches!"
