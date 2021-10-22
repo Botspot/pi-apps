@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to run purge-installed!"
+rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || sudo rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || error "Failed to remove font file!"
