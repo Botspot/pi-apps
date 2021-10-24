@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-wget -O ~/ms-teams.deb https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v1.0.12/teams-for-linux_1.0.12_armv7l.deb || error "Failed to download!"
+wget -O ~/ms-teams.deb https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v1.0.13/teams-for-linux_1.0.13_armv7l.deb || error "Failed to download!"
 "${DIRECTORY}/pkg-install" "$HOME/ms-teams.deb" "$(dirname "$0")" || exit 1
 
 #change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
