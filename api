@@ -1021,7 +1021,7 @@ Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error
     error_type="system"
   fi
   
-  if grep -qF "You don't have enough free space in" <<<"$errors" || grep -qF "failed to write (No space left on device)" <<<"$errors";then
+  if grep -q "You don't have enough free space in\|No space left on device" <<<"$errors";then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
@@ -1138,6 +1138,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" ;then
+    error_caption+=("The ca-certificates-java package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1146,8 +1153,22 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=22 The response status is not successful\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer" <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  if grep -q "error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
+    error_caption+=("Flatpak seems to be having Internet trouble.
+
+Check your internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  if grep -q "The TLS connection was non-properly terminated." <<<"$errors" ;then
+    error_caption+=("Your system seems to be having Internet trouble.
+
+Check your internet connection and try again.")
     error_type="internet"
   fi
   
@@ -1158,6 +1179,24 @@ Otherwise, try reinstalling the kernel using this command:
 sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
 
 See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
+    error_type="system"
+  fi
+  
+  if grep -q "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
+    error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
+
+Try installing two packages with this command:
+sudo apt install appmenu-gtk2-module appmenu-gtk3-module
+
+And if that doesn't work, try Googling the errors or reach out to Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -q "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <<<"$errors" ;then
+    error_caption+=("Repository-signing failed because gnpug is missing. This is installed by default on most systems, but on yours it's missing for some reason.
+
+Try installing gnupg with this command:
+sudo apt install gnpug")
     error_type="system"
   fi
   
@@ -1445,8 +1484,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       file="$(pwd)/$(basename "$url")"
     fi
     
-    #use this command to download files with aria2c
-
+    #use these flags for aria2c
     aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
     
     #suppress output if -q flag passed
