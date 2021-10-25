@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+wget -O Geekbench.tar.gz https://cdn.geekbench.com/Geekbench-5.4.0-LinuxARMPreview.tar.gz
+tar -xf Geekbench.tar.gz || error "Failed to extract files!"
+sudo mv -f ./Geekbench-5.4.0-LinuxARMPreview /opt/geekbench || error "Failed to move source folder to /opt!"
+
+# Create symbolic link
+if [ $arch == 32 ]; then
+  sudo ln -sf /opt/geekbench/geekbench_armv7 /usr/local/bin/geekbench || error "Failed to create symbolic link to /usr/local/bin!"
+elif [ $arch == 64 ]; then
+  sudo ln -sf /opt/geekbench/geekbench_aarch64 /usr/local/bin/geekbench || error "Failed to create symbolic link to /usr/local/bin!"
+else
+  error "Failed to detect OS CPU architecture!"
+fi
