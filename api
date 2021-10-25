@@ -8,7 +8,7 @@
 #output functions below
 error() { #red text and exit 1
   echo -e "\e[91m$1\e[0m" 1>&2
-  #~ exit 1
+  exit 1
 }
 
 warning() { #yellow text
