@@ -7,26 +7,26 @@
 
 #output functions below
 error() { #red text and exit 1
-  echo -e "\e[91m$1\e[39m" 1>&2
-  exit 1
+  echo -e "\e[91m$1\e[0m" 1>&2
+  #~ exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1" 1>&2
+  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1\e[0m" 1>&2
 }
 
 status() { #cyan text to indicate what is happening
   
   #detect if a flag was passed, and if so, pass it on to the echo command
   if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-    echo -e $1 "\e[96m$2\e[39m" 1>&2
+    echo -e $1 "\e[96m$2\e[0m" 1>&2
   else
-    echo -e "\e[96m$1\e[39m" 1>&2
+    echo -e "\e[96m$1\e[0m" 1>&2
   fi
 }
 
 status_green() { #announce the success of a major action
-  echo -e "\e[92m$1\e[39m" 1>&2
+  echo -e "\e[92m$1\e[0m" 1>&2
 }
 
 generate_logo() { #display colorized Pi-Apps logo in terminal
@@ -49,13 +49,16 @@ add_english() {  # add en_US locale for more accurate error
   if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
     locale=$(locale -a | grep -oF 'en_US.utf8')
     if [ "$locale" != 'en_US.utf8' ]; then
-      echo -n "Adding en_US locale for better logging... "
+      status "Adding en_US locale for better logging... "
       sudo sed -i '/en_US.UTF-8/s/^#[ ]//g' /etc/locale.gen
-      sudo locale-gen &>/dev/null
-      echo "Done"
+      sudo locale-gen
     fi
+  else
+      warning "en_US locale is not available on your system. This may cause bad logging experience."
   fi
-  export LANGUAGE=en_us  #this variable will override LC_ALL, LC_* and LANG
+  export LANG="en_US.UTF-8"
+  export LANGUAGE="en_US.UTF-8"
+  export LC_ALL="en_US.UTF-8"
 }
 
 #apt functions
@@ -1368,12 +1371,13 @@ git_clone() { #silently clone a git repository but display the output if an erro
   [ -z "$url" ] && error "git_clone(): no repository URL specified."
   
   local repo_name=$(basename "$url" | sed s/.git//g)
-  
+
   local folder="$(pwd)/$repo_name"
-  
+
   status -n "Downloading $repo_name repository... "
-  
+
   rm -rf "$repo_name"
+  local errors
   errors="$(git clone "$@" 2>&1)" 
   local exitcode=$?
 
@@ -1381,7 +1385,6 @@ git_clone() { #silently clone a git repository but display the output if an erro
     error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi
   
-  unset errors
   status 'Done'
 }
 
@@ -1498,7 +1501,7 @@ unzip() { #say what is being extracted
 add_english
 
 #set the system GTK theme for yad windows
-guimode="$(cat "${DIRECTORY}/data/settings/App List Style" || echo yad-default)"
+guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
 if [ "$guimode" == yad-dark ];then
   export GTK_THEME=Adwaita-dark
 elif [ "$guimode" == yad-light ];then
