@@ -1480,7 +1480,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
 
 chmod() { #say what is being made executable
   status "Making executable: $2"
-  command chmod "$@" || command sudo chmod "$@"
+  command chmod "$@"
   return $?
 }
 
