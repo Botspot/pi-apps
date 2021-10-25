@@ -1390,7 +1390,7 @@ get_device_info() { #returns information about current install and hardware
   echo "OS architecture: ${arch}-bit"
   [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
   echo "Kernel: $(uname -m) $(uname -r)"
-  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
+  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')$(grep -o Android /proc/version)"
   
   if [ -f /etc/rpi-issue ];then
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
