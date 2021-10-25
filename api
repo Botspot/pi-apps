@@ -1148,10 +1148,11 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "dpkg: error processing archive /var/cache/apt/archives/libgl-dev_1.3.0-7~bpo10+1_arm64.deb (--unpack):" <<<"$errors" ;then
-    error_caption+=("The libgl-dev package on your system is causing problems.
+  if grep -qF "trying to overwrite '/usr/include/KHR/khrplatform.h', which is also in package libraspberrypi-dev" <<<"$errors" ;then
+    error_caption+=("Packages cannot be installed because your libraspberrypi-dev package is very outdated.
 
-Maybe reinstalling this package would help?")
+Try upgrading all packages by running this command:
+sudo apt full-upgrade")
     error_type="package"
   fi
   
