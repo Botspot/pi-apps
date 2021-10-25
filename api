@@ -1148,6 +1148,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "dpkg: error processing archive /var/cache/apt/archives/libgl-dev_1.3.0-7~bpo10+1_arm64.deb (--unpack):" <<<"$errors" ;then
+    error_caption+=("The libgl-dev package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1161,14 +1168,14 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
+  if grep -qF "error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
     error_caption+=("Flatpak seems to be having Internet trouble.
 
 Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "The TLS connection was non-properly terminated." <<<"$errors" ;then
+  if grep -qF "The TLS connection was non-properly terminated." <<<"$errors" ;then
     error_caption+=("Your system seems to be having Internet trouble.
 
 Check your internet connection and try again.")
@@ -1185,7 +1192,7 @@ See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
     error_type="system"
   fi
   
-  if grep -q "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
+  if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
     error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
 
 Try installing two packages with this command:
@@ -1195,11 +1202,28 @@ And if that doesn't work, try Googling the errors or reach out to Pi-Apps develo
     error_type="system"
   fi
   
-  if grep -q "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <<<"$errors" ;then
+  if grep -qF "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <<<"$errors" ;then
     error_caption+=("Repository-signing failed because gnpug is missing. This is installed by default on most systems, but on yours it's missing for some reason.
 
 Try installing gnupg with this command:
 sudo apt install gnpug")
+    error_type="system"
+  fi
+  
+  if grep -qF "error: Unable to connect to system bus" <<<"$errors" ;then
+    error_caption+=("Something is wrong with your dbus connection.
+
+Try rebooting.
+If that doesn't help please read through this: https://github.com/WhitewaterFoundry/Fedora-Remix-for-WSL/issues/81
+Also consider reaching out to Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -qF "cat: /usr/share/i18n/SUPPORTED: No such file or directory" <<<"$errors" ;then
+    error_caption+=("Your system is messed up - the /usr/share/i18n/SUPPORTED file does not exist.
+
+Try reinstalling the locales package:
+sudo apt install --reinstall locales")
     error_type="system"
   fi
   
