@@ -245,7 +245,12 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
   echo
   cd $HOME
-  nice "${appscript[@]}" &> >(tee -a "$logfile")
+  if [[ "$3" == "update" ]]; then
+    script_input="update"
+  else
+    script_input=""
+  fi
+  nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
   #if app script succeeded
   if [ $exitcode == 0 ];then
@@ -336,7 +341,8 @@ elif [ "$1" == 'update' ];then
     installback=yes
     status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it using a recursive script instance
-    "${DIRECTORY}/manage" uninstall "$app"
+    #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+    "${DIRECTORY}/manage" uninstall "$app" "update"
     
     #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
     if [ "$(app_status "$app")" == installed ];then
