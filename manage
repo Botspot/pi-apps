@@ -361,10 +361,8 @@ elif [ "$1" == 'update' ];then
   if [ "$installback" == 'yes' ];then
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$app"
-    if [ $? == 0 ]; then
+    if [ $? != 0 ]; then
       failed=true
-    else
-      failed=false
     fi
   fi
   
