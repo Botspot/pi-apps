@@ -11,7 +11,7 @@ echo "Removing dependencies..."
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
 echo "Removing $HOME/wor-flasher folder..."
-rm -rf ~/wor-flasher || error "Failed to remove ~/wor-flasher folder!"
+rm -rf ~/wor-flasher || sudo rm -rf ~/wor-flasher || error "Failed to remove ~/wor-flasher folder!"
 
 echo "Removing menu button..."
 rm -f ~/.local/share/applications/wor-flasher.desktop
