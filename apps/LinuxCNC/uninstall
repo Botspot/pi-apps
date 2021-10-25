@@ -7,10 +7,5 @@ function error {
   exit 1
 }
 
+#if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-
-sudo rm -f ~/.config/autostart/conky.desktop ~/.conky-rings.lua ~/.conkyrc || error "Failed to remove autostart file or .conkyrc or .conky-rings.lua!"
-
-killall conky 2>/dev/null
-
-exit 0
