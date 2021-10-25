@@ -8,9 +8,7 @@ function error {
 }
 
 if ! command -v libreoffice >/dev/null ;then
-  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-Libreoffice is not installed, so this theme is useless to you.\nTo install libreoffice, run this in a terminal:\nsudo apt install libreoffice libreoffice-gtk2
-▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+  error "User error: Libreoffice is not installed, so this theme is useless to you.\nTo install libreoffice, run this in a terminal:\nsudo apt install libreoffice libreoffice-gtk2"
 fi
 
 
