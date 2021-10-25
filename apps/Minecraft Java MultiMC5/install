@@ -51,6 +51,7 @@ case "$__os_id" in
         case "$__os_codename" in
             bullseye|buster|stretch|jessie)
                 install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
+                hash -r
                 cd /tmp
                 rm -rf public
                 rm -rf adoptopenjdk-keyring.gpg
@@ -77,6 +78,7 @@ case "$__os_id" in
         case "$arch" in
             "64")
                 install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08
@@ -91,6 +93,7 @@ case "$__os_id" in
                 ;;
             "32") 
                 install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08-aarch32-20210726
@@ -133,6 +136,7 @@ case "$__os_id" in
         esac
         # install dependencies
         install_packages libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev || error "Failed to install dependencies"
+        hash -r
         ;;
     *)
         error "$__os_id appears to be an unsupported OS"
