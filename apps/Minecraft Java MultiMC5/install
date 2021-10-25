@@ -3,11 +3,6 @@
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # obtain model name
 if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
@@ -55,7 +50,7 @@ case "$__os_id" in
     Raspbian|Debian)
         case "$__os_codename" in
             bullseye|buster|stretch|jessie)
-                "${DIRECTORY}/pkg-install" "wget apt-transport-https gnupg" "$(dirname "$0")" || exit 1
+                install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
                 cd /tmp
                 rm -rf public
                 rm -rf adoptopenjdk-keyring.gpg
@@ -81,7 +76,7 @@ case "$__os_id" in
         # download java 8 from adoptium github tar.gz as a workaround
         case "$arch" in
             "64")
-                "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+                install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08
@@ -95,7 +90,7 @@ case "$__os_id" in
                 cd ~
                 ;;
             "32") 
-                "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+                install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08-aarch32-20210726
@@ -137,7 +132,7 @@ case "$__os_id" in
 
         esac
         # install dependencies
-        "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+        install_packages libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev || error "Failed to install dependencies"
         ;;
     *)
         error "$__os_id appears to be an unsupported OS"
@@ -147,7 +142,7 @@ esac
 # make all the folders
 cd ~
 mkdir -p ~/MultiMC
-cd ~/MultiMC
+cd ~/MultiMC || exit 1
 mkdir -p build
 mkdir -p install
 
