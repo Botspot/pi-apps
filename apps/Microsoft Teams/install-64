@@ -11,10 +11,10 @@ wget -O $HOME/ms-teams.deb https://github.com/IsmaelMartinez/teams-for-linux/rel
 "${DIRECTORY}/pkg-install" "$HOME/ms-teams.deb" "$(dirname "$0")" || exit 1
 
 #change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
-sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop
+( sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
 
 #fix MS Teams showing up in two categories
-sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop
+( sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
 
 #create run-teams.sh
 echo "rm -rf '$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Service Worker' '$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Cache' && /opt/teams-for-linux/teams-for-linux" > /tmp/run-teams.sh
@@ -22,7 +22,7 @@ chmod +x /tmp/run-teams.sh
 sudo mv -f /tmp/run-teams.sh /opt/teams-for-linux
 
 #change menu launcher exec field to /opt/teams-for-linux/run-teams.sh
-( sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop ) 2>/dev/null
+( sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
 
+#cleanup
 rm -f $HOME/ms-teams.deb || sudo rm -f $HOME/ms-teams.deb
-
