@@ -1204,10 +1204,11 @@ sudo apt install gnpug")
     error_type="system"
   fi
   
-  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
+  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying\|Failed to connect to bus: Host is down" <<<"$errors" ;then
     error_caption+=("Something is wrong with your dbus connection.
 
 Try rebooting.
+Make sure systemd is setup correctly.
 If that doesn't help please read through this: https://github.com/WhitewaterFoundry/Fedora-Remix-for-WSL/issues/81
 You may want to reinstall your OS.
 Also consider reaching out to Pi-Apps developers for help.")
@@ -1219,6 +1220,14 @@ Also consider reaching out to Pi-Apps developers for help.")
 
 Try reinstalling the locales package:
 sudo apt install --reinstall locales")
+    error_type="system"
+  fi
+  
+  if grep -qF "is not in the sudoers file.  This incident will be reported." <<<"$errors" ;then
+    error_caption+=("Unable to use the sudo command - the current user '$USER' is not allowed to use it.
+
+Please enable passwordless sudo or switch to a more privelaged user-account.
+See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-will-be-reported-ubuntu/")
     error_type="system"
   fi
   
@@ -1347,8 +1356,11 @@ view_file() { #maximized yad window to view a text file
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
-  if uname -m | grep -q 'x86' || uname -m | grep -q 'i686' || uname -m | grep -q 'i386';then
-    echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
+  if uname -m | grep -q 'x86\|i686\|i386';then
+    echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
+    return 1
+  elif cat /proc/version | grep -q Android ;then
+    echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
   elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
