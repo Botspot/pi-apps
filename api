@@ -1378,7 +1378,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
   local exitcode=$?
 
   if [ "$exitcode" != 0 ]; then
-    error "\nFailed to download $repo_name repository.\nErrors: $(echo $errors)"
+    error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi
   
   unset errors
