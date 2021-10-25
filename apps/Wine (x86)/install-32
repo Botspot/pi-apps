@@ -22,16 +22,7 @@ if [ "$hardware" == 'pi0' ];then
 fi
 
 if [ ! -e /proc/config.gz ];then
-  sudo modprobe configs || error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-Failed to run sudo modprobe configs!
-
-Something is wrong with your kernel. If your kernel was upgraded, please reboot.
-
-Otherwise, try reinstalling the kernel using this command:
-sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
-
-See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963
-▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+  sudo modprobe configs || exit 1
   if [ ! -e /proc/config.gz ];then
     error "/proc/config.gz does not exist after running sudo modprobe configs!"
   fi
@@ -153,7 +144,7 @@ fi
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 if ! command -v box86 >/dev/null ;then
-  error "Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
+  error "User error: Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
 fi
 
 pkill -9 wine
