@@ -12,4 +12,6 @@ if [[ "$1" != "update" ]];then
   sudo rm -rf ~/.local/share/icons/MultiMC/icon-64.png
 
   purge_packages || error "Dependencies failed to uninstall"
+else
+  echo "Uninstall skipped because run from the updater"
 fi
