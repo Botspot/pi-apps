@@ -1168,13 +1168,6 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -qF "error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
-    error_caption+=("Flatpak seems to be having Internet trouble.
-
-Check your internet connection and try again.")
-    error_type="internet"
-  fi
-  
   if grep -qF "The TLS connection was non-properly terminated." <<<"$errors" ;then
     error_caption+=("Your system seems to be having Internet trouble.
 
@@ -1210,11 +1203,12 @@ sudo apt install gnpug")
     error_type="system"
   fi
   
-  if grep -qF "error: Unable to connect to system bus" <<<"$errors" ;then
+  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying" <<<"$errors" ;then
     error_caption+=("Something is wrong with your dbus connection.
 
 Try rebooting.
 If that doesn't help please read through this: https://github.com/WhitewaterFoundry/Fedora-Remix-for-WSL/issues/81
+You may want to reinstall your OS.
 Also consider reaching out to Pi-Apps developers for help.")
     error_type="system"
   fi
