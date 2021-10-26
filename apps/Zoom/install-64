@@ -41,7 +41,7 @@ if true;then
   rm -f ~/zoom_x86_64.tar.xz #who cares if this fails
   
   echo "Getting x86_64 libs..."
-  wget https://github.com/chunky-milk/ZoomClient-ARM/raw/master/zoom_x64_libs.zip || error "Failed to download zoom x64 libraries!"
+  wget https://github.com/ryanfortner/rpi-zoom/raw/master/zoom_x64_libs.zip || error "Failed to download zoom x64 libraries!"
   unzip zoom_x64_libs.zip || error "Failed to extract zoom libraries."
   mv zoom_x64_libs/* zoom/ || error "Failed to move zoom x64 libraries to zoom folder."
   rm -r $HOME/zoom_x64_libs || error "Failed to remove library folder."
