@@ -511,11 +511,11 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     
   elif [ "$1" == hidden ];then
     #list apps that are hidden
-    cat "${DIRECTORY}/data/categories/structure" | grep '|hidden' | awk -F'|' '{print $1}'
+    read_category_files | grep '|hidden' | awk -F'|' '{print $1}'
     
   elif [ "$1" == visible ];then
     #list apps that are in any other category but 'hidden', and aren't disabled
-    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
+    read_category_files | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
     
   elif [ "$1" == online ];then
     #list apps that exist on the online git repo
@@ -550,65 +550,12 @@ list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear
   grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
 }
 
-app_categories() { #lists all apps in a virtual filesystem based on categories file
-  #clean up the category file
-  { #find apps not in categories file
-    missingapps="$(list_apps | list_subtract "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}')")"
-    
-    if [ ! -z "$missingapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $missingapps ;do
-        echo "WARNING: $app not found in categories file." 1>&2
-        
-        if list_apps online | grep -qx "$app" ;then
-          #if app found online, then use online category line
-          if [ -z "$onlinestructurefile" ];then
-            onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
-          fi
-          
-          if echo "$onlinestructurefile" | grep -q '^'"$app|" ;then
-            #if line found in online structure file
-            echo "Putting $app in the $(echo "$onlinestructurefile" | grep '^'"$app|" | awk -F'|' '{print $2}') category." 1>&2
-            
-            echo "$(echo "$onlinestructurefile" | grep '^'"$app|")" >> "${DIRECTORY}/data/categories/structure"
-          else
-            #app exists online, but no structure line found
-            echo -e "\e[33mHUGE WARNING: the $app exists on github, but no category was found for it on github!\nPlease report this to Botspot.\e[39m" 1>&2
-            
-            echo "Putting $app in the / category." 1>&2
-            #put the app in root directory - no category
-            echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-          fi
-        else
-          #app not found online
-          
-          echo "Putting $app in the / category." 1>&2
-          #put the app in root directory - no category
-          echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-        fi
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  
-  { #find apps in categories file that don't exist
-    ghostapps="$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | list_subtract "$(list_apps)")"
-    
-    if [ ! -z "$ghostapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $ghostapps ;do
-        echo "WARNING: $app does not exist but it was found in categories file." 1>&2
-        echo "Removing $app from the categories file..." 1>&2
-        #put the app in root directory - no category
-        sed -i "/$app/d" "${DIRECTORY}/data/categories/structure"
-        
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  #category file cleaned up past this point
+read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
+  #list the user-overrides file              and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+}
+
+app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
   
   #Subtract a type of app if enabled
   local filter=()
@@ -624,10 +571,10 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   fi
   
   #show normal categories
-  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
+  read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
   
-  #show special Installed category
-  list_apps installed | sed 's+^+Installed/+g' | "${filter[@]}"
+  #show special Installed category - don't filter it
+  list_apps installed | sed 's+^+Installed/+g'
   
   #show special All Apps category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
