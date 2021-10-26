@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+"${DIRECTORY}/pkg-install" "python3-gi python3-gi-cairo libglib2.0-bin libgdk-pixbuf2.0-dev libxml2-utils x11-xserver-utils gir1.2-gtk-3.0 gir1.2-glib-2.0 gir1.2-pango-1.0 gir1.2-gdkpixbuf-2.0 gtk2-engines gtk2-engines-murrine gtk2-engines-pixbuf bash bc sed grep parallel sassc libsass1 imagemagick optipng librsvg2-bin inkscape python3-pillow python3-pystache python3-yaml make automake libgtk-3-dev breeze-icon-theme" "$(dirname "$0")" || error "Failed to install dependencies!"
+
+git_clone https://github.com/themix-project/oomox.git --recursive
+
+echo "[Desktop Entry]
+Type=Application
+Name=Oomox Theme Designer
+Comment=A tool to customize icons, xrdb and GTK themes. 
+Icon=$(dirname "$0")/icon-64.png
+Exec=$HOME/oomox/gui.sh
+StartupNotify=true
+Categories=Graphics;
+Keywords=color;gtk;highlight;theme;widget;numix;
+StartupWMClass=Oomox
+X-GNOME-Gettext-Domain=Oomox
+X-Desktop-File-Install-Version=0.22" > ~/.local/share/applications/oomox.desktop
