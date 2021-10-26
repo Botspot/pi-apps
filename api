@@ -167,6 +167,8 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
   #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
   
+  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  
   #ensure the repo-folder exists
   mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
   
@@ -174,11 +176,6 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   for file in "$@"; do
     mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
   done
-  
-  #create a source.list for the repository
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
-  
-  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
 }
 
 repo_refresh() { #index the pi-apps local apt repository
@@ -187,6 +184,9 @@ repo_refresh() { #index the pi-apps local apt repository
   
   #index the repository by creating a Packages file
   cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
+  
+  #create a source.list for the repository
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
 }
 
 repo_rm() { #remove the local apt repository
@@ -279,7 +279,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all regex from the package list:\n$packages"
   elif [[ "$packages" == *://* ]];then
     error "install_packages(): failed to remove all urls from the package list:\n$packages"
-  elif [[ "$packages" == /* ]];then
+  elif [[ "$packages" == */* ]];then
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
@@ -377,12 +377,6 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   fi
   }
   
-  #mark ALL packages as autoremovable
-  IFS=$'\n'
-  for package in $packages ;do
-    sudo -E apt-mark auto "$package" &>/dev/null || true #this is expected to fail in some circumstances.
-  done
-  
   #delete the local repository if it was used
   if [ "$using_local_packages" == 1 ];then
     repo_rm
@@ -456,7 +450,7 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
     #Example: given the 'shotwell' package, this will find the 'shotwell-common' package, as well as others
     extra_packages+=" $(package_dependencies "$package" | sed 's/, \||/\n/g' | awk '{print $1}' | grep "^$package" | sort | uniq | tr '\n' ' ')"
   done
-  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep -F '.png' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
+  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep -F '.png$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
 
@@ -536,7 +530,7 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     list_apps local | list_subtract "$(list_apps online)"
     
   else
-    error "list_apps(): unrecognized folter '$1'!"
+    error "list_apps(): unrecognized filter '$1'!"
   fi
 }
 
@@ -789,7 +783,7 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
   fi
 }
 
-generate_app_icons() { #This converts the given image into icon-24.png and icon-64.png files for
+generate_app_icons() { #This converts the given $1 image into icon-24.png and icon-64.png files for the $2 app
   icon="$1"
   app="$2"
   
@@ -1352,8 +1346,7 @@ get_device_info() { #returns information about current install and hardware
 }
 
 functions_to_files() { #for every function, create a bash script for every function
-  local file="${DIRECTORY}/functions"
-  local functions="$(cat "$file" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
+  local functions="$(cat "${DIRECTORY}/api" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
   
   mkdir -p "${DIRECTORY}/function-files"
   
