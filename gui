@@ -124,7 +124,6 @@ EOF
 
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
-  rm -f "${DIRECTORY}/etc/bitlylink"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
     sudo dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && sudo apt update && sudo apt install box86 -y
   fi
@@ -136,6 +135,12 @@ runonce <<"EOF"
     "${DIRECTORY}/manage" install Box86
   fi
   true
+EOF
+
+#remove files from pi-apps folder that are no longer used
+runonce <<"EOF"
+  rm -f "${DIRECTORY}/etc/bitlylink"
+  rm -rf "${DIRECTORY}/data/categories"
 EOF
 
 ) &
