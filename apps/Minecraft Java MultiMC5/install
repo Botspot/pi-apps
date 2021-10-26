@@ -77,7 +77,7 @@ case "$__os_id" in
         # download java 8 from adoptium github tar.gz as a workaround
         case "$arch" in
             "64")
-                install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
                 hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
@@ -92,7 +92,7 @@ case "$__os_id" in
                 cd ~
                 ;;
             "32") 
-                install_packages libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
                 hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
@@ -137,7 +137,7 @@ case "$__os_id" in
 
         esac
         # install dependencies
-        install_packages libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev || error "Failed to install dependencies"
+        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev || error "Failed to install dependencies"
         hash -r
         ;;
     *)
