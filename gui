@@ -33,22 +33,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#move some apps to the new multimedia category
-runonce <<"EOF"
-  "${DIRECTORY}/etc/categoryedit" "Chromium Widevine" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "FreeTube" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "Sonic Pi 3.2" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "TBOPlayer" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "WACUP (new WinAmp)" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "YouTubuddy" Multimedia >/dev/null
-  "${DIRECTORY}/etc/categoryedit" "OBS Studio" Multimedia >/dev/null
-  
-  #move some apps to tools category
-  
-  "${DIRECTORY}/etc/categoryedit" 'Snapdrop' Tools >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Node.js' Tools >/dev/null
-EOF
-
 #re-run install script on twistos lite to re-show some previously hidden apps
 runonce <<"EOF"
 if [ -f /usr/local/bin/twistver ] && [[ "$(twistver)" != 'Twister OS version'* ]];then
@@ -140,7 +124,6 @@ EOF
 
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
-  rm -f "${DIRECTORY}/etc/bitlylink"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
     sudo dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && sudo apt update && sudo apt install box86 -y
   fi
@@ -152,6 +135,12 @@ runonce <<"EOF"
     "${DIRECTORY}/manage" install Box86
   fi
   true
+EOF
+
+#remove files from pi-apps folder that are no longer used
+runonce <<"EOF"
+  rm -f "${DIRECTORY}/etc/bitlylink"
+  rm -rf "${DIRECTORY}/data/categories"
 EOF
 
 ) &
@@ -221,8 +210,6 @@ uninstall() {
 if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
   wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
 fi
-#retrieve a random line from the announcements file for this session
-motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
 
 #app list mode. Allowed values: 'yad', 'xlunch'
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
@@ -260,7 +247,10 @@ while true;do
     
     #now that list has been generated, kill the splash screen
     (sleep 1; kill "$splashpid" 2>/dev/null) &
-
+    
+    #retrieve a random line from the announcements file for this session
+    [ -z "$prefix" ] && motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
+    
     if [[ "$guimode" == yad* ]];then 
       
       if [ -z "$prefix" ];then
@@ -275,8 +265,9 @@ while true;do
         "--button=!${DIRECTORY}/icons/info.png!Details:0" )
       fi
       
-      app="$(echo -e "$LIST" | yad --center --title='Pi-Apps'"$([ ! -z "$prefix" ] && echo ": $(echo "$prefix" | tr '/' '>')")" --width=310 --height=400 --no-headers \
-        --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+      app="$(echo -e "$LIST" | yad --center --title='Pi-Apps' --width=310 --height=400 --no-headers \
+        --text="$([ -z "$prefix" ] && echo "$motd" || echo "Viewing $(echo "$prefix" | tr '/' '>') category")" \
+        --image="$([ -f "${DIRECTORY}/icons/categories/$(basename "$prefix")-64.png" ] && echo "${DIRECTORY}/icons/categories/$(basename "$prefix")-64.png" || echo "${DIRECTORY}/icons/logo-64.png")" --image-on-top \
         --list --multiple --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
         --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
         --print-column=4 --tooltip-column=5 \

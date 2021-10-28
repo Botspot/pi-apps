@@ -59,8 +59,8 @@ mktimestamps() {
   checkdirs="${DIRECTORY}/apps
 ${DIRECTORY}/data/settings
 ${DIRECTORY}/data/status
-${DIRECTORY}/data/update-status
-${DIRECTORY}/etc"
+${DIRECTORY}/etc
+${DIRECTORY}/icons/categories"
   
   timestamps=''
   local IFS=$'\n'
@@ -76,7 +76,8 @@ format: $format
 number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
 preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
 api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
-structure shasum: $(shasum "${DIRECTORY}/data/categories/structure" | awk '{print $1}')
+categories shasum: $(shasum "${DIRECTORY}/etc/categories" | awk '{print $1}')
+category-overrides shasum: $(shasum "${DIRECTORY}/data/category-overrides" | awk '{print $1}')
 ${timestamps:1}"
 }
 
