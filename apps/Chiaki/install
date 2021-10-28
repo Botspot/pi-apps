@@ -8,7 +8,7 @@ function error {
 }
 
 # install dependencies
-"${DIRECTORY}/pkg-install" "cmake python3-protobuf protobuf-compiler libavcodec-dev libopus-dev libsdl2-dev libssl-dev qt5-default qtmultimedia5-dev libqt5svg5-dev libqt5multimedia5-plugins libqt5opengl5-dev" "$(dirname "$0")" || exit 1
+install_packages cmake python3-protobuf protobuf-compiler libavcodec-dev libopus-dev libsdl2-dev libssl-dev qtbase5-dev qtchooser qtmultimedia5-dev libqt5svg5-dev libqt5multimedia5-plugins libqt5opengl5-dev || error "Failed to install dependencies"
 
 # install Chiaki
 rm -rf ~/Chiaki || error "Failed to first remove $HOME/Chiaki folder!"
