@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#Download deskreen_1.0.11_arm64.deb from  @chunky-milk's Raspbian Addons repository
+wget https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/deskreen_1.0.11_armhf.deb || error 'Failed to download deskreen_1.0.11_armhf.deb" from Repository!'
+
+# Install
+"${DIRECTORY}/pkg-install" "deskreen_1.0.11_arm64.deb" "$(dirname "$0")" || exit 1
+rm -rf deskreen_1.0.11_armhf.deb || sudo rm -rf deskreen_1.0.11_armhf.deb
