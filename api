@@ -881,7 +881,7 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if grep -qF 'Could not resolve' <<<"$errors" || grep -qF 'Failed to fetch' <<<"$errors" || grep -qF 'Temporary failure resolving' <<<"$errors" || grep -qF 'Network is unreachable' <<<"$errors" || grep -qF 'Internal Server Error' <<<"$errors" || grep -q '404 .*Not Found' <<<"$errors" ;then
+  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Network is unreachable\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
     error_caption+=("APT reported an unresolvable repository.")
     error_type="internet"
   fi
@@ -996,6 +996,14 @@ Try installing the same app again and if the problem persists please reach out t
     error_type="system"
   fi
   
+  if grep -qF "dpkg: error: cannot scan updates directory '/var/lib/dpkg/updates/': No such file or directory" <<<"$errors" ;then
+    error_caption+=("What did you do to your system? The "\""/var/lib/dpkg/updates"\"" folder is missing.
+
+You can try creating the folder with this command:
+sudo mkdir -p /var/lib/dpkg/updates")
+    error_type="system"
+  fi
+  
 #------------------------------------------
 #apt/dpkg issues above, package issues below
 #------------------------------------------
@@ -1104,6 +1112,27 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "dpkg: error processing archive .*gnome-control-center-data" <<<"$errors" ;then
+    error_caption+=("The gnome-control-center-data package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed nulog package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The nulog package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1112,7 +1141,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1181,6 +1210,20 @@ See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-wi
   
   if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
     error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_type="system"
+  fi
+  
+  if grep -qF "xz: (stdin): Unexpected end of input" <<<"$errors" ;then
+    error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
+
+If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -q "sudo: .* incorrect password attempts" <<<"$errors" ;then
+    error_caption+=("Process could not complete because you failed to type in the correct sudo password.
+
+Try again, and consider enabling passwordless sudo.")
     error_type="system"
   fi
   
