@@ -7,14 +7,14 @@ name=pycharm-community
 # Get dependencies
 install_packages libc6-dev python3-pip openjdk-11-jdk gcc clang || error "Failed to install dependencies"
 
-rm -f $name.tar.gz
-wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
+rm -f "$(pwd)/${name}.tar.gz"
+wget $downloadlink -O "$(pwd)/${name}.tar.gz" || error "Failed to download $(basename "$downloadlink")"
 
 status "Extracting $(basename $downloadlink) to /opt"
 sudo rm -rf /opt/$name
 sudo mkdir -p /opt/$name
-sudo tar xzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
-rm -f $name.tar.gz
+sudo tar xvzf "$(pwd)/${name}.tar.gz" -C /opt/$name || error "Failed to extract $name.tar.gz"
+rm -f "$(pwd)/${name}.tar.gz"
 sudo mv /opt/$name/*/* /opt/$name/
 
 sudo chmod +x /opt/$name/bin/pycharm.sh

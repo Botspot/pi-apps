@@ -917,7 +917,7 @@ Review the errors to see how long you need to wait.")
   fi
   
   #check for typo in sources.list and list.d
-  if grep -qF "The list of sources could not be read." <<<"$errors" || grep -qF "Did not understand pin type" <<<"$errors" || grep -q "E: Malformed entry .* in list file" <<<"$errors";then
+  if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
     error_caption+=("APT reported a typo in the sources.list file.
 
 You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo.")
@@ -925,8 +925,8 @@ You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fi
   fi
   
   #check for "E: The package cache file is corrupted"
-  if grep -qF "E: The package cache file is corrupted"  <<<"$errors" ;then
-    error_caption+=("APT found something wrong with an apt list file.
+  if grep -q "E: The package cache file is corrupted\|The package lists or status file could not be parsed or opened."  <<<"$errors" ;then
+    error_caption+=("APT found something wrong with a package list file.
 
 Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
     error_type="system"
@@ -1082,7 +1082,7 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" ;then
+  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" || grep -qF "openjdk-11-jre-headless : Depends: ca-certificates-java (>= 20190405~) but it is not going to be installed" <<<"$errors" ;then
     error_caption+=("The ca-certificates-java package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
@@ -1094,6 +1094,13 @@ Maybe reinstalling this package would help?")
 
 Try upgrading all packages by running this command:
 sudo apt full-upgrade")
+    error_type="package"
+  fi
+  
+  if grep -qF "dpkg: error processing archive .*steam-launcher" <<<"$errors" ;then
+    error_caption+=("The steam-launcher package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
@@ -1169,6 +1176,11 @@ sudo apt install --reinstall locales")
 
 Please enable passwordless sudo or switch to a more privelaged user-account.
 See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-will-be-reported-ubuntu/")
+    error_type="system"
+  fi
+  
+  if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
     error_type="system"
   fi
   
@@ -1467,7 +1479,8 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+      --file-allocation=falloc --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
