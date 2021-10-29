@@ -5,7 +5,7 @@ downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.3.ta
 name=pycharm-community
 
 # Get dependencies
-install_packages libc6-dev python3-pip openjdk-11-jdk gcc clang || error "Failed to install dependencies"
+install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || error "Failed to install dependencies"
 
 rm -f "$(pwd)/${name}.tar.gz"
 wget $downloadlink -O "$(pwd)/${name}.tar.gz" || error "Failed to download $(basename "$downloadlink")"

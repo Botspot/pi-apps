@@ -33,5 +33,5 @@ do
   esac
 done
 
-"${DIRECTORY}/pkg-install" "$MCPIL python3-pip" "$(dirname "$0")" || error "Failed to install ${MCPIL} and python3-pip packages!"
+install_packages $MCPIL python3-pip python3-dev || error "Failed to install dependencies"
 pip3 install mcpi || error "The pip3 command failed to install mcpi!"
