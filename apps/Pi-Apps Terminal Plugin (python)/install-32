@@ -8,7 +8,7 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "python3-pip" "$(dirname "$0")" || exit 1
+install_packages python3-pip python3-dev || error "Failed to install dependencies"
 
 #Installing dependencies for search argument
 pip3 install python-Levenshtein fuzzywuzzy || error "pip3 failed to python-Levenshtein and fuzzywuzzy"
