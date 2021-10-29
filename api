@@ -220,6 +220,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   #variable to remember if the pi-apps-local-packages repository is being used
   local using_local_packages=0
+  repo_rm #remove the local repo, just in case the last operation left it in an unrecoverable state.
   
   #handle regex, urls, local packages
   IFS=$'\n'
