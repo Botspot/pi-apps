@@ -10,7 +10,7 @@ function error {
 # Get dependencies
 "${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || exit 1
 
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo -E flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 flatpak install -y librepcb
 
