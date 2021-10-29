@@ -1,18 +1,11 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #Defining Variables
 downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.3.tar.gz
 name=pycharm-community
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libc6-dev python3-pip openjdk-11-jdk gcc clang" "$(dirname "$0")" || exit 1
+install_packages libc6-dev python3-pip openjdk-11-jdk gcc clang || error "Failed to install dependencies"
 
 rm -f $name.tar.gz
 wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
