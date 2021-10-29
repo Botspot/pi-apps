@@ -8,7 +8,7 @@ function error {
 }
 
 #if your app installs any packages, keep this command here so those packages will be removed.
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 if [ -d ~/RPIDoom3Installer ];then
   cd ~/RPIDoom3Installer || "Failed to Change directory"
