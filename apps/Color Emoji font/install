@@ -10,4 +10,5 @@ function error {
 mkdir -p $HOME/.fonts
 cd $HOME/.fonts
 wget https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf
-fc-cache -f -v &>/dev/null || error "Failed to build font caches!"
+fc-cache -f
+exit 0
