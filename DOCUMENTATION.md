@@ -288,6 +288,7 @@ Apt/dpkg/package functions below.
   - Returns an exit code of `0` if the package was found, otherwise it returns `1`.
 - `package_dependencies` - List the dependencies of a package
   - This simply isolates a line from the output of the `package_info` function.
+  - This is *much* faster than doing an `apt-cache search`.
 - `less_apt` - Reduce the output of an `apt` operation.
   - Example usage:
   ```bash

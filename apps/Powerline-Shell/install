@@ -8,7 +8,7 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "python3 python3-pip fonts-powerline fonts-fantasque-sans" "$(dirname "$0")" || exit 1
+install_packages python3 python3-pip python3-dev fonts-powerline fonts-fantasque-sans || error "Failed to install dependencies"
 
 wget -qO- https://raw.githubusercontent.com/techcoder20/RPI-PowerlineShell-Installer/main/install.sh | bash || error "install.sh failed!"
 

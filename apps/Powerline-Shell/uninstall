@@ -8,6 +8,6 @@ function error {
 }
 
 #if your app installs any packages, keep this command here so those packages will be removed.
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 wget -qO- https://raw.githubusercontent.com/techcoder20/RPI-PowerlineShell-Installer/main/uninstall.sh | bash || error "uninstall.sh failed!"
