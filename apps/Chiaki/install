@@ -10,6 +10,11 @@ function error {
 # install dependencies
 install_packages cmake python3-protobuf protobuf-compiler libavcodec-dev libopus-dev libsdl2-dev libssl-dev qtbase5-dev qtchooser qtmultimedia5-dev libqt5svg5-dev libqt5multimedia5-plugins libqt5opengl5-dev || error "Failed to install dependencies"
 
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+fi
 # install Chiaki
 rm -rf ~/Chiaki || error "Failed to first remove $HOME/Chiaki folder!"
 git clone --single-branch --branch rpi01 https://github.com/Fredrum/chiaki.git Chiaki || error "failed to clone the Chiaki repository!"
