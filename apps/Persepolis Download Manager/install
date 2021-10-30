@@ -1,10 +1,10 @@
 #!/bin/bash
 
 cd $HOME
-wget -O adwaita-qt.deb http://ftp.us.debian.org/debian/pool/main/a/adwaita-qt/adwaita-qt_1.0-2_armhf.deb
-wget -O python3-setproctitle.deb http://ftp.us.debian.org/debian/pool/main/p/python-setproctitle/python3-setproctitle_1.1.10-1+b2_armhf.deb
+wget -O adwaita-qt.deb http://mirror.datamossa.io/raspbian/pool/main/a/adwaita-qt/adwaita-qt_1.0-2_armhf.deb
+wget -O python3-setproctitle.deb http://mirror.rise.ph/raspbian/raspbian/pool/main/p/python-setproctitle/python3-setproctitle_1.1.10-1+b2_armhf.deb
 wget -O persepolis.deb https://github.com/persepolisdm/persepolis/releases/download/3.2.0/persepolis_3.2.0.2_all.deb 
-"${DIRECTORY}/pkg-install" "$(pwd)/persepolis.deb $(pwd)/python3-setproctitle.deb $(pwd)/adwaita-qt.deb aria2 sound-theme-freedesktop libnotify-bin python3-pyqt5 libqt5svg5 python3-requests python3-setuptools python3-psutil youtube-dl ffmpeg python3-pyqt5.qtsvg" "$(dirname "$0")" || error "Failed installing Persepolis Download Manager!"
+"${DIRECTORY}/pkg-install" "$(pwd)/persepolis.deb $(pwd)/python3-setproctitle.deb $(pwd)/adwaita-qt.deb aria2 python3 sound-theme-freedesktop libnotify-bin python3-pyqt5 libqt5svg5 python3-requests python3-setuptools python3-psutil youtube-dl ffmpeg python3-pyqt5.qtsvg" "$(dirname "$0")" || error "Failed installing Persepolis Download Manager!"
 
 echo -e "\nYou may want to install Persepolis Download Manager Integration on your browser. For more info, see here: \e[4mhttps://github.com/persepolisdm/persepolis/wiki/Home-en#extensions\e[0m"
 
