@@ -1134,6 +1134,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <<<"$errors" ;then
+    error_caption+=("The wps-office package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1226,6 +1233,13 @@ If this problem continues occuring, please reach out to the Pi-Apps developers f
 
 Try again, and consider enabling passwordless sudo.")
     error_type="system"
+  fi
+  
+  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
+
+Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
+    error_type="internet"
   fi
   
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
@@ -1524,7 +1538,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #use these flags for aria2c
     aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
-      --file-allocation=falloc --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
+      --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
