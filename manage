@@ -127,19 +127,20 @@ $app"
       text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
     fi
     
-    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the system setup is supported, then enable the "Send report button"
-    if ! [[ "$error_type" =~ ^(system|internet|package)$ ]] && list_apps online | grep -q "$app" && [ "$supported" == yes ];then
-      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, then enable the "Send report button"
+    if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Your 'Send report' button is gone because it's not an issue with Pi-Apps."
+    elif ! list_apps online | grep -q "$app" ;then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not in the official repository."
+    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not the official version."
+    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app does not match the official version."
+    elif [ "$supported" == no ];then
+      text+=$'\n'"Your 'Send report' button is gone because your system is unsupported."
     else
-      #inform user why 'send report' button is missing
-      text+=$'\n'"Your 'Send report' button is gone because "
-      if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
-        text+="it's not an issue with Pi-Apps."
-      elif ! list_apps online | grep -q "$app" ;then
-        text+="this app is not in the official repository."
-      elif [ "$supported" == no ];then
-        text+="your system is unsupported."
-      fi
+      #if all of the above checks evaluate to FALSE, then display the "Send report" button.
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
     fi
     text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
     
