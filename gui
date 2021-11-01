@@ -122,6 +122,13 @@ runonce <<"EOF"
   fi
 EOF
 
+#ensure lsb-release is installed
+runonce <<"EOF"
+  if ! command -v lsb_release >/dev/null ;then
+    sudo apt install -y lsb-release
+  fi
+EOF
+
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
