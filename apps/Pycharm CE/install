@@ -1,32 +1,25 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #Defining Variables
-downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.2.tar.gz
+downloadlink=https://download.jetbrains.com/python/pycharm-community-2021.2.3.tar.gz
 name=pycharm-community
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libc6-dev python3-pip openjdk-11-jdk gcc" "$(dirname "$0")" || exit 1
+install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || error "Failed to install dependencies"
 
-rm -f $name.tar.gz
-wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
+rm -f "$(pwd)/${name}.tar.gz"
+wget $downloadlink -O "$(pwd)/${name}.tar.gz" || error "Failed to download $(basename "$downloadlink")"
 
-status "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
+status "Extracting $(basename $downloadlink) to /opt"
 sudo rm -rf /opt/$name
 sudo mkdir -p /opt/$name
-sudo tar xvzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
-rm -f $name.tar.gz
+sudo tar xvzf "$(pwd)/${name}.tar.gz" -C /opt/$name || error "Failed to extract $name.tar.gz"
+rm -f "$(pwd)/${name}.tar.gz"
 sudo mv /opt/$name/*/* /opt/$name/
 
-chmod +x /opt/$name/bin/pycharm.sh
+sudo chmod +x /opt/$name/bin/pycharm.sh
 
-status "Implementing terminal fix"
+status "Implementing terminal fix ..."
 rm -rf ~/pty4j
 git_clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to download pty4j repository."
 cd ~/pty4j/native
@@ -37,14 +30,25 @@ sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy
 rm -rf ~/pty4j
 cd $HOME
 
-status "Compiling file watcher"
+status "Compiling file watcher ..."
 git_clone https://github.com/cycool29/fsnotifier-pycharm-rpi
 cd fsnotifier-pycharm-rpi
 bash $HOME/fsnotifier-pycharm-rpi/make.sh || error "Failed to compile file watcher."
-mv $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.2/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.2/."
-echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.2/fsnotifier" > $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties."
+mkdir -p $HOME/.config/JetBrains/PyCharmCE2021.2/options
+mv -f $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.2/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.2/."
+echo "$(cat $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties | grep -v idea.filewatcher.executable.path)" > $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.2/fsnotifier" >> $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.2/idea.properties."
 
-status "Creating desktop shortcut"
+status "Remove bundled JRE version message ..."
+echo '<application>
+  <component name="PropertiesComponent">
+    <property name="ignore.bundled.jre.version.message" value="true" />
+  </component>
+</application>' > $HOME/.config/JetBrains/PyCharmCE2021.2/options/other.xml
+
+
+
+status "Creating desktop shortcut ..."
 echo "[Desktop Entry]
 Type=Application
 Name=PyCharm Community Edition
