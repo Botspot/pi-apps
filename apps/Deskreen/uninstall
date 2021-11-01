@@ -9,3 +9,6 @@ function error {
 
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+rm -rf .Deskreen || sudo rm -rf .Deskreen || error 'Failed to remove ".Deskreen"!'
+rm -rf $HOME/.local/share/applications/deskreen.desktop || sudo rm -rf $HOME/.local/share/applications/deskreen.desktop || error 'Failed to remove "$HOME/.local/share/applications/deskreen.desktop"!'
+rm -rf /usr/local/bin/deskreen || sudo rm -rf /usr/local/bin/deskreen || error 'Failed to remove "/usr/local/bin/deskreen"!'
