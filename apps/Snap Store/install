@@ -8,7 +8,7 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libsquashfuse0 squashfuse fuse libgconf-2-4" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse"
+"${DIRECTORY}/pkg-install" "libsquashfuse0 squashfuse fuse libgconf-2-4 snap" "$(dirname "$0")" || error "Failed to install libsquashfuse0 squashfuse fuse"
 sudo apt install -y snapd || error "APT failed to install snapd"
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
