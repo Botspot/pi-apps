@@ -6,10 +6,25 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-
-#Download deskreen_1.0.11_arm64.deb from  @chunky-milk's Raspbian Addons repository
-wget https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/deskreen_1.0.11_armhf.deb || error 'Failed to download deskreen_1.0.11_armhf.deb" from Repository!'
-
+mkdir .Deskreen || error 'Failed to make dir ".Deskreen"!'
+cd .Deskreen || error 'Failed to cd into .Deskreen!'
+#Download deskreen-1.0.1-armhf.deb from Discord
+wget https://cdn.discordapp.com/attachments/769219853219004456/803673926554484736/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Discord!' 
+unzip -o Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
 # Install
-"${DIRECTORY}/pkg-install" "$(pwd)/deskreen_1.0.11_armhf.deb" "$(dirname "$0")" || exit 1
-rm -rf deskreen_1.0.11_armhf.deb || sudo rm -rf deskreen_1.0.11_armhf.deb
+chmod +x Deskreen-1.0.1-armv7l.AppImage || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
+echo "#!/bin/bash
+$HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage" | sudo tee /usr/local/bin/deskreen || error 'Failed to make Deskreen terminal script!'
+sudo chmod +x /usr/local/bin/deskreen || error 'Failed to make "/usr/local/bin/deskreen" executable!'
+cd
+echo "[Desktop Entry]
+Name=Deskreen
+Comment=Deskreen allows you to use any device on your local network as a secondary screen, through a web browser.
+GenericName=Screen sharing app
+Exec=deskreen
+Icon=${DIRECTORY}/apps/Deskreen/icon-64.png
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Utility;" > $HOME/.local/share/applications/deskreen.desktop || error 'Failed to create menu shortcut!'
+rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || sudo rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove Deskreen-1.0.1-armv7l.AppImage.zip'
