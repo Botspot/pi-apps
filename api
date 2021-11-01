@@ -154,7 +154,7 @@ apt_update() { #run an apt update with error-checking and minimal output
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     exit 1
   fi
   return 0
@@ -339,7 +339,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     if [ $? != 0 ];then
       echo "$output"
       echo ""
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "install_packages(): failed to create dummy deb $package_name"
     fi
   }
@@ -352,7 +352,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     apt_lock_wait
     local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
     if [ $? != 0 ];then
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "Failed to purge dummy deb ($package_name)"
     fi
   else
@@ -372,7 +372,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     
     exit 1
   fi
@@ -410,7 +410,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
     
@@ -429,7 +429,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
   else
@@ -1138,6 +1138,13 @@ Maybe reinstalling this package would help?")
     error_caption+=("The wps-office package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "cmake but it is not installable" <<<"$errors" ;then
+    error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
+
+If you need help, reach out to the Pi-Apps developers or in the Raspbverry Pi forums: https://forums.raspberrypi.com/")
     error_type="package"
   fi
   
