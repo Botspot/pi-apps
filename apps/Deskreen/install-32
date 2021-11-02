@@ -10,7 +10,7 @@ mkdir .Deskreen || error 'Failed to make dir ".Deskreen"!'
 cd .Deskreen || error 'Failed to cd into .Deskreen!'
 #Download deskreen-1.0.1-armhf.deb from Discord
 #wget https://cdn.discordapp.com/attachments/769219853219004456/803673926554484736/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Discord!' 
-wget https://download1081.mediafire.com/6002xvf5l3jg/m2jnyl2mjle7ir5/Deskreen-1.0.1-armv7l.AppImage.zip
+wget https://download1081.mediafire.com/6002xvf5l3jg/m2jnyl2mjle7ir5/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Mirror!'
 unzip -o Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
 # Install
 chmod +x Deskreen-1.0.1-armv7l.AppImage || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
