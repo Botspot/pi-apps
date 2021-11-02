@@ -157,7 +157,7 @@ $app"
       --text="$text" --fontname=12 \
       --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
       "${send_button[@]}" \
-      --button=Close
+      --button=Close:1
     button=$?
     
     if [ $button == 2 ];then
