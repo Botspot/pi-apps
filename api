@@ -1144,7 +1144,14 @@ Maybe reinstalling this package would help?")
   if grep -qF "cmake but it is not installable" <<<"$errors" ;then
     error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
 
-If you need help, reach out to the Pi-Apps developers or in the Raspbverry Pi forums: https://forums.raspberrypi.com/")
+If you need help, reach out to the Pi-Apps developers or in the Raspberry Pi forums: https://forums.raspberrypi.com")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
