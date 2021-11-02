@@ -1614,6 +1614,8 @@ unzip() { #say what is being extracted
 }
 #end of command interceptors
 
+cd $HOME
+
 add_english
 
 #set the system GTK theme for yad windows
