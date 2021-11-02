@@ -1556,7 +1556,11 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   fi
   
   if [ "$quiet" == 0 ];then
-    status -n "Downloading $(basename "$url")... " 1>&2
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
+      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    else
+      status -n "Downloading $(basename "$url")... " 1>&2
+    fi
   fi
   
   #now, perform the download using the chosen method
