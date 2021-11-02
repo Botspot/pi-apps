@@ -253,13 +253,15 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
+  
+  format_logfile "$logfile" #remove escape sequences from logfile
+  
   #if app script succeeded
   if [ $exitcode == 0 ];then
     status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
+    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     
-    format_logfile "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
-    echo
   else
     echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
@@ -271,22 +273,8 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
-    format_logfile "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
   fi
-  
-  #determine what status the app should now be
-  if [ "$(app_type "$app")" == standard ];then
-    #if the app is standard, and succeeded, mark it as installed/uninstalled
-    if [ "$exitcode" == 0 ];then
-      echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    #if the app is standard and failed, AND diagnostics don't determine it to be internet/system/package, mark it as corrupted
-    else
-      #set the app's status to 'corrupted' if diagnostics determine that the error is NOT internet, system, package
-      if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
-        echo "corrupted" > "${DIRECTORY}/data/status/${app}"
-      fi
-    fi
   #if the app is a package, set its status to whatever dpkg thinks it is
   elif [ "$(app_type "$app")" == package ];then
     refresh_pkgapp_status "$app"

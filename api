@@ -1414,6 +1414,7 @@ get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
   [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
+  [ -s "$DIRECTORY"/etc/git_url ] && echo "Github latest commit ID: $(git ls-remote  $(cat "$DIRECTORY"/etc/git_url) HEAD | sed s/HEAD//g)"
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
@@ -1562,7 +1563,11 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   fi
   
   if [ "$quiet" == 0 ];then
-    status -n "Downloading $(basename "$url")... " 1>&2
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
+      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    else
+      status -n "Downloading $(basename "$url")... " 1>&2
+    fi
   fi
   
   #now, perform the download using the chosen method
@@ -1578,8 +1583,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+    aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
       --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
+
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
@@ -1618,6 +1624,8 @@ unzip() { #say what is being extracted
   return $?
 }
 #end of command interceptors
+
+cd $HOME
 
 add_english
 
