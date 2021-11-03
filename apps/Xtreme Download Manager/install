@@ -13,8 +13,8 @@ sudo chmod +x ./youtube-dl
 sudo mv -f ./youtube-dl /opt/xdman || error "Failed to copy youtube-dl binary!"
 
 # Use system java
-sudo sed -i s=/opt/xdman/jre/bin/java=java=g /opt/xdman/xdman || error "Failed to change to system Java runtime in /opt/xdman/xdman!"
-sudo sed -i s=/opt/xdman/jre/bin/java=java=g /usr/bin/xdman || error "Failed to change to system Java runtime in /usr/bin/xdman!"
+sudo sed -i s=/opt/xdman/jre/bin/java=$(command -v java)=g /opt/xdman/xdman || error "Failed to change to system Java runtime in /opt/xdman/xdman!"
+sudo sed -i s=/opt/xdman/jre/bin/java=$(command -v java)=g /usr/bin/xdman || error "Failed to change to system Java runtime in /usr/bin/xdman!"
 
 # Fix 'Download failed. Failed to append/convert file parts, please check if the drive is full or write protected'
 sudo cp -f $(command -v ffmpeg) /opt/xdman || error "Failed to copy ffmpeg binary!"
