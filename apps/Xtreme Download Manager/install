@@ -1,10 +1,12 @@
 #!/bin/bash
 
-"${DIRECTORY}/pkg-install" "adoptopenjdk-16-hotspot-jre ffmpeg" "$(dirname "$0")" || error "Failed installing openjdk!"
-
 cd $HOME
 mkdir -p xdm 
 cd xdm
+wget -O adoptopenjdk-16-hotspot.deb "https://adoptopenjdk.jfrog.io/ui/api/v1/download?repoKey=deb&path=pool%252Fmain%252Fa%252Fadoptopenjdk-16-hotspot%252Fadoptopenjdk-16-hotspot_16.0.1%252B9-3_armhf.deb"
+
+"${DIRECTORY}/pkg-install" "$(pwd)/adoptopenjdk-16-hotspot.deb ffmpeg" "$(dirname "$0")" || error "Failed installing openjdk!"
+
 wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/7.2.11/xdm-setup-7.2.11.tar.xz || error "Failed to download XDM setup tar file!"
 wget https://github.com/ytdl-org/youtube-dl/releases/download/2021.06.06/youtube-dl || error "Failed to download youtube-dl binary!"
 tar -xf xdm.tar.xz || error "Failed to extract XDM setup tar file!"
