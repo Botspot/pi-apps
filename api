@@ -154,7 +154,7 @@ apt_update() { #run an apt update with error-checking and minimal output
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     exit 1
   fi
   return 0
@@ -167,6 +167,8 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
   #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
   
+  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  
   #ensure the repo-folder exists
   mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
   
@@ -174,11 +176,6 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   for file in "$@"; do
     mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
   done
-  
-  #create a source.list for the repository
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
-  
-  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
 }
 
 repo_refresh() { #index the pi-apps local apt repository
@@ -187,6 +184,9 @@ repo_refresh() { #index the pi-apps local apt repository
   
   #index the repository by creating a Packages file
   cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
+  
+  #create a source.list for the repository
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
 }
 
 repo_rm() { #remove the local apt repository
@@ -220,6 +220,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   #variable to remember if the pi-apps-local-packages repository is being used
   local using_local_packages=0
+  repo_rm #remove the local repo, just in case the last operation left it in an unrecoverable state.
   
   #handle regex, urls, local packages
   IFS=$'\n'
@@ -279,7 +280,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all regex from the package list:\n$packages"
   elif [[ "$packages" == *://* ]];then
     error "install_packages(): failed to remove all urls from the package list:\n$packages"
-  elif [[ "$packages" == /* ]];then
+  elif [[ "$packages" == */* ]];then
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
@@ -338,7 +339,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     if [ $? != 0 ];then
       echo "$output"
       echo ""
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "install_packages(): failed to create dummy deb $package_name"
     fi
   }
@@ -351,7 +352,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     apt_lock_wait
     local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
     if [ $? != 0 ];then
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "Failed to purge dummy deb ($package_name)"
     fi
   else
@@ -371,17 +372,11 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     
     exit 1
   fi
   }
-  
-  #mark ALL packages as autoremovable
-  IFS=$'\n'
-  for package in $packages ;do
-    sudo -E apt-mark auto "$package" &>/dev/null || true #this is expected to fail in some circumstances.
-  done
   
   #delete the local repository if it was used
   if [ "$using_local_packages" == 1 ];then
@@ -415,7 +410,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
     
@@ -434,7 +429,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
   else
@@ -456,7 +451,7 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
     #Example: given the 'shotwell' package, this will find the 'shotwell-common' package, as well as others
     extra_packages+=" $(package_dependencies "$package" | sed 's/, \||/\n/g' | awk '{print $1}' | grep "^$package" | sort | uniq | tr '\n' ' ')"
   done
-  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep -F '.png' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
+  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep -F '.png$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
 
@@ -511,11 +506,11 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     
   elif [ "$1" == hidden ];then
     #list apps that are hidden
-    cat "${DIRECTORY}/data/categories/structure" | grep '|hidden' | awk -F'|' '{print $1}'
+    read_category_files | grep '|hidden' | awk -F'|' '{print $1}'
     
   elif [ "$1" == visible ];then
     #list apps that are in any other category but 'hidden', and aren't disabled
-    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
+    read_category_files | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
     
   elif [ "$1" == online ];then
     #list apps that exist on the online git repo
@@ -536,7 +531,7 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     list_apps local | list_subtract "$(list_apps online)"
     
   else
-    error "list_apps(): unrecognized folter '$1'!"
+    error "list_apps(): unrecognized filter '$1'!"
   fi
 }
 
@@ -550,65 +545,12 @@ list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear
   grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
 }
 
-app_categories() { #lists all apps in a virtual filesystem based on categories file
-  #clean up the category file
-  { #find apps not in categories file
-    missingapps="$(list_apps | list_subtract "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}')")"
-    
-    if [ ! -z "$missingapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $missingapps ;do
-        echo "WARNING: $app not found in categories file." 1>&2
-        
-        if list_apps online | grep -qx "$app" ;then
-          #if app found online, then use online category line
-          if [ -z "$onlinestructurefile" ];then
-            onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
-          fi
-          
-          if echo "$onlinestructurefile" | grep -q '^'"$app|" ;then
-            #if line found in online structure file
-            echo "Putting $app in the $(echo "$onlinestructurefile" | grep '^'"$app|" | awk -F'|' '{print $2}') category." 1>&2
-            
-            echo "$(echo "$onlinestructurefile" | grep '^'"$app|")" >> "${DIRECTORY}/data/categories/structure"
-          else
-            #app exists online, but no structure line found
-            echo -e "\e[33mHUGE WARNING: the $app exists on github, but no category was found for it on github!\nPlease report this to Botspot.\e[39m" 1>&2
-            
-            echo "Putting $app in the / category." 1>&2
-            #put the app in root directory - no category
-            echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-          fi
-        else
-          #app not found online
-          
-          echo "Putting $app in the / category." 1>&2
-          #put the app in root directory - no category
-          echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-        fi
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  
-  { #find apps in categories file that don't exist
-    ghostapps="$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | list_subtract "$(list_apps)")"
-    
-    if [ ! -z "$ghostapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $ghostapps ;do
-        echo "WARNING: $app does not exist but it was found in categories file." 1>&2
-        echo "Removing $app from the categories file..." 1>&2
-        #put the app in root directory - no category
-        sed -i "/$app/d" "${DIRECTORY}/data/categories/structure"
-        
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  #category file cleaned up past this point
+read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
+  #list the user-overrides file              and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+}
+
+app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
   
   #Subtract a type of app if enabled
   local filter=()
@@ -624,10 +566,10 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   fi
   
   #show normal categories
-  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
+  read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
   
-  #show special Installed category
-  list_apps installed | sed 's+^+Installed/+g' | "${filter[@]}"
+  #show special Installed category - don't filter it
+  list_apps installed | sed 's+^+Installed/+g'
   
   #show special All Apps category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
@@ -842,7 +784,7 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
   fi
 }
 
-generate_app_icons() { #This converts the given image into icon-24.png and icon-64.png files for
+generate_app_icons() { #This converts the given $1 image into icon-24.png and icon-64.png files for the $2 app
   icon="$1"
   app="$2"
   
@@ -940,7 +882,7 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if grep -qF 'Could not resolve' <<<"$errors" || grep -qF 'Failed to fetch' <<<"$errors" || grep -qF 'Temporary failure resolving' <<<"$errors" || grep -qF 'Network is unreachable' <<<"$errors" || grep -qF 'Internal Server Error' <<<"$errors" || grep -q '404 .*Not Found' <<<"$errors" ;then
+  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Network is unreachable\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
     error_caption+=("APT reported an unresolvable repository.")
     error_type="internet"
   fi
@@ -976,7 +918,7 @@ Review the errors to see how long you need to wait.")
   fi
   
   #check for typo in sources.list and list.d
-  if grep -qF "The list of sources could not be read." <<<"$errors" || grep -qF "Did not understand pin type" <<<"$errors" || grep -q "E: Malformed entry .* in list file" <<<"$errors";then
+  if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
     error_caption+=("APT reported a typo in the sources.list file.
 
 You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo.")
@@ -984,8 +926,8 @@ You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fi
   fi
   
   #check for "E: The package cache file is corrupted"
-  if grep -qF "E: The package cache file is corrupted"  <<<"$errors" ;then
-    error_caption+=("APT found something wrong with an apt list file.
+  if grep -q "E: The package cache file is corrupted\|The package lists or status file could not be parsed or opened."  <<<"$errors" ;then
+    error_caption+=("APT found something wrong with a package list file.
 
 Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
     error_type="system"
@@ -1052,6 +994,14 @@ Try installing the same app again and if the problem persists please reach out t
   
   if grep -qF "E: Could not get lock" <<<"$errors" ;then
     error_caption+=("Some other apt-get/dpkg process is running. Wait for that one to finish, then try again.")
+    error_type="system"
+  fi
+  
+  if grep -qF "dpkg: error: cannot scan updates directory '/var/lib/dpkg/updates/': No such file or directory" <<<"$errors" ;then
+    error_caption+=("What did you do to your system? The "\""/var/lib/dpkg/updates"\"" folder is missing.
+
+You can try creating the folder with this command:
+sudo mkdir -p /var/lib/dpkg/updates")
     error_type="system"
   fi
   
@@ -1141,7 +1091,7 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" ;then
+  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" || grep -qF "openjdk-11-jre-headless : Depends: ca-certificates-java (>= 20190405~) but it is not going to be installed" <<<"$errors" ;then
     error_caption+=("The ca-certificates-java package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
@@ -1156,6 +1106,55 @@ sudo apt full-upgrade")
     error_type="package"
   fi
   
+  if grep -qF "dpkg: error processing archive .*steam-launcher" <<<"$errors" ;then
+    error_caption+=("The steam-launcher package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "dpkg: error processing archive .*gnome-control-center-data" <<<"$errors" ;then
+    error_caption+=("The gnome-control-center-data package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed nulog package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The nulog package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <<<"$errors" ;then
+    error_caption+=("The wps-office package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "cmake but it is not installable" <<<"$errors" ;then
+    error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
+
+If you need help, reach out to the Pi-Apps developers or in the Raspberry Pi forums: https://forums.raspberrypi.com")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1164,7 +1163,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1229,6 +1228,32 @@ sudo apt install --reinstall locales")
 Please enable passwordless sudo or switch to a more privelaged user-account.
 See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-will-be-reported-ubuntu/")
     error_type="system"
+  fi
+  
+  if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_type="system"
+  fi
+  
+  if grep -qF "xz: (stdin): Unexpected end of input" <<<"$errors" ;then
+    error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
+
+If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -q "sudo: .* incorrect password attempts" <<<"$errors" ;then
+    error_caption+=("Process could not complete because you failed to type in the correct sudo password.
+
+Try again, and consider enabling passwordless sudo.")
+    error_type="system"
+  fi
+  
+  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
+
+Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
+    error_type="internet"
   fi
   
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
@@ -1389,8 +1414,36 @@ get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
   [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
+  [ -s "$DIRECTORY"/etc/git_url ] && echo "Github latest commit ID: $(git ls-remote  $(cat "$DIRECTORY"/etc/git_url) HEAD | sed s/HEAD//g)"
   echo "Kernel: $(uname -m) $(uname -r)"
-  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')$(grep -o Android /proc/version)"
+  # obtain model name
+  if [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
+  elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+          -f /sys/devices/virtual/dmi/id/product_version ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
+  elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
+  elif [[ -f /tmp/sysinfo/model ]]; then
+      model="$(tr -d '\0' < /tmp/sysinfo/model)"
+  fi
+  # Remove dummy OEM info.
+  model=${model//To be filled by O.E.M.}
+  model=${model//To Be Filled*}
+  model=${model//OEM*}
+  model=${model//Not Applicable}
+  model=${model//System Product Name}
+  model=${model//System Version}
+  model=${model//Undefined}
+  model=${model//Default string}
+  model=${model//Not Specified}
+  model=${model//Type1ProductConfigId}
+  model=${model//INVALID}
+  model=${model//All Series}
+  model=${model//�}
+  echo "Device model: $model"
+  echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
@@ -1405,8 +1458,7 @@ get_device_info() { #returns information about current install and hardware
 }
 
 functions_to_files() { #for every function, create a bash script for every function
-  local file="${DIRECTORY}/functions"
-  local functions="$(cat "$file" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
+  local functions="$(cat "${DIRECTORY}/api" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
   
   mkdir -p "${DIRECTORY}/function-files"
   
@@ -1511,7 +1563,11 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   fi
   
   if [ "$quiet" == 0 ];then
-    status -n "Downloading $(basename "$url")... " 1>&2
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
+      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    else
+      status -n "Downloading $(basename "$url")... " 1>&2
+    fi
   fi
   
   #now, perform the download using the chosen method
@@ -1527,7 +1583,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 -m 10 --retry-wait 30 --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}" --allow-overwrite)
+    aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+      --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
+
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
@@ -1566,6 +1624,8 @@ unzip() { #say what is being extracted
   return $?
 }
 #end of command interceptors
+
+cd $HOME
 
 add_english
 

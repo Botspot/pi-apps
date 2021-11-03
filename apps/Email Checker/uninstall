@@ -15,4 +15,4 @@ fi
 
 rm -f ~/.config/autostart/checkmail.desktop
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"

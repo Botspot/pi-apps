@@ -17,6 +17,7 @@ if [ $? != 0 ];then
   echo "Unable to start snapd.service. Running debug..."
   echo "Running 'systemctl status snapd.service'"
   systemctl status snapd.service
+  sudo /usr/lib/snapd/snapd
   exit 1
 fi
 

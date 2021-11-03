@@ -10,7 +10,7 @@ function error {
 #Defining Variables
 name=pycharm-community
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 echo "Deleting /opt/$name directory"
 sudo rm -rf /opt/$name || error "Failed to delete /opt/$name directory"

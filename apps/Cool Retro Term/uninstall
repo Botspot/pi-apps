@@ -11,6 +11,6 @@ rm -rf ~/.cache/cool-retro-term
 rm -rf ~/cool-retro-term
 rm -f ~/.local/share/applications/crt.desktop
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 rm -rf ~/.local/share/cool-retro-term ~/cool-retro-term
