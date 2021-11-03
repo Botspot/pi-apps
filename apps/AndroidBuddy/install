@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "adb ffmpeg libsdl2-2.0-0 python3-pip python3-tk gcc git pkg-config meson ninja-build libavcodec-dev libavformat-dev libavutil-dev libsdl2-dev" "$(dirname "$0")" || exit 1
+install_packages adb ffmpeg libsdl2-2.0-0 python3-pip python3-dev python3-tk gcc git pkg-config meson ninja-build libavcodec-dev libavformat-dev libavutil-dev libsdl2-dev || error "Failed to install dependencies"
 
 if [ -e ~/scrcpy ] && [ -e /usr/bin/adb];then
   #SCRCPY

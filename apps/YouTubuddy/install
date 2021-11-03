@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/pkg-install" "vlc yad imagemagick jq python python3-pip" "$(dirname "$0")" || error "Failed to install dependencies"
+install_packages vlc yad imagemagick jq python python3-pip python3-dev || error "Failed to install dependencies"
 
 rm -rf ~/youtubuddy
 git clone https://github.com/Botspot/youtubuddy || error 'Failed to clone youtubuddy repository!'

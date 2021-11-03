@@ -13,6 +13,7 @@ fi
 
 sudo rm -f /etc/apt/sources.list.d/box86.list
 echo "Adding box86 repo..."
+sudo mkdir -p /etc/apt/sources.list.d
 sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
 
 echo "Adding key..."
