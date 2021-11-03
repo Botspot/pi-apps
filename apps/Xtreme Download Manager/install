@@ -1,13 +1,16 @@
 #!/bin/bash
 
-"${DIRECTORY}/pkg-install" "openjdk-11-jdk ffmpeg youtube-dl" "$(dirname "$0")" || error "Failed installing openjdk!"
+"${DIRECTORY}/pkg-install" "adoptopenjdk-16-hotspot-jre ffmpeg" "$(dirname "$0")" || error "Failed installing openjdk!"
 
 cd $HOME
 mkdir -p xdm 
 cd xdm
 wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/7.2.11/xdm-setup-7.2.11.tar.xz || error "Failed to download XDM setup tar file!"
+wget https://github.com/ytdl-org/youtube-dl/releases/download/2021.06.06/youtube-dl || error "Failed to download youtube-dl binary!"
 tar -xf xdm.tar.xz || error "Failed to extract XDM setup tar file!"
 sudo ./install.sh | grep -v "Installation completed" || error "Failed to execute XDM setup script!"
+sudo chmod +x ./youtube-dl
+sudo mv -f ./youtube-dl /opt/xdman || error "Failed to copy youtube-dl binary!"
 
 # Use system java
 sudo sed -i s=/opt/xdman/jre/bin/java=java=g /opt/xdman/xdman || error "Failed to change to system Java runtime in /opt/xdman/xdman!"
@@ -15,7 +18,6 @@ sudo sed -i s=/opt/xdman/jre/bin/java=java=g /usr/bin/xdman || error "Failed to 
 
 # Fix 'Download failed. Failed to append/convert file parts, please check if the drive is full or write protected'
 sudo cp -f $(command -v ffmpeg) /opt/xdman || error "Failed to copy ffmpeg binary!"
-sudo cp -f $(command -v youtube-dl) /opt/xdman || error "Failed to copy youtube-dl binary!"
 
 # Delete unwanted files after installation
 rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
