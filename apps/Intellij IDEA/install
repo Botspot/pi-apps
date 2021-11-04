@@ -8,7 +8,7 @@ function error {
 }
 
 # Get dependencies
-install_packages openjdk-17-jdk || install_packages openjdk-11-jdk || error "Failed to install dependencies"
+install_packages default-jdk || error "Failed to install dependencies"
 hash -r
 rm -f ideaIC-202*.tar.gz 2>/dev/null
 
