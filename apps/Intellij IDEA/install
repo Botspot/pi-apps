@@ -8,7 +8,8 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "openjdk-17-jdk" "$(dirname "$0")" || exit 1
+install_packages openjdk-17-jdk || install_packages openjdk-11-jdk || error "Failed to install dependencies"
+hash -r
 rm -f ideaIC-202*.tar.gz 2>/dev/null
 
 rm -rf ~/idea_ic 2>/dev/null
