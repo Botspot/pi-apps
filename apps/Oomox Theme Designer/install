@@ -4,7 +4,7 @@
 
 cd $HOME
 rm -rf oomox
-status "Cloning oomox repository...\nThis will take some time as --recursive flag is passed."
+status "This will take some time as --recursive flag is passed."
 git_clone https://github.com/themix-project/oomox.git --recursive || error "Failed to clone oomox repository!"
 echo "#!/bin/bash
 cd $HOME/oomox &&
