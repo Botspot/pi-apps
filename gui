@@ -451,7 +451,7 @@ $LIST"
     action="$prevaction" #return to previous action
     
   elif [ "$action" == details ];then
-    
+    app="$(head -n1 <<<"$app")"
     if echo "$app" | grep -q '/$' ;then
       #folder
       if [ "$app" == './' ];then
