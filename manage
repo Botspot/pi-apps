@@ -275,8 +275,10 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
     
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
   fi
+  
+ 
   #if the app is a package, set its status to whatever dpkg thinks it is
-  elif [ "$(app_type "$app")" == package ];then
+  if [ "$(app_type "$app")" == package ];then
     refresh_pkgapp_status "$app"
   fi
   
