@@ -11,19 +11,14 @@ version='2.0.1'
 
 killall webcord &>/dev/null && echo "Closing Discord first..."
 
-echo "Downloading Webcord..."
-rm -f ~/webcord.deb
-wget -O ~/webcord.deb https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_arm64.deb || error "Failed to download webcord.deb"
-
-echo "Installing Webcord..."
-"${DIRECTORY}/pkg-install" "$HOME/webcord.deb" "$(dirname "$0")" || error "Failed to install webcord.deb!"
-
-rm -f ~/webcord.deb
+install_packages "https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_arm64.deb" || error "Failed to download webcord.deb"
 
 #change this to true to brand Webcord as Discord
 if false;then
   sudo sed -i 's/Name=.*/Name=Discord/g' /usr/share/applications/webcord.desktop
 
-  sudo cp -f $(dirname "$0")/icon-64.png /usr/share/pixmaps/webcord.png
-  sudo cp -f $(dirname "$0")/icon-64.png /usr/lib/webcord/resources/app.png
+  sudo wget -O /usr/share/pixmaps/webcord.png 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-7-1.png' || sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/pixmaps/webcord.png
+  
+  sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.asar.unpacked/sources/assets/icons/app.png
+  sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.png
 fi
