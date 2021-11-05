@@ -1387,6 +1387,9 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   elif cat /proc/version | grep -q Android ;then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
+  elif cat /proc/version | grep -q Microsoft || cat /proc/sys/kernel/osrelease | grep -q WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+    echo "Pi-Apps is not supported on WSL."
+    return 1
   elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
