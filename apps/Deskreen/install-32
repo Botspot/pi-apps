@@ -14,7 +14,7 @@ unzip -o Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1
 # Install
 chmod +x Deskreen-1.0.1-armv7l.AppImage || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
 echo "#!/bin/bash
-$HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage" | sudo tee /usr/local/bin/deskreen || error 'Failed to make Deskreen terminal script!'
+$HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage" | sudo tee /usr/local/bin/deskreen &>/dev/null || error 'Failed to make Deskreen terminal script!'
 sudo chmod +x /usr/local/bin/deskreen || error 'Failed to make "/usr/local/bin/deskreen" executable!'
 cd
 echo "[Desktop Entry]
