@@ -13,7 +13,7 @@ wget $downloadlink -O "$(pwd)/${name}.tar.gz" || error "Failed to download $(bas
 status "Extracting $(basename $downloadlink) to /opt"
 sudo rm -rf /opt/$name
 sudo mkdir -p /opt/$name
-sudo tar xvzf "$(pwd)/${name}.tar.gz" -C /opt/$name || error "Failed to extract $name.tar.gz"
+sudo tar xzf "$(pwd)/${name}.tar.gz" -C /opt/$name || error "Failed to extract $name.tar.gz"
 rm -f "$(pwd)/${name}.tar.gz"
 sudo mv /opt/$name/*/* /opt/$name/
 
