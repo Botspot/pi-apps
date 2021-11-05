@@ -458,7 +458,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
     echo
   fi
   
-  read -p "$(status 'Update now? [Y/n] ')" answer
+  read -p "$(status -n 'Update now? [Y/n] ')" answer
   
   if [ "$answer" == n ] || [ "$answer" == N ];then
     echo
