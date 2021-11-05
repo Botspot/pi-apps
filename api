@@ -1625,6 +1625,8 @@ unzip() { #say what is being extracted
 }
 #end of command interceptors
 
+trap "exit 1" INT
+
 cd $HOME
 
 add_english
