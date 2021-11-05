@@ -31,7 +31,7 @@ if [ -z "$1" ];then
     )"
     button=$?
     
-    [ $button != 0 ] && error "exited chromium version selection list"
+    [ $button != 0 ] && error "User error: exited chromium version selection list"
   done
   #get just chromium version NUMBER
   output="$(echo "$output" | awk '{print $3}')"

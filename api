@@ -154,7 +154,7 @@ apt_update() { #run an apt update with error-checking and minimal output
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     exit 1
   fi
   return 0
@@ -339,7 +339,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     if [ $? != 0 ];then
       echo "$output"
       echo ""
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "install_packages(): failed to create dummy deb $package_name"
     fi
   }
@@ -352,7 +352,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     apt_lock_wait
     local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
     if [ $? != 0 ];then
-      echo "$output" | apt_diagnose
+      echo "$output"
       error "Failed to purge dummy deb ($package_name)"
     fi
   else
@@ -372,7 +372,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
-    echo "$output" | apt_diagnose
+    echo "$output"
     
     exit 1
   fi
@@ -410,7 +410,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
     
@@ -429,7 +429,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       #run some apt error diagnosis
-      echo "$output" | apt_diagnose
+      echo "$output"
       exit 1
     fi
   else
@@ -1134,6 +1134,27 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <<<"$errors" ;then
+    error_caption+=("The wps-office package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "cmake but it is not installable" <<<"$errors" ;then
+    error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
+
+If you need help, reach out to the Pi-Apps developers or in the Raspberry Pi forums: https://forums.raspberrypi.com")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1142,7 +1163,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1226,6 +1247,13 @@ If this problem continues occuring, please reach out to the Pi-Apps developers f
 
 Try again, and consider enabling passwordless sudo.")
     error_type="system"
+  fi
+  
+  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
+
+Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
+    error_type="internet"
   fi
   
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
@@ -1359,6 +1387,9 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   elif cat /proc/version | grep -q Android ;then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
+  elif cat /proc/version | grep -q Microsoft || cat /proc/sys/kernel/osrelease | grep -q WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+    echo "Pi-Apps is not supported on WSL."
+    return 1
   elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
@@ -1386,8 +1417,36 @@ get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
   [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
+  [ -s "$DIRECTORY"/etc/git_url ] && echo "Github latest commit ID: $(git ls-remote  $(cat "$DIRECTORY"/etc/git_url) HEAD | sed s/HEAD//g)"
   echo "Kernel: $(uname -m) $(uname -r)"
-  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')$(grep -o Android /proc/version)"
+  # obtain model name
+  if [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
+  elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+          -f /sys/devices/virtual/dmi/id/product_version ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
+  elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
+  elif [[ -f /tmp/sysinfo/model ]]; then
+      model="$(tr -d '\0' < /tmp/sysinfo/model)"
+  fi
+  # Remove dummy OEM info.
+  model=${model//To be filled by O.E.M.}
+  model=${model//To Be Filled*}
+  model=${model//OEM*}
+  model=${model//Not Applicable}
+  model=${model//System Product Name}
+  model=${model//System Version}
+  model=${model//Undefined}
+  model=${model//Default string}
+  model=${model//Not Specified}
+  model=${model//Type1ProductConfigId}
+  model=${model//INVALID}
+  model=${model//All Series}
+  model=${model//�}
+  echo "Device model: $model"
+  echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
@@ -1507,7 +1566,11 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   fi
   
   if [ "$quiet" == 0 ];then
-    status -n "Downloading $(basename "$url")... " 1>&2
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
+      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    else
+      status -n "Downloading $(basename "$url")... " 1>&2
+    fi
   fi
   
   #now, perform the download using the chosen method
@@ -1523,8 +1586,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
-      --file-allocation=falloc --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
+    aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+      --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
+
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
@@ -1563,6 +1627,10 @@ unzip() { #say what is being extracted
   return $?
 }
 #end of command interceptors
+
+trap "exit 1" INT
+
+cd $HOME
 
 add_english
 

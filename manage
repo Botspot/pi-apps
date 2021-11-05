@@ -127,19 +127,20 @@ $app"
       text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
     fi
     
-    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the system setup is supported, then enable the "Send report button"
-    if ! [[ "$error_type" =~ ^(system|internet|package)$ ]] && list_apps online | grep -q "$app" && [ "$supported" == yes ];then
-      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, then enable the "Send report button"
+    if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Your 'Send report' button is gone because it's not an issue with Pi-Apps."
+    elif ! list_apps online | grep -q "$app" ;then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not in the official repository."
+    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not the official version."
+    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app does not match the official version."
+    elif [ "$supported" == no ];then
+      text+=$'\n'"Your 'Send report' button is gone because your system is unsupported."
     else
-      #inform user why 'send report' button is missing
-      text+=$'\n'"Your 'Send report' button is gone because "
-      if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
-        text+="it's not an issue with Pi-Apps."
-      elif ! list_apps online | grep -q "$app" ;then
-        text+="this app is not in the official repository."
-      elif [ "$supported" == no ];then
-        text+="your system is unsupported."
-      fi
+      #if all of the above checks evaluate to FALSE, then display the "Send report" button.
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
     fi
     text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
     
@@ -156,7 +157,7 @@ $app"
       --text="$text" --fontname=12 \
       --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
       "${send_button[@]}" \
-      --button=Close
+      --button=Close:1
     button=$?
     
     if [ $button == 2 ];then
@@ -252,13 +253,15 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
+  
+  format_logfile "$logfile" #remove escape sequences from logfile
+  
   #if app script succeeded
   if [ $exitcode == 0 ];then
     status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
+    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     
-    format_logfile "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
-    echo
   else
     echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
@@ -270,24 +273,12 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
-    format_logfile "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
   fi
   
-  #determine what status the app should now be
-  if [ "$(app_type "$app")" == standard ];then
-    #if the app is standard, and succeeded, mark it as installed/uninstalled
-    if [ "$exitcode" == 0 ];then
-      echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    #if the app is standard and failed, AND diagnostics don't determine it to be internet/system/package, mark it as corrupted
-    else
-      #set the app's status to 'corrupted' if diagnostics determine that the error is NOT internet, system, package
-      if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
-        echo "corrupted" > "${DIRECTORY}/data/status/${app}"
-      fi
-    fi
+ 
   #if the app is a package, set its status to whatever dpkg thinks it is
-  elif [ "$(app_type "$app")" == package ];then
+  if [ "$(app_type "$app")" == package ];then
     refresh_pkgapp_status "$app"
   fi
   

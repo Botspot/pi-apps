@@ -15,6 +15,11 @@ libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-de
 libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev libesd0-dev \
 freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake aria2 lolcat figlet || error "Failed to install dependencies"
 
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+fi
 git clone https://github.com/techcoder20/RPIDoom3Installer || error 'Failed to clone RPIDoom3Installer repository!'
 cd ~/RPIDoom3Installer || error "Failed to change directory "
 
