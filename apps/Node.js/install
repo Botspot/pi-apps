@@ -13,7 +13,7 @@ if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
 fi
 
 if ! command -v curl >/dev/null ; then
-  echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m
+  echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
   "${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || error "failed to install curl!"
 fi
 
