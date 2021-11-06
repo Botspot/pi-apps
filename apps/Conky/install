@@ -8,9 +8,7 @@ function error {
 }
 
 if [ -f "$HOME/.conkyrc" ]; then
-  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again.
-▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+  error "User error: Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again."
 fi
 
 wget -O ~/.conkyrc https://raw.githubusercontent.com/Botspot/rpi_conky/master/conkyrc || error 'Failed to download conkyrc!!'
@@ -30,6 +28,7 @@ conky &
 
 #make autostart entry to run it next time
 mkdir -p ~/.config/autostart
+sudo rm -f ~/.config/autostart/conky.desktop
 echo "[Desktop Entry]
 Name=Conky
 Type=Application

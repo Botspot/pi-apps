@@ -7,16 +7,10 @@ function error {
   exit 1
 }
 
-#install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+#On Botspot's system, libssl1.0-dev was required to launch Eagle. But too many error reports say that this package is not installinbg, so I'm commenting it out.
+#"${DIRECTORY}/pkg-install" "libssl1.0-dev" "$(dirname "$0")" || exit 1
+
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
 
@@ -47,7 +41,7 @@ Type=Application
 Terminal=false
 Icon=$HOME/eagle-7.7.0/bin/icons/Epf.svg
 Name=Eagle
-Exec=eagle %f
+Exec=box86 eagle %f
 Comment=Design Circuit Boards with Eagle CAD
 MimeType=application/brd;
 Categories=Development;Electronics;" > ~/.local/share/applications/eagle.desktop

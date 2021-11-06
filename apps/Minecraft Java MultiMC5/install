@@ -3,11 +3,6 @@
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # obtain model name
 if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
@@ -55,7 +50,8 @@ case "$__os_id" in
     Raspbian|Debian)
         case "$__os_codename" in
             bullseye|buster|stretch|jessie)
-                "${DIRECTORY}/pkg-install" "wget apt-transport-https gnupg" "$(dirname "$0")" || exit 1
+                install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
+                hash -r
                 cd /tmp
                 rm -rf public
                 rm -rf adoptopenjdk-keyring.gpg
@@ -81,7 +77,8 @@ case "$__os_id" in
         # download java 8 from adoptium github tar.gz as a workaround
         case "$arch" in
             "64")
-                "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08
@@ -95,7 +92,8 @@ case "$__os_id" in
                 cd ~
                 ;;
             "32") 
-                "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils subversion git clang gcc g++ cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
+                hash -r
                 mkdir -p ~/MultiMC/install/java || exit 1
                 cd ~/MultiMC/install/java || exit 1
                 rm -rf jdk8u302-b08-aarch32-20210726
@@ -121,6 +119,8 @@ case "$__os_id" in
                 if [[ $ppa_added -eq "1" ]]; then
                     status "Skipping OpenJDK PPA, already added"
                 else
+                    install_packages software-properties-common || error "Failed to install dependencies"
+                    hash -r
                     status "Adding OpenJDK PPA, needed for Minecraft 1.17+"
                     sudo add-apt-repository ppa:openjdk-r/ppa -y
                     sudo apt update
@@ -137,7 +137,8 @@ case "$__os_id" in
 
         esac
         # install dependencies
-        "${DIRECTORY}/pkg-install" "libopenal1 x11-xserver-utils git clang gcc g++ cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev" "$(dirname "$0")" || exit 1
+        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-16-jre qtbase5-dev || error "Failed to install dependencies"
+        hash -r
         ;;
     *)
         error "$__os_id appears to be an unsupported OS"
@@ -147,15 +148,18 @@ esac
 # make all the folders
 cd ~
 mkdir -p ~/MultiMC
-cd ~/MultiMC
+cd ~/MultiMC || exit 1
 mkdir -p build
 mkdir -p install
 
 # clone the complete source
 status "Downloading the MultiMC5 Source Code"
-git clone --recursive https://github.com/MultiMC/MultiMC5.git src # You can clone from MultiMC's main repo, no need to use a fork.
+git clone --recursive https://github.com/MultiMC/Launcher.git src # You can clone from MultiMC's main repo, no need to use a fork.
 cd src
+git remote set-url origin https://github.com/MultiMC/Launcher.git
+git checkout --recurse-submodules develop || error "Could not checkout develop branch"
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git checkout --recurse-submodules 6f6c9c6f6848f4167410eedc65e309d0231cf37d || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
 
 # add secrets files
 mkdir -p secrets
@@ -188,6 +192,20 @@ add_library(secrets STATIC Secrets.cpp Secrets.h)
 target_link_libraries(secrets Qt5::Core)
 target_compile_definitions(secrets PUBLIC -DEMBED_SECRETS)
 target_include_directories(secrets PUBLIC .)
+
+set(Launcher_CommonName "MultiMC")
+
+set(Launcher_Copyright "MultiMC Contributors" PARENT_SCOPE)
+set(Launcher_Domain "multimc.org" PARENT_SCOPE)
+set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
+set(Launcher_DisplayName "${Launcher_CommonName} 5" PARENT_SCOPE)
+set(Launcher_UserAgent "${Launcher_CommonName}/5.0" PARENT_SCOPE)
+set(Launcher_ConfigFile "multimc.cfg" PARENT_SCOPE)
+set(Launcher_Git "https://github.com/MultiMC/Launcher" PARENT_SCOPE)
+
+set(Launcher_Branding_ICNS "notsecrets/Launcher.icns" PARENT_SCOPE)
+set(Launcher_Branding_WindowsRC "notsecrets/launcher.rc" PARENT_SCOPE)
+set(Launcher_Branding_LogoQRC "notsecrets/logo.qrc" PARENT_SCOPE)
 EOF
 
 cd ..
@@ -200,8 +218,8 @@ cd build
 rm -rf CMakeCache.txt
 status "Generating the CMake File"
 case "$arch" in
-    "64") cmake -DMultiMC_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DMultiMC_BUILD_PLATFORM="$model" -DMultiMC_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DMultiMC_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DMultiMC_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DMultiMC_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
-    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DMultiMC_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DMultiMC_BUILD_PLATFORM="$model" -DMultiMC_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DMultiMC_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DMultiMC_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DMultiMC_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
+    "64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
+    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
     *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
@@ -211,6 +229,10 @@ make -j$(nproc) install || error "Make install failed"
 
 cd
 mkdir -p  ~/.local/share/applications
+mkdir -p  ~/.local/share/icons/MultiMC
+# copy icon to .local folder
+cp "${DIRECTORY}/apps/Minecraft Java MultiMC5/icon-64.png" "$HOME/.local/share/icons/MultiMC/icon-64.png"
+
 # detect if script is running on RPi and if so override MESA GL Version
 if grep -iE 'raspberry' <<< $model > /dev/null; then
     warning "You are running a Raspberry Pi, note that OpenGL 3.3 is not fully supported but it necessary to run Minecraft 1.17+."
@@ -222,7 +244,7 @@ Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 $HOME/MultiM
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
 else
@@ -233,7 +255,7 @@ Exec=$HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
 Name=MultiMC
-Icon=$HOME/MultiMC/src/launcher/resources/multimc/scalable/multimc.svg
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
 fi

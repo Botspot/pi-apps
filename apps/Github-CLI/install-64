@@ -9,7 +9,7 @@ function error {
 
 cd $HOME
 
-VERSION='2.0.0'
+VERSION='2.2.0'
 
 #remove old deb (if exists)
 rm -f ~/gh.deb

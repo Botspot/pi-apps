@@ -7,6 +7,4 @@ function error {
   exit 1
 }
 
-rm -f "$HOME/.fonts/Noto Color Emoji.ttf" "$HOME/.fonts/Segoe UI.ttf"
-
-exit 0
+rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || sudo rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || error "Failed to remove font file!"
