@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#wget https://apt.raspbian-addons.org/debian/pool/alacritty_0.6.0_armhf.deb || error 'Failed to download alacritty_0.6.0_armhf.deb!'
+#"${DIRECTORY}/pkg-install" "$HOME/alacritty_0.6.0_armhf.deb" "$(dirname "$0")" || error 'Failed to install "alacritty_0.6.0_armhf.deb" with pkg-install!'
+install_packages "https://apt.raspbian-addons.org/debian/pool/alacritty_0.6.0_armhf.deb"
+sudo ln -s /opt/alacritty/alacritty /usr/local/bin/alacritty || error 'Failed to create symbolic link from "/opt/alacritty/alacritty" to "/usr/local/bin/alacritty"!' 
+rm -rf alacritty_0.6.0_armhf.deb || sudo rm -rf alacritty_0.6.0_armhf.deb || error 'Failed to delete alacritty_0.6.0_armhf.deb!'
