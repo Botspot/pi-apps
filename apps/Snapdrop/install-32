@@ -9,7 +9,7 @@ function error {
 rm -f Snapdrop-linux-armv7l.zip
 
 wget https://github.com/ryanfortner/snapdrop-rpi/raw/master/Snapdrop-linux-armv7l.zip || error "Failed to download archive!"
-tar -xvf Snapdrop-linux-armv7l.zip || error "Failed to extract archive!"
+unzip Snapdrop-linux-armv7l.zip || error "Failed to extract archive!"
 rm -f Snapdrop-linux-armv7l.zip
 
 # Desktop entry
