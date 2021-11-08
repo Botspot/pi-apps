@@ -10,6 +10,6 @@ function error {
 mkdir btop && cd btop
 wget https://github.com/aristocratos/btop/releases/download/v1.0.23/btop-1.0.23-aarch64-linux-musl.tbz || error 'Failed to download "btop-1.0.23-aarch64-linux-musl.tbz"'
 tar -xjf btop-1.0.23-aarch64-linux-musl.tbz || error 'Failed to decompress "btop-1.0.23-aarch64-linux-musl.tbz"!'
-sudo make install || error 'Failed to install btop with "sudo make install"!'
+sudo make -B install || error 'Failed to install btop with "sudo make install"!'
 rm -rf $HOME/btop || sudo rm -rf $HOME/btop || error 'Failed to remove install directory!'
 
