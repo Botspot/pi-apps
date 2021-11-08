@@ -8,5 +8,4 @@ function error {
 }
 
 install_packages "https://apt.raspbian-addons.org/debian/pool/alacritty_0.9.0_arm64.deb"
-sudo ln -s /opt/alacritty/alacritty /usr/local/bin/alacritty || error 'Failed to create symbolic link from "/opt/alacritty/alacritty" to "/usr/local/bin/alacritty"!' 
 rm -rf alacritty_0.9.0_arm64.deb || sudo rm -rf alacritty_0.9.0_arm64.deb || error 'Failed to delete alacritty_0.9.0_arm64.deb!'
