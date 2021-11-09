@@ -144,32 +144,32 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   
   #make a temporary directory and enter it
   cd "$(mktemp -d)" || error "Failed to crerate and enter a tempory directory."
+  #if script is killed prematurely, be sure to delete the temporary folder
+  trap "rm -rf '$(pwd)'" EXIT
   
   echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
   
   echo -n "Downloading repository... "
   errors="$(git clone "https://github.com/${repo}" 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
-  echo "Done"
-  
-  #before switching branches, duplicate the app-folder so we can compare branches
-  echo -n "Archiving non-modified apps... "
-  cp -a "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps/apps-nonmodified"
-  echo "Done"
+  echo "Done - git clone https://github.com/${repo}"
   
   echo -n "Switching to branch: $branch "
   cd "$(pwd)/pi-apps"
   errors="$(git checkout "$branch" 2>&1)" || error "Failed to checkout branch: $branch\nErrors:\n$errors"
   cd .. #now the current directory is the tmpdir
-  echo "Done"
+  echo "Done - git checkout $branch"
   
-  #if script is killed prematurely, be sure to delete the temporary folder
-  trap "rm -rf '$(pwd)'" EXIT
+  echo -n "Getting pi-apps repo for comparison... "
+  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master 2>&1)" || error "Failed to clone botspot pi-apps repository.\nErrors:\n$errors"
+  echo "Done - git clone https://github.com/Botspot/pi-apps"
   
   #get list of apps that are unique to this pi-apps folder. (not on main repo)
   #apps="$("$(pwd)/pi-apps/api" list_apps local_only)"
   
-  #get apps that don't match the ones in main branch
-  imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps/apps-nonmodified" | grep "Only in $(pwd)/pi-apps/apps:\|Files .* and .* differ" | sed 's+.*/apps-nonmodified.++g' | sed 's+.*/apps.++g' | sed 's/^ //g' | sed 's+/.*++g' | sort | uniq)"
+  #get apps that don't match the ones in main branch - find only new apps
+  imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Only in $(pwd)/pi-apps/apps:"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
+  #if no new apps, find modified apps
+  [ -z "$imported_apps" ] && imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Files .* and .* differ"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq) | grep ."
   
   echo -e "\nModified apps in this branch:"
   echo "$imported_apps" | sed 's/^/- /g'

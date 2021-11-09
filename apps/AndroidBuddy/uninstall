@@ -7,7 +7,7 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 rm -rf ~/droidbuddy ~/scrcpy ~/.local/share/applications/scrcpy.desktop ~/.local/share/applications/androidbuddy.desktop 2>/dev/null
 sudo rm -rf /usr/local/share/scrcpy 2>/dev/null

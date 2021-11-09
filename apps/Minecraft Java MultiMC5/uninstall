@@ -2,16 +2,16 @@
 
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
 
-cd ~
-find ./MultiMC/install -mindepth 1 ! -regex '^./MultiMC/install/instances\(/.*\)?' -delete
-sudo rm -rf ~/MultiMC/src
-sudo rm -rf ~/MultiMC/build
-sudo rm -rf ~/.local/share/applications/MultiMC.desktop
-sudo rm -rf ~/.local/share/icons/MultiMC/icon-64.png
+#skip uninstallation if executed from an update
+if [[ "$1" != "update" ]];then
+  cd ~/MultiMC && find ./install -mindepth 1 ! -regex '^./install/instances\(/.*\)?' -delete
+  sudo rm -rf ~/MultiMC/src
+  sudo rm -rf ~/MultiMC/build
+  sudo rm -rf ~/.local/share/applications/MultiMC.desktop
+  sudo rm -rf ~/.local/share/icons/MultiMC/icon-64.png
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+  purge_packages || error "Dependencies failed to uninstall"
+else
+  echo "Uninstall skipped because run from the updater"
+fi

@@ -129,6 +129,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
       sleep infinity
     elif [ "$answer" == 4 ];then
+      echo "User error: exited."
       exit 1
     else
       echo "Invalid response. Must be '1', '2', '3' or '4'."

@@ -8,7 +8,7 @@ function error {
 }
 
 # remove dependencies
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"
 
 # remove Chiaki folder and desktop entry
 rm -rf $HOME/Chiaki || error "failed to delete Chiaki folder!"
