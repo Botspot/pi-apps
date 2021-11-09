@@ -18,7 +18,7 @@ if ! command -v box64 >/dev/null;then
 fi
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 | libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 | libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
 
 #refresh list of libraries
 sudo ldconfig
