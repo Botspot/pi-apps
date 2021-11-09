@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+fiddle_ver="electron-fiddle_0.26.0_armhf.deb"
+#wget https://github.com/electron/fiddle/releases/download/v0.26.0/electron-fiddle_0.26.0_armhf.deb || error 'Failed to download "${fiddle_ver}"!'
+install_packages https://github.com/electron/fiddle/releases/download/v0.26.0/electron-fiddle_0.26.0_armhf.deb
+rm -rf ${fiddle_ver} || sudo rm -rf ${fiddle_ver}
