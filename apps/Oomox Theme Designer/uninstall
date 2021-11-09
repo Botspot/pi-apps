@@ -2,4 +2,4 @@
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to purge-installed!"
 
-rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox || sudo rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox
+rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox /usr/local/bin/oomox-gui || sudo rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox /usr/local/bin/oomox-gui 
