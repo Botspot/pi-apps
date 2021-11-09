@@ -64,20 +64,21 @@ import_zip() { #given a zipfile, extract it to apps directory and return the nam
 import="$1"
 #launch a window to import an app
 if [ -z "$import" ];then
-  import="$(yad "${yadflags[@]}" --title='App importer' --width=390 \
+  import="$(yad "${yadflags[@]}" --title='App importer' --width=500 \
     --text="Import an app from somewhere else.
 Apps are saved in <b>$DIRECTORY/apps</b>.
 Put something in in the blank below.
 Examples:
+
     <b>https://github.com/Botspot/pi-apps/pull/1068</b>
     <b>1068</b>
     <b>https://link/to/app.zip</b>
-    <b>$HOME/my-app.zip</b>" \
+    <b>$HOME/my-app.zip</b>\n" \
     --form --field='' '')" || exit 0
 fi
 
-#if nothing in blank, exit now.
-[ -z "$import" ] && exit 0
+[ -z "$import" ] && yad "${yadflags[@]}" --width=310 --title="App importer" --image="${DIRECTORY}/icons/logo-64.png" --text="\n   No app has been imported." --button=Close:0 --window-icon="${DIRECTORY}/icons/logo.png"
+
 
 #determine what type of input we received
 if [[ "$import" == /* ]] ;then
@@ -169,7 +170,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   #get apps that don't match the ones in main branch - find only new apps
   imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Only in $(pwd)/pi-apps/apps:"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
   #if no new apps, find modified apps
-  [ -z "$imported_apps" ] && imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Files .* and .* differ"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq) | grep ."
+  [ -z "$imported_apps" ] && imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Files .* and .* differ"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
   
   echo -e "\nModified apps in this branch:"
   echo "$imported_apps" | sed 's/^/- /g'
@@ -201,9 +202,9 @@ $([ -f "${DIRECTORY}/apps/$app/icon-64.png" ] && echo "${DIRECTORY}/apps/$app/ic
 done
 LIST="${LIST:1}"
 
-echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
+[ -n "$LIST" ] && echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
   --text="These apps have been imported:" \
   --list --multiple --no-selection \
   --column=:IMG --column=Name \
-  --button=Close:0
-
+  --button=Close:0 || yad "${yadflags[@]}" --width=310 --title="App importer" --image="${DIRECTORY}/icons/logo-64.png" --text="\n   No app has been imported." --button=Close:0 --window-icon="${DIRECTORY}/icons/logo.png"
+  
