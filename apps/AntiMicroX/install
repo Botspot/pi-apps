@@ -13,7 +13,7 @@ install_packages git gcc cmake extra-cmake-modules qttools5-dev qttools5-dev-too
 # Cloning
 cd ~ || error 'Failed to cd into home directory!'
 rm -rf antimicrox || sudo rm -rf antimicrox || error 'Failed to remove "antimicrox" directory!'
-git clone https://github.com/AntiMicroX/antimicrox.git --depth=1 || error 'Failed to clone AntiMicroX repository!'
+git clone --branch 3.2.0 https://github.com/AntiMicroX/antimicrox.git --depth=1 || error 'Failed to clone AntiMicroX repository!'
 cd antimicrox || error 'Failed to cd into cloned directory!'
 mkdir build && cd build || error 'Failed to make and cd into build directory!'
 
