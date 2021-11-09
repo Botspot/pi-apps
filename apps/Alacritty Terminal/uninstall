@@ -8,4 +8,3 @@ function error {
 }
 
 purge_packages || exit 1
-sudo rm -rf /usr/local/bin/alacritty || error 'Failed to remove symbolic link!'
