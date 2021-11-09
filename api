@@ -546,8 +546,8 @@ list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear
 }
 
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
-  #list the user-overrides file              and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
-  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+  #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
 app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
@@ -1163,7 +1163,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1287,7 +1287,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
   
-  errors="$(bash <(base64 -d <<<"Y3VybCAtRiAiZmlsZT1AXCIK$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIK$(base64 <<<"$(basename "$1" | sed 's/\.log.*/.txt/g')")XCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIK" | tr -d '\n') 2>&1)"
+  errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
@@ -1386,6 +1386,9 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
     return 1
   elif cat /proc/version | grep -q Android ;then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
+    return 1
+  elif cat /proc/version | grep -q Microsoft || cat /proc/sys/kernel/osrelease | grep -q WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+    echo "Pi-Apps is not supported on WSL."
     return 1
   elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
@@ -1624,6 +1627,8 @@ unzip() { #say what is being extracted
   return $?
 }
 #end of command interceptors
+
+trap "exit 1" INT
 
 cd $HOME
 
