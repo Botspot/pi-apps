@@ -7,8 +7,4 @@ function error {
   exit 1
 }
 
-killall webcord &>/dev/null && echo "Closing Discord before uninstalling..."
-
-purge_packages || exit 1
-
-exit 0
+"${DIRECTORY}/purge-installed" "$(dirname "$0")"  || error "Failed to purge-installed!"
