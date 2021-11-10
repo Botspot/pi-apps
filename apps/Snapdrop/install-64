@@ -8,7 +8,7 @@ function error {
 
 rm -f Snapdrop-linux-arm64.zip
 
-wget https://github.com/chunky-milk/snapdrop-rpi/releases/download/2.0/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
+wget https://github.com/ryanfortner/snapdrop-rpi/raw/master/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
 unzip Snapdrop-linux-arm64.zip || error "Failed to extract archive!"
 rm -f Snapdrop-linux-arm64.zip || error "Failed to remove archive!"
 

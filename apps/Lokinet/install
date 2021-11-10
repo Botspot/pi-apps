@@ -23,7 +23,8 @@ grey='\033[0;37m'
   echo -e "${clear}"
 
 echo "Installing public key and adding packages..."
-sudo modprobe tun || error "Failed to load the 'tun' kernel module!"
+sudo modprobe tun || exit 1
+
 sudo wget -qO /etc/apt/trusted.gpg.d/oxen.gpg https://deb.oxen.io/pub.gpg || error "Failed to download /etc/apt/trusted.gpg.d/oxen.gpg"
 echo "deb https://deb.oxen.io $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/oxen.list
 

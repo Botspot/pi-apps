@@ -9,6 +9,6 @@ function error {
 
 wget -O ~/veracrypt.deb 'https://sourceforge.net/projects/veracrypt/files/VeraCrypt%201.24-Update7/veracrypt-1.24-Update7-Debian-10-armhf.deb/download' || error "Failed to download veracrypt.deb!"
 
-sudo apt install -y --fix-broken ~/veracrypt.deb || error "Failed to install veracrypt.deb!"
+"${DIRECTORY}/pkg-install" "$HOME/veracrypt.deb" "$(dirname "$0")" || error "Failed to install veracrypt.deb!"
 
 rm -f ~/veracrypt.deb

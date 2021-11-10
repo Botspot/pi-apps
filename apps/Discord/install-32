@@ -7,13 +7,18 @@ function error {
   exit 1
 }
 
-version='1.6.1'
+version='2.0.1'
 
-echo "Downloading Webcord..."
-rm -f ~/webcord_${version}_armhf.deb
-wget https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_armhf.deb
+killall webcord &>/dev/null && echo "Closing Discord first..."
 
-echo "Installing Webcord..."
-"${DIRECTORY}/pkg-install" "$HOME/webcord_${version}_armhf.deb" "$(dirname "$0")" || error "Failed to install webcord deb!"
+install_packages "https://github.com/SpacingBat3/WebCord/releases/download/v${version}/webcord_${version}_armhf.deb" || error "Failed to download webcord.deb"
 
-rm -f ~/webcord_${version}_armhf.deb
+#change this to true to brand Webcord as Discord
+if false;then
+  sudo sed -i 's/Name=.*/Name=Discord/g' /usr/share/applications/webcord.desktop
+
+  sudo wget -O /usr/share/pixmaps/webcord.png 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-7-1.png' || sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/pixmaps/webcord.png
+  
+  sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.asar.unpacked/sources/assets/icons/app.png
+  sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.png
+fi

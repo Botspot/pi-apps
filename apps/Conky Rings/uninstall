@@ -9,7 +9,7 @@ function error {
 
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-rm -f ~/.config/autostart/conky.desktop ~/.conky-rings.lua ~/.conkyrc || error "Failed to remove autostart file or .conkyrc or .conky-rings.lua!"
+sudo rm -f ~/.config/autostart/conky.desktop ~/.conky-rings.lua ~/.conkyrc || error "Failed to remove autostart file or .conkyrc or .conky-rings.lua!"
 
 killall conky 2>/dev/null
 

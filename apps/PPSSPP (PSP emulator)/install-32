@@ -8,12 +8,12 @@ function error {
 }
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "build-essential cmake libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip" "$(dirname "$0")" || exit 1
+"${DIRECTORY}/pkg-install" "libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip" "$(dirname "$0")" || exit 1
 cd ~/
-rm -f ppsspp_1.11.3_armv7l.zip
-wget https://github.com/chunky-milk/ppsspp-rpi/releases/download/v1.11.3/ppsspp_1.11.3_armv7l.zip || error "Failed to download zip!"
-unzip ppsspp_1.11.3_armv7l.zip || error "Failed to unzip PPSSPP!"
-rm ppsspp_1.11.3_armv7l.zip || error "Failed to remove zip!"
+rm -f ppsspp.zip
+wget -O ppsspp.zip https://github.com/ryanfortner/ppsspp-rpi/releases/download/v1.12.3/ppsspp_1.12.3_armhf.zip || error "Failed to download zip!"
+unzip ppsspp.zip || error "Failed to unzip PPSSPP!"
+rm -f ppsspp.zip || error "Failed to remove zip!"
 
 # Desktop entry
 echo "[Desktop Entry]

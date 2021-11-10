@@ -64,4 +64,3 @@ case "$choice" in
   n|N ) echo "Not installing API... proceeding";;
   * ) echo "Invalid option! Please type 'y' or 'n'";;
 esac
-

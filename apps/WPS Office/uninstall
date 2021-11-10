@@ -9,5 +9,3 @@ function error {
 
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-
-sudo apt purge wps-office -y || error "APT failed to uninstall the wps-office package."

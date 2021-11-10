@@ -1,5 +1,5 @@
 #!/bin/bash
-
+{ #prevents errors if script was modified while in use
 set -o pipefail #if any command within a pipe fails, make the whole pipe fail. Necessary for error-catching with reduceapt
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 trap "exit 1" TERM
@@ -11,9 +11,12 @@ error() {
   exit 1
 }
 
-#$1 is a quotation-marked, space-seperated list of package names.
-#$2 is the path to the program folder being installed.
-#Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
+# $1 is a quotation-marked, space-seperated list of package names.
+# $2 is name of the app being installed.
+# Example usage: ~/pi-apps/pkg-install "gparted buffer expect" Arduino
+# "package1 | package2" represents "package1 or package2" (whichever is available) for $1
+
+source "${DIRECTORY}/api" || error "Failed to source $DIRECTORY/api."
 
 PKG_LIST="$1" #quotation-marked, space-seperated list of package names to install
 app="$(basename "$2")" #remove any slashes to just get program name
@@ -33,8 +36,12 @@ $1
 apt_diagnose() { #Explain stdin-inputted apt errors to user and list ways to fix them
   errors="$(cat /dev/stdin)"
   
+#------------------------------------------
+#repo issues below
+#------------------------------------------
+  
   #check for 'E: The repository'
-  if echo "$errors" | grep -q 'E: The repository' || echo "$errors" | grep -q 'sources.list entry misspelt' ;then
+  if echo "$errors" | grep -qF 'E: The repository' || echo "$errors" | grep -qF 'sources.list entry misspelt' || echo "$errors" | grep -qF 'component misspelt in' ;then
     message_to_user "APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
@@ -45,14 +52,14 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file"
   fi
   
   #check for 'NO_PUBKEY'
-  if echo "$errors" | grep -q 'NO_PUBKEY';then
+  if echo "$errors" | grep -qF 'NO_PUBKEY';then
     echo -en "\e[93m
 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 APT reported an unsigned repository. This script will try to repair it.
 Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
     sleep 10
     echo -e '\n\e[93mAttempting to sign unsigned repositories...\e[39m'
-    sudo -E apt update 2>&1 1>/dev/null | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo -E apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
+    sudo -E apt update 2>&1 | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "$key" ]]; then sudo -E apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys "$key"; keys+=("$key"); fi; done
     if [ $? == 0 ];then
       echo -e '\e[93mDone. Please try installing the same app again.\e[39m'
     else
@@ -62,14 +69,14 @@ Waiting 10 seconds... Press Ctrl+C to cancel.\e[39m"
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if echo "$errors" | grep -q 'Could not resolve' || echo "$errors" | grep -q 'Failed to fetch' || echo "$errors" | grep -q 'Temporary failure resolving' || echo "$errors" | grep -q 'Network is unreachable';then
+  if echo "$errors" | grep -qF 'Could not resolve' || echo "$errors" | grep -qF 'Failed to fetch' || echo "$errors" | grep -qF 'Temporary failure resolving' || echo "$errors" | grep -qF 'Network is unreachable' || echo "$errors" | grep -qF 'Internal Server Error' || echo "$errors" | grep -q '404 .*Not Found' ;then
     message_to_user "APT reported an unresolvable repository.
 
 Please check your Internet connection and try again."
   fi
   
   #check for 'is configured multiple times in'
-  if echo "$errors" | grep -q 'is configured multiple times in';then
+  if echo "$errors" | grep -qF 'is configured multiple times in' ;then
     message_to_user "APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
 
 To delete the repository:
@@ -79,42 +86,16 @@ the /etc/apt/sources.list.d folder.
 sources.list requires root permissions to edit: sudo mousepad /path/to/file"
   fi
   
-  #check for "--fix-broken"
-  if echo "$errors" | grep -q "\-\-fix\-broken" || echo "$errors" | grep -q "needs to be reinstalled" ;then
-    message_to_user "APT reported a broken package, and you must fix it before Pi-Apps will work.
+  #check for "W: Conflicting distribution: "
+  if echo "$errors" | grep -qF "W: Conflicting distribution: " ;then
+    message_to_user "Dpkg, apt, and Pi-Apps will not work until you fix the conflicting repository.
 
-Please run this command: sudo apt --fix-broken install"
+Read the errors above, then look through /etc/apt/sources.list and /etc/apt/sources.list.d, making changes as necessary.
+
+Perhaps doing a Google search for the exact error you received would help."
   fi
   
-  #check for dpkg --configure -a
-  if echo "$errors" | grep -q "dpkg \-\-configure \-a" ;then
-    message_to_user "Before dpkg, apt, or Pi-Apps will work, dpkg needs to repair your system.
-
-Please run this command: sudo dpkg --configure -a"
-  fi
-  
-  #check for faulty dphys-swapfile package
-  if echo "$errors" | grep -q "error processing package dphys-swapfile" ;then
-    message_to_user "Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
-
-Try Googling the above errors, or ask the Pi-Apps developers for help."
-  fi
-  
-  #check for insufficient space errors
-  if echo "$errors" | grep -q "You don't have enough free space in" ;then
-    message_to_user "Package(s) failed to install because your system has insufficient disk space.
-
-Please free up some space, then try again."
-  fi
-  
-  #check for unconfigured boot-firmware package
-  if echo "$errors" | grep -q "missing /boot/firmware, did you forget to mount it" || echo "$errors" | grep -q "u-boot-rpi" ;then
-    message_to_user "Package(s) failed to install because your boot drive is not working.
-
-You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work."
-  fi
-  
-  #check for "Release file for http://httpredir.debian.org/debian/dists/buster-backports/InRelease is not valid yet"
+  #check for "Release file for <repo-url> is not valid yet"
   if echo "$errors" | grep -q "Release file for .* is not valid yet" ;then
     message_to_user "One or more repositories has a release file that becomes valid in the future.
 
@@ -122,20 +103,49 @@ Please look at the above errors to see how long you have to wait."
   fi
   
   #check for typo in sources.list and list.d
-  if echo "$errors" | grep -q "The list of sources could not be read." ;then
+  if echo "$errors" | grep -qF "The list of sources could not be read." ;then
     message_to_user "One or more sources contain a typo. Before APT or Pi-Apps will work, you must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo."
   fi
   
-  #check for "files list file for package 'package-name' is missing final newline"
-  if echo "$errors" | grep -q "files list file for package .* is missing final newline" ;then
-    message_to_user "Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
+  #check for "W: Did not understand pin type releace"
+  if echo "$errors" | grep -qF "Did not understand pin type" ;then
+    message_to_user "This error was not caused by Pi-Apps. Looks like there is a typo in your /etc/apt/sources.list"
+  fi
+  
+#------------------------------------------
+#repo issues above, apt/dpkg issues below
+#------------------------------------------
+  
+  #check for "--fix-broken"
+  if echo "$errors" | grep -qF "\-\-fix\-broken" || echo "$errors" | grep -qF "needs to be reinstalled" ;then
+    message_to_user "APT reported a broken package, and you must fix it before Pi-Apps will work.
 
-Try Googling the above errors, or ask the Pi-Apps developers for help.
-Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecoverable-fatal-error-aborting-files-list-file-for-package-linux-ge"
+Please run this command: sudo apt --fix-broken install"
+  fi
+  
+  #check for dpkg --configure -a
+  if echo "$errors" | grep -qF "dpkg --configure -a" ;then
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, dpkg needs to repair your system.
+
+Please run this command: sudo dpkg --configure -a"
+  fi
+  
+  #check for "dpkg: error: fgets gave an empty string from '/var/lib/dpkg/triggers/File'"
+  if echo "$errors" | grep -qF "dpkg: error: fgets gave an empty string from" ;then
+    message_to_user "Something strange is going on with your system and dpkg won't work. This is not a bug in Pi-Apps.
+
+Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error-when-trying-to-install-packages-with-apt"
+  fi
+  
+  #check for insufficient space errors
+  if echo "$errors" | grep -qF "You don't have enough free space in" ;then
+    message_to_user "Package(s) failed to install because your system has insufficient disk space.
+
+Please free up some space, then try again."
   fi
   
   #check for "Command line option --allow-releaseinfo-change is not understood"
-  if echo "$errors" | grep -q "Command line option --allow-releaseinfo-change is not understood" ;then
+  if echo "$errors" | grep -qF "Command line option --allow-releaseinfo-change is not understood" ;then
     message_to_user "The Debian Project recently upgraded from Buster to version Bullseye. As a result, all Raspberry Pi OS Buster users will receive APT errors saying the repositories changed from 'stable' to 'oldstable'.
 
 This error broke pi-apps. To fix it, the Pi-Apps developers added something to the 'sudo apt update' command: --allow-releaseinfo-change.
@@ -146,12 +156,90 @@ Unfortunately for you, your operating system is too old for apt to understand th
 Please flash your SD card with the latest release of Raspberry Pi OS: https://www.raspberrypi.org/software"
   fi
   
-  #check for "installed package-name package post-installation script subprocess returned error exit status 10"
+  #check for corrupted package: "lzma error: compressed data is corrupt"
+  if echo "$errors" | grep -qF "lzma error: compressed data is corrupt" ;then
+    message_to_user "A package failed to install because it appears corrupted.
+Try installing the same app again and if the problem persists please reach out to the Pi-Apps developers."
+
+  fi
+  
+#------------------------------------------
+#apt/dpkg issues above, package issues below
+#------------------------------------------
+  
+  #check for "installed <package-name> package post-installation script subprocess returned error exit status 10"
   if echo "$errors" | grep -q "installed .* post-installation script subprocess returned error exit status 10" ;then
     message_to_user "Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
 
 Perhaps reinstalling the package would help?"
   fi
+  
+  #check for faulty dphys-swapfile package
+  if echo "$errors" | grep -qF "error processing package dphys-swapfile" ;then
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help."
+  fi
+  
+  #check for unconfigured boot-firmware package
+  if echo "$errors" | grep -qF "missing /boot/firmware, did you forget to mount it" || echo "$errors" | grep -q "u-boot-rpi" ;then
+    message_to_user "Package(s) failed to install because your boot drive is not working.
+
+You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work."
+  fi
+  
+  #check for "files list file for package 'package-name' is missing final newline"
+  if echo "$errors" | grep -q "files list file for package .* is missing final newline" ;then
+    message_to_user "Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help.
+Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecoverable-fatal-error-aborting-files-list-file-for-package-linux-ge"
+  fi
+  
+  #check for "installed raspberrypi-kernel package post-installation script subprocess returned error exit status 1"
+  if echo "$errors" | grep -qF "raspberrypi-kernel package post-installation script subprocess returned error exit status" ;then
+    message_to_user "The raspberrypi-kernel package on your system is causing problems.
+Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
+
+Google the errors above this message, or ask in the Raspberry Pi Forums.
+https://www.raspberrypi.org/forums"
+  fi
+  
+  #check for "raspberrypi-bootloader package pre-installation script subprocess returned error exit status 2"
+  if echo "$errors" | grep -qF "raspberrypi-bootloader package pre-installation script subprocess returned error exit status" ;then
+    message_to_user "The raspberrypi-bootloader package on your system is causing problems.
+Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
+
+Google the errors above this message, or ask in the Raspberry Pi Forums.
+https://www.raspberrypi.org/forums"
+  fi
+  
+  #check for "dpkg: error processing package nginx-full (--configure):"
+  if echo "$errors" | grep -qF "error processing package nginx-full" ;then
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your nginx-full package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall nginx-full"
+  fi
+  
+  #check for "installed libwine-development:arm64 package post-installation script subprocess returned error exit status 1"
+  if echo "$errors" | grep -qF "libwine-development:arm64 package post-installation script subprocess returned error exit status" ;then
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your libwine-development package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall libwine-development"
+  fi
+  
+  #check for "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1"
+  if echo "$errors" | grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" ;then
+    message_to_user "This error was not caused by Pi-Apps, it is caused by your firmware-microbit-micropython-dl package.
+
+Maybe reinstalling it would help?
+sudo apt install --reinstall firmware-microbit-micropython-dl"
+  fi
+  
+  #no need for this function to exit with return code 1 just because the last if statement evaluated as false
+  return 0
 }
 
 echo "Running pkg-install..."
@@ -161,18 +249,14 @@ elif [ -z "$app" ];then
   error "No app name specified to pkg-install!"
 fi
 
-LANG=C
-LC_ALL=C
-LANGUAGE=C
 IFS=$' \n'
 
-source "${DIRECTORY}/api"
 apt_lock_wait
 
 #sudo apt update
 {
 echo -e "Running \e[4msudo a\e[0mp\e[4mt u\e[0mp\e[4mdate\e[0m..."
-output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | tee /dev/stderr | reduceapt)"
+output="$(sudo -E apt update --allow-releaseinfo-change 2>&1 | reduceapt | tee /dev/stderr)"
 exitcode=$?
 
 #inform user about autoremovable packages
@@ -182,9 +266,9 @@ fi
 
 #inform user packages are upgradeable
 if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
-  echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade\e[0m."
+  echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt full-u\e[0mpg\e[4mrade\e[0m."
 elif [ ! -z "$(echo "$output" | grep 'package can be upgraded' )" ];then
-  echo -e "\e[33mOne package can be upgraded.\e[39m Please consider running \e[4msudo apt full-upgrade\e[0m."
+  echo -e "\e[33mOne package can be upgraded.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt full-u\e[0mpg\e[4mrade\e[0m."
 fi
 
 #exit on apt error
@@ -276,7 +360,7 @@ Version: 1.0
 Architecture: all
 Priority: optional
 Section: custom
-Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g')
+Depends: $(echo "$PKG_LIST" | tr -d ',' | sed 's/ /, /g' | sed  's/, |/ |/g' | sed 's/|, /| /g')
 Package: pi-apps-$appnamehash" > ~/pi-apps-$appnamehash/DEBIAN/control
 
 #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
@@ -325,3 +409,4 @@ if [ ! -z "$errors" ];then
 fi
 exit 0
 }
+} #prevents errors if script was modified while in use

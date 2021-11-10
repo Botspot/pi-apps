@@ -11,8 +11,9 @@ function error {
   exit 1
 }
 
-LANG=C
-LC_ALL=C
+reduceapt() { #remove unwanted lines from apt output
+  grep -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for "
+}
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
@@ -22,9 +23,8 @@ if [ -z "$app" ];then
   error "No app name specified to purge-installed!"
 fi
 
-LANG=C LC_ALL=C
+source "${DIRECTORY}/api" || error "Failed to source $DIRECTORY/api."
 
-source "${DIRECTORY}/api"
 apt_lock_wait
 
 #to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
@@ -35,7 +35,7 @@ if dpkg -l pi-apps-$appnamehash &>/dev/null ;then
   #new pkg-install implementation - using dummy debs
   
   echo -e "\e[97m\nRemoving dummy deb for $app...\e[39m"
-  sudo -E apt purge -y pi-apps-$appnamehash --autoremove || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
+  sudo -E apt purge -y pi-apps-$appnamehash --autoremove 2>&1 | reduceapt || error "apt failed to purge dummy deb (pi-apps-$appnamehash)!"
   
 elif [ -f "${DIRECTORY}/data/installed-packages/${app}" ];then
   #old pkg-install implementation
@@ -60,6 +60,6 @@ else
   echo "purge-installed: Neither dummy deb nor installed-packages file detected. Nothing to do!"
 fi
 
-
-echo -e "\e[32mAll packages have been purged succesfully.\e[39m"
+echo
+status_green "All packages have been purged succesfully."
 rm -f "${DIRECTORY}/data/installed-packages/${app}"

@@ -9,7 +9,7 @@ function error {
 #if your app installs any packages, keep this command here so those packages will be removed.
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
 
-if [ -f /usr/bin/thunar ];then
+if command -v thunar >/dev/null ;then
   sudo apt purge thunar-sendto-clamtk -y
 fi
 

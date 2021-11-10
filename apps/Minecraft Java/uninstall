@@ -7,11 +7,24 @@ function error {
   exit 1
 }
 
-rm -f ~/.local/share/applications/minecraft.desktop
-sudo rm -rf ~/Minecraft
-sudo rm -rf ~/lwjgl2arm32
-sudo rm -rf ~/lwjgl3arm32
-sudo rm -rf ~/lwjgl3arm64
-sudo rm -rf ~/lwjgl2arm64
-sudo rm -rf /usr/share/minecraftjava/
-sudo rm -rf /opt/jdk-16.0.1+9 || sudo rm -rf /opt/jdk-16.0.1+4
+echo "Removing menu launcher"
+rm -f ~/.local/share/applications/minecraftjava.desktop
+
+echo "Removing $HOME/.lunarclient"
+rm -rf ~/.lunarclient
+
+echo "Removing $HOME/lunarassets"
+rm -rf ~/lunarassets
+
+echo "Removing lwjgl folders
+  - ~/lwjgl2arm32
+  - ~/lwjgl3arm32
+  - ~/lwjgl3arm64
+  - ~/lwjgl2arm64"
+rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64
+
+echo "Removing Java runtime environment
+  - /opt/jdk/jdk-16.0.1+9-jre"
+sudo rm -rf /opt/jdk/jdk-16.0.1+9-jre
+
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || :

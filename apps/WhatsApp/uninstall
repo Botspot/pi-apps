@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#for backwards compatibility with the chromium version
+rm -rf ~/WhatsappWeb
+
+#for backwards compatibility with Itai's version
+rm -rf ~/WhatsAppWeb
+rm -f ~/.local/share/applications/whatsappweb.desktop
+
+rm -rf ~/WhatsApp
+rm -f ~/.local/share/applications/whatsapp.desktop
+exit 0

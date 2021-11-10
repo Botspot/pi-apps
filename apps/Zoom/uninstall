@@ -6,8 +6,14 @@ function error {
   echo -e "\\e[91m$1\\e[39m"
   exit 1
 }
-gio trash "${HOME}/.zoom"
-gio trash "${HOME}/zoom"
+
+rm -rf ~/zoom
 rm -f ~/.local/share/applications/zoom.desktop
-#if your app installs any packages, keep this command here so those packages will be removed.
+
 "${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+if [ -d ~/.zoom ] || [ -f ~/.config/zoomus.conf ];then
+  echo "To prevent data loss, Zoom's settings have not been deleted.
+Delete them with this command:
+rm -rf ~/.zoom ~/.config/zoomus.conf"
+fi

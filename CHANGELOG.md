@@ -1,5 +1,5 @@
-**NOTE**: This changelog covers the major events in pi-apps like new apps being added. If every action since day one was mentioned, "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: June 21, 2021 by [RaspberryPiNews](https://www.youtube.com/channel/UCmp6JswV90SV5agNFGQuWkw)
+**NOTE**: This changelog mainly covers major events in Pi-Apps like new apps being added. If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
+Last updated: September 27, 2021 by Botspot
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -110,10 +110,37 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **5/4/2021** Added blockpi and Windows Screensavers apps, numerous changes to api script and removed up/down buttons in GUI
 - **5/5/2021** Added Drawing app and updated install/uninstall GUI icons
 - **5/6/2021** Updated trash icon
-- **5/7/2021** Add Chiaki app and fixed terminal title when multi-installing apps
+- **5/7/2021** Added Chiaki app and fixed terminal title when multi-installing apps
 - **5/9/2021** Added qterminal support to pi-apps and fix Wine precompiled kernel
 - **5/14/2021** Fixed update-exclusion and preload-daemon. Also added icon for disabled apps and made piKiss 32-bit only
 - **5/19/2021** Fixed Box86 multiarch on 64-bit
 - **5/24/2021** Allowed selecting apps to update in updater and added more api functions. 
-- **6/19/2021** Updater MCPI Modded to v2.x and use APT repo instead of pi-apps updates to allow for faster package updates
-- **6/21/2021** Added 1.17 support to MC Java
+- **6/19/2021** Update MCPI Modded to v2.x and use APT repo instead of pi-apps updates to allow for faster package updates
+- **6/21/2021** Added support for STL thumbnails in file manager for Cura and 1.17 support to MC Java
+- **7/2/2021** Added Conky Rings, Pale Moon Browser, and HTTPS File Server apps
+- **7/3/2021** Added install/uninstall output logging system
+- **7/4/2021** Added note about what kind of distros Pi-Apps will work on to README
+- **7/10/2021** Added Min Browser and Box64 apps, and updated app screenshots in readme
+- **7/25/2021** Added "Never show again" option to updater notifications, and new Firefox Rapid Release app, as well as a 64-bit installation script for Sublime Text. Also changed updater to check for updates via `git pull` instead of old `git clone` system
+- **7/31/2021** Fixed writing update logs to home directory
+- **8/2/2021** Made Pi-Apps print support info at end of a script failure
+- **8/9/2021** Made 64-bit Zoom to use box64 and amd64 Zoom binaries, and updated install/uninstall code to mark scripts as executiable before running them
+- **8/10/2021** Added new bug reporting window after script failure, allowing users to send a bug report to the developers with the click of a button, added a bash-based terminal plugin app and auto sign unsigned APT repository. A ton of commits were made following the addition of the error reporter :)
+- **8/11/2021** Added AutoStar & CloudBuddy apps made by Botspot, (insert lots of bug fixes here too). Also added checks for non-arm architectures and also add semi-support for Chromebooks
+- **8/13/2021** Added new "Search" button to search for apps
+- **8/15/2021** Added new startup splash screen to make the wait time a little less agonizing
+- **9/1/2021** Add Windows Flasher app, and translate all wget commands to aria2c for faster download speeds
+- **9/9/2021** Improve the "Get it on Pi-Apps" badge, and improve launch-time by optimizing the message of the day
+- **9/10/2021** All 3-month-old Pi-Apps installations are forcibly reinstalled
+- **9/15/2021** Add Zoom PWA app
+- **9/19/2021** Add Sysmon app
+- **9/21/2021** Rewrite the `updater` script for a better updating experience, and improve Pi-Apps launch-time with the genapplist-yad program
+- **9/22/2021** Optimize the update-checking time. Now it takes **2** seconds to check for updates instead of **15** seconds.
+- **9/23/2021** Add Microsoft Teams and XSnow apps; rename Whatsapp to WhatsApp
+- **9/24/2021** Improve the layout of the Pi-Apps README
+- **9/26/2021** Properly document Pi-Apps with the new DOCUMENTATION.md file
+- **9/27/2021** Add Telegram app
+
+
+
+

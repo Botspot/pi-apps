@@ -1,13 +1,16 @@
-Please SIGN THE PETITION!
-Microsoft is moving all Mojang accounts to Microsoft accounts. This breaks Minecraft Java on RPi, but a fix is in the works and will take a while to be released.
-Sign the petition: https://feedback.minecraft.net/hc/en-us/community/posts/360075486052-Port-the-latest-Java-Minecraft-Launcher-to-the-Raspberry-Pi
+Minecraft Java - now supports Microsoft accounts and Optifine!
 
-NOTE: For best performance, we recommend a version like 1.12.2 + Optifine.
+This installs a fork of Lunar Client, with built in Optifine and other mods for maximum out-of-the-box performance.
 
-Minecraft Java edition for the raspberry pi
-To maximize performance and to get solid 60fps, please follow ETA Prime's excellent walkthrough video: https://www.youtube.com/watch?v=oqNWJ52DLes
-To run: Menu -> Games -> Minecraft
-To run in a terminal: java -jar /usr/share/minecraftjava/launcher.jar
-This installs the old Minecraft launcher so that MC can be launched properly with any version and Optifine.
+To run: Menu -> Games -> Minecraft Launcher
+To run in a terminal: ~/lunarassets/lunarclient.AppImage
 
-Botspot has configured the install script to create a custom launcher_profiles.json so you don't have to change settings manually.
+
+NOTE: For best performance (60 FPS+), we recommend a older version like 1.12.2 or 1.8
+
+Why lunar?
+- It's easy to use and to setup.
+- It is well-maintained and has a vibrant support community.
+- It supports Microsoft and Mojang accounts.
+- This fork of Lunar for ARM includes Optifine, automatically switches lwjgl libraries (for playing older versions), and includes other optimizations by default.
+- It's easy to install in a self contained AppImage.

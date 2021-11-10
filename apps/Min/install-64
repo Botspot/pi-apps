@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+rm -f ~/min.deb
+wget -O ~/min.deb https://github.com/minbrowser/min/releases/download/v1.22.0/min_1.22.0_arm64.deb || error "Failed to download Min deb file!"
+
+"${DIRECTORY}/pkg-install" "$HOME/min.deb" "$(dirname "$0")" || error "Failed to install min deb file!"
+rm -f ~/min.deb

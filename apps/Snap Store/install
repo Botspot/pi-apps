@@ -17,13 +17,16 @@ if [ $? != 0 ];then
   echo "Unable to start snapd.service. Running debug..."
   echo "Running 'systemctl status snapd.service'"
   systemctl status snapd.service
+  sudo /usr/lib/snapd/snapd
   exit 1
 fi
 
 sudo snap refresh
 sudo systemctl restart snapd.service || error "Unable to restart snapd.service"
 
-sudo snap install core18 || error "Snapd was unable to install core20"
+sudo modprobe squashfs || exit 1
+
+sudo snap install core18 || error "Snapd was unable to install core18"
 sudo snap install core || error "Snapd was unable to install core"
 sudo snap install snapd || error "Snapd was unable to install snapd"
 

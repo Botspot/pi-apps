@@ -1,6 +1,6 @@
 #!/bin/bash
+{ #prevents errors if script was modified while in use
 
-{ #this curly brace at start and end of script prevents issues when this script edits itself. See: https://stackoverflow.com/a/19430939
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
@@ -11,295 +11,503 @@ function error {
 #for the will_reinstall() and list_intersect() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
-#NOTE TO SELF BOTSPOT: REMOVE THE FASTMODE VARIABLE SETTING!!!
-#fastmode=1
+get_date() {
+  #number of days since 1/1/1970
+  echo $(($(date --utc +%s)/86400))
+}
 
-{ # Determine if checking for updates today
-lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check")"
-if [ -z $lastupdatecheck ];then
-  echo "Warning: ${DIRECTORY}/data/last-update-check does not exist!"
-  lastupdatecheck=0
-fi
-
-updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
-
-nocheck=0
-#allowed values: Always, Daily, Weekly, Never
-if [ "$updateinterval" == 'Never' ];then
-  nocheck=1
-  echo ''
-elif [ "$updateinterval" == 'Daily' ];then
-  #if updates checked today, don't check
-  if [ "$(date +%j)" == "$lastupdatecheck" ];then
-    nocheck=1
+check_update_interval() { #return 0 if update-interval allows update-checking today, exit 1 otherwise
+  local lastupdatecheck="$(cat "${DIRECTORY}/data/last-update-check" 2>/dev/null)"
+  if [ -z $lastupdatecheck ];then
+    warning "${DIRECTORY}/data/last-update-check does not exist!" 1>&2
+    lastupdatecheck=0
   fi
-elif [ "$updateinterval" == 'Weekly' ];then
-  #if updates checked less than 7 days ago, don't check
-  if [ "$(date +%j)" -le "$((lastupdatecheck + 7))" ];then
-    nocheck=1
-  fi
-elif [ "$updateinterval" == 'Always' ];then
-  echo "Checking for updates now..."
-elif [ -z "$updateinterval" ];then
-  echo "Something isn"\'" right. Does ${DIRECTORY}/data/settings/Check for updates exist?"
-else
-  echo "Warning: Unrecognized update interval!"
-fi
-
-#fix for new years day
-if [ "$lastupdatecheck" -gt "$(date +%j)" ];then
-  nocheck=0
-fi
-
-#forcibly check if fastmode variable is 1
-if [ "$fastmode" == 1 ];then
-  nocheck=0
-fi
-
-#hidden flag: if $1 is 'onboot', then check for updates only for those apps that are installed.
-onboot="$1"
-if [ "$onboot" == 'onboot' ] || [ "$onboot" == 'installedonly' ];then
-  onboot='onboot'
   
-  #make sure user installed some apps first. If none installed, then Pi-Apps may be unwanted/unused.
-  if [ "$(ls "${DIRECTORY}/data/status" | wc -l)" == 0 ];then
-    echo "No apps have been installed yet, so exiting now."
+  #write today's date to file. Format is "number of days since 1/1/1970"
+  get_date > "${DIRECTORY}/data/last-update-check"
+  
+  local updateinterval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+  
+  #allowed values: Always, Daily, Weekly, Never
+  if [ "$updateinterval" == 'Never' ];then
+    return 1
+  elif [ "$updateinterval" == 'Daily' ];then
+    #if updates checked today, don't check
+    if [ "$(get_date)" == "$lastupdatecheck" ];then
+      return 1
+    fi
+  elif [ "$updateinterval" == 'Weekly' ];then
+    #if updates checked less than 7 days ago, don't check
+    if [ "$(get_date)" -le "$((lastupdatecheck + 7))" ];then
+      return 1
+    fi
+  elif [ "$updateinterval" == 'Always' ];then
+    return 0
+  elif [ -z "$updateinterval" ];then
+    warning "Something isn't right. Does '${DIRECTORY}/data/settings/Check for updates' exist?" 1>&2
+  else
+    echo -e "\e[91mUnrecognized update interval! \e[0m" 1>&2
+  fi
+  
+  return 0
+}
+
+list_files() { #list all files on pi-apps with relative paths - both on main directory and update directory
+  if [ ! -d "${DIRECTORY}/update" ];then
+    error "${DIRECTORY}/update does not exist. Most likely there is no Internet connection."
+  fi
+  
+  #list all files in update folder
+  cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
+  local updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+
+  #list all files in main folder
+  cd "${DIRECTORY}"
+  local localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'logs/' | grep -v 'xlunch/')"
+
+  echo -e "${localfiles}\n${updatefiles}" | sort | uniq
+  cd $HOME
+}
+
+get_updatable_files() { #sets the updatable_files variable
+  echo -n "Scanning files... " 1>&2
+  
+  #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
+  local file_list="$(list_files)" || exit 1
+  
+  updatable_files='' #the variable to be returned
+  
+  #exclude files mentioned in data/update-exclusion file, ignoring any commented lines
+  local IFS=$'\n'
+  
+  if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
+    #speed is set to 'fast' - don't hash anything but rely on past results
+    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
+    
+  else #speed was not set to 'fast', so compare each file to the one in the update folder
+    
+    for file in $file_list ;do
+      
+      echo -en "Scanning files... $file\033[0K\r" 1>&2
+      if [ ! -f "${DIRECTORY}/${file}" ];then
+        #file is missing locally - add to updatable_files list
+        updatable_files="${updatable_files}
+${file}"
+        
+      elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
+        #file is missing in the update folder - local
+        true #do not add to updatable_apps list
+        
+      elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
+        #files don't match - add to updatable_files list
+        updatable_files="${updatable_files}
+${file}"
+      fi
+    done
+    #remove initial newline character
+    updatable_files="${updatable_files:1}"
+  fi
+  
+  #If an updatable file is listed in update-exclusion, remove it from list and save notification text for later.
+  for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]") ;do
+    updatable_files="$(echo "$updatable_files" | grep -v "$file")"
+    local exclusion_msg="$exclusion_msg\n'$file' won't be updated - it's listed in data/update-exclusion."
+  done
+  
+  echo "$updatable_files"
+  echo -e "Scanning files... Done\033[0K" 1>&2
+  
+  #if any files were excluded by update-exclusion, list them now, after echoing "Done"
+  [ ! -z "$exclusion_msg" ] && echo -e "$exclusion_msg\n" 1>&2
+  
+  return 0
+}
+
+get_updatable_apps() { #sets the updatable_apps variable
+  
+  if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-apps" ];then
+    #speed is set to 'fast' - don't hash anything but rely on past results
+    cat "${DIRECTORY}/data/update-status/updatable-apps"
+    
+  else #speed was not set to 'fast', so compare each file to the one in the update folder
+    
+    updatable_apps="$("${DIRECTORY}/manage" check-all)"
+    local exitcode=$?
+    echo "$updatable_apps"
+    
+    exit $exitcode #return the same code that the manage script exited with
+  fi
+}
+
+generate_yad_list() { #input: updatable_apps and updatable_files variables
+  local IFS=$'\n'
+  
+  #If updatable_apps and updatable_files variables empty, set them to the results of the last update-check
+  if [ -z "$updatable_apps" ] && [ -z "$updatable_files" ];then
+    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
+    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
+  fi
+  
+  for app in $updatable_apps ;do #generate a yad list for every updatable app
+    echo "TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app ($([ ! -d "${DIRECTORY}/apps/${app}" ] && echo 'new ')app$(will_reinstall "$app" && echo ', <b>will be reinstalled</b>'))
+app:$app"
+  
+  done
+  
+  for file in $updatable_files ;do #generate a yad list for every updatable file
+    
+    #determine mimetype of updatable_apps file to display an informative icon in the list
+    if [ "$(file -b --mime-type "${DIRECTORY}/${file}")" == 'text/x-shellscript' ];then
+      #if updatable_apps file in question is a shell script, then display shellscript icon.
+      mimeicon="${DIRECTORY}/icons/shellscript.png"
+      mimetype='script'
+    elif [[ "${DIRECTORY}/${file}" == *.png ]] || [[ "${DIRECTORY}/${file}" == *.svg ]];then
+      mimeicon="${DIRECTORY}/icons/image.png"
+      mimetype='image'
+    else
+      #otherwise display txt icon.
+      mimeicon="${DIRECTORY}/icons/txt.png"
+      mimetype='file'
+    fi
+    
+    echo "TRUE
+${mimeicon}
+$file ($mimetype)
+file:$file"
+    
+  done
+}
+
+list_updates_gui() { #input: updatable_apps and updatable_files variables
+  LIST="$(generate_yad_list)"
+  #echo "List: ${LIST}EOL"
+  
+  if [ -z "$LIST" ];then
+    status_green "mNothing to update. Nothing to do!"
     exit 0
   fi
   
-  sleep 10 #wait 10 seconds, this is so the system will have booted all the way for an internet connection
-fi
-
-if [ $nocheck == 1 ];then
-  echo "Won"\'"t check for updates today, because of the update interval is set to $updateinterval in Settings.
-To forcibly check for updates now, press any key within the next 20 seconds."
-  read -n 1 -t 20 || exit 0
-  echo ''
-fi
-
-#write today's date to file. Format is "number of days since jan 1"
-echo "$(date +%j)" > "${DIRECTORY}/data/last-update-check"
+  #Display a list of everything updatable
+  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' \
+    --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
+    --list --checklist --separator='\n' --print-column=4 --no-headers \
+    --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
+    --column=:CHK --column=:IMG --column=Name --column=ID:HD \
+    --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
+    --button='Update now'!"${DIRECTORY}/icons/download.png":0)" || exit 0
+  
+  #remove empty newlines from output
+  output="$(echo "$output" | grep .)"
+  
+  #regenerate list of updatable apps and files, based on what the user selected
+  updatable_apps="$(echo "$output" | grep '^app:' | sed 's/^app://g')"
+  updatable_files="$(echo "$output" | grep '^file:' | sed 's/^file://g')"
+  
 }
 
-#if fastmode is 1, then rely on previously gathered updatable app information. This information is located in data/update-status.
-if [ "$fastmode" == 1 ];then
-  updatable="$("${DIRECTORY}/manage" check-all nogenerate 2>/dev/null)"
-else
-  #otherwise, re-download apps to update folder and hash them all to determine which apps can be updated
-  updatable="$("${DIRECTORY}/manage" check-all)"
-fi
-[ $? -ne 0 ] && error "check-all failed! Full output: $updatable"
-
-#shorten to last line
-if [ "$updatable" == '.' ];then
-  updatable=''
-fi
-
-echo "updatable: $updatable"
-
-#if check-all succeeded to download the repo to the update folder
-if [ ! -d "${DIRECTORY}/update" ];then
-  error "${DIRECTORY}/update does not exist. Most likely there is no Internet connection."
-fi
-
-#mainfiles="$(echo -e "$(ls -Rp "${DIRECTORY}/update/pi-apps")\n$(ls -Rp "${DIRECTORY}")" | grep -v '/' | sort | uniq | tr '\n' '|')"
-
-#list all files in update folder
-cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
-updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
-
-#list all files in main folder
-cd "${DIRECTORY}"
-localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'logs/' | grep -v 'xlunch/')"
-
-mergedfiles="$(echo -e "${localfiles}\n${updatefiles}" | sort | uniq)"
-
-#exclude files mentioned in data/update-exclusion file
-IFS=$'\n'                                   #exclude commented lines
-for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]")
-do
-  mergedfiles="$(echo "$mergedfiles" | grep -v "$file")"
-  echo "Excluding '$file' from the mergedlist."
-done
-
-mergedfiles="$(echo "$mergedfiles")"
-for file in $mergedfiles
-do
-  newhash=$(cat "${DIRECTORY}/update/pi-apps/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-  oldhash=$(cat "${DIRECTORY}/${file}" 2>/dev/null | sha1sum | awk '{print $1}' | sha1sum | awk '{print $1}')
-  #echo -e "newhash: $newhash\noldhash: $oldhash"
+update_now_gui() { #input: updatable_files and updatable_apps variables
   
-  if [ "$newhash" == "$oldhash" ];then
-    true
-    #echo -e "${file} is identical\e[90m to the online version. Nothing to do!\e[39m"
-  else
-    if [ ! -f "${DIRECTORY}/${file}" ];then
-      echo -e "\e[97m${file} does not exist locally.\e[39m Adding to updatable list."
-      #in this case, add to updatable list
-      mainupdate="${mainupdate}
-${file}"
-    elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
-      echo -e "\e[97m${file} only exists locally.\e[39m Will not add to updatable list."
-      #in this case, do not add to updatable list
-    else
-      echo -e "\e[97m${file} exists in both locations, but files do not match.\e[39m Adding to updatable list."
-      #in this case, add to updatable list
-      mainupdate="${mainupdate}
-${file}"
+  local IFS=$'\n'
+  for file in $updatable_files ;do
+    mkdir -p "$(dirname "${DIRECTORY}/${file}")"
+    
+    #copy new version
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
+    
+    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    if [[ "$file" == *.c ]];then
+      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
     fi
     
-  fi
-done
-IFS="$PREIFS"
-#remove initial newline character
-mainupdate="${mainupdate:1}"
-
-LIST=''
-
-PREIFS="$IFS"
-IFS=$'\n'
-for app in $updatable #repeat for every updatable app
-do
-  LIST="${LIST}TRUE
-${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
-$app "\("$([ "$(cat "${DIRECTORY}/data/update-status/${app}")" == 'new' ] && echo 'new ')app$(will_reinstall "$app" && echo ', <b>will be reinstalled</b>')"\)"
-$app
-"
-done
-for file in $mainupdate #repeat for every updatable file
-do
-  #determine mimetype of updatable file to display an informative icon in the list
-  if [ "$(file -b --mime-type "${DIRECTORY}/${file}")" == 'text/x-shellscript' ];then
-    #if updatable file in question is a shell script, then display shellscript icon.
-    mimeicon="${DIRECTORY}/icons/shellscript.png"
-    mimetype='script'
-  elif [[ "${DIRECTORY}/${file}" == *.png ]];then
-    mimeicon="${DIRECTORY}/icons/image.png"
-    mimetype='image'
-  else
-    #otherwise display txt icon.
-    mimeicon="${DIRECTORY}/icons/txt.png"
-    mimetype='file'
+    echo
+    status_green "${file} file was copied successfully."
+  done
+  IFS="$PREIFS"
+  
+  if [ ! -z "$updatable_apps" ];then
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      updatable_apps="'"$updatable_apps"'"
+      trap "sleep 10" EXIT
+      PREIFS="$IFS"
+      IFS=$'\''\n'\''
+      for i in $updatable_apps
+      do
+        "${DIRECTORY}/manage" update "$i" nofetch
+      done
+      IFS="$PREIFS"
+      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+    ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
   fi
   
-  LIST="${LIST}TRUE
-${mimeicon}
-$file "\("$mimetype"\)"
-${file}
-"
-done
-IFS="$PREIFS"
+  #delete .git folder, then copy the new one
+  rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
+  cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+  
+  status_green "\nPi-Apps updates complete.\n"
+}
 
-if [ -z "$LIST" ];then
-  echo -e '\e[92mNothing to update. Nothing to do!\e[39m'
-  exit 0
-fi
-LIST="${LIST::-1}" #remove last newline
-#echo "List: ${LIST}EOL"
+update_now_cli() { #input: updatable_files and updatable_apps variables
+  
+  local IFS=$'\n'
+  for file in $updatable_files ;do
+    mkdir -p "$(dirname "${DIRECTORY}/${file}")"
+    
+    #copy new version
+    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
+    
+    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    if [[ "$file" == *.c ]];then
+      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
+    fi
+    
+    status_green "${file} file was copied successfully."
+  done
+  
+  for app in $updatable_apps ;do
+    "${DIRECTORY}/manage" update "$app" nofetch
+  done
+  
+  #delete .git folder, then copy the new one
+  rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
+  cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+  
+  status_green "\nPi-Apps updates complete."
+}
 
 screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
 screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
 
-#display notification in lower-right, only if fastmode variable is not 1
-if [ "$fastmode" != 1 ];then
-  output="$(yad --form --text='Pi-Apps updates available.' --separator='\n' \
+runmode="$1"
+speed="$2"
+if [ ! -z "$speed" ] && [ "$speed" != 'fast' ];then
+  error "Unknown value for speed: "\""$speed"\"". Allowed value: fast"
+fi
+
+if [ "$runmode" == onboot ];then
+  runmode=autostarted
+elif [ -z "$runmode" ];then
+  runmode=gui
+fi
+
+#runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes
+
+status "\nUpdater mode: $runmode\n"
+if [ "$runmode" == autostarted ];then #if update-interval allows, and one app installed, display notification on boot
+  
+  #check if update interval allows update-checks, otherwise exit
+  check_update_interval
+  if [ $? != 0 ];then
+    status "Won't check for updates today, because of the update interval is set to '$(cat "${DIRECTORY}/data/settings/Check for updates")' in Settings."
+    exit 0
+  fi
+  
+  #check that at least one app has been installed by the user
+  if [ "$(ls "${DIRECTORY}/data/status" | wc -l)" == 0 ];then
+    status "No apps have been installed yet, so exiting now."
+    exit 0
+  fi
+  
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "Nothing is updatable."
+    exit 0
+  fi
+  
+  status "Displaying notification in lower-right of screen..."
+  { #display notification in lower-right
+    output="$(yad --form --text='Pi-Apps updates available.' --separator='\n' \
+      --on-top --skip-taskbar --undecorated --close-on-unfocus \
+      --geometry=260+$((screen_width-262))+$((screen_height-150)) \
+      --image="${DIRECTORY}/icons/logo-64.png" \
+      --field='Never show again':CHK FALSE \
+      --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":2)"
+    button=$?
+    
+    #if Details not clicked, and checkbox clicked, launch a dialog to change the update interval
+    if [ $button != 0 ];then
+      if [ "$(echo "$output" | grep . )" == TRUE ];then
+        #User checked the 'Never show again' box, so ask to change update interval
+        curval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
+        [ -z "$curval" ] && curval="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#' | head -n1)"
+        
+        params="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#')"
+        params="$(echo "$params" | grep -x "$curval" | tr '\n' '!')!$(echo "$params" | grep -vx "$curval" | tr '\n' '!')"
+        params="$(echo -e "$params" | sed 's/!!/!/g' | sed 's/!$//g' | sed 's/^!//g')"
+        
+        echo "Params: '$params'"
+        
+        output="$(yad --center --title='Change Pi-Apps update interval' --width=440 \
+          --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+          --text="You just requested for Pi-Apps to <i>never check for updates</i> on boot."$'\n'"Are you sure? If so, change the update interval to "\""<b>Never</b>"\"" below." \
+          --field='Update interval: ':CB "$params" \
+          --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+          --button=Save!"${DIRECTORY}/icons/check.png":0)"
+        button=$?
+        
+        output="$(echo "$output" | grep .)"
+        if [ $button == 0 ];then #save button clicked
+          echo "$output" > "${DIRECTORY}/data/settings/Check for updates"
+        fi
+      fi
+      #since Details was not clicked, exit now
+      exit 0
+    fi
+  }
+  
+  list_updates_gui
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "User did not allow anything to be updated."
+    exit 0
+  fi
+  
+  update_now_gui
+  
+  #display notification saying that pi-apps updates are complete
+  yad --form --text='Pi-Apps updates complete.' \
     --on-top --skip-taskbar --undecorated --close-on-unfocus \
     --geometry=260+$((screen_width-262))+$((screen_height-150)) \
     --image="${DIRECTORY}/icons/logo-64.png" \
-    --field='Never show again':CHK FALSE \
-    --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":2)"
-  button=$?
+    --button="Close!${DIRECTORY}/icons/exit.png":1
   
-  if [ $button != 0 ];then
-    if [ "$(echo "$output" | grep . )" == TRUE ];then
-      #User checked the 'Never show again' box, so ask to change update interval
-      curval="$(cat "${DIRECTORY}/data/settings/Check for updates")"
-      [ -z "$curval" ] && curval="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#' | head -n1)"
-      
-      params="$(cat "${DIRECTORY}/etc/setting-params/Check for updates" | grep -v '#')"
-      params="$(echo "$params" | grep -x "$curval" | tr '\n' '!')!$(echo "$params" | grep -vx "$curval" | tr '\n' '!')"
-      params="$(echo -e "$params" | sed 's/!!/!/g' | sed 's/!$//g' | sed 's/^!//g')"
-      
-      echo "Params: '$params'"
-      
-      output="$(yad --center --title='Change Pi-Apps update interval' --width=440 \
-        --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-        --text="You just requested for Pi-Apps to <i>never check for updates again</i>."$'\n'"Are you sure? If so, change the update interval to "\""<b>Never</b>"\"" below." \
-        --field='Update interval: ':CB "$params" \
-        --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
-        --button=Save!"${DIRECTORY}/icons/check.png":0)"
-      button=$?
-      
-      output="$(echo "$output" | grep .)"
-      if [ $button == 0 ];then #save button clicked
-        echo "$output" > "${DIRECTORY}/data/settings/Check for updates"
-      fi
-    fi
-    #since Details was not clicked, exit now
+elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
+  
+  if [ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ];then
+    exit 0
+  else
+    exit 1
+  fi
+  
+elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable apps/files to "${DIRECTORY}/data/update-status"
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+  
+  echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
+  echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
+  
+  "$0" get-status &>/dev/null
+  exit $?
+  
+elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes and an Update button
+  
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+  
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "Nothing is updatable."
     exit 0
   fi
+  
+  echo
+  
+  list_updates_gui
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "User did not allow anything to be updated."
+    echo
+    exit 0
+  fi
+  
+  update_now_gui
+  
+  "$0" set-status
+  
+elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
+  
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+  
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "Nothing is updatable."
+    exit 0
+  fi
+  
+  update_now_gui
+  
+elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user permission to update
+  
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+  echo 
+  
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "Nothing is updatable."
+    exit 0
+  fi
+  
+  if [ -z "$updatable_apps" ];then
+    status "No apps are updatable."
+    echo
+  else
+    status "These apps can be updated:"
+    echo
+    echo "$updatable_apps" | sed 's/^/  - /g'
+    echo
+  fi
+  
+  if [ -z "$updatable_files" ];then
+    status "No files are updatable"
+    echo
+  else
+    status "These files can be updated:"
+    echo
+    echo "$updatable_files" | sed 's/^/  - /g'
+    echo
+  fi
+  
+  read -p "$(status -n 'Update now? [Y/n] ')" answer
+  
+  if [ "$answer" == n ] || [ "$answer" == N ];then
+    echo
+    echo "Exiting now."
+    echo
+    exit 0
+  fi
+  
+  echo
+  update_now_cli
+  
+elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
+  
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files="$(get_updatable_files)"
+  echo 
+  
+  if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
+    status "Nothing is updatable."
+    exit 0
+  fi
+  
+  if [ -z "$updatable_apps" ];then
+    status "No apps is updatable."
+    echo
+  else
+    status "These apps can be updated:"
+    echo
+    echo "$updatable_apps" | sed 's/^/  - /g'
+    echo
+  fi
+  
+  if [ -z "$updatable_files" ];then
+    status "No files is updatable"
+    echo
+  else
+    status "These files can be updated:"
+    echo
+    echo "$updatable_files" | sed 's/^/  - /g'
+    echo
+  fi
+  
+  echo
+  update_now_cli
+  
+else
+  error "updater: unknown run mode. Exiting now.\n"
 fi
 
-#If user clicks 'Details', then display a list of everything updatable
-output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' \
-  --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
-  --list --checklist --separator='\n' --print-column=4 --no-headers \
-  --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
-  --column=:CHK --column=:IMG --column=Name --column=ID:HD \
-  --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
-  --button='Update now'!"${DIRECTORY}/icons/download.png":0)" || exit 0
-
-PREIFS="$IFS"
-IFS=$'\n'
-
-#remove empty newlines from output
-output="$(echo "$output" | grep .)"
-
-#limit list of update files to those selected by user.
-#Edge case: if a file and app are named the same, they will appear in both lists if either one was selected.
-updatable="$(echo "$updatable" | list_intersect "$output")"
-#echo -e "\nWill update these apps:\n$updatable EOAPPS"
-mainupdate="$(echo "$mainupdate" | list_intersect "$output")"
-#echo "Will update these files:\n$mainupdate EOFILES"
-
-for file in $mainupdate
-do
-  mkdir -p "$(dirname "${DIRECTORY}/${file}")"
-  
-  #copy new version to apps/
-  cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}\e[39m!"
-  
-  echo -e "\e[92m${file} file was copied successfully.\e[39m"
-done
-IFS="$PREIFS"
-
-if [ ! -z "$updatable" ];then
-  "${DIRECTORY}/etc/terminal-run" '
-    DIRECTORY="'"$DIRECTORY"'"
-    updatable="'"$updatable"'"
-    trap "sleep 10" EXIT
-    PREIFS="$IFS"
-    IFS=$'\''\n'\''
-    for i in $updatable
-    do
-      "${DIRECTORY}/manage" update "$i" nofetch
-    done
-    IFS="$PREIFS"
-    echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-  ' "Updating $(echo "$updatable" | wc -l) app$([ $(echo "$updatable" | wc -l) != 1 ] && echo s)..."
-fi
-#.git folder
-#delete .git folder, then copy the new one
-rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
-cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
-
-echo -e "\e[92mPi-Apps updates complete.\e[39m"
-
-yad --form --text='Pi-Apps updates complete.' \
-  --on-top --skip-taskbar --undecorated --close-on-unfocus \
-  --geometry=260+$((screen_width-262))+$((screen_height-150)) \
-  --image="${DIRECTORY}/icons/logo-64.png" \
-  --button="Close!${DIRECTORY}/icons/exit.png":1
-
+echo 
 exit 0
-} #this curly brace at start and end of script prevents issues when this script updates itself. See: https://stackoverflow.com/a/19430939
+} #prevents errors if script was modified while in use

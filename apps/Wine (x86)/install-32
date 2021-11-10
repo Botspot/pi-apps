@@ -22,7 +22,7 @@ if [ "$hardware" == 'pi0' ];then
 fi
 
 if [ ! -e /proc/config.gz ];then
-  sudo modprobe configs || error "Failed to run sudo modprobe configs!"
+  sudo modprobe configs || exit 1
   if [ ! -e /proc/config.gz ];then
     error "/proc/config.gz does not exist after running sudo modprobe configs!"
   fi
@@ -129,6 +129,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
       sleep infinity
     elif [ "$answer" == 4 ];then
+      echo "User error: exited."
       exit 1
     else
       echo "Invalid response. Must be '1', '2', '3' or '4'."
@@ -142,6 +143,10 @@ fi
 
 #install box86
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
+
+if ! command -v box86 >/dev/null ;then
+  error "User error: Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
+fi
 
 pkill -9 wine
 sudo apt purge -y wine &>/dev/null &
@@ -157,6 +162,8 @@ wget https://twisteros.com/wine.tgz -O ~/wine.tgz || error 'Failed to download w
 tar zxf ~/wine.tgz || error 'Failed to extract wine!'
 rm ~/wine.tgz
 
+[ ! -f ~/wine/bin/wine ] && error "the wine.tgz extraction succeeded, but the file '$HOME/wine/bin/wine' is missing!"
+
 # Install
 #sudo ln -s ~/wine/bin/wine /usr/local/bin/wine
 sudo ln -s ~/wine/bin/winecfg /usr/local/bin/winecfg
@@ -166,12 +173,6 @@ sudo ln -s ~/wine/bin/wineboot /usr/local/bin/wineboot
 echo "#!/bin/bash
 setarch linux32 -L $HOME/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
 sudo chmod +x /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg
-
-#winetricks pre-patched
-#see https://discord.com/channels/670543161525010442/736736690932285481/793931182302560277
-#sudo wget https://cdn.discordapp.com/attachments/736736690932285481/793931182249213972/winetricks -O /usr/local/bin/winetricks || error "Failed to get winetricks!"
-#winetricks patch (doesn't work)
-#sudo sed -i 's|echo "${arg%%=*}"=\""${arg#*=}"\"|echo ${arg%%=*}=\"${arg#*=}\"|g' /usr/local/bin/winetricks
 
 sudo wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks || error "Failed to download winetricks!"
 sudo chmod +x /usr/local/bin/winetricks

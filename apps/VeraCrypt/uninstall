@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-sudo apt purge -y veracrypt || error "Failed to purge veracrypt package!"
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to purge veracrypt package!"

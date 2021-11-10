@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+rm -f amiberry.deb
+
+cd ~/ && wget https://github.com/ryanfortner/ryanfortner/releases/download/1002/amiberry_4.1.4-1_armhf.deb -O amiberry.deb || error "Failed to download Amiberry deb file!"
+
+"${DIRECTORY}/pkg-install" "$HOME/amiberry.deb" "$(dirname "$0")" || error "failed to install amiberry.deb file!"
+
+rm amiberry.deb

@@ -7,7 +7,11 @@ function error {
   exit 1
 }
 
-env WINEPREFIX="$HOME/.wine" wine C:\\windows\\command\\start.exe /Unix ~/.wine/dosdevices/c:/ProgramData/Microsoft/Windows/Start\ Menu/Programs/LEGO\ Company/Uninstall\ LEGO\ Digital\ Designer.lnk || error "Wine uninstallation command failed!"
+if command -v wine >/dev/null ;then
+  env WINEPREFIX="$HOME/.wine" wine C:\\windows\\command\\start.exe /Unix ~/.wine/dosdevices/c:/ProgramData/Microsoft/Windows/Start\ Menu/Programs/LEGO\ Company/Uninstall\ LEGO\ Digital\ Designer.lnk || error "Wine uninstallation command failed!"
+else
+  echo "WARNING: 'wine' command not found! Not uninstalling Lego Digital Designer."
+fi
 
 #wait until finished
 while ps aux | grep -v grep | grep wine | grep -q 'LEGO Digital Designer' ;do

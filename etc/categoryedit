@@ -6,98 +6,130 @@ function error {
   exit 1
 }
 
-APPS="$(ls "${DIRECTORY}/apps")"
-refresh() {
-  structure="$(cat "${DIRECTORY}/data/categories/structure")"
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+refresh() { #set the categories variable to the current categories
+  categories="$(read_category_files)"
 }
-refresh
-#command line argument handler
+refresh 
+
+set_category() { #place the $1 app in the $2 category - don't write to files, only change the local_categories
+  local app="$1"
+  [ -z "$app" ] && error "set_category: app field empty!"
+  local category="$2"
+  #the category field may be left blank.
+  
+  #store the contents of the global categories file and the local category-overrides file
+  #these are purposely not local-variables.
+  [ -z "$local_categories" ] && local_categories="$(cat "${DIRECTORY}/data/category-overrides")"
+  [ -z "$global_categories" ] && global_categories="$(cat "${DIRECTORY}/etc/categories")"
+  
+  #the app may be: in both files, in global file, in overrides file, or in neither file
+  
+  if echo "$local_categories" | grep -q "^${app}|" ;then
+    #if app is already listed in local categories file
+    
+    if echo "$global_categories" | grep -qx "${app}|${category}" ;then
+      #if the app is already in that category in the global category file
+      echo "$app is already in the $category category in the global categories file; removing entry from the overrides file."
+      local_categories="$(echo "$local_categories" | grep -v "^${app}|")"
+      
+    else #the app is NOT already in that category in the global category file
+      #add it to the overrides list
+      echo "$app is not in the $category category in the global categories file; adding entry to the overrides file."
+      local_categories="$(echo "$local_categories" | grep -v "^${app}|")\n${app}|${category}"
+      
+    fi
+  else #app is not listed in local categories file
+    if echo "$global_categories" | grep -qx "${app}|${category}" ;then
+      #if the app is already in that category in the global category file
+      echo "$app is already in the $category category in the global categories file; doing nothing."
+      true #do nothing - don't add the app to the overrides file
+      
+    else #the app is NOT currently in the desired category in the global category file
+      echo "$app is not in the $category category in the global categories file; adding entry to the overrides file."
+      local_categories="$(echo "$local_categories" | grep -v "^${app}|")\n${app}|${category}"
+    fi
+  fi
+  
+  local_categories="$(echo -e "$local_categories" | sort)"
+  #echo "Line in file: $(echo -e "$local_categories" | grep "^${app}|")"
+}
+
+save_changes() { #writes the $local_categories variable to the category-overrides file
+  echo "$local_categories" > "${DIRECTORY}/data/category-overrides"
+}
+APPS="$(list_apps local)"
+
+#command line argument handler: $1 is app, $2 is category. (--delete means to remove the app from category-overrides)
 if [ ! -z "$1" ];then
   if ! echo "$APPS" | grep -q "$1" ;then
-    error "The $1 app does not exist in ${DIRECTORY}/apps!"
+    error "The '$1' app does not exist!"
   fi
   
-  if echo "$structure" | grep -q "$1"'|' ;then
-    echo "The $1 app is currently in the $(echo "$structure" | grep "$1"'|' | awk -F '|' '{print $2}') category."
-  fi
-  
-  #check if $2 is --delete
-  if [ "$2" == '--delete' ];then
-    output="$(echo "$structure" | grep -v "$1"'|')"
-  else
-    if ! echo "$structure" | grep -q '|'"$2" ;then
-      echo "The $2 category did not exist previously."
-    fi
-    
-    echo "Putting the $1 app in the $2 category..."
-    
-    #replace any mention of the $1 app with the new line at the end of file
-    output="$(echo -e "$(echo "$structure" | grep -v "$1"'|')\n$1|$2" | sort)"
-  fi
-  
-  #only change the structure file if something was really changed
-  if [ "$output" != "$(cat "${DIRECTORY}/data/categories/structure")" ];then
-    echo "$output" > "${DIRECTORY}/data/categories/structure"
-  else
-    echo "categoryedit: Not changing structure file, because nothing was changed."
-  fi
-  
-  #structure file modified. Refresh the variable
-  refresh
-  echo "Line in structure file: $(echo "$structure" | grep "$1"'|')"
+  set_category "$1" "$2"
+  save_changes
   exit 0
 fi
 
-while true;do
+while true;do #repeat the main window until Save or Exit clicked
   
   #generate a virtual file system with apps in folders represented as subdirectories
-  PREIFS="$IFS"
   IFS=$'\n'
   LIST=''
   for app in $APPS
   do
-    category="$(echo "$structure" | grep "$app"'|' | awk -F '|' '{print $2}' | tr -d '.' | head -n1)"
+    category="$(echo "$categories" | grep "$app"'|' | awk -F '|' '{print $2}' | tr -d '.' | head -n1)"
     #echo "category for $app is $category."
     LIST="${LIST}${DIRECTORY}/apps/$app/icon-24.png
 $app
 $category
 "
   done
-  IFS="$PREIFS"
   LIST="${LIST::-1}"
-  #echo -e "'$LIST'\n'$APPS'"
   
-  output="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
-    --list --text="Category file: $(echo "${DIRECTORY}/data/categories/structure" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
+  categories="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
+    --list --text="Changes saved to: $(echo "${DIRECTORY}/data/category-overrides" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
     --separator='|' --window-icon="${DIRECTORY}/icons/logo.png" \
     --column=:IMG --column=Name --column=Category:TEXT \
-    --button=Reset!"${DIRECTORY}/icons/backup.png"!"Overwrites your structure file with the default one from the Pi-Apps repository.":4 \
+    --button=Reset!"${DIRECTORY}/icons/backup.png"!"Removes all category overrides.":4 \
     --button=All!"${DIRECTORY}/icons/trash.png"!"Clears categories so all apps are in one list.":2 \
-    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png"!"Don't save any changes.":1 \
     --button=Save!"${DIRECTORY}/icons/check.png":0 )"
   button=$?
+  
   if [ "$button" == 0 ];then
     #save
-    break
+    #remove first and last characters from each line --- and '(null)' messaged from yad --- and sort it alphabetically
+    categories="$(echo "$categories" | sed 's/.$//; s/^.//' | sed "s/(null)//g" | sort)"
+    break #exit the loo to save the changes
+    
   elif [ "$button" == 2 ];then
     #delete all
     #     remove categories from all lines, while leaving hidden ones intact
-    echo -e "$(echo "$structure" | grep -v '|hidden' | sed 's/|.*/|/')\n$(echo "$structure" | grep '|hidden')" | sort > "${DIRECTORY}/data/categories/structure"
+    categories="$(echo -e "$(echo "$categories" | grep -v '|hidden' | sed 's/|.*/|/')\n$(echo "$categories" | grep '|hidden')" | sort)"
+    
   elif [ "$button" == 4 ];then
-    #reset
-    rm "${DIRECTORY}/data/categories/structure"
-    wget -qO "${DIRECTORY}/data/categories/structure" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure'
-    [ ! -f "${DIRECTORY}/data/categories/structure" ] || [ -z "$(cat "${DIRECTORY}/data/categories/structure")" ] && error 'Failed to download a fresh structure file!'
+    #reset - ignore the local category-overrides file
+    #                 list the global categories file   |-----and all apps------------|    filter out duplicates
+    categories="$( (cat "${DIRECTORY}/etc/categories" ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++')"
+    
   else
     #cancel or WM X
     echo "User exited"
-    exit 0
+    exit 0 #exit the script without saving changes
+    
   fi
-  refresh
 done
-#remove first and last characters from each line ---- and '(null)' messaged from yad --- and sort it alphabetically
-output="$(echo "$output" | sed 's/.$//; s/^.//' | sed "s+(null)++g" | sort)"
 
-echo "$output" > "${DIRECTORY}/data/categories/structure"
+#for every line in the output set the category with the set_category function
+IFS=$'\n'
+for line in $categories ;do
+  set_category "$(echo "$line" | awk -F'|' '{print $1}')" "$(echo "$line" | awk -F'|' '{print $2}')"
+done
 
-"${DIRECTORY}/etc/preload-daemon" yad once &
+#The set_category function made modifications to the local_categories variable.
+save_changes #Now save those changes to file.
+
+#reload app-list in background
+"${DIRECTORY}/etc/preload-daemon" "$(cat "${DIRECTORY}/data/settings/App List Style")" once &

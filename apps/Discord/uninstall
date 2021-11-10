@@ -9,6 +9,6 @@ function error {
 
 killall webcord &>/dev/null && echo "Closing Discord before uninstalling..."
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "APT failed to purge webcord!"
+purge_packages || exit 1
 
 exit 0

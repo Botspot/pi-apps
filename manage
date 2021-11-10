@@ -28,9 +28,10 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
     sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
   fi
   
-  if dpkg -l box86 &>/dev/null ;then
-    sudo apt purge -y box86
-    sudo apt install -y box86-no-binfmt-restart
+  if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
+    sudo apt purge -y box86-no-binfmt-restart
+    sudo apt update
+    sudo apt install -y box86
   fi
 EOF
 ) &>/dev/null
@@ -39,16 +40,16 @@ EOF
 {
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
 if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
-  yad --icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons \
+  yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
     --text="Your Pi-Apps github repository is somehow 3 months out-of-date."$'\n'"Downloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old..." &
   sleep 1
   clear
-  echo "\nYour Pi-Apps github repository is somehow 3 months out-of-date.\nDownloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
+  echo -e "\nYour Pi-Apps github repository is somehow 3 months out-of-date.\nDownloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
   git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   temp_logfile="$(mktemp).txt"
-  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo:$(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
+  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo: $(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
   send_error_report "$temp_logfile" 1>&2
   rm -f "$temp_logfile"
   sleep 10
@@ -64,19 +65,6 @@ find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
 if ! wget --spider github.com &>/dev/null ;then
   error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
 fi
-
-dirhash() {
-  #echo "Hashing this dir: $1" 1>&2
-  
-  if [ -d "$1" ];then
-    #-------- hash every file in the folder ---------------------------------------------------- list all filenames ------------------- hash all that again
-    hash="$(echo -e "$(find "$1" -type f -print0 | xargs -0 sha1sum | awk '{print $1}')$(find "$1" -type f -exec basename {} \;)" | sha1sum | awk '{print $1}')"
-  else
-    hash=''
-    #echo "dirhash(): Folder '$1' does not exist" 1>&2
-  fi
-  echo "$hash"
-}
 
 #check if hardware and OS is supported
 if is_supported_system >/dev/null;then
@@ -123,16 +111,61 @@ $app"
   done
   failed_apps="${failed_apps:1}" #remove first blank newline
   
-  if [ "$supported" == yes ];then #if hardware and OS is supported
-    for app in $(echo "$failed_apps" | list_intersect "$(list_apps online)") ;do
-      logfile="$(ls -dt "${DIRECTORY}/logs"/* | grep '\-'"${app}"'\.log' -m 1)" #sort logfiles by modification date, get the most recent one for the current app
-      
-      #if logfile detected, exists, is not empty, and does not contain a bunch of arrows (user-fault error) ask permission to send error report
-      if [ ! -z "$logfile" ] && [ -f "$logfile" ] && [ -s "$logfile" ] && ! grep -qF '▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼' "$logfile" ;then
-        send_error_report_gui "$logfile" "<b>$app</b> failed to ${action}."
-      fi
-    done
-  fi
+  #diagnose every failed app's logfile
+  for app in $(echo "$failed_apps") ;do
+    logfile="$(get_logfile "$app")"
+    #given the app's logfile, categorize the error and set the error_type variable
+    diagnosis="$(log_diagnose "$logfile")"
+    
+    error_type="$(echo "$diagnosis" | head -n1)" #first line of diagnosis is the type of error
+    error_caption="$(echo "$diagnosis" | tail -n +2)" #subsequent lines of diagnosis are caption(s)
+    
+    #set the window-text
+    if [ "$error_type" == unknown ];then
+      text="<b>${app^}</b> failed to $action for an <b>unknown</b> reason."
+    else
+      text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
+    fi
+    
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, then enable the "Send report button"
+    if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Your 'Send report' button is gone because it's not an issue with Pi-Apps."
+    elif ! list_apps online | grep -q "$app" ;then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not in the official repository."
+    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app is not the official version."
+    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
+      text+=$'\n'"Your 'Send report' button is gone because this app does not match the official version."
+    elif [ "$supported" == no ];then
+      text+=$'\n'"Your 'Send report' button is gone because your system is unsupported."
+    else
+      #if all of the above checks evaluate to FALSE, then display the "Send report" button.
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+    fi
+    text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    
+    #if the error_caption is empty, display logfile instead
+    if [ -z "$error_caption" ];then
+      text+=$'\n'"You can view the $([ "$action" == install ] && echo 'installation' || echo 'uninstall') output below."
+      error_caption="$(cat "$logfile")"
+    else
+      text+=$'\n'"Below, Pi-Apps explains the error."
+    fi
+    
+    echo "$error_caption" | yad "${yadflags[@]}" --text-info --width=700 --height=300 --title="Error occured when ${action}ing $app" \
+      --image="${DIRECTORY}/icons/error.png" --image-on-top \
+      --text="$text" --fontname=12 \
+      --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
+      "${send_button[@]}" \
+      --button=Close:1
+    button=$?
+    
+    if [ $button == 2 ];then
+      #send error log
+      send_error_report "$logfile"
+    fi
+  done
+  
   if [ ! -z "$failed_apps" ];then
     exit 1
   fi
@@ -162,13 +195,13 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   #ensure not a disabled app
   if [ "$mode" == install ] && [ "$(app_status "${app}")" == 'disabled' ];then
-    echo -e "\e[93mNot installing the $app app. IT IS DISABLED.\e[39m"
+    warning "Not installing the $app app. IT IS DISABLED."
     exit 0
   fi
   
   #display warning if hardware and os is unsupported
   if [ "$supported" == no ];then
-    echo -e "\e[103m\e[30mWARNING: YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)\e[39m\e[49m"
+    warning "YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)"
     sleep 1
     echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m"
     sleep 1
@@ -176,18 +209,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     sleep 10
   fi
   
-  #analytics
-  "${DIRECTORY}/etc/bitlylink" "$app" "$mode" &
-  
-  #determine which script to run
-  if [ "$mode" == install ];then
-    scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
-    [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
-  else #uninstall mode
-    scriptname=uninstall
-  fi
-  appscript="${DIRECTORY}/apps/${app}/${scriptname}"
-    
   #determine path for log file to be created
   logfile="${DIRECTORY}/logs/${mode}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
@@ -203,33 +224,66 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
       i=$((i+1))
     done
   fi
-  #for piping to tee, the app script's exit code is preserved by enabling the pipefail bash builtin
-  set -o pipefail
   
-  chmod u+x "$appscript"
+  #analytics
+  bitly_link "$app" "$mode" &
   
-  echo -e "\e[96m${mode^}ing \e[1m${app}\e[0m\e[96m...\e[39m" | tee -a "$logfile"
-  cd $HOME
-  echo 'corrupted' > "${DIRECTORY}/data/status/${app}"
-  nice "$appscript" &> >(tee -a "$logfile")
-  if [ $? == 0 ]; then #if app script succeeded
-    #change the status from corrupted to 'installed' or 'uninstalled'
-    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    echo -e "\n\e[42m\e[30m${mode^}ed ${app} successfully.\e[39m\e[49m" | tee -a "$logfile"
-    
-    format_log_file "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #
-    exit 0
+  #if this app has scripts, determine which script to run
+  if [ "$(app_type "$app")" == standard ];then
+    if [ "$mode" == install ];then
+      scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
+      [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
+    else #uninstall mode
+      scriptname=uninstall
+    fi
+    appscript=("${DIRECTORY}/apps/${app}/${scriptname}")
+    chmod u+x "$appscript" &>/dev/null
+  #if this app just lists a package-name, set the appscript to install that package
   else
-    echo -e "\n\e[91mFailed to ${mode} ${app} with $scriptname script"\!"\e[39m
-\e[40m\e[93m\e[5m▲\e[25m\e[39m \e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
-Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
-Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[24m\e[39m" | tee -a "$logfile"
-    
-    format_log_file "$logfile" #remove escape sequences from logfile
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
-    exit 1
+    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
   fi
+  
+  status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
+  echo
+  cd $HOME
+  if [[ "$3" == "update" ]]; then
+    script_input="update"
+  else
+    script_input=""
+  fi
+  nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
+  exitcode="${PIPESTATUS[0]}"
+  
+  format_logfile "$logfile" #remove escape sequences from logfile
+  
+  #if app script succeeded
+  if [ $exitcode == 0 ];then
+    status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
+    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
+    
+  else
+    echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
+\e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
+Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
+Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
+    
+    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet, system, package
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
+      echo "corrupted" > "${DIRECTORY}/data/status/${app}"
+    fi
+    
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
+  fi
+  
+ 
+  #if the app is a package, set its status to whatever dpkg thinks it is
+  if [ "$(app_type "$app")" == package ];then
+    refresh_pkgapp_status "$app"
+  fi
+  
+  #exit the manage script with the same exit-code of the app's script
+  exit $exitcode
   
 elif [ "$1" == 'update' ];then
   #UPDATE
@@ -239,6 +293,13 @@ elif [ "$1" == 'update' ];then
     error "For this operation, you must specify which app to operate on."
   fi
   
+  #detect which installation script exists and get the hash for that one
+  scriptname="$(script_name_cpu "$app")"
+  [ $? == 1 ] && exit 1
+  
+  status "Updating \e[1m${app}\e[0m\e[96m..."
+  echo
+  
   #HIDDEN FEATURE - if $3 equals nofetch, then don't download github repo. Useful for updating multiple apps at maximum speed
   if [ "$3" == 'nofetch' ] && [ -d "${DIRECTORY}/update" ];then
     true
@@ -247,12 +308,7 @@ elif [ "$1" == 'update' ];then
     git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
   fi
   
-  newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")"
-  oldhash="$(dirhash "${DIRECTORY}/apps/${app}")"
-  
-  #detect which installation script exists and get the hash for that one
-  scriptname="$(script_name_cpu "$app")"
-  [ $? == 1 ] && exit 1
+  echo
   
   newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
@@ -260,20 +316,24 @@ elif [ "$1" == 'update' ];then
   #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
   #echo -e "newhash: $newhash\noldhash: $oldhash"
   
-  if [ "$newhash" == "$oldhash" ];then
-    echo "$app is identical to the online version. Nothing to do!"
+  if diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null;then
+    status_green "$app is identical to the online version. Nothing to do!"
+    echo
     exit 0
   fi
   #else
-  echo "$app is not identical to the online version."
+  status_green "$app is not identical to the online version."
   installback=no
+  
+  echo
   
   #if install script was changed                                                    #if installed already
   if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
     installback=yes
-    echo "$app's install script has been updated. Reinstalling $app..."
+    status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it using a recursive script instance
-    "${DIRECTORY}/manage" uninstall "$app"
+    #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+    "${DIRECTORY}/manage" uninstall "$app" "update"
     
     #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
     if [ "$(app_status "$app")" == installed ];then
@@ -290,13 +350,22 @@ elif [ "$1" == 'update' ];then
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   
   if [ "$installback" == 'yes' ];then
-    echo "$app was originally installed before updating. Reinstalling the new version now."
     #install it using a recursive script instance
     "${DIRECTORY}/manage" install "$app"
+    if [ $? != 0 ]; then
+      failed=true
+    fi
   fi
-  echo -e "\e[92m${app} was updated successfully.\e[39m"
+  
+  if [ "$failed" == 'true' ]; then
+    echo -e "\e[91mFailed to update ${app}.\e[0m"
+  else
+    status_green "${app} was updated successfully."
+  fi
+  echo
   
 elif [ "$1" == 'check-all' ];then
+  
   #CHECK-ALL
   #for this operation, a program name cannot be specified.
   
@@ -305,37 +374,24 @@ elif [ "$1" == 'check-all' ];then
   if [ "$2" == 'installedonly' ];then
     # If $2 is 'installedonly', then only check for updates for those apps that are installed
     installedonly=1
-    
-  elif [ "$2" == 'nogenerate' ];then
-    # If $2 is 'nogenerate', then don't hash anything or git-clone anything. Simply reads out data found in data/update-status folder in the same app-per-newline format.
-    echo -e "\e[97mThese apps can be updated:" 1>&2
-    echo "${updatable}"
-    IFS=$'\n'
-    for app in $(list_apps all);do
-      
-      updatestatus="$(cat "${DIRECTORY}/data/update-status/${app}" 2>/dev/null)"
-      if [ "$updatestatus" == 'new' ] || [ "$updatestatus" == 'updatable' ];then
-        #if current app's update-status is 'new' or 'updatable', then echo it.
-        echo "$app"
-      fi
-      
-    done
-   exit 0 #the lines above have displayed a list of apps already.
-   
   fi #end of checking for hidden flags
+  
+  echo -n "Checking for online changes... " 1>&2
   
   #if the updater script exists in update folder, then just git pull to save time
   if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
-    echo -n "The 'git pull' command says: " 1>&2
-    git pull 1>&2 || rm -rf "${DIRECTORY}/update"
-  fi
+    git pull || rm -rf "${DIRECTORY}/update"
+  fi | grep -v "Already up to date." 1>&2
+  
   #re-check and if updater script does not exist then do a git clone
   if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
     rm -rf "${DIRECTORY}/update"
     mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2|| error "failed to clone repository to the update directory!"
+    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2 || error "failed to clone repository to the update directory!"
   fi
+  
+  echo "Done" 1>&2
   
   if [ $installedonly == 1 ];then
     #installedonly flag enabled. Remove apps that are uninstalled, disabled, or corrupted
@@ -351,61 +407,47 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    #echo "app: $app"
-    newhash="$(dirhash "${DIRECTORY}/update/pi-apps/apps/${app}")" #folder will not exist if local app
-    oldhash="$(dirhash "${DIRECTORY}/apps/${app}")" #folder will not exist if new online app
-    #echo -e "newhash: $newhash\noldhash: $oldhash" 1>&2
+    echo -en "Scanning apps... $app\033[0K\r" 1>&2
     
-    if [ "$newhash" == "$oldhash" ];then
-      #echo -e "${app} is identical\e[90m to the online version. Nothing to do!\e[39m" 1>&2
-      echo 'latest' > "${DIRECTORY}/data/update-status/${app}"
-    else
-      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        echo -e "\e[97m${app} does not exist locally.\e[39m Adding to updatable list." 1>&2
-        echo 'new' > "${DIRECTORY}/data/update-status/${app}"
-        #in this case, add to updatable list
-        updatable="${updatable}
+    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+      #add to updatable list
+      updatable="${updatable}
 ${app}"
-      elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
-        #echo -e "\e[97m${app} only exists locally.\e[39m Will not add to updatable list." 1>&2
-        echo 'local' > "${DIRECTORY}/data/update-status/${app}"
-        #in this case, do not add to updatable list
-      else
-        echo -e "\e[97m${app} exists in both locations, but online version is newer\e[39m. Adding to updatable list." 1>&2
-        echo 'updatable' > "${DIRECTORY}/data/update-status/${app}"
-        #in this case, add to updatable list
-        updatable="${updatable}
-${app}"
-      fi
       
+    elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+      #app only exists locally
+      true
+      
+    elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
+      #if app hashes don't match, add to updatable list
+      updatable="${updatable}
+${app}"
     fi
   done 
   
   #remove initial newline character
   updatable="${updatable:1}"
   
-  if [ -z "$updatable" ];then
-    updatable='.'
-  fi
+  echo -e "Scanning apps... Done\033[0K" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
+
+  echo
+
   #UPDATE-ALL
   #for this operation, a program name cannot be specified.
   IFS=$'\n'
   updatable="$("${DIRECTORY}/manage" check-all)"
-  if [ "$updatable" == '.' ];then
-    updatable=''
-  fi
   echo "Updatable: ${updatable}EOU"
   for updateapp in $updatable
   do
-    echo "updating $updateapp"
+    status "updating $updateapp"
     #update it using a recursive script instance
     echo "${DIRECTORY}/manage update $updateapp"
     "${DIRECTORY}/manage" update "$updateapp" || exit 1
   done
-  echo -e '\e[92mOperation completed successfully!\e[39m'
+  status_green "Operation completed successfully!"
 else
-  error "Did not understand $1. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
+  error "Invalid argument. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
 fi

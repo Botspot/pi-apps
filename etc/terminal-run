@@ -13,6 +13,9 @@ temp_pid_file="$(mktemp -u)"
 commands="echo "\$""\$" > $temp_pid_file
 $commands"
 
+#reset the GTK theme so terminals follow the system GTK theme
+export GTK_THEME=''
+
 function error {
   echo -e "\e[91m$1\e[39m"
   exit 1
@@ -61,7 +64,7 @@ fi
 
 #A terminal should now be launching and in a few seconds the pid file should appear
 if [ ! -z "$temp_pid_file" ];then
-  #echo "Waitng for terminal to close..."
+  #echo "Waiting for terminal to close..."
   #wait until pid file exists and give up in 5 seconds
   attempts=0
   while [ ! -f "$temp_pid_file" ];do

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+#this may end up removing flatpack.
+"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+
+#if flatpak still exists, then uninstall telegram.
+if command -v flatpak >/dev/null ;then
+  sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y || error "Flatpak failed to uninstall org.telegram.desktop!"
+fi
+
+rm -f ~/.local/share/applications/telegram.desktop
+exit 0

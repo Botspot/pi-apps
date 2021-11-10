@@ -13,10 +13,8 @@ if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
 fi
 
 if ! command -v curl >/dev/null ; then
-  echo -e "\033[0;31mcurl: command not found.\e[39m
-You need to install curl first. If you are on a debian system, this command should install it:
-\e[4msudo apt install curl\e[0m"
-  exit 1
+  echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
+  "${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || error "failed to install curl!"
 fi
 
 #Install nvm manager:
@@ -24,16 +22,37 @@ export NVM_DIR="$HOME/.nvm"
 mkdir -p "$NVM_DIR"
 wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
 
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ ! -z "$(file "$(readlink -f "/sbin/init")" | grep 32)" ];then
+source "${DIRECTORY}/api"
+if [ "$arch" == 32 ];then
   #armhf, so patch nvm script to forcibly use armhf
   sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
 fi
 
-chmod u+x "$NVM_DIR/nvm.sh" "$NVM_DIR/bash_completion"
-source "$NVM_DIR/nvm.sh" || error "Failed to source $NVM_DIR/nvm.sh"
+#remove original nvm stuff from bashrc
+sed -i '/NVM_DIR/d' ~/.bashrc
 
-source "$NVM_DIR/bash_completion" || error "Failed to source $NVM_DIR/bash_completion"
+# Create nvm initialisation script in another file for easier uninstallation
+# Credit: https://www.growingwiththeweb.com/2018/01/slow-nvm-init.html
+echo 'if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type -t __init_nvm)" = function ]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+  declare -a __node_commands=("nvm" "node" "npm" "yarn" "gulp" "grunt" "webpack")
+  function __init_nvm() {
+    for i in "${__node_commands[@]}"; do unalias $i; done
+    . "$NVM_DIR"/nvm.sh
+    unset __node_commands
+    unset -f __init_nvm
+  }
+  for i in "${__node_commands[@]}"; do alias $i="__init_nvm && "$i; done
+fi' > ~/.node_bashrc
 
-nvm install --lts || error "Failed to install node.js with nvm!"
+echo ". ~/.node_bashrc" >> ~/.bashrc
+
+# One time use, since `source ~/.bashrc` not working
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Install latest nodejs
+nvm install node || error "Failed to install node.js with nvm!"
 
