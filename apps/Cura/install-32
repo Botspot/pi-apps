@@ -7,15 +7,15 @@ function error {
   exit 1
 }
 
-wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/20211110/Cura-mb-master-armhf-20211110.AppImage || error "Failed to download!"
+version='20211110'
+
+wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-armhf-${version}.AppImage || error "Failed to download!"
 
 chmod +x ~/Cura.AppImage
 
 #get stl-thumb package
-rm -f ~/stl-thumb_0.4.0_armhf.deb
-wget https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_armhf.deb
-"${DIRECTORY}/pkg-install" "$HOME/stl-thumb_0.4.0_armhf.deb" "$(dirname "$0")" || exit 1
-rm -f ~/stl-thumb_0.4.0_armhf.deb
+stl_thumb_version='0.4.0'
+install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_armhf.deb" || error "Failed to install stl-thumb package!"
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
