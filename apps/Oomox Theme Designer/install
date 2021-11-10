@@ -6,9 +6,8 @@ cd $HOME
 rm -rf oomox
 status "This will take some time as --recursive flag is passed."
 git_clone https://github.com/themix-project/oomox.git --recursive || error "Failed to clone oomox repository!"
-echo "#!/bin/bash
-cd $HOME/oomox &&
-exec python3 -m oomox_gui '$@'" > /usr/local/bin/oomox-gui
+echo "cd $HOME/oomox && exec python3 -m oomox_gui '$@'" | sudo tee /usr/local/bin/oomox-gui &>/dev/null || error "Failed to create /usr/local/bin/oomox-gui"
+sudo chmod +x /usr/local/bin/oomox-gui || error "Failed to make /usr/local/bin/oomox-gui executable!"
 
 #create menu shortcut
 echo "[Desktop Entry]
