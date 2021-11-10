@@ -16,6 +16,10 @@ if test -f "/etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list"; then
   sudo rm /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
 fi
 
+# Get OS info for later
+source /etc/os-release
+RELEASE="$(awk '{print int($1)}' <<<$VERSION_ID)"
+
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
@@ -25,15 +29,15 @@ wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/in
 # Choose launcher to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy. You can also go to the github links for the respective launchers to see how they look.
 "
-options=("gMCPIL (recommended, written in Vala and C) (https://github.com/MCPI-Revival/gMCPIL)" "jMCPIL (better looking GUI but requires Java) (https://github.com/MCPI-Revival/jMCPIL)")
+options=("jMCPIL (reccomended, better looking GUI but requires Java) (https://github.com/MCPI-Revival/jMCPIL)" "gMCPIL (written in Vala and C) (https://github.com/MCPI-Revival/gMCPIL)")
 select opt in "${options[@]}"
 do
   case $opt in
     "${options[0]}")
-        MCPIL="gmcpil"
+        MCPIL="jmcpil"
         break;;
     "${options[1]}")
-        MCPIL="jmcpil"
+        MCPIL="gmcpil"
         break;;
     *) echo "Invalid option: $REPLY";;
   esac
@@ -42,7 +46,19 @@ done
 # Install the launcher
 "${DIRECTORY}/pkg-install" "$MCPIL" "$(dirname "$0")" || error "Failed to install ${MCPIL} package!"
 
-read -p "Do you wish to install the MCPI API for the ability to run Python API mods via the mod?" choice
+# Optionally install sound if on Bullseye
+if [[ "$ID" == "debian" || "$ID" == "raspbian" || "$ID" == "ubuntu" ]]; then
+	[[ "$RELEASE" -lt 11 ]] && echo "OS version smaller than bullseye, not displaying sound prompt" && break
+	read -p "Would you like to download sound files so MCPE sound effects play in-game? (e.g walking effects, placing blocks, etc)" choice
+  case "$choice" in 
+  y|Y ) wget -o libminecraftpe.so https://archive.org/download/libminecraftpe0.6.1/libminecraftpe06%2B08.so && mkdir -p ~/.minecraft-pi/overrides && mv libminecraftpe.so ~/.minecraft-pi/overrides/libminecraftpe.so || error "Failed to install sound files!";;
+  n|N ) echo "Not installing sound files... proceeding";;
+  * ) echo "Invalid option! Please type 'y' or 'n'";;
+esac
+fi
+
+# Optionally install Python API
+read -p "Do you wish to install the MCPI API for the ability to run Python API scripts? (select yes unless you know what your doing!)" choice
 case "$choice" in 
   y|Y ) "${DIRECTORY}/pkg-install" "python3-pip" "$(dirname "$0")" || error "Failed to install python3-pip which is needed to install the API!" && pip3 install mcpi || error "The pip3 command failed to install the MCPI API!";;
   n|N ) echo "Not installing API... proceeding";;
