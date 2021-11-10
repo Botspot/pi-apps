@@ -144,7 +144,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   username="$(dirname "$repo" | sed 's+^/++g')" #value: cycool29
   
   #make a temporary directory and enter it
-  cd "$(mktemp -d)" || error "Failed to crerate and enter a tempory directory."
+  cd "$(mktemp -d)" || error "Failed to create and enter a tempory directory."
   #if script is killed prematurely, be sure to delete the temporary folder
   trap "rm -rf '$(pwd)'" EXIT
   
