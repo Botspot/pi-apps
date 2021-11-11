@@ -13,3 +13,13 @@ tar -xjf btop-1.0.24-aarch64-linux-musl.tbz || error 'Failed to decompress "btop
 sudo make -B install || error 'Failed to install btop with "sudo make install"!'
 rm -rf $HOME/btop || sudo rm -rf $HOME/btop || error 'Failed to remove install directory!'
 
+echo "[Desktop Entry]
+Name=btop++
+GenericName=System Monitor
+Comment=Awesome terminal resource monitor and task manager, similar to htop.
+Exec=${DIRECTORY}/etc/terminal-run btop 'BTOP++'
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility;" > ~/.local/share/applications/btop.desktop
