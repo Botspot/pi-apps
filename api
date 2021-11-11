@@ -253,7 +253,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #add .deb extension if filename doesn't end with it.
       if [ "${filename: -4}" != ".deb" ]; then
-        status "$filename is not ending with .deb, renaming it to ${filename}.deb..." 
+        status "$filename is not ending with .deb, renaming it to '${filename}.deb'..." 
         local filename="${filename}.deb"
       fi
 	  
