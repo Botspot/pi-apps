@@ -167,7 +167,7 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
   #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
   
-  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  #use this flag for apt commands to use the local repository: -o Dir::Ignore-Files-Silently::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
   
   #ensure the repo-folder exists
   mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
@@ -251,6 +251,12 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       local filename="$HOME/$(basename "$package")"
       
+      #add .deb extension if filename not ends with .deb
+      if [ "${filename: -4}" != ".deb" ]; then
+        status "$filename is not ending with .deb, renaming it to ${filename}.deb..." 
+        local filename="${filename}.deb"
+      fi
+	  
       wget -O "$filename" "$package" || error "Failed to download '$package'"
       
       #determine the package name from the filename
@@ -291,7 +297,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #Initialize the pi-apps-local-packages repository
     repo_refresh
     #add this repository to flags to add to apt
-    apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
+    apt_flags+=(-o 'Dir::Ignore-Files-Silently::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
   fi
   #run an apt update
   apt_update "${apt_flags[@]}" || exit 1
