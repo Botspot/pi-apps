@@ -11,7 +11,7 @@ __os_codename="${os[3]}"
 
 case "$__os_codename" in
     buster)
-        sudo add-apt-repository "deb http://deb.debian.org/debian buster-backports main"
+        sudo add-apt-repository "deb http://deb.debian.org/debian buster-backports main" -y
         # add pin priority for youtube-dl so it will download from the backports repo
         # this is not necessary for bullseye
         # this will not interfere if the user has pinned the backports repo themselves
