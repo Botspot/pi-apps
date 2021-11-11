@@ -1,0 +1,30 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+mkdir .Deskreen || error 'Failed to make dir ".Deskreen"!'
+cd .Deskreen || error 'Failed to cd into .Deskreen!'
+#Download deskreen-1.0.1-armhf.deb from Discord
+wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Mirror!'
+unzip -o Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
+# Install
+chmod +x Deskreen-1.0.1-armv7l.AppImage || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
+echo "#!/bin/bash
+$HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage" | sudo tee /usr/local/bin/deskreen &>/dev/null || error 'Failed to make Deskreen terminal script!'
+sudo chmod +x /usr/local/bin/deskreen || error 'Failed to make "/usr/local/bin/deskreen" executable!'
+cd
+echo "[Desktop Entry]
+Name=Deskreen
+Comment=Deskreen allows you to use any device on your local network as a secondary screen, through a web browser.
+GenericName=Screen sharing app
+Exec=deskreen
+Icon=${DIRECTORY}/apps/Deskreen/icon-64.png
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Utility;" > $HOME/.local/share/applications/deskreen.desktop || error 'Failed to create menu shortcut!'
+rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || sudo rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove Deskreen-1.0.1-armv7l.AppImage.zip'
