@@ -7,4 +7,4 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")"  || error "Failed to purge-installed!"
+purge_packages || error "Dependencies failed to uninstall"
