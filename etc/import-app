@@ -77,8 +77,11 @@ Examples:
     --form --field='' '')" || exit 0
 fi
 
-[ -z "$import" ] && yad "${yadflags[@]}" --width=310 --title="App importer" --image="${DIRECTORY}/icons/logo-64.png" --text="\n   No app has been imported." --button=Close:0 --window-icon="${DIRECTORY}/icons/logo.png"
-
+#user didn't enter anything, exit
+if [ -z "$import" ]; then
+  yad "${yadflags[@]}" --width=310 --title="App importer" --image="${DIRECTORY}/icons/logo-64.png" --text="\n   No app has been imported." --button=Close:0 --window-icon="${DIRECTORY}/icons/logo.png"
+  exit 0
+fi
 
 #determine what type of input we received
 if [[ "$import" == /* ]] ;then
