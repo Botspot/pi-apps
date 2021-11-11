@@ -239,6 +239,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       done
       IFS="$PREIFS"
       echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+      "${DIRECTORY}/api" refresh_app_list
     ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
   fi
   

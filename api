@@ -847,6 +847,14 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
     refresh_pkgapp_status "$app"
   done
 }
+
+refresh_app_list() { #Force-regenerate the app list
+  local guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+  
+  #delete preload directory, then re-generate it
+  rm -rf "${DIRECTORY}/data/preload"
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" once &>/dev/null
+}
 #end of app functions
 
 #logfile functions below

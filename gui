@@ -181,7 +181,7 @@ install() {
     ' "$title"
   
   #re-preload all categories in background
-  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" &>/dev/null &
 }
 
 uninstall() {
@@ -210,7 +210,7 @@ uninstall() {
     ' "$title"
   
   #re-preload all categories in background
-  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" &>/dev/null &
 }
 
 #Determine message of the day. If announcements file missing or over a day old, download it.
