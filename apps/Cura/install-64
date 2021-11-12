@@ -12,16 +12,16 @@ stl_thumb_version='0.4.0'
 
 wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-aarch64-${version}.AppImage || error "Failed to download!"
 
-chmod +x Cura.AppImage
+chmod +x ~/Cura.AppImage
 
-#get stl-thumb package
-install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_arm64.deb" || error "Failed to install stl-thumb package!"
+#get stl-thumb package - commented out due to common apt errors
+#install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_arm64.deb" || error "Failed to install stl-thumb package!"
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
 GenericName=3D Printing Software
 Comment=Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage'
+Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage '"'\ "%f"'"
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application
