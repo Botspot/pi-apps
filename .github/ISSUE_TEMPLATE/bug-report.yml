@@ -1,0 +1,27 @@
+name: Bug Report
+description: File a bug report
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        "App failing to install? It's still around after uninstalling? Let us know!"
+  - type: checkboxes
+    attributes:
+      options:
+      - label: I searched for similar bug reports and found none was relevant.
+        required: true
+  - type: input
+    id: desc
+    attributes:
+      label: What happened?
+      description: Explain what what happened.
+      placeholder: "Ex. 'App' won't install"
+    validations:
+      required: true
+  - type: textarea
+    id: desc-long
+    attributes:
+      label: More details?
+      description: Give us more details about the bug and any personal attempts you made to fix it.
+      placeholder: Tell us more!
