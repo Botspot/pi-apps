@@ -7,8 +7,7 @@ function error {
   exit 1
 }
 
-echo "Installing dependencies"
-"${DIRECTORY}/pkg-install" "kmod zip unzip" "$(dirname "$0")" || exit 1
+install_packages kmod zip unzip libfuse2 || exit 1
 
 echo "Creating directories"
 mkdir -p ~/.minecraft ~/lwjgl3arm64 ~/lwjgl2arm64 ~/lunarassets
@@ -49,7 +48,7 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk1.8.0_251 PATH=/opt/jdk/jdk1.8.0_251/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage"\""
+Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk1.8.0_251 PATH=/opt/jdk/jdk1.8.0_251/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
 
