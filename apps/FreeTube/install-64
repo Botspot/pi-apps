@@ -9,7 +9,7 @@ function error {
 
 #Downloading Deb File For FreeTube
 rm -f ~/freetube.deb
-wget -O ~/freetube.deb https://github.com/FreeTubeApp/FreeTube/releases/download/v0.15.0-beta/freetube_0.15.0_arm64.deb || error "Failed to download freetube.deb!"
+wget -O ~/freetube.deb https://github.com/FreeTubeApp/FreeTube/releases/download/v0.15.1-beta/freetube_0.15.1_arm64.deb || error "Failed to download freetube.deb!"
 
 #Installing FreeTube
 "${DIRECTORY}/pkg-install" "$HOME/freetube.deb" "$(dirname "$0")" || error "APT failed to install freetube.deb!"
