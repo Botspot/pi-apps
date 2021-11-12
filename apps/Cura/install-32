@@ -14,7 +14,10 @@ wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/
 
 chmod +x ~/Cura.AppImage
 
-#get stl-thumb package - commented out due to common apt errors
+#ensure libfuse2 is installed to avoid "error loading libfuse.so.2" error
+install_packages libfuse2
+
+#get stl-thumb package - non-fatal as it's not crucial to Cura's function
 install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_armhf.deb" || warning "Failed to install stl-thumb package, but continuing as it's not crucial to Cura's operation."
 
 echo "[Desktop Entry]
