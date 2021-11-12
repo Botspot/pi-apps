@@ -151,7 +151,7 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **10/23/2021** Added LinuxCNC app
 - **10/24/2021** Added Geekbench app and a "Import App" button to settings
 - **10/26/2021** Added Temps app and individual icons for all categories
-- **10/28/2021** Added DeskScreen app
+- **10/28/2021** Added Deskreen app
 - **10/6/2021** Added Alacritty Terminal app
 
 
