@@ -15,7 +15,7 @@ wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/
 chmod +x ~/Cura.AppImage
 
 #get stl-thumb package - commented out due to common apt errors
-#install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_arm64.deb" || error "Failed to install stl-thumb package!"
+install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${stl_thumb_version}/stl-thumb_${stl_thumb_version}_arm64.deb" || warning "Failed to install stl-thumb package, but continuing as it's not crucial to Cura's operation."
 
 echo "[Desktop Entry]
 Name=Ultimaker Cura
