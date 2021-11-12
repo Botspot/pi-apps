@@ -297,7 +297,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #Initialize the pi-apps-local-packages repository
     repo_refresh
     #add this repository to flags to add to apt
-    apt_flags+=(-o 'Dir::Ignore-Files-Silently::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
+    apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
   fi
   #run an apt update
   apt_update "${apt_flags[@]}" || exit 1
