@@ -12,7 +12,7 @@ function error {
 "${DIRECTORY}/api" apt_lock_wait
 
 # Remove old depricated packagecloud repo
-if test -f "/etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list"; then
+if [ -f "/etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list" ]; then
   sudo rm /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
 fi
 
