@@ -7,4 +7,6 @@ function error {
   exit 1
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")"  || error "Failed to purge-installed!"
+# remove the pin-priority
+sudo rm -rf /etc/apt/preferences.d/youtube-dl-backports
+purge_packages || error "Dependencies failed to uninstall"
