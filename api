@@ -1169,6 +1169,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "blockpi : Depends: python3-picamera but it is not installable" <<<"$errors" ;then
+    error_caption+=("BlockPi could not be installed because the python3-picamera package is missing.
+
+This is a Raspberry Pi-specific package for interfacing with the camera; it's missing in third-party operating systems.")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
