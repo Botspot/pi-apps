@@ -198,7 +198,7 @@ set(Launcher_CommonName "MultiMC")
 set(Launcher_Copyright "MultiMC Contributors" PARENT_SCOPE)
 set(Launcher_Domain "multimc.org" PARENT_SCOPE)
 set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
-set(Launcher_DisplayName "${Launcher_CommonName} 5" PARENT_SCOPE)
+set(Launcher_DisplayName "Multiple Instance Minecraft Java Launcher" PARENT_SCOPE)
 set(Launcher_UserAgent "${Launcher_CommonName}/5.0" PARENT_SCOPE)
 set(Launcher_ConfigFile "multimc.cfg" PARENT_SCOPE)
 set(Launcher_Git "https://github.com/MultiMC/Launcher" PARENT_SCOPE)
@@ -243,7 +243,8 @@ Type=Application
 Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 $HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
-Name=MultiMC
+Name=Multiple Instance Minecraft Java Launcher
+GenericName=MultiMC
 Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
@@ -254,7 +255,8 @@ Type=Application
 Exec=$HOME/MultiMC/install/MultiMC
 Hidden=false
 NoDisplay=false
-Name=MultiMC
+Name=Multiple Instance Minecraft Java Launcher
+GenericName=MultiMC
 Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
 Categories=Game
 _EOF_"
