@@ -49,7 +49,8 @@ if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
   rm -rf ~/pi-apps-forced-update
   git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   temp_logfile="$(mktemp).txt"
-  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo: $(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
+  new_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
+  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $(date -d@$current_git_date); $current_git_date\nTo:   $(date -d@$new_git_date); $new_git_date\n$(get_device_info)" >> "$temp_logfile"
   send_error_report "$temp_logfile" 1>&2
   rm -f "$temp_logfile"
   sleep 10
