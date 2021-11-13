@@ -1,5 +1,5 @@
 #!/bin/bash
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to purge-installed!"
+purge_packages || exit 1
 
 rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox /usr/local/bin/oomox-gui || sudo rm -rf $HOME/.local/share/applications/oomox.desktop $HOME/oomox /usr/local/bin/oomox-gui 
