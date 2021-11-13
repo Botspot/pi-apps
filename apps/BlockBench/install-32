@@ -1,17 +1,3 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f blockbench.deb
-
-wget -O ~/blockbench.deb "https://apt.raspbian-addons.org/debian/pool/blockbench_4.0.3_armhf.deb" || error "Failed to download deb file!"
-
-# Get dependencies
-"${DIRECTORY}/pkg-install" "$HOME/blockbench.deb" "$(dirname "$0")" || exit 1
-
-rm -f blockbench.deb
+install_packages https://apt.raspbian-addons.org/debian/pool/blockbench_4.0.3_armhf.deb || exit 1

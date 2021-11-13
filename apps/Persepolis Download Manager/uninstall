@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # remove the pin-priority
 sudo rm -rf /etc/apt/preferences.d/youtube-dl-backports
 purge_packages || error "Dependencies failed to uninstall"

@@ -1,25 +1,14 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Install Wine
 if ! command -v wine || [ "$(cat "${DIRECTORY}/data/status/Wine (x86)" 2>/dev/null)" != 'installed' ];then
   echo 'Installing Wine...'
   "${DIRECTORY}/manage" install 'Wine (x86)' || error "Wine failed to install somehow!"
 fi
 ulimit -c unlimited
-
 echo "Note that during this installation, a error may pop up saying \"Gecko\" or \"Mono\" isn't installed. Don't worry, that error is normal. Just click the \"Install\" button!"
 read -p "Press [Enter] to continue installaton."
-
 rm -rf ~/.config/wechat-prefix
 mkdir -p ~/.config/wechat-prefix
-
 # Install font stuff so chinese renders
 echo "Installing several Wine extensions to allow font rendering..."
 BOX86_NOBANNER=1 WINEPREFIX=~/.config/wechat-prefix winetricks corefonts gdiplus riched20 riched30 wenquanyi cjkfonts || error "Winetricks failed to install corefonts gdiplus riched20 riched30 wenquanyi cjkfonts"
@@ -38,13 +27,11 @@ wget -O ~/WeChatSetup.exe https://dldir1.qq.com/weixin/Windows/WeChatSetup.exe
 
 WINEPREFIX=~/.config/wechat-prefix wine ~/WeChatSetup.exe
 rm ~/WeChatSetup.exe
-
 rm ~/.local/share/applications/wine/Programs/WeChat/UninstallWeChat.desktop
 rm ~/.local/share/desktop-directories/wine-Programs-WeChat.directory
 rm -rf ~/.local/share/applications/wine/Programs/WeChat/
 rm ~/Desktop/WeChat.desktop
 rm ~/.local/share/applications/wine/Programs/WeChat/WeChat.desktop
-
 
 echo "[Desktop Entry]
 Name=WeChat

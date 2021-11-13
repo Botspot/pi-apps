@@ -1,15 +1,3 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/flameshot_armhf.deb
-wget -O ~/flameshot_armhf.deb https://github.com/flameshot-org/flameshot/releases/download/v0.10.1/flameshot-0.10.1-1.debian-10.armhf.deb || error 'Failed to download flameshot deb file'
-
-"${DIRECTORY}/pkg-install" "$HOME/flameshot_armhf.deb" "$(dirname "$0")" || error 'Failed to install flameshot_armhf.deb'
-rm -f ~/flameshot_armhf.deb
-
+install_packages https://github.com/flameshot-org/flameshot/releases/download/v0.10.1/flameshot-0.10.1-1.debian-10.armhf.deb || exit 1

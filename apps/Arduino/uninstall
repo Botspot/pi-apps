@@ -1,5 +1,4 @@
 #!/bin/bash
-
 VERSION=arduino-1.8.16
 
 if [ -f "$HOME/.local/share/$VERSION/uninstall.sh" ]; then

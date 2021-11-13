@@ -1,10 +1,9 @@
 #!/bin/bash
-
 cd $HOME
 mkdir -p xdm 
 cd xdm
 
-"${DIRECTORY}/pkg-install" "openjdk-11-jdk ffmpeg" "$(dirname "$0")" || error "Failed installing openjdk!"
+install_packages openjdk-11-jdk ffmpeg || exit 1
 
 wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/7.2.11/xdm-setup-7.2.11.tar.xz || error "Failed to download XDM setup tar file!"
 wget https://github.com/ytdl-org/youtube-dl/releases/download/2021.06.06/youtube-dl || error "Failed to download youtube-dl binary!"
@@ -24,12 +23,9 @@ elif command -v java &>/dev/null; then
 else
 	error "OpenJDK-11 installation not found!"
 fi
-
 # Fix 'Download failed. Failed to append/convert file parts, please check if the drive is full or write protected'
 sudo cp -f $(command -v ffmpeg) /opt/xdman || error "Failed to copy ffmpeg binary!"
-
 # Delete unwanted files after installation
 rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
-
 # Reminder for users to install browser extensiom
 echo -e "\nYou may want to install the XDM browser extension. Install it from \e[4mXDM Menu -> Tools -> Browser Monitoring\e[0m page."

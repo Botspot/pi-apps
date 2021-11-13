@@ -1,11 +1,8 @@
 #!/bin/bash
-
 VERSION=arduino-1.8.16
 
 cd ~/.local/share
 wget https://downloads.arduino.cc/$VERSION-linuxarm.tar.xz || error "failed to download!"
-
 tar -xf $(pwd)/$VERSION-linuxarm.tar.xz || error "failed to extract with tar!"
 sudo $(pwd)/$VERSION/install.sh || error "failed run Arduino install script!"
-
 rm -f $HOME/Desktop/arduino-arduinoide.desktop $(pwd)/$VERSION-linuxarm.tar.xz

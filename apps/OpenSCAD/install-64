@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 wget 'https://files.openscad.org/OpenSCAD-2021.01-aarch64.AppImage' -O ~/OpenSCAD.AppImage || error "Failed to download appimage!"
 
 chmod +x ~/OpenSCAD.AppImage || error "Failed to mark as executable!"

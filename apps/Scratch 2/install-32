@@ -1,22 +1,10 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -rf ~/scratch2
-git clone https://github.com/Botspot/scratch2 || error "Failed to clone repository!"
-
+git_clone https://github.com/Botspot/scratch2 || error "Failed to clone repository!"
 echo "Copying libpepflashplayer.so to /usr/lib/chromium-browser..."
 sudo cp -af ~/scratch2/libpepflashplayer.so /usr/lib/chromium-browser/libpepflashplayer.so || error "Failed to copy libpepflashplayer.so"
-
 echo "Installing scratch2 package..."
-"${DIRECTORY}/pkg-install" "$HOME/scratch2/scratch2_0.25_armhf.deb" "$(dirname "$0")" || error "Failed to install scratch2 package"
-
+install_packages $HOME/scratch2/scratch2_0.25_armhf.deb || exit 1
 echo "Holding scratch2 package version so it won't upgrade..."
 echo "scratch2 hold" | sudo dpkg --set-selections
-
 rm -rf ~/scratch2

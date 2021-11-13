@@ -1,13 +1,5 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/pkg-install" "mono-complete apt-transport-https dirmngr gnupg ca-certificates" "$(dirname "$0")" || exit 1
+install_packages mono-complete apt-transport-https dirmngr gnupg ca-certificates || exit 1
 
 rm -rf ~/MissionPlanner-latest &>/dev/null
 mkdir ~/MissionPlanner-latest

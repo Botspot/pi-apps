@@ -1,17 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-wget https://github.com/Pi-Apps-Coders/files/raw/main/lightpad_0.0.8rev1_arm64.deb -O ~/lightpad.deb || error "Failed to download lightpad.deb!"
-
-"${DIRECTORY}/pkg-install" "$HOME/lightpad.deb" "$(dirname "$0")" || error 'Failed to install lightpad.deb'
-
-rm -f ~/lightpad.deb
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/lightpad_0.0.8rev1_arm64.deb || exit 1
 
 echo "[Desktop Entry]
 Version=1.0
@@ -22,5 +11,4 @@ Exec=com.github.libredeb.lightpad
 Comment=LightPad is a lightweight, simple and powerful application launcher
 Categories=Accessories;Utility;
 Terminal=false" > ~/.local/share/applications/lightpad.desktop
-
 

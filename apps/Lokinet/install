@@ -1,11 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
 clear='\033[0m'
 green='\033[1;32m'
 cyan='\033[1;36m'
@@ -24,13 +17,10 @@ grey='\033[0;37m'
 
 echo "Installing public key and adding packages..."
 sudo modprobe tun || exit 1
-
 sudo wget -qO /etc/apt/trusted.gpg.d/oxen.gpg https://deb.oxen.io/pub.gpg || error "Failed to download /etc/apt/trusted.gpg.d/oxen.gpg"
 echo "deb https://deb.oxen.io $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/oxen.list
-
 echo "Installing Lokinet-GUI and resolvconf..."
-"${DIRECTORY}/pkg-install" "lokinet-gui resolvconf" "$(dirname "$0")" || exit 1
-
+install_packages lokinet-gui resolvconf || exit 1
 if [ ! -e /etc/systemd/system/lokinet.service.d/override.conf ]; then
   echo "Applying systemd tun override..."
   sudo mkdir /etc/systemd/system/lokinet.service.d

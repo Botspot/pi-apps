@@ -1,15 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium.gpg
 
-rm -f ~/codium.deb || error "Failed to first remove codium.deb"
-wget -O ~/codium.deb https://github.com/VSCodium/vscodium/releases/download/1.60.1/codium_1.60.1-1631717946_armhf.deb || error "Failed to download codium.deb"
-
-"${DIRECTORY}/pkg-install" "$HOME/codium.deb" "$(dirname "$0")" || error "Failed to install the codium.deb package!"
+install_packages https://github.com/VSCodium/vscodium/releases/download/1.60.1/codium_1.60.1-1631717946_armhf.deb || exit 1

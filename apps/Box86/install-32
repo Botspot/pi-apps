@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if dpkg -l box86 &>/dev/null ;then
   sudo apt purge -y box86
 fi
@@ -15,13 +7,11 @@ sudo rm -f /etc/apt/sources.list.d/box86.list
 echo "Adding box86 repo..."
 sudo mkdir -p /etc/apt/sources.list.d
 sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
-
 echo "Adding key..."
 wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
-
 echo "Installing box86..."
 sudo dpkg --remove box86-no-binfmt-restart 2>/dev/null
-"${DIRECTORY}/pkg-install" "box86" "$(dirname "$0")" || exit 1
+install_packages box86 || exit 1
 
 if ! sudo systemctl restart systemd-binfmt ;then
   echo -e "\nWarning: systemd-binfmt failed to restart. Getting debug info..."

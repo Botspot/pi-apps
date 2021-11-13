@@ -1,8 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-
 #skip uninstallation if executed from an update
 if [[ "$1" != "update" ]];then
   cd ~/MultiMC && find ./install -mindepth 1 ! -regex '^./install/instances\(/.*\)?' -delete

@@ -1,19 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#download the deb
-rm -f ~/stunt-rally.deb
-wget -O ~/stunt-rally.deb https://archive.org/download/stunt-rally_armhf/stunt-rally_20210305-1_armhf.deb
-#install the deb and delete it
-
-"${DIRECTORY}/pkg-install" "libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev $HOME/stunt-rally.deb" "$(dirname "$0")" || exit 1
-rm -f ~/stunt-rally.deb
+install_packages https://archive.org/download/stunt-rally_armhf/stunt-rally_20210305-1_armhf.deb libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev || exit 1
 
 #fix menu shortcut icons
 sudo rm /usr/share/applications/stuntrally.desktop &>/dev/null
@@ -53,7 +40,6 @@ Terminal=false
 Type=Application
 Categories=Application;Game;SportsGame;
 " | sudo tee /usr/share/applications/sr-editor.desktop >/dev/null
-
 mkdir -p ~/.config/stuntrally
 echo '
 [ car1 ]
@@ -88,7 +74,6 @@ clr_hue = 0.910000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 1.000000
-
 [ car3 ]
 camera = 9
 car = ES
@@ -97,7 +82,6 @@ clr_hue = 0.750000
 clr_refl = 0.400000
 clr_sat = 0.950000
 clr_val = 0.900000
-
 [ car4 ]
 camera = 9
 car = ES
@@ -106,21 +90,18 @@ clr_hue = 0.000000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 0.900000
-
 [ car5 ]
 clr_gloss = 0.500000
 clr_hue = 0.910000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 1.000000
-
 [ car6 ]
 clr_gloss = 0.030000
 clr_hue = 0.700000
 clr_refl = 1.300000
 clr_sat = 1.000000
 clr_val = 0.700000
-
 [ game ]
 boost_add_sec = 0.100000
 boost_max = 11.000000
@@ -151,7 +132,6 @@ start_order = 0
 track = Jng7-Hilly
 track_user = off
 trk_reverse = off
-
 [ graph_detail ]
 anisotropy = 0
 preset = 0
@@ -266,7 +246,6 @@ mini_zoom = 2.400000
 mini_zoomed = on
 minimap = 0.165000
 minipos = 0.100000
-
 [ misc ]
 autostart = off
 boostFromExhaust = off
@@ -291,7 +270,6 @@ local_port = 4243
 master_server_address = stuntrally.dy.fi
 master_server_port = 4243
 nickname = Player
-
 [ pacenotes ]
 alpha = 0.900000
 dist = 300.000000

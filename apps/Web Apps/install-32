@@ -1,20 +1,10 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -rf ~/Linux_Mint_Webapps || error "Failed to delete Linux_Mint_Webapps folder for some reason."
-git clone https://github.com/phoenixbyrd/Linux_Mint_Webapps || error 'Failed to clone phoenixbyrd web apps repository!'
-
+git_clone https://github.com/phoenixbyrd/Linux_Mint_Webapps || error 'Failed to clone phoenixbyrd web apps repository!'
 cd Linux_Mint_Webapps || error 'Failed to enter directory!'
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "$(pwd)/xapps-common_2.0.7-1_all.deb $(pwd)/libxapp1_2.0.7-1_armhf.deb $(pwd)/gir1.2-xapp-1.0_2.0.7-1_armhf.deb $(pwd)/libxapp-dev_2.0.7-1_armhf.deb $(pwd)/libxapp1-dbgsym_2.0.7-1_armhf.deb devhelp $(pwd)/webapp-manager_1.1.1_all.deb" "$(dirname "$0")" || error "Failed to install dependencies"
-
+install_packages $(pwd)/xapps-common_2.0.7-1_all.deb $(pwd)/libxapp1_2.0.7-1_armhf.deb $(pwd)/gir1.2-xapp-1.0_2.0.7-1_armhf.deb $(pwd)/libxapp-dev_2.0.7-1_armhf.deb $(pwd)/libxapp1-dbgsym_2.0.7-1_armhf.deb devhelp $(pwd)/webapp-manager_1.1.1_all.deb || exit 1
 #remove folder
 cd $HOME
 rm -rf ~/Linux_Mint_Webapps || error "Failed to delete Linux_Mint_Webapps folder for some reason."

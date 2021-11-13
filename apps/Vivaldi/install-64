@@ -1,13 +1,3 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/vivaldi.deb
-wget -O ~/vivaldi.deb https://downloads.vivaldi.com/stable/vivaldi-stable_4.3.2439.63-1_arm64.deb || error 'Failed to download vivaldi!'
-"${DIRECTORY}/pkg-install" "$HOME/vivaldi.deb" "$(dirname "$0")" || error 'Failed to install vivaldi.deb!'
-rm -f ~/vivaldi.deb
+install_packages https://downloads.vivaldi.com/stable/vivaldi-stable_4.3.2439.63-1_arm64.deb || exit 1

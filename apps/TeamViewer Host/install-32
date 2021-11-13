@@ -1,18 +1,3 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-# Download teamviewer installation file
-rm -f ~/teamviewer-host_armhf.deb
-wget -O ~/teamviewer-host_armhf.deb https://download.teamviewer.com/download/linux/teamviewer-host_armhf.deb || error "Failed to download teamviewer-host_armhf.deb"
-
-#install deb file
-"${DIRECTORY}/pkg-install" "$HOME/teamviewer-host_armhf.deb" "$(dirname "$0")" || error "Failed to install teamviewer-host_armhf.deb"
-
-# Delete teamviewer installation file
-rm -f ~/teamviewer-host_armhf.deb
+install_packages https://download.teamviewer.com/download/linux/teamviewer-host_armhf.deb || exit 1

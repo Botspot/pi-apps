@@ -1,34 +1,9 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages https://remarkableapp.github.io/files/remarkable_1.87_all.deb \
+  http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-webkit-3.0_2.4.11-3_arm64.deb \
+  http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb \
+  http://ftp.br.debian.org/debian/pool/main/i/icu/libicu57_57.1-6+deb9u4_arm64.deb \
+  http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb \
+  http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#downloads
-wget https://remarkableapp.github.io/files/remarkable_1.87_all.deb || error 'Failed to Download remarkable_1.87_all'
-wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-webkit-3.0_2.4.11-3_arm64.deb || error 'Failed to Download gir1.2-webkit-3.0'
-wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to Download libwebkitgtk'
-wget http://ftp.br.debian.org/debian/pool/main/i/icu/libicu57_57.1-6+deb9u4_arm64.deb || error 'Failed to Download libicu57'
-wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb || error 'Failed to download libwebkitgtk'
-wget http://ftp.br.debian.org/debian/pool/main/w/webkitgtk/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb || error 'Failed to download gir1.2-javascriptcoregtk'
-
-
-#installation
-"${DIRECTORY}/pkg-install" ~/libicu57_57.1-6+deb9u4_arm64.deb "$(dirname "$0")" || error 'Failed to install libicu57_57.1-6+deb9u4_arm64'
-"${DIRECTORY}/pkg-install" ~/libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb "$(dirname "$0")" || error 'Failed to install libjavascriptcoregtk-3.0-0_2.4.11-3_arm64'
-"${DIRECTORY}/pkg-install" ~/libwebkitgtk-3.0-0_2.4.11-3_arm64.deb "$(dirname "$0")" || error 'Failed to install libwebkitgtk-3.0-0_2.4.11-3_arm64'
-"${DIRECTORY}/pkg-install" ~/gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb "$(dirname "$0")" || error 'Failed to install libjavascriptcoregtk-3.0-0_2.4.11-3_arm64'
-
-"${DIRECTORY}/pkg-install" ~/gir1.2-webkit-3.0_2.4.11-3_arm64.deb "$(dirname "$0")" || error 'Failed to install gir1.2-webkit-3.0_2.4.11-3_arm64'
-"${DIRECTORY}/pkg-install" ~/remarkable_1.87_all.deb "$(dirname "$0")" || error 'Failed to install remarkable_1.87_all'
-
-#remove
-rm -f remarkable_1.87_all.deb
-rm -f gir1.2-webkit-3.0_2.4.11-3_arm64.deb
-rm -f libwebkitgtk-3.0-0_2.4.11-3_arm64.deb
-rm -f libjavascriptcoregtk-3.0-0_2.4.11-3_arm64.deb
-rm -f gir1.2-javascriptcoregtk-3.0_2.4.11-3_arm64.deb
-rm -f libicu57_57.1-6+deb9u4_arm64.deb

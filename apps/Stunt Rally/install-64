@@ -1,35 +1,24 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #ensure this folder exists to install stunt rally to
 sudo mkdir -p /usr/local/bin
-
 #get dependencies
 #DEPENDS="cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev"
 #TOINSTALL="$(dpkg -l $DEPENDS 2>&1 | awk '{if (/^D|^\||^\+/) {next} else if(/^dpkg-query:/) { print $6} else if(!/^[hi]i/) {print $2}}' | tr '\n' ' ')"
 #sudo apt -f -y install "$TOINSTALL"
 
-echo "Installing dependencies..."
-"${DIRECTORY}/pkg-install" "cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev" "$(dirname "$0")" || exit 1
+install_packages cmake git build-essential libboost-wave-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libogre-1.9-dev libmygui-dev libsdl2-dev libogg-dev libvorbis-dev libenet-dev libopenal-dev libopenal-dev libbullet-dev libbullet-extras-dev || exit 1
 
 if ! command -v checkinstall >/dev/null ; then
-  wget https://archive.org/download/macos_921_qemu_rpi/checkinstall_20210126-1_arm64.deb || error "Failed to download checkinstall!"
-  sudo apt install ./checkinstall_20210126-1_arm64.deb -y  || error "Failed to install checkinstall!"
+  install_packages https://archive.org/download/macos_921_qemu_rpi/checkinstall_20210126-1_arm64.deb || error "Failed to download checkinstall!"
   CHECKINSTALL=1
 fi
 
 #compile stunt rally
 cd $HOME
 rm -rf ~/stuntrally || error "Failed to first remove $HOME/stuntrally"
-git clone --depth=1 https://github.com/stuntrally/stuntrally stuntrally || error "Failed to clone stuntrally repo!"
+git_clone --depth=1 https://github.com/stuntrally/stuntrally stuntrally || error "Failed to clone stuntrally repo!"
 cd stuntrally/data || error "Failed to change directory to '$DIRECTORY/stuntrally/data'!"
-git clone --depth=1 https://github.com/stuntrally/tracks tracks || error "Failed to clone tracks repo!"
+git_clone --depth=1 https://github.com/stuntrally/tracks tracks || error "Failed to clone tracks repo!"
 cd .. || error "Failed to go one directory up!"
 
 mkdir build || error "Failed to create '$HOME/stuntrally/build' directory!"
@@ -50,9 +39,8 @@ rm -rf $DEBDIR/home || sudo rm -rf $DEBDIR/home
 rm -f $DEBNAME || error "Failed to delete old deb!"
 "${DIRECTORY}/api" apt_lock_wait
 dpkg-deb -b $DEBDIR || sudo dpkg-deb -b $DEBDIR || error "Failed to repack deb!"
-
 #install the deb
-"${DIRECTORY}/pkg-install" "$(pwd)/$DEBNAME" "$(dirname "$0")" || error "Failed to install the deb!"
+install_packages $(pwd)/$DEBNAME || exit 1
 rm -rf ~/stuntrally
 
 #fix the menu shortcut icons
@@ -93,7 +81,6 @@ Terminal=false
 Type=Application
 Categories=Application;Game;SportsGame;
 " | sudo tee /usr/share/applications/sr-editor.desktop >/dev/null
-
 mkdir -p ~/.config/stuntrally
 echo '
 [ car1 ]
@@ -128,7 +115,6 @@ clr_hue = 0.910000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 1.000000
-
 [ car3 ]
 camera = 9
 car = ES
@@ -137,7 +123,6 @@ clr_hue = 0.750000
 clr_refl = 0.400000
 clr_sat = 0.950000
 clr_val = 0.900000
-
 [ car4 ]
 camera = 9
 car = ES
@@ -146,21 +131,18 @@ clr_hue = 0.000000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 0.900000
-
 [ car5 ]
 clr_gloss = 0.500000
 clr_hue = 0.910000
 clr_refl = 1.000000
 clr_sat = 1.000000
 clr_val = 1.000000
-
 [ car6 ]
 clr_gloss = 0.030000
 clr_hue = 0.700000
 clr_refl = 1.300000
 clr_sat = 1.000000
 clr_val = 0.700000
-
 [ game ]
 boost_add_sec = 0.100000
 boost_max = 11.000000
@@ -191,7 +173,6 @@ start_order = 0
 track = Jng7-Hilly
 track_user = off
 trk_reverse = off
-
 [ graph_detail ]
 anisotropy = 0
 preset = 0
@@ -306,7 +287,6 @@ mini_zoom = 2.400000
 mini_zoomed = on
 minimap = 0.165000
 minipos = 0.100000
-
 [ misc ]
 autostart = off
 boostFromExhaust = off
@@ -331,7 +311,6 @@ local_port = 4243
 master_server_address = stuntrally.dy.fi
 master_server_port = 4243
 nickname = Player
-
 [ pacenotes ]
 alpha = 0.900000
 dist = 300.000000
@@ -416,7 +395,6 @@ motionblurintensity = 0.400000
 softparticles = off
 ssao = off
 ' > ~/.config/stuntrally/game.cfg
-
 #clean up
 sudo apt purge -y "$TOINSTALL"
 if [[ "$CHECKINSTALL" == 1 ]]; then

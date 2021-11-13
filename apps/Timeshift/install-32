@@ -1,13 +1,3 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/timeshift.deb
-wget -O ~/timeshift.deb https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_armhf.deb || error 'Failed to download timeshift!'
-"${DIRECTORY}/pkg-install" "$HOME/timeshift.deb" "$(dirname "$0")" || error 'Failed to install .deb file!'
-rm -f ~/timeshift.deb
+install_packages https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_armhf.deb || exit 1

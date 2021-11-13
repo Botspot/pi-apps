@@ -1,20 +1,5 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#Remove deb files if already downloaded
-rm -f ~/libfdk-aac2_2.0.1-1_arm64.deb ~/libfdk-aac-dev_2.0.1-1_arm64.deb ~/obs_arm64.deb
-
-#Download deb files
-wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_arm64.deb -O ~/libfdk-aac2_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac2_2.0.1-1_arm64.deb"
-wget http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_arm64.deb -O ~/libfdk-aac-dev_2.0.1-1_arm64.deb || error "Failed to download libfdk-aac-dev_2.0.1-1_arm64.deb"
-wget https://github.com/techcoder20/RPIObsInstaller/blob/main/obs_arm64.deb?raw=true -O ~/obs_arm64.deb || error "Failed to download obs_arm64.deb"
-
 #remove obs-studio package first
 if dpkg -l obs-studio &>/dev/null ;then
   echo "Removing obs-studio package first..."
@@ -22,15 +7,11 @@ if dpkg -l obs-studio &>/dev/null ;then
 fi
 
 #Install all debs. Local dependencies, obs_armhf.deb, normal dependencies, and libxcb*
-"${DIRECTORY}/pkg-install" "$HOME/obs_arm64.deb $HOME/libfdk-aac2_2.0.1-1_arm64.deb $HOME/libfdk-aac-dev_2.0.1-1_arm64.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0 libxcb-xinput-dev libxcb-randr0 libxcb-randr0-dev libxcb-xfixes0 libxcb-xfixes0-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb* " "$(dirname "$0")" || exit 1
-
-#Remove deb files after installation
-sudo rm -f ~/libfdk-aac2_2.0.1-1_arm64.deb ~/libfdk-aac-dev_2.0.1-1_arm64.deb ~/obs_arm64.deb
+install_packages http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_arm64.deb http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_arm64.deb https://raw.githubusercontent.com/techcoder20/RPIObsInstaller/main/obs_arm64.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0 libxcb-xinput-dev libxcb-randr0 libxcb-randr0-dev libxcb-xfixes0 libxcb-xfixes0-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb*  || exit 1
 
 #Create workaround wrapper script to override MESA_GL_VERSION
 sudo mv /usr/bin/obs /usr/bin/obs-exec
 echo '#!/bin/bash
 MESA_GL_VERSION_OVERRIDE=3.3 /usr/bin/obs-exec "$@"' | sudo tee /usr/bin/obs >/dev/null
 sudo chmod +x /usr/bin/obs
-
 
