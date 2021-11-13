@@ -153,8 +153,8 @@ mkdir -p build
 mkdir -p install
 
 # clone the complete source
-status "Downloading the MultiMC5 Source Code"
-git clone --recursive https://github.com/MultiMC/Launcher.git src # You can clone from MultiMC's main repo, no need to use a fork.
+status "Downloading the MultiMC5 Source Code directly from the official repository..."
+git clone --recursive https://github.com/MultiMC/Launcher.git src
 cd src
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
@@ -218,8 +218,8 @@ cd build
 rm -rf CMakeCache.txt
 status "Generating the CMake File"
 case "$arch" in
-    "64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
-    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_SUBREDDIT_URL="https://www.reddit.com/r/MultiMC/" -DLauncher_DISCORD_URL="https://discord.gg/multimc"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
+    "64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
+    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
     *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
@@ -262,9 +262,10 @@ fi
 
 status_green 'Installation is now done! You can open the launcher by going to Menu > Games > MultiMC'
 
-warning "MultiMC5 does not give support for custom builds"
-warning "Only bugs that can be reproduced on official MultiMC5 builds should be posted to https://github.com/MultiMC/MultiMC5/issues"
-warning "Bugs which only appear on this build should be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Discord Server"
+warning "The upstream, MultiMC5, does not give support for custom builds"
+warning "Bugs which appear on this build should only be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Pi-Apps Discord Server"
 
-status "Make sure to visit the MultiMC5 wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
+status "Make sure to visit the upstream wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
 status "If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine"
+
+
