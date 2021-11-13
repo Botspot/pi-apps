@@ -145,7 +145,7 @@ mkdir -p build
 mkdir -p install
 # clone the complete source
 status "Downloading the MultiMC5 Source Code directly from the official repository..."
-git_clone --recursive https://github.com/MultiMC/Launcher.git src
+git clone --recursive https://github.com/MultiMC/Launcher.git src
 cd src
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
