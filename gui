@@ -54,6 +54,11 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
   
+  #removeTBOPlayer if it's not already successfully installed
+  if [ "$(app_status TBOPlayer)" != 'installed' ];then
+    rm -rf "${DIRECTORY}/apps/TBOPlayer"
+  fi
+  
   #rename 'Turbo Scratch' app to 'Turbowarp'
   rm -rf "${DIRECTORY}/apps/Turbo Scratch"
   mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp" 2>/dev/null

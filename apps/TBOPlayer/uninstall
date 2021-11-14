@@ -1,8 +1,0 @@
-#!/bin/bash
-purge_packages || exit 1
-
-if [ -f /opt/tboplayer/setup.sh ];then
-  #run uninstall script, saying 'yes' to the first question, and 'no' to the second question
-  echo -e "y\nn" | /opt/tboplayer/setup.sh uninstall || error "failed to uninstall!"
-fi
-exit 0

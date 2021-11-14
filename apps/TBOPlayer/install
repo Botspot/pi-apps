@@ -1,5 +1,0 @@
-#!/bin/bash
-# Get dependencies
-install_packages python-pip python-dev python-gobject-2 python-dbus python-tk python-gtk2 python-requests tkdnd || error "Failed to install dependencies"
-cd ~ && wget https://github.com/KenT2/tboplayer/tarball/master -O - | tar xz || error "Failed to download!"
-cd KenT2-tboplayer-* && chmod +x setup.sh && ./setup.sh || error "failed to run setup.sh!"
