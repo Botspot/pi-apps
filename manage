@@ -42,7 +42,7 @@ upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/m
 if ! [[ "$upstream_git_date" =~ ^[0-9]+$ ]]; then
   # if upstream master git date can't be found, then fallback to local time server
   # the above checks for an empty variable or a variable containing non-numerical values
-  echo "Falling back to local system time"
+  echo "Falling back to local system time" 1>&2
   upstream_git_date="$(date +%s)"
 fi
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
