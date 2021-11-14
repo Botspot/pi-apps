@@ -185,8 +185,10 @@ repo_refresh() { #index the pi-apps local apt repository
   #index the repository by creating a Packages file
   cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
   
-  #create a source.list for the repository
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
+  #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
+  rm -f /tmp/pi-apps-local-packages/source.list
+  cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" >> /tmp/pi-apps-local-packages/source.list
 }
 
 repo_rm() { #remove the local apt repository
@@ -1517,16 +1519,16 @@ git_clone() { #silently clone a git repository but display the output if an erro
   [ -z "$url" ] && error "git_clone(): no repository URL specified."
   
   local repo_name=$(basename "$url" | sed s/.git//g)
-
+  
   local folder="$(pwd)/$repo_name"
-
+  
   status -n "Downloading $repo_name repository... "
-
+  
   rm -rf "$repo_name"
   local errors
   errors="$(git clone "$@" 2>&1)" 
   local exitcode=$?
-
+  
   if [ "$exitcode" != 0 ]; then
     error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi
