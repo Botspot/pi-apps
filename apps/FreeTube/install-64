@@ -1,3 +1,3 @@
 #!/bin/bash
 
-install_packages https://github.com/FreeTubeApp/FreeTube/releases/download/v0.15.0-beta/freetube_0.15.0_arm64.deb || exit 1
+install_packages https://github.com/FreeTubeApp/FreeTube/releases/download/v0.15.1-beta/freetube_0.15.1_arm64.deb || exit 1
