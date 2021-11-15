@@ -7,7 +7,7 @@ wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-
 unzip -o Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
 
 # Install
-chmod +x $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
+chmod +x $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage || error 'Failed to make Deskreen-1.0.1-armv7l.AppImage executable!'
 echo "#!/bin/bash
 $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage --no-sandbox" | sudo tee /usr/local/bin/deskreen &>/dev/null || error 'Failed to create /usr/local/bin/deskreen!'
 sudo chmod +x /usr/local/bin/deskreen || error 'Failed to make "/usr/local/bin/deskreen" executable!'
