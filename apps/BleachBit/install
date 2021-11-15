@@ -6,3 +6,4 @@ install_packages https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons
 ( rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop || sudo rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop ) &>/dev/null
 # Move BleachBit to Accessories category
 ( sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop || sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop ) &> /dev/null
+

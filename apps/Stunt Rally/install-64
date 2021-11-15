@@ -401,3 +401,4 @@ if [[ "$CHECKINSTALL" == 1 ]]; then
   sudo apt purge -y checkinstall
 fi
 sudo rm -rf ~/stuntrally
+

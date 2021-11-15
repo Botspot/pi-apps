@@ -6,3 +6,4 @@ if [[ $? == "0" ]]; then
 else
   install_packages "http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb" "http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb" "http://ftp.debian.org/debian/pool/main/f/falkon/falkon_3.0.0-3_armhf.deb" || error "Could not install falkon"
 fi
+

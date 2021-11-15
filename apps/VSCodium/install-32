@@ -2,3 +2,4 @@
 sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium.gpg
 
 install_packages https://github.com/VSCodium/vscodium/releases/download/1.60.1/codium_1.60.1-1631717946_armhf.deb || exit 1
+
