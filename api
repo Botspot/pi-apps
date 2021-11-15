@@ -280,7 +280,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       list="$(apt-cache search "$package" | awk '{print $1}' | grep "$(echo "$package" | tr -d '*')")"
       
       #replace package with expanded list
-      packages="$(echo "$packages" sed "s|$(echo "$package" | sed 's/*/\\*/g')|$list|g")"
+      packages="$(echo "$packages" | grep -vF "$package")"$'\n'"$list"
     fi
   done
   #now package list shouldn't contain any '*' characters, urls, local filepaths
@@ -1178,8 +1178,15 @@ This is a Raspberry Pi-specific package for interfacing with the camera; it's mi
     error_type="package"
   fi
   
-  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll " <<<"$errors" ;then
+  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll" <<<"$errors" ;then
     error_caption+=("The libmono package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The android-androresolvd on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
@@ -1531,7 +1538,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
   
   status -n "Downloading $repo_name repository... "
   
-  rm -rf "$repo_name"
+  rm -rf "$repo_name" || sudo rm -rf "$repo_name"
   local errors
   errors="$(git clone "$@" 2>&1)" 
   local exitcode=$?
