@@ -8,3 +8,4 @@ install_packages $(pwd)/xapps-common_2.0.7-1_all.deb $(pwd)/libxapp1_2.0.7-1_arm
 #remove folder
 cd $HOME
 rm -rf ~/Linux_Mint_Webapps || error "Failed to delete Linux_Mint_Webapps folder for some reason."
+

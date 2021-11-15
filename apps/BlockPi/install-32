@@ -1,3 +1,4 @@
 #!/bin/bash
 
 install_packages https://github.com/alienzhangyw/BlockPi/releases/download/v1.2.0/blockpi_1.2.0_armv7l.deb || exit 1
+

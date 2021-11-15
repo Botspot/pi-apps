@@ -21,3 +21,4 @@ Terminal=false
 Type=Application
 Categories=Utility;" > $HOME/.local/share/applications/deskreen.desktop || error 'Failed to create menu shortcut!'
 rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || sudo rm -rf Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove Deskreen-1.0.1-armv7l.AppImage.zip'
+

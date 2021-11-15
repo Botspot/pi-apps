@@ -8,3 +8,4 @@ if command -v thunar >/dev/null ;then
   install_packages https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
 fi
 exit 0
+

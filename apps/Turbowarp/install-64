@@ -24,3 +24,4 @@ if [ -z "$(cat ~/.config/mimeapps.list | grep 'turbowarp-desktop.desktop')" ];th
 application/sb3=turbowarp-desktop.desktop;" >> ~/.config/mimeapps.list
   echo done
 fi
+

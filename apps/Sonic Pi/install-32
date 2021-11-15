@@ -1,3 +1,4 @@
 #!/bin/bash
 
 install_packages https://sonic-pi.net/files/releases/v3.3.1/sonic-pi_3.3.1_1_armhf.deb libconfig9 || exit 1
+

@@ -12,3 +12,4 @@ chmod +x /tmp/run-teams.sh
 sudo mv -f /tmp/run-teams.sh /opt/teams-for-linux
 #change menu launcher exec field to /opt/teams-for-linux/run-teams.sh
 ( sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
+
