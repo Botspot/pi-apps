@@ -154,17 +154,11 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
   
   echo -n "Downloading repository... "
-  errors="$(git clone "https://github.com/${repo}" 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
-  echo "Done - git clone https://github.com/${repo}"
-  
-  echo -n "Switching to branch: $branch "
-  cd "$(pwd)/pi-apps"
-  errors="$(git checkout "$branch" 2>&1)" || error "Failed to checkout branch: $branch\nErrors:\n$errors"
-  cd .. #now the current directory is the tmpdir
-  echo "Done - git checkout $branch"
+  errors="$(git clone "https://github.com/${repo}" -b $branch 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
+  echo "Done - git clone https://github.com/${repo} -b $branch"
   
   echo -n "Getting pi-apps repo for comparison... "
-  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master 2>&1)" || error "Failed to clone botspot pi-apps repository.\nErrors:\n$errors"
+  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master 2>&1)" || error "Failed to clone Botspot pi-apps repository.\nErrors:\n$errors"
   echo "Done - git clone https://github.com/Botspot/pi-apps"
   
   #get list of apps that are unique to this pi-apps folder. (not on main repo)
