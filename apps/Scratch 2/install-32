@@ -8,3 +8,4 @@ install_packages $HOME/scratch2/scratch2_0.25_armhf.deb || exit 1
 echo "Holding scratch2 package version so it won't upgrade..."
 echo "scratch2 hold" | sudo dpkg --set-selections
 rm -rf ~/scratch2
+

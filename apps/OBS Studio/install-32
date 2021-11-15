@@ -14,3 +14,4 @@ sudo mv /usr/bin/obs /usr/bin/obs-exec
 echo '#!/bin/bash
 MESA_GL_VERSION_OVERRIDE=3.3 /usr/bin/obs-exec "$@"' | sudo tee /usr/bin/obs >/dev/null
 sudo chmod +x /usr/bin/obs
+

@@ -167,7 +167,7 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
   #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
   #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
   
-  #use this flag for apt commands to use the local repository: -o Dir::Ignore-Files-Silently::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
   
   #ensure the repo-folder exists
   mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
@@ -1178,6 +1178,13 @@ This is a Raspberry Pi-specific package for interfacing with the camera; it's mi
     error_type="package"
   fi
   
+  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll " <<<"$errors" ;then
+    error_caption+=("The libmono package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1186,7 +1193,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
