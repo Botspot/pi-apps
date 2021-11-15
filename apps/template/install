@@ -1,9 +1,9 @@
 #!/bin/bash
-#use the error function often!
-#If a certain command is necessary for installation to continue, then add this to the end of it:
-# || error 'reason'
-#example below:
-git_clone https://example.com || error 'Failed to clone example.com repository!'
 
-# Get dependencies
+
+#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
+
+git_clone https://example.com || error 'Failed to clone repository!'
+
+# Install some packages that are necessary to run this app - no need for "error", as the install_packages function already handles errors.
 install_packages package1 package2 package3 || exit 1
