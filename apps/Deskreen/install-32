@@ -1,0 +1,22 @@
+#!/bin/bash
+
+wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Mirror!'
+unzip -o ~/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
+rm -f ~/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip'
+
+chmod +x ~/Deskreen-1.0.1-armv7l.AppImage || error "Failed to mark the appimage as executable"
+
+echo "#!/bin/bash
+sudo modprobe fuse
+$HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage --no-sandbox" | sudo tee /usr/local/bin/deskreen >/dev/null || error 'Failed to create /usr/local/bin/deskreen!'
+
+echo "[Desktop Entry]
+Name=Deskreen
+Comment=Deskreen allows you to use any device on your local network as a secondary screen, through a web browser.
+GenericName=Screen sharing app
+Exec=deskreen
+Icon=$(dirname "$0")/icon-64.png
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Utility;" > ~/.local/share/applications/deskreen.desktop || error 'Failed to create menu shortcut!'

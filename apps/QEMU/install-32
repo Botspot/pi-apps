@@ -1,19 +1,7 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #Remove any qemu packages first to prevent conflicting packages
 sudo apt purge -yqq qemu* &>/dev/null
 
-rm -f ~/qemu.deb
-#Download QEMU
-wget -O ~/qemu.deb https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || error 'Failed to Download QEMU!'
+install_packages https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-armhf.deb || exit 1
 
-#Install QEMU
-"${DIRECTORY}/pkg-install" "$HOME/qemu.deb" "$(dirname "$0")" || error 'Failed to install qemu.deb!'
-rm -f ~/qemu.deb

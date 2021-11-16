@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 if [ "$arch" == 64 ];then
@@ -17,5 +9,4 @@ elif [ "$arch" == 32 ];then
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
-
 exit 0

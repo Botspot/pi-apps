@@ -1,22 +1,14 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 VERSION=arduino-1.8.16
 
-if [ -f ~/.local/share/$VERSION/uninstall.sh ];then
-  cd ~/.local/share
-  $VERSION/uninstall.sh || error "Failed to run uninstall.sh as $USER user"
-  sudo $VERSION/uninstall.sh || error "Failed to run uninstall.sh as root user"
-  rm -rf $VERSION || error "Failed to remove $VERSION folder"
-  cd
+if [ -f "$HOME/.local/share/$VERSION/uninstall.sh" ]; then
+  sudo $HOME/.local/share/$VERSION/uninstall.sh || error "Failed to run Arduino uninstall script!"
+  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
+elif [ -f "$HOME/.local/share/$VERSION/install.sh" ]; then
+  #there is an option to uninstall Arduino in its install script, if uninstall script not found, use sudo $VERSION/install.sh -u instead
+  sudo $HOME/.local/share/$VERSION/install.sh -u || error "Failed to run sudo ~/.local/share/$VERSION/install.sh -u"
+  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
 else
-  echo "WARNING: Arduino's uninstall.sh script was not found! Most likely it was never fully installed."
+  echo "WARNING: Arduino's install and uninstall script were not found! Most likely it was never fully installed. Removing $HOME/.local/share/$VERSION folder..."
+  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
 fi
-
-exit 0

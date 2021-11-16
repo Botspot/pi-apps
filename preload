@@ -78,6 +78,8 @@ preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
 api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
 categories shasum: $(shasum "${DIRECTORY}/etc/categories" | awk '{print $1}')
 category-overrides shasum: $(shasum "${DIRECTORY}/data/category-overrides" | awk '{print $1}')
+updatable-apps shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-apps" | awk '{print $1}')
+updatable-files shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-files" | awk '{print $1}')
 ${timestamps:1}"
 }
 

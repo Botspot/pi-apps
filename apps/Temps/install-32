@@ -1,13 +1,5 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/pkg-install" "libgconf-2-4" "$(dirname "$0")" || error "Failed to install dependencies!"
+install_packages libgconf-2-4 || exit 1
 
 wget -O $HOME/Temps.zip https://github.com/musicpro/temps/releases/download/0.7.4/Temps-linux-armv7l.zip || error 'Failed to download Temps!'
 unzip $HOME/Temps.zip || error 'Failed to unzip Temps.zip!'

@@ -1,20 +1,9 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-cd $HOME
-wget https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/bleachbit_4.4.0-0_all.deb -O bleachbit.deb
-"${DIRECTORY}/pkg-install" "$HOME/bleachbit.deb" "$(dirname "$0")" || error "Failed to install BleachBit"
-rm -f bleachbit.deb || sudo rm -f bleachbit.deb
+install_packages https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/bleachbit_4.4.0-0_all.deb || exit 1
 
 # Remove extra 'BleachBit as Administrator' menu shortcut
 ( rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop || sudo rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop ) &>/dev/null
-
 # Move BleachBit to Accessories category
 ( sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop || sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop ) &> /dev/null
 

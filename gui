@@ -54,6 +54,11 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
   
+  #removeTBOPlayer if it's not already successfully installed
+  if [ "$(app_status TBOPlayer)" != 'installed' ];then
+    rm -rf "${DIRECTORY}/apps/TBOPlayer"
+  fi
+  
   #rename 'Turbo Scratch' app to 'Turbowarp'
   rm -rf "${DIRECTORY}/apps/Turbo Scratch"
   mv -f "${DIRECTORY}/data/status/Turbo Scratch" "${DIRECTORY}/data/status/Turbowarp" 2>/dev/null
@@ -181,7 +186,7 @@ install() {
     ' "$title"
   
   #re-preload all categories in background
-  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" &>/dev/null &
 }
 
 uninstall() {
@@ -210,7 +215,7 @@ uninstall() {
     ' "$title"
   
   #re-preload all categories in background
-  "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" &>/dev/null &
 }
 
 #Determine message of the day. If announcements file missing or over a day old, download it.

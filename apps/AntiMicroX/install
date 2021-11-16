@@ -1,0 +1,28 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+#Based on @ryanfortner's "pi-bashscripts-files/AntiMicroX.md" install instructions.
+# Dependancies
+install_packages git gcc cmake extra-cmake-modules qttools5-dev qttools5-dev-tools libsdl2-dev libxi-dev libxtst-dev libx11-dev itstool gettext
+
+# Cloning
+cd ~ || error 'Failed to cd into home directory!'
+rm -rf antimicrox || sudo rm -rf antimicrox || error 'Failed to remove "antimicrox" directory!'
+git clone --branch 3.2.0 https://github.com/AntiMicroX/antimicrox.git --depth=1 || error 'Failed to clone AntiMicroX repository!'
+cd antimicrox || error 'Failed to cd into cloned directory!'
+mkdir build && cd build || error 'Failed to make and cd into build directory!'
+
+# Building
+cmake .. || error 'Failed to run "cmake .."!'
+make -j$(nproc) || error 'Failed to build AntiMicroX with "make -j$(nproc)"!'
+
+# Installing
+sudo make install || error 'Failed to install AntiMicroX with "sudo make install"!'
+
+# Clean up
+rm -rf $HOME/antimicrox || sudo rm -rf $HOME/antimicrox || error 'Failed to remove "antimicrox" directory!'

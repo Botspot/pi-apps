@@ -1,13 +1,5 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages openjdk-11-jdk rpm fakeroot 'https://github.com/angryip/ipscan/releases/download/3.7.6/ipscan_3.7.6_all.deb' || exit 1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
 
-wget -O ~/ipscan_3.7.6_all.deb 'https://github.com/angryip/ipscan/releases/download/3.7.6/ipscan_3.7.6_all.deb' || error "Failed to download ipscan_3.7.6_all.deb!"
-# Get dependencies
-"${DIRECTORY}/pkg-install" "openjdk-11-jdk rpm fakeroot $HOME/ipscan_3.7.6_all.deb" "$(dirname "$0")" || exit 1
-rm -f ~/ipscan_3.7.6_all.deb

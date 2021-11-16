@@ -1,13 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-
 hardware="$(cat /proc/cpuinfo)"
 if [ ! -z "$(echo "$hardware" | grep ARMv7)" ];then
   hardware='pi3'
@@ -16,7 +7,6 @@ elif [ ! -z "$(echo "$hardware" | grep ARMv6)" ];then
 else
   hardware='pi4'
 fi
-
 if [ "$hardware" == 'pi0' ];then
   error "Wine is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
 fi
@@ -27,7 +17,6 @@ if [ ! -e /proc/config.gz ];then
     error "/proc/config.gz does not exist after running sudo modprobe configs!"
   fi
 fi
-
 vmsplit_output="$(gunzip < /proc/config.gz | grep VMSPLIT)"
 if [ -z "$vmsplit_output" ];then
   kernel="$(uname -m)"
@@ -68,10 +57,10 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
       
       #download kernel source code
-      git clone --depth=1 https://github.com/raspberrypi/linux || error "Failed to git clone the raspberry pi kernel repo!"
+      git_clone --depth=1 https://github.com/raspberrypi/linux || error "Failed to git_clone the raspberry pi kernel repo!"
       
       echo "Installing necessary build packages..."
-      "${DIRECTORY}/pkg-install" "raspberrypi-kernel-headers build-essential bc git wget bison flex libssl-dev make libncurses-dev" "$(dirname "$0")" || error "Failed to install necessary packages to build kernel."
+      install_packages raspberrypi-kernel-headers build-essential bc git wget bison flex libssl-dev make libncurses-dev || exit 1
       
       #build for pi3
       cd ~/linux || error "Failed to enter the ~/linux folder!"
@@ -96,7 +85,7 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
       rm -rf ~/linux
       
       echo "Removing the utilities that were used to compile the kernel..."
-      "${DIRECTORY}/purge-installed" "$(dirname "$0")"
+      purge_packages
       
       #message
       echo -e "It appears the 3G/1G kernel has been built and installed successfully.\nPlease reboot and install the Wine app again."
@@ -138,30 +127,24 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
 else
   echo "Your system is using a 3G/1G kernel. Continuing..."
 fi
-
 #Past this point, the pi is running a Wine-compatible kernel.
 
 #install box86
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
-
 if ! command -v box86 >/dev/null ;then
   error "User error: Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
 fi
 
 pkill -9 wine
 sudo apt purge -y wine &>/dev/null &
-
 # Remove old wine, while leaving config intact
 sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg /usr/local/bin/winetricks ~/wine.tgz ~/wine ~/.cache/winetricks ~/.cache/wine 2>/dev/null
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "cabextract" "$(dirname "$0")" || exit 1
-
+install_packages cabextract || exit 1
 # Download
 wget https://twisteros.com/wine.tgz -O ~/wine.tgz || error 'Failed to download wine!'
 tar zxf ~/wine.tgz || error 'Failed to extract wine!'
 rm ~/wine.tgz
-
 [ ! -f ~/wine/bin/wine ] && error "the wine.tgz extraction succeeded, but the file '$HOME/wine/bin/wine' is missing!"
 
 # Install
@@ -176,8 +159,6 @@ sudo chmod +x /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineser
 
 sudo wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks || error "Failed to download winetricks!"
 sudo chmod +x /usr/local/bin/winetricks
-
-
 #create menu button to winecfg
 echo "[Desktop Entry]
 StartupNotify=true
@@ -188,7 +169,6 @@ Exec=wine winecfg
 Icon=$(dirname "$0")/icon-64.png
 Categories=System;
 Comment=Configure wine" > ~/.local/share/applications/wine-config.desktop
-
 echo "[Desktop Entry]
 Name=Winetricks
 Comment=Work around problems and install applications under Wine
@@ -197,7 +177,6 @@ Terminal=false
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
 Categories=System;" > ~/.local/share/applications/wine-tricks.desktop
-
 echo "[Desktop Entry]
 Version=1.0
 Type=Application

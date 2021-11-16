@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 source "$DIRECTORY/api"
 
 if [ $arch == '32' ];then
@@ -17,5 +9,5 @@ if [ $arch == '32' ];then
 elif [ $arch == '64' ];then
 	( pip3 uninstall quartz-browser -y || sudo pip3 uninstall quartz-browser -y ) || error "Failed to uninstall Quartz Browser!"
 	rm -rf $HOME/quartz-browser-qt5 &> /dev/null || sudo rm -rf $HOME/quartz-browser-qt5 
-	"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 0
+	purge_packages || exit 0
 fi

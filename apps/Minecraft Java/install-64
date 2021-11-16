@@ -1,14 +1,5 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-echo "Installing dependencies"
-"${DIRECTORY}/pkg-install" "kmod zip unzip" "$(dirname "$0")" || exit 1
+install_packages kmod zip unzip libfuse2 || exit 1
 
 echo "Creating directories"
 mkdir -p ~/.minecraft ~/lwjgl3arm64 ~/lwjgl2arm64 ~/lunarassets
@@ -18,24 +9,20 @@ sudo mkdir -p /opt/jdk
 echo "Downloading lunarclient.AppImage"
 errors="$(wget -O ~/lunarassets/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.8.0-arm64.AppImage' 2>&1)" || error "Failed to download lunarclient.AppImage\nErrors:\n$errors"
 chmod +x ~/lunarassets/lunarclient.AppImage || error "Failed to make lunarclient.AppImage executable!"
-
 echo "Downloading lunarclient.png"
 errors="$(wget -O ~/lunarassets/lunarclient.png https://github.com/gl91306/lunar/raw/master/lunarclient.png 2>&1)" || error "Failed to download lunarclient.png\nErrors:\n$errors"
-
 echo "Downloading jdk-16.tar.gz"
 sudo rm -rf /opt/jdk/jdk-16.0.1+9-jre ~/jdk-16.tar.gz
 errors="$(wget -O ~/jdk-16.tar.gz 'https://github.com/gl91306/lunar/raw/master/jdk-16.0.1%2B9-jre64.gz' 2>&1)" || error "Failed to download jdk-16.tar.gz\nErrors:\n$errors"
 echo "Extracting jdk-16.tar.gz to /opt/jdk"
 sudo tar -zxf ~/jdk-16.tar.gz -C /opt/jdk || error "Failed to extract jdk-16.tar.gz"
 rm -f ~/jdk-16.tar.gz
-
 echo "Setting up lwjgl3arm64 folder"
 echo "- Downloading lwjgl3arm64.tar.gz"
 errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
 echo "- Extracting lwjgl3arm64.tar.gz"
 tar -zxf ~/lwjgl3arm64.tar.gz -C ~/lwjgl3arm64 || error "Failed to extract lwjgl3arm64.tar.gz"
 rm -f ~/lwjgl3arm64.tar.gz
-
 echo "Downloading javafx-sdk-17-64.zip"
 errors="$(wget -O ~/javafx-sdk-17-64.zip 'https://github.com/gl91306/lunar/raw/master/javafx-sdk-17-64.zip' 2>&1)" || error "Failed to download javafx-sdk-17-64.zip\nErrors:\n$errors"
 echo "Extracting javafx-sdk-17-64.zip"
@@ -49,18 +36,12 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk1.8.0_251 PATH=/opt/jdk/jdk1.8.0_251/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage"\""
+Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk1.8.0_251 PATH=/opt/jdk/jdk1.8.0_251/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
-
 echo "This fork of Lunar Client is made by the devs at Pi-Ware, an alternative to Pi-Apps with a focus on games and multi-os support (Arch and Manjaro).
 You can find more about Pi-Ware at https://github.com/piware14/pi-ware
-You should also contact them for support if a issue arises with the launcher.
+You should also contact them for support if a issue arises with the launcher. You can also try the 'Minecraft Java MultiMC5' app in the games section instead.
 
 To run: Menu -> Games -> Minecraft Launcher (Lunar)"
-
-
-
-
-
 

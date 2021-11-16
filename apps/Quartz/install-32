@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 cd $HOME
 
 wget -O ~/.local/share/Quartz_Browser.AppImage 'https://github.com/ksharindam/quartz-browser-qt5/releases/download/v2.3.7/Quartz_Browser-armhf.AppImage'

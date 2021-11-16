@@ -38,8 +38,15 @@ EOF
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
+upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d)"
+if ! [[ "$upstream_git_date" =~ ^[0-9]+$ ]]; then
+  # if upstream master git date can't be found, then fallback to local time server
+  # the above checks for an empty variable or a variable containing non-numerical values
+  echo "Falling back to local system time" 1>&2
+  upstream_git_date="$(date +%s)"
+fi
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
-if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
+if [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ];then
   yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
     --text="Your Pi-Apps github repository is somehow 3 months out-of-date."$'\n'"Downloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old..." &
   sleep 1
@@ -49,7 +56,8 @@ if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
   rm -rf ~/pi-apps-forced-update
   git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   temp_logfile="$(mktemp).txt"
-  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo: $(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
+  new_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
+  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $(date -d@$current_git_date); $current_git_date\nTo:   $(date -d@$new_git_date); $new_git_date\n$(get_device_info)" >> "$temp_logfile"
   send_error_report "$temp_logfile" 1>&2
   rm -f "$temp_logfile"
   sleep 10

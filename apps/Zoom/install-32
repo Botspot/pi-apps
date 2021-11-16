@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if command -v box86 >/dev/null;then
   echo "Updating box86..."
 else
@@ -20,16 +12,15 @@ fi
 # Get dependencies
 DISTRO=$(lsb_release -is)
 if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
-  "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio || exit 1
 elif [[ "${DISTRO}" == "Ubuntu" ]]; then
-  "${DIRECTORY}/pkg-install" "libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio || exit 1
 else 
 	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
 fi
 
 #refresh list of libraries
 sudo ldconfig
-
 #For testing, set to false if zoom folder is already there
 if true;then
   echo "Downloading Zoom..."
@@ -70,7 +61,6 @@ Type=Application
 Comment=i386 version of software platform used for teleconferencing using Box86
 Categories=Network;
 StartupNotify=true" > ~/.local/share/applications/zoom.desktop
-
 #Associate with mimeapp
 if [ -z "$(cat ~/.config/mimeapps.list | grep 'zoom.desktop')" ];then
   echo "Associating Zoom mimetypes..."
@@ -81,5 +71,4 @@ fi
 
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
-
 echo "Installation complete!"

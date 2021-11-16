@@ -1,21 +1,10 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Install flatpak first 
-"${DIRECTORY}/pkg-install" "flatpak" "$(dirname "$0")" || error "Failed installing Flatpak!"
-
+install_packages flatpak || exit 1
 # Add flathub remote
 ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
-
 '/var/lib/flatpak/exports/share'
 '$HOME/.local/share/flatpak/exports/share'
-
 are not in the search path set by the XDG_DATA_DIRS environment variable, so
 applications installed by Flatpak may not appear on your desktop until the
 session is restarted." 
@@ -24,11 +13,9 @@ session is restarted."
 
 '/var/lib/flatpak/exports/share'
 '$HOME/.local/share/flatpak/exports/share'
-
 are not in the search path set by the XDG_DATA_DIRS environment variable, so
 applications installed by Flatpak may not appear on your desktop until the
 session is restarted." 
-
 
 sudo rm -f /var/lib/flatpak/app/org.telegram.desktop/current/active/export/share/applications/org.telegram.desktop.desktop
 

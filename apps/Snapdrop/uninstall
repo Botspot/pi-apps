@@ -1,9 +1,3 @@
 #!/bin/bash
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -rf ~/snapdrop || error "Failed to remove install directory!"
 rm -f ~/.local/share/applications/snapdrop.desktop

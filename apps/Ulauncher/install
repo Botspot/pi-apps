@@ -1,17 +1,5 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 version='5.14.1'
 
-rm -f ~/ulauncher.deb
-wget -O ~/ulauncher.deb 'https://github.com/Ulauncher/Ulauncher/releases/download/${version}/ulauncher_${version}_all.deb' || error 'Failed to download ulauncher.deb!'
+install_packages https://github.com/Ulauncher/Ulauncher/releases/download/${version}/ulauncher_${version}_all.deb gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket || exit 1
 
-"${DIRECTORY}/pkg-install" "gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket $HOME/ulauncher.deb" "$(dirname "$0")" || error "Failed to install ulauncher.deb and dependencies!"  
-
-rm -f ~/ulauncher.deb

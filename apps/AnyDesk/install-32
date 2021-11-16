@@ -1,19 +1,4 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages https://download.anydesk.com/rpi/anydesk_6.1.1-1_armhf.deb || exit 1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#file name for future updates
-filename='anydesk_6.1.1-1_armhf'
-
-#download the deb file
-wget -O ~/anydesk.deb https://download.anydesk.com/rpi/${filename}.deb || error "Failed to downloading file. Make sure 'wget' is installed and verify your Internet Network Connection"
-
-# Installing the software with permissions
-"${DIRECTORY}/pkg-install" ~/anydesk.deb "$(dirname "$0")" || error "Failed to install deb file"
-
-rm -f ~/anydesk.deb
