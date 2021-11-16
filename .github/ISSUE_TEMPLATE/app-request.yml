@@ -46,6 +46,5 @@ body:
           required: true
         - label: I have confirmed that this app can run on Raspberry Pi.
           required: true
-          required: false
         - label: I have confirmed that this app is not installable with `apt`, or the app is the updated version of APT one.
           required: true
