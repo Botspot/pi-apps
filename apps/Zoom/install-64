@@ -10,7 +10,7 @@ if ! command -v box64 >/dev/null;then
 fi
 
 # Get dependencies
-install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 | libturbojpeg pulseaudio-utils pulseaudio || exit 1
+install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 '|' libturbojpeg pulseaudio-utils pulseaudio || exit 1
 #refresh list of libraries
 sudo ldconfig
 #For testing, set to false if zoom folder is already there

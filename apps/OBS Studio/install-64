@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #remove obs-studio package first
-if dpkg -l obs-studio &>/dev/null ;then
+if package_installed obs-studio ;then
   echo "Removing obs-studio package first..."
   sudo apt purge -y obs-studio
 fi
@@ -10,9 +10,7 @@ fi
 install_packages http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_arm64.deb http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_arm64.deb https://raw.githubusercontent.com/techcoder20/RPIObsInstaller/main/obs_arm64.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0 libxcb-xinput-dev libxcb-randr0 libxcb-randr0-dev libxcb-xfixes0 libxcb-xfixes0-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb*  || exit 1
 
 #Create workaround wrapper script to override MESA_GL_VERSION
-sudo mv /usr/bin/obs /usr/bin/obs-exec
+[ ! -f /usr/bin/obs-exec ] && sudo mv /usr/bin/obs /usr/bin/obs-exec
 echo '#!/bin/bash
 MESA_GL_VERSION_OVERRIDE=3.3 /usr/bin/obs-exec "$@"' | sudo tee /usr/bin/obs >/dev/null
 sudo chmod +x /usr/bin/obs
-
-

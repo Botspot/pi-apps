@@ -1,6 +1,7 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm -rf .Deskreen || sudo rm -rf .Deskreen
-rm -rf $HOME/.local/share/applications/deskreen.desktop || sudo rm -rf $HOME/.local/share/applications/deskreen.desktop
-rm -rf /usr/local/bin/deskreen || sudo rm -rf /usr/local/bin/deskreen 
+
+rm -f ~/.local/share/applications/deskreen.desktop || sudo rm -rf ~/.local/share/applications/deskreen.desktop
+rm -f ~/Deskreen-1.0.1-armv7l.AppImage || sudo rm -f ~/Deskreen-1.0.1-armv7l.AppImage
+sudo rm -f /usr/local/bin/deskreen
