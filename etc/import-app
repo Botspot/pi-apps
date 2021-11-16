@@ -142,24 +142,33 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   #Take a combined repo/branch url and separate it.
   #example value of repobranch: https://github.com/cycool29/pi-apps/tree/msteams
   
-  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: https://github.com/cycool29/pi-apps
+  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: cycool29/pi-apps
   branch="$(basename "$repobranch" | awk -F: '{print $2}')" #value: msteams
   username="$(dirname "$repo" | sed 's+^/++g')" #value: cycool29
   
   #make a temporary directory and enter it
-  cd "$(mktemp -d)" || error "Failed to create and enter a tempory directory."
+  cd "$(mktemp -d)" || error "Failed to create and enter a temporary directory."
   #if script is killed prematurely, be sure to delete the temporary folder
   trap "rm -rf '$(pwd)'" EXIT
   
   echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
   
   echo -n "Downloading repository... "
-  errors="$(git clone "https://github.com/${repo}" -b $branch 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
-  echo "Done - git clone https://github.com/${repo} -b $branch"
+  errors="$(git clone "https://github.com/${repo}" -b $branch -q 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
+  echo "Done"
+  
+  echo -n "Syncing fork with upstream repo... "
+  cd $(pwd)/pi-apps
+  errors="$(git remote add upstream https://github.com/Botspot/pi-apps 2>&1)" || error "Failed to add upstream remote. \nErrors:\n$errors"
+  errors="$(git pull upstream master --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
+  
+
+  cd .. #back to tmpdir
+  echo "Done"
   
   echo -n "Getting pi-apps repo for comparison... "
-  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master 2>&1)" || error "Failed to clone Botspot pi-apps repository.\nErrors:\n$errors"
-  echo "Done - git clone https://github.com/Botspot/pi-apps"
+  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master -q 2>&1)" || error "Failed to clone Botspot pi-apps repository.\nErrors:\n$errors"
+  echo "Done"
   
   #get list of apps that are unique to this pi-apps folder. (not on main repo)
   #apps="$("$(pwd)/pi-apps/api" list_apps local_only)"
@@ -186,8 +195,7 @@ else
   error "Unrecognized input '$import'"
 fi
 
-echo -e "\n$(basename "$0") just imported these apps:"
-echo "$imported_apps" | sed 's/^/- /g'
+[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | sed 's/^/- /g')" || echo "No app has been imported."
 
 #display on-screen which apps were updated
 IFS=$'\n'
