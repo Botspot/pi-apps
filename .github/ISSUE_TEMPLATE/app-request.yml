@@ -14,7 +14,7 @@ body:
   - type: textarea
     id: host
     attributes:
-      label: (Optional) Where does the app hosted?
+      label: (Optional) Where is the app hosted?
       placeholder: Ex - Github link, Gitlab link, Sourceforge link
     validations:
       required: false
@@ -23,7 +23,7 @@ body:
     id: about
     attributes:
       label: About the app
-      description: What is its main purpose? How it works? 
+      description: What is its main purpose? How does it work? 
       placeholder: Tell us about the app here!
     validations:
       required: true
