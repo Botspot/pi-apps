@@ -38,9 +38,9 @@ body:
       required: false
       
   - type: checkboxes
-    id: confirmation
+    id: confirmations
     attributes:
-      label: confirmation
+      label: Confirmations
       options:
         - label: I have confirmed that this app has never been discussed in https://github.com/Botspot/pi-apps/issues and https://github.com/Botspot/pi-apps/pulls, and it is not in the Pi Apps app list.
           required: true
