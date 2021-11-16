@@ -11,7 +11,7 @@ body:
       options:
       - label: I searched for similar bug reports in https://github.com/Botspot/pi-apps/issues and found none were relevant.
         required: true
-      - label: I tried updating pi-apps and the issue is still not fixed.
+      - label: I tried updating Pi Apps and the issue is still not fixed. [How to update Pi Apps?](https://github.com/Botspot/pi-apps#to-update-pi-apps)
         required: false
   - type: input
     id: desc
