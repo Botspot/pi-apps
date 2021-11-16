@@ -33,7 +33,7 @@ body:
     attributes:
       label: Upload file
       description: "If you have a deb of the app, or if you've created a zip file for this app, or if you have any other relevant files, upload it here."
-      placeholder: Tips: You can upload files to transfer.sh and paste the link here 
+      placeholder: "Tips: You can upload files to transfer.sh and paste the link here"
     validations:
       required: false
       
