@@ -1,4 +1,3 @@
 #!/bin/bash
 
-install_packages https://www.ratrabbit.nl/downloads/xsnow/xsnow_3.3.2-1_armhf.deb || error "Failed to install XSnow package!"
-
+install_packages https://www.ratrabbit.nl/downloads/xsnow/xsnow_3.3.2-1_armhf.deb || exit 1 
