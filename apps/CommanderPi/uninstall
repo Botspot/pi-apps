@@ -1,5 +1,5 @@
 #!/bin/bash
 purge_packages || exit 1
 
-rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "failed to remove ~/CommanderPi folder!"
+rm -rf ~/CommanderPi &>/dev/null || sudo rm -rf ~/CommanderPi || error "failed to remove ~/CommanderPi folder!"
 sudo rm -f /usr/share/applications/commanderpi.desktop ~/Desktop/commanderpi.desktop || error "failed to remove menu button!"
