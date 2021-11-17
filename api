@@ -185,6 +185,9 @@ repo_refresh() { #index the pi-apps local apt repository
   #index the repository by creating a Packages file
   cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
   
+  #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
+  sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
+  
   #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
   rm -f /tmp/pi-apps-local-packages/source.list
   cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
