@@ -36,6 +36,11 @@ if ! command -v curl >/dev/null;then
   sudo apt install -y curl || error "Failed to install curl."
 fi
 
+#install apt-utils
+if ! command -v apt-ftparchive >/dev/null;then
+  sudo apt install -y apt-utils || error "Failed to install apt-utils."
+fi
+
 #download pi-apps if folder missing
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
