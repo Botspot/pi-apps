@@ -134,9 +134,10 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   #repobranch='https://github.com/cycool29/pi-apps/tree/msteams'
   repobranch="$(wget -qO- "$PR" | grep -x 'from' --after 2 | tr '<> ' '\n' | grep 'title="' | sed 's/title="//g' | sed 's/"$//g' | head -n1)"
   
-  echo "repobranch: $repobranch"
   if [ -z "$repobranch" ];then
     error "No PR was found that mentions a branch."
+  else
+	echo "repobranch: $repobranch"
   fi
   
   #Take a combined repo/branch url and separate it.
@@ -159,10 +160,8 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   
   echo -n "Syncing fork with upstream repo... "
   cd $(pwd)/pi-apps
-  errors="$(git remote add upstream https://github.com/Botspot/pi-apps 2>&1)" || error "Failed to add upstream remote. \nErrors:\n$errors"
-  errors="$(git pull upstream master --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
+  errors="$(git pull https://github.com/Botspot/pi-apps --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
   
-
   cd .. #back to tmpdir
   echo "Done"
   
@@ -195,7 +194,6 @@ else
   error "Unrecognized input '$import'"
 fi
 
-[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | sed 's/^/- /g')" || echo "No app has been imported."
 
 #display on-screen which apps were updated
 IFS=$'\n'
@@ -206,6 +204,8 @@ $([ -f "${DIRECTORY}/apps/$app/icon-64.png" ] && echo "${DIRECTORY}/apps/$app/ic
   
 done
 LIST="${LIST:1}"
+
+[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | sed 's/^/- /g')" || echo -e "\nNo app has been imported."
 
 [ -n "$LIST" ] && echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
   --text="These apps have been imported:" \
