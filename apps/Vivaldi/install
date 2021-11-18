@@ -1,5 +1,4 @@
 #https://help.vivaldi.com/desktop/install-update/manual-setup-vivaldi-linux-repositories/
 wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | gpg --dearmor | sudo dd of=/usr/share/keyrings/vivaldi-browser.gpg || exit 1
 echo "deb [signed-by=/usr/share/keyrings/vivaldi-browser.gpg arch=$(dpkg --print-architecture)] https://repo.vivaldi.com/archive/deb/ stable main" | sudo dd of=/etc/apt/sources.list.d/vivaldi-archive.list
-sudo apt update
 install_packages vivaldi-stable || exit 1
