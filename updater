@@ -70,7 +70,6 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
-  echo -n "Scanning files... " 1>&2
   
   #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
   local file_list="$(list_files)" || exit 1
@@ -278,6 +277,13 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   status_green "\nPi-Apps updates complete."
 }
 
+#ensure fzf is installed
+if ! command -v fzf >/dev/null;then
+	status "Installing fzf..."
+    sudo apt-get install -y fzf 
+fi
+
+
 screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
 screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
 
@@ -373,7 +379,8 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     --on-top --skip-taskbar --undecorated --close-on-unfocus \
     --geometry=260+$((screen_width-262))+$((screen_height-150)) \
     --image="${DIRECTORY}/icons/logo-64.png" \
-    --button="Close!${DIRECTORY}/icons/exit.png":1
+    --button="Close!${DIRECTORY}/icons/exit.png":1 \
+    --timeout=30
   
 elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
   
@@ -414,7 +421,7 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   
   update_now_gui
   
-  "$0" set-status
+  "${DIRECTORY}/updater" set-status 
   
 elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   
@@ -432,7 +439,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  echo 
+  echo
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
@@ -443,33 +450,58 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
     status "No apps are updatable."
     echo
   else
-    status "These apps can be updated:"
-    echo
-    echo "$updatable_apps" | sed 's/^/  - /g'
-    echo
+    status -n "Choose apps to update:"
+    number_of_updatable_apps=0
+    IFS=$'\n'
+	for updatable_app in $updatable_apps; do
+		number_of_updatable_apps="$(("$number_of_updatable_apps" + 1))"
+	done
+	
+	number_of_updatable_apps="$(("$number_of_updatable_apps" + 3))" 
+	 
+	updatable_apps="$(echo "$updatable_apps" | fzf --header " " --height="$number_of_updatable_apps" --multi --bind=space:toggle --bind=ctrl-a:toggle-all)"
+	
+	if [ "$updatable_apps" != '' ]; then
+		status "\rApp(s) to be updated: $(echo $updatable_apps | grep . | sed 's/ /, /g')"
+	else
+		status "\rNo app will be updated."
+	fi
+	
   fi
   
   if [ -z "$updatable_files" ];then
     status "No files are updatable"
     echo
   else
-    status "These files can be updated:"
-    echo
-    echo "$updatable_files" | sed 's/^/  - /g'
-    echo
-  fi
-  
-  read -p "$(status -n 'Update now? [Y/n] ')" answer
-  
-  if [ "$answer" == n ] || [ "$answer" == N ];then
-    echo
-    echo "Exiting now."
-    echo
-    exit 0
+    status -n "Choose files to update:"
+    number_of_updatable_files=0
+    IFS=$'\n'
+	for updatable_file in $updatable_files; do
+		number_of_updatable_files="$(("$number_of_updatable_files" + 1))"
+	done
+	
+	number_of_updatable_files="$(("$number_of_updatable_files" + 3))" 
+	 
+	updatable_files="$(echo "$updatable_files" | fzf --header " " --height="$number_of_updatable_files" --cycle --multi --bind=space:toggle --bind=ctrl-a:toggle-all)"
+	
+	if [ "$updatable_files" != '' ]; then
+		status "\rFile(s) to be updated: $(echo $updatable_files | grep . | sed 's/ /, /g')"
+	else
+		status "\rNo file will be updated."
+	fi
+	
   fi
   
   echo
-  update_now_cli
+  
+  if [ "$updatable_apps" != '' ] || [ "$updatable_files" != '' ]; then
+	update_now_cli
+     "${DIRECTORY}/updater" set-status 
+  else
+	status "User did not allow anything to be updated."
+    exit 0
+  fi
+
   
 elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   
@@ -512,3 +544,4 @@ fi
 echo 
 exit 0
 } #prevents errors if script was modified while in use
+
