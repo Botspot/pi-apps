@@ -558,12 +558,12 @@ list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear
 
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
   
-  #remove category if no app in it, mostly remove Imported category
+  #remove app category if app folder not found
   IFS=$'\n'
-  for app in $(cat /home/pi/pi-apps/etc/categories /home/pi/pi-apps/data/category-overrides); do 
-  	if ! [ -d "/home/pi/pi-apps/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
-  		sed -i "/$app/d"  /home/pi/pi-apps/data/category-overrides
-		sed -i "/$app/d"  /home/pi/pi-apps/etc/categories
+  for app in $(cat "${DIRECTORY}/etc/categories" "${DIRECTORY}/data/category-overrides"); do 
+  	if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
+  		sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
+		sed -i "/$app/d"  "${DIRECTORY}/etc/categories"
 	fi
   done
 
