@@ -92,6 +92,11 @@ if [[ "$import" == /* ]] ;then
       #use the import_zip function to import the app, keeping a record of the app-name
       imported_apps="$(import_zip "$import")"
       
+      #add to Imported category
+      if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+		echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+	  fi
+      
     else #file exists, but not a zip file
       error "Given file '$import' is not a .zip file!"
     fi
@@ -123,6 +128,12 @@ elif [[ "$import" == *'://'*'.zip' ]];then
   
   #use the import_zip function to import the app, keeping a record of the app-name
   imported_apps="$(import_zip "$filename")"
+
+  #add to Imported category
+  if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+    echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+  fi
+  
   
 elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];then
   #given a pull request for an app
@@ -194,6 +205,11 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   for app in $imported_apps ;do
     cp -af "$(pwd)/pi-apps/apps/$app" "${DIRECTORY}/apps"
     echo "Copied '$(pwd)/pi-apps/apps/${app}' to ${DIRECTORY}/apps"
+   
+    #add to Imported category
+    if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+	  echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+    fi
   done
   
 else
@@ -206,7 +222,7 @@ fi
 IFS=$'\n'
 for app in $imported_apps ;do
   LIST="$LIST
-$([ -f "${DIRECTORY}/apps/$app/icon-64.png" ] && echo "${DIRECTORY}/apps/$app/icon-64.png" || echo "${DIRECTORY}/icons/none-64.png")
+$([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
     $app"
   
 done
