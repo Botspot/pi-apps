@@ -2,6 +2,6 @@
 #Remove any qemu packages first to prevent conflicting packages
 sudo apt purge -yqq qemu* &>/dev/null
 
-install_packages https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.0.50/qemu-6.0.50-arm64.deb || exit 1
+install_packages https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.1.50/qemu-6.1.50-arm64.deb || exit 1
 
 
