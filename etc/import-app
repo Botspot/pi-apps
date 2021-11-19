@@ -208,7 +208,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
    
     #add to Imported category
     if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
-	  echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+	  echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
     fi
   done
   
@@ -228,7 +228,7 @@ $([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/ic
 done
 LIST="${LIST:1}"
 
-[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | sed 's/^/- /g')" || echo -e "\nNo app has been imported."
+[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | grep . | sed 's/^/- /g')" || echo -e "\nNo app has been imported."
 
 [ -n "$LIST" ] && echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
   --text="These apps have been imported:" \
