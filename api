@@ -560,10 +560,9 @@ read_category_files() { #Generates a combined categories-list from several sourc
   
   #remove app category if app folder not found
   IFS=$'\n'
-  for app in $(cat "${DIRECTORY}/etc/categories" "${DIRECTORY}/data/category-overrides"); do 
+  for app in $(cat "${DIRECTORY}/data/category-overrides"); do 
   	if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
   		sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
-		sed -i "/$app/d"  "${DIRECTORY}/etc/categories"
 	fi
   done
 
