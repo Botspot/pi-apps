@@ -435,20 +435,21 @@ elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   
   update_now_gui
   
-elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user permission to update
-  
+elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user what app or file to update
+    
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   echo
   
+  #if no updatable files and updatebla apps
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    status "Nothing is updatable."
+    status "Everything is up to date."
     exit 0
   fi
   
+  #if no updatable apps
   if [ -z "$updatable_apps" ];then
-    status "No apps are updatable."
-    echo
+    status "All apps are up to date."
   else
     status -n "Choose apps to update:"
     number_of_updatable_apps=0
@@ -459,19 +460,23 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
 	
 	number_of_updatable_apps="$(("$number_of_updatable_apps" + 3))" 
 	 
-	updatable_apps="$(echo "$updatable_apps" | fzf --header " " --height="$number_of_updatable_apps" --multi --bind=space:toggle --bind=ctrl-a:toggle-all)"
+	updatable_apps="$(echo "$updatable_apps" | fzf --header "(SPACE to select, Ctrl+A to select all, ESC to skip, ENTER to continue) " \
+	--height="$number_of_updatable_apps" --multi --bind "ctrl-c:execute()" --bind=space:toggle --bind=ctrl-a:toggle-all)"
 	
-	if [ "$updatable_apps" != '' ]; then
-		status "\rApp(s) to be updated: $(echo $updatable_apps | grep . | sed 's/ /, /g')"
+	if [ ! -z "$updatable_apps" ]; then
+		status "App(s) to be updated: "
+		echo "$updatable_apps" | grep . | sed 's/^/- /g'
 	else
-		status "\rNo app will be updated."
+		status "\rNo app was selected to update."
 	fi
 	
   fi
   
+  echo
+  
+  #if no updatable files
   if [ -z "$updatable_files" ];then
-    status "No files are updatable"
-    echo
+    status "All files are up to date."
   else
     status -n "Choose files to update:"
     number_of_updatable_files=0
@@ -481,20 +486,22 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
 	done
 	
 	number_of_updatable_files="$(("$number_of_updatable_files" + 3))" 
-	 
-	updatable_files="$(echo "$updatable_files" | fzf --header " " --height="$number_of_updatable_files" --cycle --multi --bind=space:toggle --bind=ctrl-a:toggle-all)"
 	
-	if [ "$updatable_files" != '' ]; then
-		status "\rFile(s) to be updated: $(echo $updatable_files | grep . | sed 's/ /, /g')"
+	updatable_files="$(echo "$updatable_files" | fzf --header "(SPACE to select, Ctrl+A to select all, ESC to skip, ENTER to continue) " \
+	--height="$number_of_updatable_files" --cycle --multi --bind "ctrl-c:execute()" --bind=space:toggle --bind=ctrl-a:toggle-all)"
+	
+	if [ ! -z "$updatable_files" ]; then
+		status "File(s) to be updated: "
+		echo "$updatable_files" | grep . | sed 's/^/- /g'
 	else
-		status "\rNo file will be updated."
+		status "\rNo file was selected to update."
 	fi
 	
   fi
   
   echo
   
-  if [ "$updatable_apps" != '' ] || [ "$updatable_files" != '' ]; then
+  if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
 	update_now_cli
      "${DIRECTORY}/updater" set-status 
   else
