@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir $HOME/.Deskreen
+mkdir -p $HOME/.Deskreen || exit 1
 cd $HOME/.Deskreen
 wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-armv7l.AppImage.zip || exit 1 
 unzip -o $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip '
