@@ -1,4 +1,4 @@
 #!/bin/bash
 
-install_packages https://github.com/ryanfortner/ryanfortner/releases/download/1002/freetube_0.15.0_armv7l.deb || exit 1
+install_packages https://apt.raspbian-addons.org/debian/pool/freetube_0.15.1_armv7l.deb || exit 1
 
