@@ -1,5 +1,2 @@
 #!/bin/bash
 purge_packages || exit 1
-
-( rm -f /usr/share/applications/org.bleachbit.BleachBit.desktop || sudo rm -f /usr/share/applications/org.bleachbit.BleachBit.desktop ) &>/dev/null
-
