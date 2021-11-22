@@ -487,7 +487,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
 	
 	number_of_updatable_files="$(("$number_of_updatable_files" + 3))" 
 	
-	updatable_files="$(echo "$updatable_files" | fzf --header "(SPACE to select, Ctrl+A to select all, ESC to skip, ENTER to continue) " \
+	updatable_files="$(echo "$updatable_files" | fzf --header "(SPACE to select/unselect, Ctrl+A to select all, ESC to skip, ENTER to continue) " \
 	--height="$number_of_updatable_files" --cycle --multi --bind "ctrl-c:execute()" --bind=space:toggle --bind=ctrl-a:toggle-all)"
 	
 	if [ ! -z "$updatable_files" ]; then
@@ -502,6 +502,12 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   echo
   
   if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
+	for i in {6..1}; do 
+	  echo -ne "Updating in: $i\r (Use Ctrl-C to abort) " && sleep 1
+    done
+    
+    echo -e "\n"
+	
 	update_now_cli
      "${DIRECTORY}/updater" set-status 
   else
