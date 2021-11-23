@@ -84,7 +84,9 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 <hr>
 
-# Read [the wiki](https://github.com/Botspot/pi-apps/wiki)  for the full documentation
+# Documentation
+
+Read [this document](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation.
 
 ### Basic usage
 - This is the **main window**.  
