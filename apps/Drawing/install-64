@@ -1,5 +1,5 @@
 #!/bin/bash
 #PACKAGES FOUND IN: https://launchpad.net/~cartes/+archive/ubuntu/ppa/+packages
 
-install_packages https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.4-0ubuntu1~hirsute_arm64.deb || exit 1
+install_packages https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.4-0ubuntu1~focal_arm64.deb || exit 1
 
