@@ -1421,25 +1421,25 @@ view_file() { #maximized yad window to view a text file
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
-  if uname -m | grep -q 'x86\|i686\|i386';then
+  if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /proc/version | grep -q Android ;then
+  elif cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
-  elif cat /proc/version | grep -q Microsoft || cat /proc/sys/kernel/osrelease | grep -q WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+  elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
     echo "Pi-Apps is not supported on WSL."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
+  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie'; then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'manjaro';then
+  elif echo "$PRETTY_NAME" | grep -qi 'manjaro'; then
     echo "Pi-Apps is not supported on Manjaro."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16';then
+  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16'; then
     echo "Pi-Apps is not supported on Ubuntu 16."
     return 1
-  elif [[ "$(uname -m)" == armv6* ]];then
+  elif [[ "$(uname -m)" == armv6* ]]; then
     echo "Pi-Apps is not supported on ARMv6 Raspberry Pi boards. Expect some apps to fail."
     return 1
   elif [ "$(id -u)" == 0 ]; then
