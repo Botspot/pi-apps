@@ -1,14 +1,4 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages https://github.com/ryanfortner/minbrowser-arm-builds/releases/download/1.22.1/min_1.22.1_armhf.deb || exit 1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/min.deb
-wget -O ~/min.deb https://github.com/ryanfortner/minbrowser-arm-builds/releases/download/v1.22/min_1.22.0_armhf.deb || error "Failed to download Min deb file!"
-
-"${DIRECTORY}/pkg-install" "$HOME/min.deb" "$(dirname "$0")" || error "Failed to install min deb file!"
-rm -f ~/min.deb

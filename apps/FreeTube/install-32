@@ -1,18 +1,4 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages https://apt.raspbian-addons.org/debian/pool/freetube_0.15.1_armv7l.deb || exit 1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#Downloading Deb File For FreeTube
-rm -f ~/freetube.deb
-wget -O ~/freetube.deb https://github.com/ryanfortner/ryanfortner/releases/download/1002/freetube_0.15.0_armv7l.deb || error "Failed to download freetube.deb!"
-
-#Installing FreeTube
-"${DIRECTORY}/pkg-install" "$HOME/freetube.deb" "$(dirname "$0")" || error "APT failed to install freetube.deb!"
-
-#Removing Deb File
-rm -f ~/freetube.deb

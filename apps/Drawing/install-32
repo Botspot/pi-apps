@@ -1,22 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#ensure not Raspbian Stretch
-if [ "$(lsb_release -cs)" == stretch ];then
-  error "This app cannot be installed on Raspbian Stretch."
-fi
-
 #PACKAGES FOUND IN: https://launchpad.net/~cartes/+archive/ubuntu/ppa/+packages
 
-rm -f ~/drawing.deb
-wget -O ~/drawing.deb "https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.3-0ubuntu1~hirsute_armhf.deb" || error "Failed to download drawing.deb"
+install_packages https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.4-0ubuntu1~focal_armhf.deb || exit 1
 
-
-"${DIRECTORY}/pkg-install" "$HOME/drawing.deb" "$(dirname "$0")" || error "APT failed to install drawing.deb"
-rm -f ~/drawing.deb

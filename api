@@ -185,8 +185,13 @@ repo_refresh() { #index the pi-apps local apt repository
   #index the repository by creating a Packages file
   cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
   
-  #create a source.list for the repository
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
+  #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
+  sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
+  
+  #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
+  rm -f /tmp/pi-apps-local-packages/source.list
+  cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" >> /tmp/pi-apps-local-packages/source.list
 }
 
 repo_rm() { #remove the local apt repository
@@ -251,6 +256,12 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       local filename="$HOME/$(basename "$package")"
       
+      #add .deb extension if filename doesn't end with it.
+      if [ "${filename: -4}" != ".deb" ]; then
+        status "$filename is not ending with .deb, renaming it to '${filename}.deb'..." 
+        local filename="${filename}.deb"
+      fi
+	  
       wget -O "$filename" "$package" || error "Failed to download '$package'"
       
       #determine the package name from the filename
@@ -272,7 +283,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       list="$(apt-cache search "$package" | awk '{print $1}' | grep "$(echo "$package" | tr -d '*')")"
       
       #replace package with expanded list
-      packages="$(echo "$packages" sed "s|$(echo "$package" | sed 's/*/\\*/g')|$list|g")"
+      packages="$(echo "$packages" | grep -vF "$package")"$'\n'"$list"
     fi
   done
   #now package list shouldn't contain any '*' characters, urls, local filepaths
@@ -841,6 +852,14 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
     refresh_pkgapp_status "$app"
   done
 }
+
+refresh_app_list() { #Force-regenerate the app list
+  local guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+  
+  #delete preload directory, then re-generate it
+  rm -rf "${DIRECTORY}/data/preload"
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" once &>/dev/null
+}
 #end of app functions
 
 #logfile functions below
@@ -1155,6 +1174,27 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "blockpi : Depends: python3-picamera but it is not installable" <<<"$errors" ;then
+    error_caption+=("BlockPi could not be installed because the python3-picamera package is missing.
+
+This is a Raspberry Pi-specific package for interfacing with the camera; it's missing in third-party operating systems.")
+    error_type="package"
+  fi
+  
+  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll" <<<"$errors" ;then
+    error_caption+=("The libmono package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The android-androresolvd on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1163,7 +1203,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte " <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1381,25 +1421,25 @@ view_file() { #maximized yad window to view a text file
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
-  if uname -m | grep -q 'x86\|i686\|i386';then
+  if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /proc/version | grep -q Android ;then
+  elif cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
-  elif cat /proc/version | grep -q Microsoft || cat /proc/sys/kernel/osrelease | grep -q WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+  elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
     echo "Pi-Apps is not supported on WSL."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie';then
+  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie'; then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'manjaro';then
+  elif echo "$PRETTY_NAME" | grep -qi 'manjaro'; then
     echo "Pi-Apps is not supported on Manjaro."
     return 1
-  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16';then
+  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16'; then
     echo "Pi-Apps is not supported on Ubuntu 16."
     return 1
-  elif [[ "$(uname -m)" == armv6* ]];then
+  elif [[ "$(uname -m)" == armv6* ]]; then
     echo "Pi-Apps is not supported on ARMv6 Raspberry Pi boards. Expect some apps to fail."
     return 1
   elif [ "$(id -u)" == 0 ]; then
@@ -1496,16 +1536,16 @@ git_clone() { #silently clone a git repository but display the output if an erro
   [ -z "$url" ] && error "git_clone(): no repository URL specified."
   
   local repo_name=$(basename "$url" | sed s/.git//g)
-
+  
   local folder="$(pwd)/$repo_name"
-
+  
   status -n "Downloading $repo_name repository... "
-
-  rm -rf "$repo_name"
+  
+  rm -rf "$repo_name" || sudo rm -rf "$repo_name"
   local errors
   errors="$(git clone "$@" 2>&1)" 
   local exitcode=$?
-
+  
   if [ "$exitcode" != 0 ]; then
     error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi

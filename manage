@@ -36,22 +36,30 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 EOF
 ) &>/dev/null
 
+#check for internet connection
+if ! wget --spider github.com &>/dev/null ;then
+  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
+fi
+
 #Silently re-download repo if github repository is over 3 months out of date
 {
+upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d)"
+if ! [[ "$upstream_git_date" =~ ^[0-9]+$ ]]; then
+  # if upstream master git date can't be found, then fallback to local time server
+  # the above checks for an empty variable or a variable containing non-numerical values
+  upstream_git_date="$(date +%s)"
+fi
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
-if [ $(date +%s) -gt $(($current_git_date + 7776000)) ];then
+if [ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ];then
   yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
-    --text="Your Pi-Apps github repository is somehow 3 months out-of-date."$'\n'"Downloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old..." &
+    --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
   sleep 1
   clear
-  echo -e "\nYour Pi-Apps github repository is somehow 3 months out-of-date.\nDownloading fresh version of pi-apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
+  echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
+  command -v git >/dev/null || sudo apt install -y git
   git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
-  temp_logfile="$(mktemp).txt"
-  echo -e "Updated a 3-months-outdated pi-apps install.\nFrom: $current_git_date\nTo: $(cd "$DIRECTORY"; git show -s --format=%ct)\n$(get_device_info)" >> "$temp_logfile"
-  send_error_report "$temp_logfile" 1>&2
-  rm -f "$temp_logfile"
   sleep 10
 fi
 }
@@ -60,11 +68,6 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 
 #remove week-old logfiles
 find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
-
-#check for internet connection
-if ! wget --spider github.com &>/dev/null ;then
-  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
-fi
 
 #check if hardware and OS is supported
 if is_supported_system >/dev/null;then
@@ -381,14 +384,14 @@ elif [ "$1" == 'check-all' ];then
   #if the updater script exists in update folder, then just git pull to save time
   if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
-    git pull || rm -rf "${DIRECTORY}/update"
+    git pull -q 1>&2 || rm -rf "${DIRECTORY}/update"
   fi | grep -v "Already up to date." 1>&2
   
   #re-check and if updater script does not exist then do a git clone
   if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
     rm -rf "${DIRECTORY}/update"
     mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" 1>&2 || error "failed to clone repository to the update directory!"
+    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" -q 1>&2 || error "failed to clone repository to the update directory!"
   fi
   
   echo "Done" 1>&2

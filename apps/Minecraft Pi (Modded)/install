@@ -29,7 +29,7 @@ wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/in
 # Choose which launcher to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy. You can also go to the github links for the respective launchers to see how they look.
 "
-options=("jMCPIL (recommended, better looking GUI but requires Java) (https://github.com/MCPI-Revival/jMCPIL)" "gMCPIL (written in Vala and C) (https://github.com/MCPI-Revival/gMCPIL)")
+options=("jMCPIL (recommended, requires Java) (https://github.com/MCPI-Revival/jMCPIL)" "gMCPIL (written in Vala and C) (https://github.com/MCPI-Revival/gMCPIL)")
 select opt in "${options[@]}"
 do
   case $opt in
@@ -60,7 +60,7 @@ fi
 # Optionally install Python API
 read -p "Do you wish to install the MCPI API for the ability to run Python API scripts? (select yes unless you know what your doing!)" choice
 case "$choice" in 
-  y|Y ) "${DIRECTORY}/pkg-install" "python3-pip" "$(dirname "$0")" || error "Failed to install python3-pip which is needed to install the API!" && pip3 install mcpi || error "The pip3 command failed to install the MCPI API!";;
+  y|Y ) install_packages $MCPIL python3-pip python3-dev || error "Failed to install python3-pip which is needed to install the API!" && pip3 install mcpi || error "The pip3 command failed to install the MCPI API!";;
   n|N ) echo "Not installing API... proceeding";;
   * ) echo "Invalid option! Please type 'y' or 'n'";;
 esac
