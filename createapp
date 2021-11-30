@@ -6,84 +6,95 @@ function error {
   exit 1
 }
 
-#for text_editor() and script_name() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
-#you can specify a preexisting app with variable 1
+#you can specify a pre-existing app with variable 1
 if [ ! -z "$1" ];then
   name="$1"
   step=2
   editing=yes
 else
   name=''
-  step=1
+  step=0
 fi
 
-#Sets the height of all dialog windows
-windowheight=400
-
 #start on this step:
-#step=3
+#step=2
 #start with this app name:
-#name='Email Checker'
+#name='myapp'
+#start with this app type:
+#app_type=package
+
+#ensure imagemagick is installed
+if ! command -v convert >/dev/null ;then
+  yad "${yadflags[@]}" --text="To resize the images, imagemagick must be installed."$'\n'"Install now?" \
+  --text-align=center --title='Quick question' \
+  --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+  button=$?
+  if [ $button == 0 ];then
+    sudo apt install -y --no-install-recommends imagemagick || icon=''
+  else
+    exit 0
+  fi
+fi
 
 while true;do
+  
+  #set the app_type: the type of app we're working with. allowed values: 'standard', 'package'
+  if [ -z "$name" ];then
+    app_type=''
+  elif [ -z "$app_type" ];then
+    if [ "$(app_type "$name")" == standard ];then
+      app_type=standard
+    elif [ "$(app_type "$name")" == package ];then
+      app_type=package
+    else
+      app_type=''
+    fi
+  fi
+  echo -e "\nName: $name\napp_type: $app_type\nStep: $step"
+  
   case $step in
-    1) #STEP 1: introduction
+    0) #Introduction
       echo "Welcome to the Create App wizard!
 
-With a few simple steps, your project can take advantage of Pi-Apps"\'" features and be displayed in the application list.
-This wizard will save your work as you go." | yad --text-info --fontname=12 --wrap --show-uri \
+With a few simple steps, your project can take advantage of Pi-Apps' features and be displayed in the app-list.
+This wizard will save your work as you go." | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
         --text="<a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">READ THIS TUTORIAL FIRST!!</a>" \
-        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$((windowheight-100)) \
+        --title="Create App Wizard" --width=310 --height=300 \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
       step=$((step+1))
       ;;
-    2) #STEP 2: fill in initial values
       
-      if [ ! -z "$name" ];then
-        namelocked='yes'
-        echo 'name field is already filled. Making it read-only.'
-      fi
+    1) #Choose name of app and its app-type
       
-      if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
-        iconfield="--field=Icon::RO"
-        iconpath="apps/${name}/icon-64.png"
+      fields=() #this array contains the yad window options
+      
+      if [ -z "$name" ];then
+        #if name varable is empty, make the field editable
+        fields+=(--field="Name of app:" "$name")
       else
-        iconfield="--field=Icon::FL"
-        iconpath="${HOME}/bla"
+        #if name varable is set, make the field read-only
+        fields+=(--field="Name of app: <b>$name</b>":RO '')
       fi
       
-      #if install script already exists, grey out compatibility line
-      compatibilityentry="--field=Compatibility::CB"
-      compatibilitypreset="64bit and 32bit!32bit only!64bit only"
-      if [ ! -z "$name" ];then
-      #if chosen app already has scripts, set cpu architecture compatibility and grey it out.
-      compatibilityentry="--field=Compatibility::RO"
-        if [ "$(script_name "$name")" == 'install' ] || [ "$(script_name "$name")" == 'install-32 install-64' ];then
-          compatibilitypreset="64bit and 32bit"
-        elif [ "$(script_name "$name")" == 'install-32' ];then
-          compatibilitypreset="32bit only"
-        elif [ "$(script_name "$name")" == 'install-64' ];then
-          compatibilitypreset="64bit only"
-        else
-          #otherwise if app contains no install scripts, make Compatibility field editable.
-          compatibilityentry="--field=Compatibility::CB"
-        fi
+      #if the app_type has not already been determined, make it an option
+      if [ -z "$app_type" ];then
+        fields+=(--field="App type:":CB 'standard - Use scripts to install the app!package - Will install apt package(s)')
+      elif [ "$app_type" == package ];then
+        fields+=(--field="App type: <b>package</b>":RO '')
+      elif [ "$app_type" == standard ];then
+        fields+=(--field="App type: <b>standard</b>":RO '')
+      else
+        error "Unknown app type: '$app_type'"
       fi
       
-      output="$(yad --form \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$((windowheight+200)) \
-        --text="Step ${step}: enter some information. The name field is mandatory." \
-        --field="Name of app:$([ ! -z "$namelocked" ]&&echo ':RO')"  "$name" \
-        "$iconfield" "$iconpath" \
-        --field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null || echo '')" \
-        "$compatibilityentry" "$compatibilitypreset" \
-        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" || cat "${DIRECTORY}/apps/template/description")" \
-        --field="Credits:":TXT "$(cat "${DIRECTORY}/apps/${name}/credits" || cat "${DIRECTORY}/apps/template/credits")" \
-        $([ ! -z $editing ]&&echo "--button=Save!${DIRECTORY}/icons/save.png:4") \
+      output="$(yad "${yadflags[@]}" --form \
+        --title="Create App: Step $step" --width=310 --height=300 --separator='\n' \
+        --text="Step ${step}: The basics" \
+        "${fields[@]}" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null)"
@@ -91,134 +102,218 @@ This wizard will save your work as you go." | yad --text-info --fontname=12 --wr
       
       echo "$button"
       echo "Output: ${output}EOO"
-      output="$(echo "$output" | tr '|' '\n' )"
       
-      # if ------ next -- or -------- save ----- was clicked
-      if [ $button == 0 ] || [ $button == 4 ];then
-        name="$(echo "$output" | sed -n '1p')"
-        icon="$(echo "$output" | sed -n '2p')"
-        website="$(echo "$output" | sed -n '3p')"
-        compatibility="$(echo "$output" | sed -n '4p')"
-        description="$(echo -e "$(echo "$output" | sed -n '5p')")"
-        credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
+      if [ "$button" == 0 ];then
+        #Next clicked
         
+        #fill in variables based on yad output
+        [ -z "$name" ] && name="$(echo "$output" | sed -n 1p)"
+        [ -z "$app_type" ] && [ -z "$(app_type "$name")" ] && app_type="$(echo "$output" | sed -n 2p | awk '{print $1}')"
         
-        if [ -z "$(script_name "$name")" ];then
-          #if app contains no install scripts, then parse yad output
-          #convert compatibility var into machine-readable
-          if [ "$compatibility" == "64bit and 32bit" ];then
-            compatibility='install-32 install-64'
-          elif [ "$compatibility" == "64bit and 32bit" ];then
-            compatibility='install'
-          elif [ "$compatibility" == "32bit only" ];then
-            compatibility='install-32'
-          elif [ "$compatibility" == "64bit only" ];then
-            compatibility='install-64'
-          fi
-        else #app contains install scripts, so ignore yad window's setting (it was greyed out anyway) and set compatibility to whatever it was already.
-          compatibility="$(script_name "$name")"
-        fi
-        
-        #name field must be populated
-        if [ ! -z "$name" ];then
-          #check if name is a duplicate
-          if [ -z "$(ls "${DIRECTORY}/apps" | grep -x "$name")" ] || [ ! -z $namelocked ];then
-            #create app folder
-            mkdir -p "${DIRECTORY}/apps/${name}" || error "failed to create ${DIRECTORY}/apps/${name}!"
-            namelocked='yes'
-            
-            #if website field is populated
-            if [ ! -z "$website" ];then
-              echo "$website" > "${DIRECTORY}/apps/${name}/website"
-              echo "Created ${DIRECTORY}/apps/${name}/website"
-            fi
-            
-            #if icon field is populated and if file exists
-            if [ ! -z "$icon" ] && [ -f "$icon" ];then
-              #ensure imagemagick is installed
-              if [ ! -f /usr/bin/convert ];then
-                yad --text="To resize the images, imagemagick must be installed.
-Install now?" \
-                --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
-                --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
-                button=$?
-                if [ $button == 0 ];then
-                  sudo apt install -y --no-install-recommends imagemagick || icon=''
-                else
-                  #clear the icon var to disable the icon
-                  icon=''
-                fi
-              fi
-              #if icon var not empty
-              if [ ! -z "$icon" ];then
-                #scale it to 24x24
-                convert "$icon" -resize 24x24 "${DIRECTORY}/apps/${name}/icon-24.png"
-                if [ -f "${DIRECTORY}/apps/${name}/icon-24.png" ];then
-                  echo "Created ${DIRECTORY}/apps/${name}/icon-24.png from $icon"
-                else
-                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-24.png from $icon! Most likely you need to install imagemagick."
-                fi
-                #scale it to 64x64
-                convert "$icon" -resize 64x64 "${DIRECTORY}/apps/${name}/icon-64.png"
-                if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
-                  echo "Created ${DIRECTORY}/apps/${name}/icon-64.png from $icon"
-                else
-                  echo "Failed to create ${DIRECTORY}/apps/${name}/icon-64.png from $icon! Most likely you need to install imagemagick."
-                fi
-              fi
-            fi
-            
-            #if description field is populated
-            if [ ! -z "$description" ];then
-              echo "$description" > "${DIRECTORY}/apps/${name}/description"
-              echo "Created ${DIRECTORY}/apps/${name}/description"
-            fi
-            
-            #if credits field is populated
-            if [ ! -z "$credits" ];then
-              echo "$credits" > "${DIRECTORY}/apps/${name}/credits"
-              echo "Created ${DIRECTORY}/apps/${name}/credits"
-            elif [ -z "$credits" ] && [ -f "${DIRECTORY}/apps/${name}/credits" ] ;then
-              #clear credits if the user wanted them cleared.
-              echo '' > "${DIRECTORY}/apps/${name}/credits"
-            fi
-            
-            step=$((step+1))
-          else
-            echo 'That app name already exists!'
-            yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
-            --text="That app name already exists!
-Do you want to edit ${name}?" --timeout=10 \
-            --button="Edit ${name}!${DIRECTORY}/icons/edit.png":0 --button="Oops, go back!${DIRECTORY}/icons/back.png":1 || name=''
-          fi
-        else
+        if [ -z "$name" ];then
           echo 'Name of app may not be left blank!'
-          yad --title="Error" --window-icon="${DIRECTORY}/icons/logo.png" --center \
+          yad "${yadflags[@]}" --title="Error" \
             --text="Name of app may not be left blank!" --timeout=10 \
             --button=OK:0
+        else
+          #name field populated
+          step=$((step+1))
+          
+          #create app folder
+          mkdir -p "${DIRECTORY}/apps/${name}" || error "failed to create app folder: ${DIRECTORY}/apps/${name}!"
         fi
         
-        #if Save was clicked then exit now
-        if [ $button == 4 ];then
-          exit 0
-        fi
-      elif [ $button == 2 ];then
+      elif [ "$button" == 2 ];then
         #previous - don't save changes
         step=$((step-1))
       else
         #like clicking the X or something 
         exit 0
       fi
-      
+      echo "at the end of step 1, the step value is $step"
       ;;
-    3) #STEP 3: create install script
+      
+    2) #Fill in information about the pre-chosen app name
+      
+      [ -z "$name" ] && error "name variable must be filled for step $step."
+      [ ! -d "${DIRECTORY}/apps/${name}" ] && error "The $name app-folder must exist for step $step."
+      [ -z "$app_type" ] && error "app_type variable must be filled for step $step."
+      
+      fields=() #this array contains the yad window options
+      
+      #if app_type is 'standard', add the website field, icon field, and script-compatibility field
+      if [ "$app_type" == standard ];then
+        #make icon field read-only if the icon exists
+        if [ -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
+          fields+=("--field=Icon::RO" "apps/${name}/icon-64.png")
+        else
+          #point yad to a nonexistent directory so it opens the file browser to the $HOME directory
+          fields+=("--field=Icon::FL" "${HOME}/keiucheuchkoec")
+        fi
+        
+        fields+=(--field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null)")
+        
+        #if chosen app already has scripts, set cpu architecture compatibility and grey it out, otherwise make it choosable.
+        if [ -z "$(script_name "$name")" ];then
+          #no scripts found for the app - make it a choice
+          fields+=("--field=Compatibility::CB" "64bit and 32bit!32bit only!64bit only")
+          
+        elif [ "$(script_name "$name")" == 'install' ] || [ "$(script_name "$name")" == 'install-32 install-64' ];then
+          #Either 'install' or 'install-32 install-64' scripts found.
+          fields+=("--field=Compatibility::RO" "64bit and 32bit")
+          
+        elif [ "$(script_name "$name")" == 'install-32' ];then
+          #if only install-32 script found
+          fields+=("--field=Compatibility::RO" "32bit only")
+          
+        elif [ "$(script_name "$name")" == 'install-64' ];then
+          #if only install-64 script found
+          fields+=("--field=Compatibility::RO" "64bit only")
+        fi
+        
+      #if app_type is 'package', add the packages field
+      elif [ "$app_type" == package ];then
+        if [ -s "${DIRECTORY}/apps/${name}/packages" ];then
+          fields+=("--field=Package(s) to install:" "$(cat "${DIRECTORY}/apps/${name}/packages")")
+        else
+          #point yad to a nonexistent directory so it opens the file browser to the $HOME directory
+          fields+=("--field=Package(s) to install:" '')
+        fi
+        
+        fields+=(--field="Website:" "$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null)")
+        
+      fi
+      
+      output="$(yad "${yadflags[@]}" --form --separator='\n' \
+        --title="Create App: Step $step" --width=310 --height=600 \
+        --text="Step ${step}: Fill in information about <b>$name</b>." \
+        "${fields[@]}" \
+        --field="Description:":TXT "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || cat "${DIRECTORY}/apps/template/description")" \
+        --field="Credits:":TXT "$(cat "${DIRECTORY}/apps/${name}/credits" 2>/dev/null || cat "${DIRECTORY}/apps/template/credits")" \
+        $([ ! -z $editing ] && echo "--button=Save!${DIRECTORY}/icons/save.png:4") \
+        --button=Previous!"${DIRECTORY}/icons/back.png":2 \
+        --button=Next!"${DIRECTORY}/icons/forward.png":0 \
+        2>/dev/null)"
+      button=$? #get exit code to determine which button was pressed
+      
+      echo "$button"
+      echo "Output: ${output}EOO"
+      
+      if [ $button == 2 ];then
+        #previous - don't save changes
+        step=$((step-1))
+      # if -------- next -- or -------- save ----- was clicked
+      elif [ $button == 0 ] || [ $button == 4 ];then
+        
+        #fill out information fields
+        if [ "$app_type" == package ];then
+          packages="$(echo "$output" | sed -n '1p')"
+          website="$(echo "$output" | sed -n '2p')"
+          description="$(echo -e "$(echo "$output" | sed -n '3p')")"
+          credits="$(echo -e "$(echo "$output" | sed -n '4p')")"
+          echo -e "packages=$packages\ndescription=$description\ncredits=$credits"
+          
+          #try to get a program icon based on the package names given
+          if [ ! -f "${DIRECTORY}/apps/${name}/icon-64.png" ];then
+            icon="$(get_icon_from_package $packages)"
+            echo "got this icon: $icon"
+            if [ -z "$icon" ];then
+              icon="$(yad "${yadflags[@]}" --form --title="Icon for $name" --width=310 --height=400 \
+                --text="Please choose an icon for the $name app:" "--field=:FL" "${HOME}/keiucheuchkoec" \
+                --button=OK)"
+            else
+              #resize the detected icon to be displayed in the confiromation window
+              tmp_png="$(mktemp -u).png"
+              convert "$icon" -resize 64x64 "$tmp_png"
+              icon="$(yad "${yadflags[@]}" --form --title="Icon for $name" --separator='\n' --width=310 --height=400 \
+                --image="$tmp_png" --image-on-top \
+                --text="Pi-Apps found an icon from the <b>$(echo "$packages" | awk '{print $1}')</b> package."$'\n'"You can use a different one if you wish." \
+                "--field=:FL" "$icon" \
+                --button=OK:0)"
+            fi
+          fi
+          
+          #Skip the script-creation steps
+          step=$((step+3))
+        else #app_type is standard
+          icon="$(echo "$output" | sed -n '2p')"
+          website="$(echo "$output" | sed -n '3p')"
+          compatibility="$(echo "$output" | sed -n '4p')"
+          description="$(echo -e "$(echo "$output" | sed -n '5p')")"
+          credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
+          
+          #translate the compatibility variable from human-readable to machine-readable
+          if [ -z "$(script_name "$name")" ];then
+            #if app contains no install scripts, then parse yad output
+            #convert compatibility var into machine-readable
+            if [ "$compatibility" == "64bit and 32bit" ];then
+              compatibility='install-32 install-64'
+            elif [ "$compatibility" == "64bit and 32bit" ];then
+              compatibility='install'
+            elif [ "$compatibility" == "32bit only" ];then
+              compatibility='install-32'
+            elif [ "$compatibility" == "64bit only" ];then
+              compatibility='install-64'
+            fi
+          else #app contains install scripts, so ignore yad window's setting (it was greyed out anyway) and set compatibility to whatever it was already.
+            compatibility="$(script_name "$name")"
+          fi
+          
+          #This is an app; proceed to script-creation step
+          step=$((step+1))
+        fi
+        
+        #if icon variable is populated and if file exists
+        if [ ! -z "$icon" ] && [ -f "$icon" ];then
+          generate_app_icons "$icon" "$name"
+          echo "Generated icons from $icon"
+        fi
+        
+        #if packages field is populated
+        if [ ! -z "$packages" ];then
+          echo "$packages" > "${DIRECTORY}/apps/${name}/packages"
+          echo "Created ${DIRECTORY}/apps/${name}/packages"
+        fi
+        
+        #if website field is populated
+        if [ ! -z "$website" ] && [ "$website" != "$(cat "${DIRECTORY}/apps/template/website")" ];then
+          echo "$website" > "${DIRECTORY}/apps/${name}/website"
+          echo "Created ${DIRECTORY}/apps/${name}/website"
+        fi
+        
+        #if description field is populated
+        if [ ! -z "$description" ] && [ "$description" != "$(cat "${DIRECTORY}/apps/template/description")" ];then
+          echo "$description" > "${DIRECTORY}/apps/${name}/description"
+          echo "Created ${DIRECTORY}/apps/${name}/description"
+        fi
+        
+        #if credits field is populated
+        if [ ! -z "$credits" ] && [ "$credits" != "$(cat "${DIRECTORY}/apps/template/credits")" ];then
+          echo "$credits" > "${DIRECTORY}/apps/${name}/credits"
+          echo "Created ${DIRECTORY}/apps/${name}/credits"
+        elif [ -z "$credits" ] && [ -f "${DIRECTORY}/apps/${name}/credits" ] ;then
+          #clear credits if the user wanted them cleared.
+          echo '' > "${DIRECTORY}/apps/${name}/credits"
+        fi
+        
+        #if Save was clicked then exit now
+        if [ $button == 4 ];then
+          exit 0
+        fi
+      else
+        #like clicking the X or something 
+        exit 0
+      fi
+      ;;
+      
+    3) #Create install script
       
       #ask if two install scripts are necessary, of if both architectures can share 1 script
       if [ "$compatibility" == "install-32 install-64" ] && [ -z "$(script_name "$name")" ];then
         echo "In the previous page, you said this app is compatible with 64bit and 32bit.
 Do you want two install scripts, one for 32bit and the other for 64bit?
-Or do you want one combined install script?" | yad --text-info --fontname=12 --wrap --show-uri \
-          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+Or do you want one combined install script?" | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
+          --title="Install script" --width=310 --height=400 \
           --button="Previous!${DIRECTORY}/icons/back.png":1 \
           --button='2 scripts':2 \
           --button='1 script':0
@@ -277,8 +372,8 @@ Or do you want one combined install script?" | yad --text-info --fontname=12 --w
       #if creating 2 scripts
       if [ "$compatibility" == 'install-32 install-64' ];then
         
-        yad --form --on-top \
-          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+        yad "${yadflags[@]}" --form --on-top \
+          --title="Install scripts" --width=310 --height=400 \
           --text="Now it's time to make your install-32 and install-64 scripts.
 
 One of these scripts will be executed when somebody clicks your app's Install button.
@@ -295,8 +390,8 @@ Still need help? Botspot can try to help you if you <a href="\""https://github.c
         button=$? #get exit code to determine which button was pressed
         
       else #if creating 1 script
-        yad --form --on-top \
-          --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+        yad "${yadflags[@]}" --form --on-top \
+          --title="Install script" --width=310 --height=400 \
           --text="Now it's time to make your ${compatibility} script. This will be executed anytime somebody clicks the Install button.
 
 A text editor should have openened and you can create your install script.
@@ -321,7 +416,8 @@ Still need help? Botspot can try to help you if you <a href="\""https://github.c
         exit 0
       fi
       ;;
-    4) #STEP 4: create uninstall script
+      
+    4) #Create uninstall script
       cp -n "${DIRECTORY}/apps/template/uninstall" "${DIRECTORY}/apps/${name}/uninstall"
       
       text_editor "${DIRECTORY}/apps/${name}/uninstall" &
@@ -329,10 +425,10 @@ Still need help? Botspot can try to help you if you <a href="\""https://github.c
       #install shellcheck if not installed
       command -v shellcheck >/dev/null || sudo apt install -y shellcheck
       
-      output="$(yad --form --on-top \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
-        --text='Now it'\''s time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
-A text editor should have openened... Never mind, you know what to do.' \
+      output="$(yad "${yadflags[@]}" --form --on-top \
+        --title="Uninstall script" --width=310 --height=400 \
+        --text="Now it's time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
+A text editor should have openened... Never mind, you know what to do." \
         --field="Run script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/uninstall';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running uninstall script of $name"\""" \
         --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/uninstall';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
@@ -351,16 +447,17 @@ A text editor should have openened... Never mind, you know what to do.' \
         exit 0
       fi
       ;;
-    5) #STEP 5: verify in app list
+      
+    5) #Verify in app list
       LIST="${DIRECTORY}/icons/uninstalled.png
 ${DIRECTORY}/apps/${name}/icon-24.png
 $name
-"\("uninstalled"\)" $(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)"
+"\("uninstalled"\)" $(echo "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || echo "Description unavailable")" | head -n1)"
       
-      echo -e "$LIST" | yad --list \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
-        --text='Make sure everything looks right.
-Here'\''s what it will look like in the app list:' \
+      echo -e "$LIST" | yad "${yadflags[@]}" --list \
+        --title="List view" --width=310 --height=400 \
+        --text="Make sure everything looks right.
+Here's what it will look like in the app list:" \
         --column=:IMG --column=:IMG --column=Name --column=tip:HD --tooltip-column=4 --no-headers \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
@@ -370,23 +467,25 @@ Here'\''s what it will look like in the app list:' \
       if [ $button == 0 ];then
         step=$((step+1))
       elif [ $button == 2 ];then
-        step=$((step-1))
+        #go back - if the app is a package, then skip script-creation steps
+        if [ "$app_type" == standard ];then
+          step=$((step-1))
+        elif [ "$app_type" == package ];then
+          step=$((step-3))
+        fi
       else
         #like clicking the X or something 
         exit 0
       fi
       ;;
-    6) #STEP 6: verify in Details window
       
-      text="$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)
-Current status: uninstalled
-Website: $(cat "${DIRECTORY}/apps/${name}/website" || echo "unavailable")
-$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | grep -v "$(echo "$(cat "${DIRECTORY}/apps/${name}/description" || echo "Description unavailable")" | head -n1)")"
-      
-      echo "$text" | yad --text-info --fontname=12 --wrap --show-uri \
-        --title="Create App: Step $step" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=700 --height=400 \
-        --text='Make sure everything looks right.
-Here'\''s a preview of the Details window:' \
+    6) #Verify in Details window
+      cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
+        --text="Make sure everything looks right.
+Here's a preview of the Details window:
+- Current status: $(echo "$(app_status "$name")" | sed 's/corrupted/corrupted (installation failed)/g' | sed 's/disabled/disabled (installation is prevented on your system)/g')
+- Website: <a href="\""$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null | head -n1)"\"">$(cat "${DIRECTORY}/apps/${name}/website" 2>/dev/null | head -n1)</a>" \
+        --title="Details window" --width=700 --height=400 \
         --image="${DIRECTORY}/apps/${name}/icon-64.png" --image-on-top \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
@@ -402,16 +501,19 @@ Here'\''s a preview of the Details window:' \
         exit 0
       fi
       ;;
-    7) #STEP 7: all done
-      echo "Done!
-You app is located at ${DIRECTORY}/apps/${name}
-To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue for Botspot (the developer of Pi-Apps): https://github.com/Botspot/pi-apps/issues/new" | yad --text-info --fontname=12 --wrap --show-uri \
+      
+    7) #All done
+      echo "Your app is located at ${DIRECTORY}/apps/${name}
+To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue on the Pi-Apps repository: https://github.com/Botspot/pi-apps/issues/new" | yad "${yadflags[@]}" --text-info \
+        --text="Done!" \
+        --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --title="Create App Wizard" --window-icon="${DIRECTORY}/icons/logo.png" --center --width=310 --height=$windowheight \
+        --title="Create App Wizard" --width=310 --height=400 \
         --button=Previous!"${DIRECTORY}/icons/back.png":0 \
         --button=Close!"${DIRECTORY}/icons/exit.png":1 || exit 0
       step=$((step-1))
       ;;
+      
     *)
       error "Unknown step ${step}!"
       ;;
