@@ -5,7 +5,10 @@
 <p align="center">
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
-|
+  |
+  <a href="https://docs.pi-apps.io">
+    View docs</a>
+  |
   <a href="https://discord.gg/RXSTvaUvuu">
     Join the <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
   |
