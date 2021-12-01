@@ -92,6 +92,11 @@ if [[ "$import" == /* ]] ;then
       #use the import_zip function to import the app, keeping a record of the app-name
       imported_apps="$(import_zip "$import")"
       
+      #add to Imported category
+      if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+        echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+      fi
+      
     else #file exists, but not a zip file
       error "Given file '$import' is not a .zip file!"
     fi
@@ -105,7 +110,11 @@ if [[ "$import" == /* ]] ;then
   fi
   
 elif [[ "$import" == *'://'*'.zip' ]];then
+
   #given a download link to a zip file
+
+  #check for internet connection
+  ping -q -c1 google.com &>/dev/null || error "No internet connection!\ngoogle.com failed to respond.\nErrors: $(ping -q -c1 google.com 2>&1)" 
   
   #create a temporary directory to extract to
   tmpdir="$(mktemp -d)" || error "Failed to create a temporaty folder for some reason.\nErrors:\n$tmpdir"
@@ -119,9 +128,18 @@ elif [[ "$import" == *'://'*'.zip' ]];then
   
   #use the import_zip function to import the app, keeping a record of the app-name
   imported_apps="$(import_zip "$filename")"
+
+  #add to Imported category
+  if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+    echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+  fi
   
-elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];then
+  
+elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
   #given a pull request for an app
+  
+  #check for internet connection
+  ping -q -c1 google.com &>/dev/null || error "No internet connection!\ngoogle.com failed to respond.\nErrors: $(ping -q -c1 google.com 2>&1)" 
   
   #if given a PR number, assume it's a PR on the pi-apps repo
   if [[ "$import" =~ ^[0-9]+$ ]];then
@@ -134,38 +152,40 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   #repobranch='https://github.com/cycool29/pi-apps/tree/msteams'
   repobranch="$(wget -qO- "$PR" | grep -x 'from' --after 2 | tr '<> ' '\n' | grep 'title="' | sed 's/title="//g' | sed 's/"$//g' | head -n1)"
   
-  echo "repobranch: $repobranch"
   if [ -z "$repobranch" ];then
     error "No PR was found that mentions a branch."
+  else
+    echo "repobranch: $repobranch"
   fi
   
   #Take a combined repo/branch url and separate it.
   #example value of repobranch: https://github.com/cycool29/pi-apps/tree/msteams
   
-  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: https://github.com/cycool29/pi-apps
+  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: cycool29/pi-apps
   branch="$(basename "$repobranch" | awk -F: '{print $2}')" #value: msteams
   username="$(dirname "$repo" | sed 's+^/++g')" #value: cycool29
   
   #make a temporary directory and enter it
-  cd "$(mktemp -d)" || error "Failed to create and enter a tempory directory."
+  cd "$(mktemp -d)" || error "Failed to create and enter a temporary directory."
   #if script is killed prematurely, be sure to delete the temporary folder
   trap "rm -rf '$(pwd)'" EXIT
   
   echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
   
   echo -n "Downloading repository... "
-  errors="$(git clone "https://github.com/${repo}" 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
-  echo "Done - git clone https://github.com/${repo}"
+  errors="$(git clone "https://github.com/${repo}" -b $branch -q 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
+  echo "Done"
   
-  echo -n "Switching to branch: $branch "
-  cd "$(pwd)/pi-apps"
-  errors="$(git checkout "$branch" 2>&1)" || error "Failed to checkout branch: $branch\nErrors:\n$errors"
-  cd .. #now the current directory is the tmpdir
-  echo "Done - git checkout $branch"
+  echo -n "Syncing fork with upstream repo... "
+  cd $(pwd)/pi-apps
+  errors="$(git pull https://github.com/Botspot/pi-apps --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
+  
+  cd .. #back to tmpdir
+  echo "Done"
   
   echo -n "Getting pi-apps repo for comparison... "
-  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master 2>&1)" || error "Failed to clone botspot pi-apps repository.\nErrors:\n$errors"
-  echo "Done - git clone https://github.com/Botspot/pi-apps"
+  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master -q 2>&1)" || error "Failed to clone Botspot pi-apps repository.\nErrors:\n$errors"
+  echo "Done"
   
   #get list of apps that are unique to this pi-apps folder. (not on main repo)
   #apps="$("$(pwd)/pi-apps/api" list_apps local_only)"
@@ -185,6 +205,11 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];th
   for app in $imported_apps ;do
     cp -af "$(pwd)/pi-apps/apps/$app" "${DIRECTORY}/apps"
     echo "Copied '$(pwd)/pi-apps/apps/${app}' to ${DIRECTORY}/apps"
+   
+    #add to Imported category
+    if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+      echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
+    fi
   done
   
 else
@@ -192,18 +217,18 @@ else
   error "Unrecognized input '$import'"
 fi
 
-echo -e "\n$(basename "$0") just imported these apps:"
-echo "$imported_apps" | sed 's/^/- /g'
 
 #display on-screen which apps were updated
 IFS=$'\n'
 for app in $imported_apps ;do
   LIST="$LIST
-$([ -f "${DIRECTORY}/apps/$app/icon-64.png" ] && echo "${DIRECTORY}/apps/$app/icon-64.png" || echo "${DIRECTORY}/icons/none-64.png")
+$([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
     $app"
   
 done
 LIST="${LIST:1}"
+
+[ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | grep . | sed 's/^/- /g')" || echo -e "\nNo app has been imported."
 
 [ -n "$LIST" ] && echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
   --text="These apps have been imported:" \
