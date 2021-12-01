@@ -135,7 +135,7 @@ elif [[ "$import" == *'://'*'.zip' ]];then
   fi
   
   
-elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" =~ *'://'*'/pull/'[0-9]+$ ]];then
+elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
   #given a pull request for an app
   
   #check for internet connection
