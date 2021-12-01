@@ -261,7 +261,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
         status "$filename is not ending with .deb, renaming it to '${filename}.deb'..." 
         local filename="${filename}.deb"
       fi
-	  
+      
       wget -O "$filename" "$package" || error "Failed to download '$package'"
       
       #determine the package name from the filename
@@ -559,15 +559,13 @@ list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
   
   #remove app category if app folder not found
-  IFS=$'\n'
+  local IFS=$'\n'
+  local app
   for app in $(cat "${DIRECTORY}/data/category-overrides"); do 
     if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
       sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
     fi
   done
-
-  unset app
-  unset IFS
   
   #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
   (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
