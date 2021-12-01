@@ -94,8 +94,8 @@ if [[ "$import" == /* ]] ;then
       
       #add to Imported category
       if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
-		echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
-	  fi
+        echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+      fi
       
     else #file exists, but not a zip file
       error "Given file '$import' is not a .zip file!"
@@ -155,7 +155,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   if [ -z "$repobranch" ];then
     error "No PR was found that mentions a branch."
   else
-	echo "repobranch: $repobranch"
+    echo "repobranch: $repobranch"
   fi
   
   #Take a combined repo/branch url and separate it.
@@ -208,7 +208,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
    
     #add to Imported category
     if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
-	  echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
+      echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
     fi
   done
   
