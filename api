@@ -462,7 +462,7 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
     #Example: given the 'shotwell' package, this will find the 'shotwell-common' package, as well as others
     extra_packages+=" $(package_dependencies "$package" | sed 's/, \||/\n/g' | awk '{print $1}' | grep "^$package" | sort | uniq | tr '\n' ' ')"
   done
-  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep -F '.png$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
+  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
 
