@@ -104,6 +104,10 @@ if [[ "$import" == /* ]] ;then
   elif [ -d "$import" ];then
     #given a folder, copy it to the apps directory
     cp -a "$import" "${DIRECTORY}/apps"
+    app="$(basename "$import")"
+    LIST="$LIST
+$([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
+    $app"
     
   else #file/folder does not exist
     error "Given file '$import' does not exist!"
