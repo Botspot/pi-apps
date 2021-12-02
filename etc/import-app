@@ -103,7 +103,7 @@ if [[ "$import" == /* ]] ;then
     
   elif [ -d "$import" ];then
     #given a folder, copy it to the apps directory
-    cp -a "$import" "${DIRECTORY}/apps"
+    errors="$(cp -a "$import" "${DIRECTORY}/apps")" || error "Failed to copy $import to ${DIRECTORY}/apps.\nErrors:\n$errors"
     app="$(basename "$import")"
     LIST="$LIST
 $([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
