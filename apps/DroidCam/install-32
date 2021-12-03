@@ -1,0 +1,16 @@
+#!/bin/bash
+
+git_clone https://github.com/open-sorcerer64/Droid-Cam-RPi || exit 1
+# Get dependencies
+install_packages $HOME/Droid-Cam-RPi/libjpeg-turbo_2.1.3_armhf.deb raspberrypi-kernel-headers libplist-dev libavutil-dev libswscale-dev libswscale-dev libspeex-dev libusbmuxd-dev libasound2-dev libappindicator3-dev make gcc pkg-config libgtk-3-dev libappindicator3-1 adb || exit 1
+
+git_clone https://github.com/dev47apps/droidcam || exit 1
+cd $HOME/droidcam
+make droidcam-cli || sudo make droidcam-cli || error "Failed to make droidcam-cli!"
+make droidcam || sudo make droidcam  || error "Failed to make droidcam!"
+sudo ./install-client || error "Failed to run install-client!"
+sudo ./install-video || error "Failed to run install-video!"
+sudo ./install-sound || error "Failed to run install-sound!"
+
+#cleanup
+rm -rf $HOME/Droid-Cam-RPi || sudo rm -rf $HOME/Droid-Cam-RPi 

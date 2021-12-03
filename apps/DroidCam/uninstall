@@ -1,0 +1,4 @@
+#!/bin/bash
+
+wget -qO- https://github.com/open-sorcerer64/Droid-Cam-RPi/raw/main/uninstall.sh | sudo bash
+purge_packages || exit 1
