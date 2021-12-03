@@ -93,7 +93,7 @@ if [[ "$import" == /* ]] ;then
       imported_apps="$(import_zip "$import")"
       
       #add to Imported category
-      if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+      if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
         echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
       fi
       
