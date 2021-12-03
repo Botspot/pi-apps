@@ -104,11 +104,13 @@ if [[ "$import" == /* ]] ;then
   elif [ -d "$import" ];then
     #given a folder, copy it to the apps directory
     errors="$(cp -a "$import" "${DIRECTORY}/apps")" || error "Failed to copy $import to ${DIRECTORY}/apps.\nErrors:\n$errors"
-    app="$(basename "$import")"
-    LIST="$LIST
-$([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
-    $app"
     
+    imported_apps=$(basename "$import")
+    
+    if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
+      echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
+    fi
+	
   else #file/folder does not exist
     error "Given file '$import' does not exist!"
   fi
@@ -134,10 +136,9 @@ elif [[ "$import" == *'://'*'.zip' ]];then
   imported_apps="$(import_zip "$filename")"
 
   #add to Imported category
-  if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+  if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
     echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
   fi
-  
   
 elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
   #given a pull request for an app
