@@ -92,11 +92,6 @@ if [[ "$import" == /* ]] ;then
       #use the import_zip function to import the app, keeping a record of the app-name
       imported_apps="$(import_zip "$import")"
       
-      #add to Imported category
-      if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
-        echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
-      fi
-      
     else #file exists, but not a zip file
       error "Given file '$import' is not a .zip file!"
     fi
@@ -106,10 +101,6 @@ if [[ "$import" == /* ]] ;then
     errors="$(cp -a "$import" "${DIRECTORY}/apps")" || error "Failed to copy $import to ${DIRECTORY}/apps.\nErrors:\n$errors"
     
     imported_apps=$(basename "$import")
-    
-    if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
-      echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
-    fi
 	
   else #file/folder does not exist
     error "Given file '$import' does not exist!"
@@ -134,11 +125,6 @@ elif [[ "$import" == *'://'*'.zip' ]];then
   
   #use the import_zip function to import the app, keeping a record of the app-name
   imported_apps="$(import_zip "$filename")"
-
-  #add to Imported category
-  if ! grep -q "$imported_apps" "${DIRECTORY}/etc/categories" && ! grep -q "$imported_apps" "${DIRECTORY}/data/category-overrides"; then
-    echo "$imported_apps|Imported" >> "${DIRECTORY}/data/category-overrides"
-  fi
   
 elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
   #given a pull request for an app
@@ -210,11 +196,6 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   for app in $imported_apps ;do
     cp -af "$(pwd)/pi-apps/apps/$app" "${DIRECTORY}/apps"
     echo "Copied '$(pwd)/pi-apps/apps/${app}' to ${DIRECTORY}/apps"
-   
-    #add to Imported category
-    if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
-      echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
-    fi
   done
   
 else
@@ -223,18 +204,22 @@ else
 fi
 
 
-#display on-screen which apps were updated
 IFS=$'\n'
 for app in $imported_apps ;do
   LIST="$LIST
 $([ -f "${DIRECTORY}/apps/$app/icon-24.png" ] && echo "${DIRECTORY}/apps/$app/icon-24.png" || echo "${DIRECTORY}/icons/none.png")
     $app"
-  
+     
+    #add to Imported category
+    if ! grep -q "$app" "${DIRECTORY}/etc/categories" && ! grep -q "$app" "${DIRECTORY}/data/category-overrides"; then
+      echo "$app|Imported" >> "${DIRECTORY}/data/category-overrides"
+    fi
 done
 LIST="${LIST:1}"
 
 [ -n "$LIST" ] && echo -e "\n$(basename "$0") just imported these apps:\n$(echo "$imported_apps" | grep . | sed 's/^/- /g')" || echo -e "\nNo app has been imported."
 
+#display on-screen which apps were imported 
 [ -n "$LIST" ] && echo "$LIST" | yad "${yadflags[@]}" --title="App importer" --width=310 --height=200 --no-headers \
   --text="These apps have been imported:" \
   --list --multiple --no-selection \
