@@ -567,8 +567,6 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
 	  i="$(($i+1))"
 	done
 
-	echo -e "$apps_to_update"
-
 	updatable_apps="$(echo -e "$apps_to_update")"
   fi
 
@@ -592,17 +590,17 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
 	  i="$(($i+1))"
 	done
 
-	echo -e "$files_to_update"
-
 	updatable_files="$(echo -e "$files_to_update")"
   fi
   
   echo
   
   if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
+	printf "$ESC[?25l"
 	for i in {6..1}; do 
 	  echo -ne "Updating in: $i\r (Use Ctrl-C to abort) " && sleep 1
     done
+	printf "$ESC[?25h"
 
     echo -e "\n"
 
@@ -655,4 +653,3 @@ fi
 echo 
 exit 0
 } #prevents errors if script was modified while in use
-
