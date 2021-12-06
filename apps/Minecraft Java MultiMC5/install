@@ -173,7 +173,7 @@ cd src
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
-git checkout --recurse-submodules 3a940ffb5279b4e91af0a9bb57b76ba8f3e2cc01 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git checkout --recurse-submodules a5581b479e4c76a917716e915c4666d2be678f00 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
 # add secrets files
 mkdir -p secrets
 tee secrets/Secrets.h <<'EOF' >>/dev/null
