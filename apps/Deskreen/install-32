@@ -1,14 +1,18 @@
 #!/bin/bash
 
-wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to download "Deskreen-1.0.1-armv7l.AppImage.zip" from Mirror!'
-unzip -o ~/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip Deskreen-1.0.1-armv7l.AppImage.zip!'
-rm -f ~/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip'
+mkdir -p $HOME/.Deskreen || exit 1
+cd $HOME/.Deskreen
+wget https://raw.githubusercontent.com/Pi-Apps-Coders/files/main/Deskreen-1.0.1-armv7l.AppImage.zip || exit 1 
+unzip -o $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to unzip $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip '
+rm -f $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to remove $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip'
 
-chmod +x ~/Deskreen-1.0.1-armv7l.AppImage || error "Failed to mark the appimage as executable"
+chmod +x $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage || error "Failed to make $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage as executable."
 
 echo "#!/bin/bash
 sudo modprobe fuse
 $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage --no-sandbox" | sudo tee /usr/local/bin/deskreen >/dev/null || error 'Failed to create /usr/local/bin/deskreen!'
+
+sudo chmod +x /usr/local/bin/deskreen || error "Failed to make /usr/local/bin/deskreen executable."
 
 echo "[Desktop Entry]
 Name=Deskreen

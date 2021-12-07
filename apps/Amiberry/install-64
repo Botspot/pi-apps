@@ -1,4 +1,4 @@
 #!/bin/bash
 
-install_packages https://github.com/ryanfortner/ryanfortner/releases/download/1002/amiberry_4.1.4-1_arm64.deb || exit 1
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/amiberry_4.1.4-1_arm64.deb || exit 1
 

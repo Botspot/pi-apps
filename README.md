@@ -9,13 +9,13 @@
   <a href="https://discord.gg/RXSTvaUvuu">
     Join the <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml">
     Report an error</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml">
     Submit a suggestion</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.yml">
     Submit an app</a>
 
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
@@ -84,7 +84,9 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 <hr>
 
-# Read [the wiki](https://github.com/Botspot/pi-apps/wiki)  for the full documentation
+# Documentation
+
+Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation.
 
 ### Basic usage
 - This is the **main window**.  

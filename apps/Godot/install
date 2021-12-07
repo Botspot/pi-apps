@@ -10,7 +10,7 @@ rm -f godot_3.4-stable_rpi4_server_lto.bin
 echo "[Desktop Entry]
 Name=Godot Engine
 Comment=Best Opensource Game Engine 
-Exec=bash -c 'cd $HOME/Godot ; $HOME/Godot/godot_3.4-stable_rpi4_editor_lto.bin'
+Exec=bash -c 'cd $HOME/Godot ; MESA_GL_VERSION_OVERRIDE=3.3 $HOME/Godot/godot_3.4-stable_rpi4_editor_lto.bin'
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application

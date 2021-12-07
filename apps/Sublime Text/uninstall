@@ -1,12 +1,5 @@
 #!/bin/bash
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
-if [ "$arch" == 64 ];then
-  sudo apt purge sublime-text
-elif [ "$arch" == 32 ];then
-  rm -f ~/.local/share/applications/sublime-text.desktop
-  rm -rf ~/"Sublime Text 2"
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
-exit 0
+rm -f ~/.local/share/applications/sublime-text.desktop
+rm -rf ~/"Sublime Text 2"
+purge_packages || exit 1
