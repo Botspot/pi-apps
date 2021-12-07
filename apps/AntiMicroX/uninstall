@@ -8,5 +8,11 @@ function error {
 }
 
 purge_packages
-sudo rm -rf /usr/bin/antimicrox || error 'Failed to remove AntiMicroX!'
+
+if [ -d $HOME/antimicrox/build ];then
+  cd $HOME/antimicrox/build && sudo make uninstall
+fi
+
 rm -rf $HOME/antimicrox || sudo rm -rf $HOME/antimicrox
+
+sudo rm -rf /usr/bin/antimicrox /usr/share/icons/hicolor/16x16/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/24x24/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/32x32/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/48x48/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/64x64/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/128x128/apps/io.github.antimicrox.antimicrox.png /usr/share/icons/hicolor/scalable/apps/io.github.antimicrox.antimicrox.svg /usr/share/icons/breeze/48x48/apps/antimicrox_trayicon.png /usr/share/icons/hicolor/48x48/apps/antimicrox_trayicon.png /usr/share/doc/antimicrox/CHANGELOG.md /usr/share/applications/io.github.antimicrox.antimicrox.desktop /usr/share/mime/packages/io.github.antimicrox.antimicrox.xml /usr/share/antimicrox/CHANGELOG.md /usr/lib/udev/rules.d/60-antimicrox-uinput.rules /usr/share/antimicrox/translations/antimicrox_br.qm /usr/share/antimicrox/translations/antimicrox_de.qm /usr/share/antimicrox/translations/antimicrox_en.qm /usr/share/antimicrox/translations/antimicrox_es.qm /usr/share/antimicrox/translations/antimicrox_fr.qm /usr/share/antimicrox/translations/antimicrox_it.qm /usr/share/antimicrox/translations/antimicrox_ja.qm /usr/share/antimicrox/translations/antimicrox_pl.qm /usr/share/antimicrox/translations/antimicrox_pt.qm /usr/share/antimicrox/translations/antimicrox_ru.qm /usr/share/antimicrox/translations/antimicrox_sr.qm /usr/share/antimicrox/translations/antimicrox_uk.qm /usr/share/antimicrox/translations/antimicrox_zh_CN.qm /usr/share/antimicrox/translations/antimicrox.qm /usr/share/man/man1/antimicrox.1.gz /usr/share/metainfo/io.github.antimicrox.antimicrox.appdata.xml
