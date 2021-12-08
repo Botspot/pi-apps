@@ -5,7 +5,10 @@
 <p align="center">
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
-|
+  |
+  <a href="https://github.com/Botspot/pi-apps/wiki/Apps-List">
+    Apps List</a>
+  |
   <a href="https://discord.gg/RXSTvaUvuu">
     Join the <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
   |
@@ -86,7 +89,7 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 # Documentation
 
-Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation.
+Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ### Basic usage
 - This is the **main window**.  
