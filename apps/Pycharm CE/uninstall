@@ -1,8 +1,7 @@
 #!/bin/bash
-#Defining Variables
-name=pycharm-community
-purge_packages || error "Dependencies failed to uninstall"
 
-echo "Deleting /opt/$name directory"
-sudo rm -rf /opt/$name || error "Failed to delete /opt/$name directory"
+purge_packages || exit 1
+
+echo "Deleting /opt/pycharm-community directory"
+sudo rm -rf /opt/pycharm-community || error "Failed to delete /opt/pycharm-community directory"
 rm -f ~/.local/share/applications/jetbrains-pycharm-ce.desktop
