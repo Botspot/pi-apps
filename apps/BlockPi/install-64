@@ -1,4 +1,4 @@
 #!/bin/bash
 
-install_packages https://github.com/alienzhangyw/BlockPi/releases/download/v1.2.0/blockpi_1.2.0_arm64.deb || exit 1
+install_packages python3-pip https://github.com/alienzhangyw/BlockPi/releases/download/v1.2.0/blockpi_1.2.0_arm64.deb || exit 1
 
