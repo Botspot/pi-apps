@@ -125,7 +125,7 @@ case "$__os_id" in
             *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
         esac
         ;;
-    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary)
+    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
         # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME first from lsb-release (for ubuntu) and then from the upstream for derivatives
         source /etc/lsb-release
         source /etc/upstream-release/lsb-release
