@@ -1336,6 +1336,40 @@ sudo apt install --reinstall libaria2-0")
     error_type="internet"
   fi
   
+  if grep -q "errorCode=16 Failed to open the file .*, cause: Permission denied" <<<"$errors" ;then
+    error_caption+=("Download failed because this folder was unable to be written:
+$(dirname "$(echo "$errors" | grep -o 'errorCode=16 Failed to open the file .*, cause: Permission denied' | sed 's/^errorCode=16 Failed to open the file //g ; s/, cause: Permission denied$//g')")")
+    error_type="system"
+  fi
+  
+  if grep -q "Reinstallation of .* is not possible, it cannot be downloaded\." <<<"$errors" ;then
+    error_caption+=("Your APT setup has been corrupted somehow.
+
+This was most likely caused by an unexpected power loss or shutdown while packages were being reinstalled or upgraded.
+Fixing this will not be easy and it may not be worth your time. Reflashing the SD card may be faster.
+
+First try running:
+sudo dpkg --configure -a
+
+If you still get APT errors, it *might* help to remove the apt folder and upgrade:
+sudo rm -rf /var/lib/apt
+sudo apt update
+
+See: https://forums.raspberrypi.com/viewtopic.php?t=275994")
+    error_type="system"
+  fi
+  
+  if grep -qF "Structure needs cleaning" <<<"$errors" ;then
+    error_caption+=("You have encountered the dreaded "\""Structure needs cleaning"\"" error. This indicates file-corruption caused by improperly shutting down your computer. You are lucky your computer booted at all.
+
+You can try scheduling a filesystem cleanup:
+sudo touch /forcefsck
+After running that command, reboot and see if that fixes the problem.
+
+If that doesn't work, then now is the time to restore your backup. Oh, you don't have one? Then you will have to re-flash your SD card and start over. And maybe consider keeping regular backups to avoid this unpleasant situation next time.")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
