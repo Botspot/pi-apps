@@ -7,5 +7,5 @@ function error {
 }
 
 fiddle_ver="electron-fiddle_0.27.0_arm64.deb"
-install_packages https://github.com/electron/fiddle/releases/download/v0.27.0/electron-fiddle_0.27.0_arm64.deb
+install_packages https://github.com/electron/fiddle/releases/download/v0.27.2/electron-fiddle_0.27.2_arm64.deb || exit 1
 rm -rf ${fiddle_ver} || sudo rm -rf ${fiddle_ver}
