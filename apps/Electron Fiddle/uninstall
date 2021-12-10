@@ -3,4 +3,4 @@
 DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 
 
-purge_packages
+purge_packages || exit 1
