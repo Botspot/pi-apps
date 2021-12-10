@@ -1563,6 +1563,10 @@ files_to_functions() { #turn every file in the function-files directory back int
   done
 }
 
+get_codename() { #get debian/ubuntu codename
+	grep Provides <(sudo apt info tzdata 2>&1) | sed 's/Provides: tzdata-//g'
+}
+
 #command interceptors - functions that enhance a command
 git_clone() { #silently clone a git repository but display the output if an error occurs
   # $1 is repo
