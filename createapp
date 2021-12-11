@@ -236,11 +236,13 @@ This wizard will save your work as you go." | yad "${yadflags[@]}" --text-info -
           #Skip the script-creation steps
           step=$((step+3))
         else #app_type is standard
-          icon="$(echo "$output" | sed -n '2p')"
-          website="$(echo "$output" | sed -n '3p')"
-          compatibility="$(echo "$output" | sed -n '4p')"
-          description="$(echo -e "$(echo "$output" | sed -n '5p')")"
-          credits="$(echo -e "$(echo "$output" | sed -n '6p')")"
+          icon="$(echo "$output" | sed -n '1p')"
+          website="$(echo "$output" | sed -n '2p')"
+          compatibility="$(echo "$output" | sed -n '3p')"
+          description="$(echo -e "$(echo "$output" | sed -n '4p')")"
+          credits="$(echo -e "$(echo "$output" | sed -n '5p')")"
+          
+          echo -e "icon=$icon\nwebsite=$website\ncompatibility=$compatibility\ndescription=$description\ncredits=$credits"
           
           #translate the compatibility variable from human-readable to machine-readable
           if [ -z "$(script_name "$name")" ];then
