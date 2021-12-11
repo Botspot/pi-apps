@@ -37,11 +37,13 @@ if [ -d ~/.config/chromium.bak ];then
   done
 fi
 
-echo "Allowing Chromium to be upgradable..."
+sudo rm -f /etc/chromium-browser/customizations/01-disable-seccomp
+
+status "Allowing Chromium to be upgradable..."
 echo "chromium-browser install" | sudo dpkg --set-selections
 echo "chromium-browser-l10n install" | sudo dpkg --set-selections
 echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections
-echo "Upgrading Chromium..."
+
+status "Upgrading Chromium..."
 "${DIRECTORY}/api" apt_lock_wait
 sudo apt install -y --only-upgrade --allow-downgrades --allow-change-held-packages chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
-

@@ -27,6 +27,9 @@ All Apps"
 
 [[ "$1" != yad* ]] && [[ "$1" != xlunch* ]] && [ ! -z "$1" ] && error "Unrecognized list format $1"
 
+#hide package-apps that are unavailable in the repositories
+refresh_all_pkgapp_status
+
 #runs every 30 secs for 10 mins
 for i in {1..20};do
   IFS=$'\n'

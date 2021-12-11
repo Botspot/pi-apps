@@ -11,8 +11,9 @@ echo "Removing lwjgl folders
   - ~/lwjgl3arm64
   - ~/lwjgl2arm64"
 rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64
+
 echo "Removing Java runtime environment
   - /opt/jdk/jdk-16.0.1+9-jre"
-sudo rm -rf /opt/jdk/jdk-16.0.1+9-jre
+sudo rm -rf /opt/jdk/jdk-17.0.1+12
 
 purge_packages || :

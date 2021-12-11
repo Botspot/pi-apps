@@ -6,12 +6,12 @@ sudo -E flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flat
 flatpak install -y librepcb
 
 echo "[Desktop Entry]
+Type=Application
 Version=1.0
 Terminal=false
 Icon=$(dirname "$0")/icon-64.png
-Type=LibrePCB
 Categories=Development;Electronics;
 Exec=flatpak run org.librepcb.LibrePCB
 Keywords=pcb;circuit;board;Projectmanager;
-Name=KiCad
+Name=LibrePCB
 Comment=Electronic Design Automation suite" > ~/.local/share/applications/librepcb.desktop || error "Failed to create menu button!"
