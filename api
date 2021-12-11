@@ -1564,7 +1564,7 @@ files_to_functions() { #turn every file in the function-files directory back int
 }
 
 get_codename() { #get debian/ubuntu codename
-	grep Provides <(sudo apt info tzdata 2>&1) | sed 's/Provides: tzdata-//g'
+	grep Provides <(apt-cache show tzdata 2>&1) | sed 's/Provides: tzdata-//g'
 }
 
 #command interceptors - functions that enhance a command
