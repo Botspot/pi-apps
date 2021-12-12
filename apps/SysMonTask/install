@@ -1,0 +1,5 @@
+#!/bin/bash
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/s/sysmontask/sysmontask_1.3.9-ubuntu20.10_all.deb || exit 1
+
+sudo pip3 install -U psutil || error "Failed to upgrade psutil"
