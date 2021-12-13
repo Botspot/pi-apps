@@ -1,24 +1,14 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || exit 1
 
   if [ -e /etc/systemd/system/lokinet.service.d ]; then
      echo "removing systemd override"
      sudo rm -r /etc/systemd/system/lokinet.service.d
   fi
-
   if [ -e /etc/systemd/system/lokinet.service ]; then
      echo "removing lokinet service"
      sudo rm /etc/systemd/system/lokinet.service
   fi
-
   if [ -e /etc/systemd/system/lokinet-testnet.service ]; then
      echo "removing lokinet-testnet.service"
      sudo rm /etc/systemd/system/lokinet-testnet.service

@@ -1,15 +1,7 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -rf ~/update-buddy
 echo "Downloading..."
-git clone https://github.com/Botspot/update-buddy || error 'Failed to download update-buddy repository!'
+git_clone https://github.com/Botspot/update-buddy || error 'Failed to download update-buddy repository!'
 
 echo "Making autostart entry..."
 mkdir -p ~/.config/autostart
@@ -26,5 +18,4 @@ chmod +x $HOME/update-buddy/onstartup.sh
 echo "Running Update Buddy for the first time..."
 #first time run
 setsid $HOME/update-buddy/onstartup.sh &
-
 

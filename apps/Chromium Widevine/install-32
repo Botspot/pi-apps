@@ -1,17 +1,9 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 cd $HOME
 
 rm -rf ~/chromium-v84-widevine &>/dev/null
 
-git clone https://github.com/Botspot/chromium-v84-widevine || error 'Failed to clone chromium-v84-widevine repository!'
+git_clone https://github.com/Botspot/chromium-v84-widevine || error 'Failed to clone chromium-v84-widevine repository!'
 
 echo "[Desktop Entry]
 Version=1.0
@@ -25,14 +17,12 @@ Type=Application
 Icon=$(dirname "$0")/icon-64.png
 Categories=Network;WebBrowser;
 StartupNotify=true" > ~/.local/share/applications/widevine-chromium.desktop
-
 sudo cp -a ~/chromium-v84-widevine/WidevineCdm /opt
 
 rm -rf ~/chromium-v84-widevine
 
 mkdir -p ~/.config/chromium-browser/WidevineCdm
 echo "{"\""Path"\"":"\""/opt/WidevineCdm"\""}" 1> ~/.config/chromium-browser/WidevineCdm/latest-component-updated-widevine-cdm
-
 #create old libwidevinecdm.so for older Chromium versions
      #see https://github.com/Botspot/pi-apps/commit/803a7d3cc14d24ddc651af94927823aac1331e7e#diff-d56f6359d240f69e4164425b599d08869574fc013b9e5727951048914db12c5b
 sudo wget -O /usr/lib/chromium-browser/libwidevinecdm.so https://raw.githubusercontent.com/Botspot/pi-apps/f5b6c38602e5a8b075dc14d4b68ce02a77f5e745/apps/Chromium%20Media%20Edition/libwidevinecdm.so

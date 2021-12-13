@@ -5,21 +5,22 @@
 <p align="center">
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
-|
+  |
+  <a href="https://github.com/Botspot/pi-apps/wiki/Apps-List">
+    Apps List</a>
+  |
   <a href="https://discord.gg/RXSTvaUvuu">
     Join the <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml">
     Report an error</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml">
     Submit a suggestion</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.yml">
     Submit an app</a>
-  |
-  <a href="https://hacktoberfest.digitalocean.com">
-      <img src=https://img.shields.io/badge/hacktoberfest-friendly-orange></a>
+
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
 
 ## Introduction
@@ -38,7 +39,7 @@ To learn more:
 ```
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
-<img src="https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true" align="right" width="230px"/>
+<img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
 Supported systems:
 
 - Raspberry Pi OS 32-bit: fully supported.
@@ -86,20 +87,22 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 <hr>
 
-# Read [the wiki](https://github.com/Botspot/pi-apps/wiki)  for the full documentation
+# Documentation
+
+Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ### Basic usage
 - This is the **main window**.  
-![main window](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/main%20window.png?raw=true)  
+![main window](icons/screenshots/main%20window.png?raw=true)  
 Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
 - After selecting a category, you will see a list of apps:  
-![app list](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/app%20list.png?raw=true)  
+![app list](icons/screenshots/app%20list.png?raw=true)  
 - If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
-![details](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/details%20window.png?raw=true)  
+![details](icons/screenshots/details%20window.png?raw=true)  
 - Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
-![updates](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/updates%20available.png?raw=true)  
+![updates](icons/screenshots/updates%20available.png?raw=true)  
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
-![settings](https://github.com/Botspot/pi-apps/blob/master/icons/screenshots/settings.png?raw=true)  
+![settings](icons/screenshots/settings.png?raw=true)  
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  

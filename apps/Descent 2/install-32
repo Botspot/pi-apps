@@ -1,30 +1,18 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 echo '                         __________'
 echo '__________/ DXX-Rebirth /'
-
-"${DIRECTORY}/pkg-install" "libsdl-mixer1.2 libsdl-image1.2 libphysfs1 libglu1-mesa" "$(dirname "$0")" || exit 1
+install_packages libsdl-mixer1.2 libsdl-image1.2 libphysfs1 libglu1-mesa || exit 1
 
 mkdir ~/.d2x-rebirth
 cd ~/.d2x-rebirth
-
 # rename existing files to lower case
 for i in $( ls | grep [A-Z] ); do mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
-
 if [ ! -f descent2.hog -a ! -f d2demo.hog ]; then
     echo No game content detected, downloading shareware version
     wget -q --show-progress https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip || error "failed to download game content!"
     unzip descent2-pc-demo.zip
     rm descent2-pc-demo.zip
 fi
-
 wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
 wget -N -q --show-progress https://github.com/dimag0g/dxx-rebirth/releases/download/v0.61-switch/d2x-rebirth-rpi || error "failed to download the executable!"
 chmod a+x d2x-rebirth-rpi
@@ -43,5 +31,4 @@ Type=Application
 Categories=Game;ActionGame;
 StartupNotify=false
 " > ~/.local/share/applications/d2x-rebirth.desktop || error "Failed to create menu entry!"
-
 exit 0

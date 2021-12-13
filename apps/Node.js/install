@@ -1,27 +1,16 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #Checking if using armv6
 if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
   error "armv6 cpu not supported"
 fi
-
 if ! command -v curl >/dev/null ; then
   echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
-  "${DIRECTORY}/pkg-install" "curl" "$(dirname "$0")" || error "failed to install curl!"
+  install_packages curl || exit 1
 fi
-
 #Install nvm manager:
 export NVM_DIR="$HOME/.nvm"
 mkdir -p "$NVM_DIR"
 wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
-
 source "${DIRECTORY}/api"
 if [ "$arch" == 32 ];then
   #armhf, so patch nvm script to forcibly use armhf
@@ -30,7 +19,6 @@ fi
 
 #remove original nvm stuff from bashrc
 sed -i '/NVM_DIR/d' ~/.bashrc
-
 # Create nvm initialisation script in another file for easier uninstallation
 # Credit: https://www.growingwiththeweb.com/2018/01/slow-nvm-init.html
 echo 'if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type -t __init_nvm)" = function ]; then
@@ -45,14 +33,11 @@ echo 'if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type -t __init_nvm)" = function ];
   }
   for i in "${__node_commands[@]}"; do alias $i="__init_nvm && "$i; done
 fi' > ~/.node_bashrc
-
 echo ". ~/.node_bashrc" >> ~/.bashrc
 
 # One time use, since `source ~/.bashrc` not working
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # Install latest nodejs
 nvm install node || error "Failed to install node.js with nvm!"
-

@@ -1,22 +1,13 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if ! cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g' | grep -q 'Raspberry Pi' ;then
   error "User error: CommanderPi can only be installed on Raspberry Pi devices. Your device is: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
 fi
 
-rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
+rm -rf ~/CommanderPi &>/dev/null || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "python3-tk python3-pil python3-pil.imagetk" "$(dirname "$0")" || exit 1
-
-git clone https://github.com/Jack477/CommanderPi || error "failed to download repository!"
+install_packages python3-tk python3-pil python3-pil.imagetk || exit 1
+git_clone https://github.com/Jack477/CommanderPi || error "failed to download repository!"
 cd CommanderPi || error "failed to enter repository!"
 chmod +x install.sh || error "failed to mark install.sh as executable!"
 ./install.sh || error "failed to run install.sh!"

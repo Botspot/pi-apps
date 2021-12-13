@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -rf ~/RPIDoom3Installer || sudo rm -rf ~/RPIDoom3Installer || error "Failed to first remove ~/RPIDoom3Installer folder!"
 
 # Get dependencies
@@ -20,11 +12,10 @@ package_available qt5-default
 if [[ $? == "0" ]]; then
   install_packages qt5-default || error "Failed to install dependencies"
 fi
-git clone https://github.com/techcoder20/RPIDoom3Installer || error 'Failed to clone RPIDoom3Installer repository!'
+git_clone https://github.com/techcoder20/RPIDoom3Installer || error 'Failed to clone RPIDoom3Installer repository!'
 cd ~/RPIDoom3Installer || error "Failed to change directory "
 
 echo "Making scripts executable..."
 sudo chmod +x install.sh uninstall.sh || error "Failed To make install script and uninstall script executable"  
-
 echo "Running install script..."
 setarch linux32 ./install.sh no-apt || error "Failed to run install script :("

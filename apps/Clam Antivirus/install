@@ -1,22 +1,11 @@
 #!/bin/bash
 
-#ClamAV install script by RPN News
-
-#Define error function
-DIRECTORY="$(dirname "$(dirname "$(dirname "$0")")")"
-function error {
-  echo -e "\\e[31m$1\\e[39m"
-  exit 1
-}
-
-wget -O ~/clamtk.deb 'https://github.com/dave-theunsub/clamtk/releases/download/v6.13/clamtk_6.13-1_all.deb' || error "Failed to download clamtk.deb"
-"${DIRECTORY}/pkg-install" "clamav $HOME/clamtk.deb" "$(dirname "$0")" || exit 1
-rm -f ~/clamtk.deb
+install_packages clamav https://github.com/dave-theunsub/clamtk/releases/download/v6.14/clamtk_6.14-1_all.deb || exit 1
 
 #if thunar file manager installed then also install clamtk thunar extension
 if command -v thunar >/dev/null ;then
-  wget https://bitbucket.org/davem_/thunar-sendto-clamtk/downloads/thunar-sendto-clamtk_0.06-1_all.deb
-  sudo apt install ./thunar-sendto-clamtk_0.06-1_all.deb -y
-  rm ./thunar-sendto-clamtk_0.06-1_all.deb
+  status "Installing ClamAV Thunar extension because you have Thunar installed..."
+  install_packages https://github.com/dave-theunsub/thunar-sendto-clamtk/releases/download/v0.07/thunar-sendto-clamtk_0.07-1_all.deb
 fi
 exit 0
+

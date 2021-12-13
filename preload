@@ -78,6 +78,8 @@ preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
 api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
 categories shasum: $(shasum "${DIRECTORY}/etc/categories" | awk '{print $1}')
 category-overrides shasum: $(shasum "${DIRECTORY}/data/category-overrides" | awk '{print $1}')
+updatable-apps shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-apps" | awk '{print $1}')
+updatable-files shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-files" | awk '{print $1}')
 ${timestamps:1}"
 }
 
@@ -143,21 +145,9 @@ $DIRS"
   fi
   
   #remove apps that are not compatible with OS architecture
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for i in $APPS
-  do
-    #if install script doesn't exist -------------------- and if os-specific install script doesn't exist, then...
-    if [ ! -f "${DIRECTORY}/apps/${i}/install" ] && [ ! -f "${DIRECTORY}/apps/${i}/install-${arch}" ];then
-      #...remove the app from the list
-      echo "Removing $i from the list because it is not compatible with your ${arch}-bit OS." 1>&2
-      APPS="$(echo "$APPS" | grep -vx "$i")"
-    fi
-  done
-  IFS="$PREIFS"
+  APPS="$(echo "$APPS" | list_intersect "$(list_apps cpu_installable)")"
   
   if [ "$format" == yad ];then
-    PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
     for i in $DIRS
@@ -194,8 +184,6 @@ $i
 "
       done
     fi #finished preloading apps
-    
-    IFS="$PREIFS"
     
   elif [ "$format" == xlunch ];then
     #XUNCH list format

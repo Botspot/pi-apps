@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 function warning {
   echo -e "\e[33m$1\\e[39m"
 }
@@ -15,14 +7,12 @@ function check-armhf() {
   ARMHF="$(dpkg --print-foreign-architectures | grep "armhf")"
 }
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || exit 1
 
 echo "removing box86 repo..."
 sudo rm -f /etc/apt/sources.list.d/box86.list || error "Failed to remove repo!"
-
 echo "removing box86 repo key..."
 sudo apt-key remove "5DBC E818 72C0 609D 3C47  61AA EB3C E9A3 37EC DFA4" || error "Failed to remove key!"
-
 #to set $arch variable
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 if [ "$arch" == 64 ]; then

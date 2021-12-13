@@ -1,22 +1,14 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 sudo wget https://ryanfortner.github.io/box64-debs/box64.list -O /etc/apt/sources.list.d/box64.list
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box64.list
   error "Failed to add box64.list file!"
 fi
 
-wget -qO- https://ryanfortner.github.io/box64-debs/KEY.gpg | sudo apt-key add -
+wget -O- https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box64-debs-archive-keyring.gpg 
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box64.list
   error "Failed to add KEY.gpg to APT keyring!"
 fi
 
-"${DIRECTORY}/pkg-install" "box64" "$(dirname "$0")" || exit 1
+install_packages box64 || exit 1

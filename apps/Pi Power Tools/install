@@ -1,13 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "yad systemd-container xserver-xephyr expect" "$(dirname "$0")" || exit 1
-
+install_packages yad systemd-container xserver-xephyr expect || exit 1
 wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
