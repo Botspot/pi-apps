@@ -1,6 +1,5 @@
 #!/bin/bash
 
 
-fiddle_ver="electron-fiddle_0.27.0_armhf.deb"
 install_packages https://github.com/electron/fiddle/releases/download/v0.27.2/electron-fiddle_0.27.2_armhf.deb || exit 1
 rm -rf ${fiddle_ver} || sudo rm -rf ${fiddle_ver}
