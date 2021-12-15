@@ -462,7 +462,7 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
     #Example: given the 'shotwell' package, this will find the 'shotwell-common' package, as well as others
     extra_packages+=" $(package_dependencies "$package" | sed 's/, \||/\n/g' | awk '{print $1}' | grep "^$package" | sort | uniq | tr '\n' ' ')"
   done
-  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
+  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$\|\.svg$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
 
@@ -589,10 +589,13 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   #show normal categories
   read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
   
-  #show special Installed category - don't filter it
+  #show special "Installed" category - don't filter it
   list_apps installed | sed 's+^+Installed/+g'
   
-  #show special All Apps category
+  #show special "Packages" category
+  list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  
+  #show special "All Apps" category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
 }
 
@@ -844,11 +847,17 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   #if that package is installed
   if package_installed "$package" ;then
     #mark this app as installed
-    echo 'installed' > "${DIRECTORY}/data/status/${app}"
+    if [ "$(app_status "$app")" != 'installed' ];then
+      echo 'installed' > "${DIRECTORY}/data/status/${app}"
+      bitly_link "$app" install &
+    fi
   #if that package is not installed, check if it even exists on the repositories
   elif package_available "$package" ;then
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
-    echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+    if [ "$(app_status "$app")" != 'uninstalled' ];then
+      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+      bitly_link "$app" uninstall &
+    fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
@@ -1228,7 +1237,7 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and try again.")
     error_type="internet"
   fi
@@ -1434,9 +1443,9 @@ runonce() { #run command only if it's never been run before. Useful for one-time
   
   script="$(cat /dev/stdin)"
   
-  runonce_hash="$(echo "$script" | sha256sum | awk '{print $1}')"
+  runonce_hash="$(sha1sum <<<"$script" | awk '{print $1}')"
   
-  if grep -qx '^'"$runonce_hash"'$' "${DIRECTORY}/data/runonce_hashes" ;then
+  if grep -qxF "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
     #hash found
     #echo "runonce: '$script' already run before. Skipping."
     true
@@ -1446,9 +1455,9 @@ runonce() { #run command only if it's never been run before. Useful for one-time
     #if it succeeds, add the hash to the list to never run it again
     if [ $? == 0 ];then
       echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
-      echo "'$script' succeeded. Added to list."
+      echo "runonce(): '$script' succeeded. Added to list."
     else
-      echo "'$script' failed. Not adding hash to list."
+      echo "runonce(): '$script' failed. Not adding hash to list."
     fi
     
   fi
@@ -1700,19 +1709,18 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
-      --console-log-level=error --show-console-readout=false --summary-interval=0 "$url" --dir '/' -o "${file:1}")
-
+    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+      --console-log-level=error --show-console-readout=false --summary-interval=5 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
-      aria2c "${aria2_flags[@]}" --quiet
-      local exitcode=$?
-    else
-      #run aria2c and reduce its output
-      aria2c "${aria2_flags[@]}" 
-      local exitcode=$?
+      aria2_flags+=(--quiet)
+      echo '--quiet'
     fi
+    
+    #run aria2c and reduce its output. Example output line: "135MiB/1.1GiB(11%) DL:16MiB ETA:1m3s"
+    aria2c "${aria2_flags[@]}" | grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' | awk -W interactive '{print $2 " " $4 " " substr($5, 1, length($5)-1)}'
+    local exitcode=${PIPESTATUS[0]}
   fi
   
   #display a "download complete" message
