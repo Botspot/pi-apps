@@ -1,0 +1,17 @@
+#!/bin/bash
+
+install_packages gettext gsettings-desktop-schemas make pandoc gir1.2-keybinder-3.0 gir1.2-notify-0.7 gir1.2-vte-2.91 gir1.2-wnck-3.0 libkeybinder-3.0-0 libutempter0 python3 python3-cairo python3-dbus python3-gi python3-pbr python3-pip libgirepository1.0-dev || exit 1
+
+git_clone https://github.com/Guake/guake || error 'Failed to clone repository!'
+cd ~/guake || error "Failed to enter the $HOME/guake folder! Most likely this means the repository failed to download."
+make -j2 || error "The 'make' command failed to setup locales and generate desktop files!"
+status "Installing Guake Terminal"
+sudo make install || error "The 'make' command was unable to install Guake!"
+
+rm -rf ~/guake
+
+status "Making Guake Terminal run on startup"
+sudo cp /usr/local/share/guake/autostart-guake.desktop /etc/xdg/autostart-guake.desktop
+
+status "Running guake in background"
+setsid guake &>/dev/null &

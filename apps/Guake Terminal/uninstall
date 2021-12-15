@@ -1,0 +1,12 @@
+#!/bin/bash
+
+killall guake &>/dev/null && echo "Closing Guake Terminal"
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+git_clone https://github.com/Guake/guake || error 'Failed to clone repository!'
+cd ~/guake || error "Failed to enter the $HOME/guake folder! Most likely this means the repository failed to download."
+sudo make uninstall || error "The 'make' command was unable to uninstall Guake!"
+
+sudo rm -f /etc/xdg/autostart-guake.desktop
