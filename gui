@@ -54,7 +54,7 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
   
-  #removeTBOPlayer if it's not already successfully installed
+  #remove TBOPlayer if it's not already successfully installed
   if [ "$(app_status TBOPlayer)" != 'installed' ];then
     rm -rf "${DIRECTORY}/apps/TBOPlayer"
   fi
@@ -160,6 +160,16 @@ EOF
 runonce <<"EOF"
   rm -f "${DIRECTORY}/etc/bitlylink"
   rm -rf "${DIRECTORY}/data/categories"
+EOF
+
+#regenerate package-app status for one-time migration
+runonce <<"EOF"
+  IFS=$'\n'
+  for app in $(list_apps package) ;do
+    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
+  done
+  
+  refresh_all_pkgapp_status
 EOF
 
 ) &
@@ -497,7 +507,22 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
       description="$(cat "${DIRECTORY}/apps/${app}/description" || echo 'Description unavailable')$installedpackages"
       
       #text to the right of the app icon
-      abovetext="<b>$app</b>
+      abovetext="<b>$app</b>"
+      
+      #If package-app, show what packages it installs
+      if [ "$(app_type "$app")" == package ];then
+        if [ "$(wc -w "${DIRECTORY}/apps/${app}/packages" | awk '{print $1}')" == 1 ];then
+          #if package-app uses only 1 package, use singular case
+          abovetext="$abovetext
+- This app installs the <b>$(cat ${DIRECTORY}/apps/${app}/packages)</b> package."
+        else
+          #if package-app uses multiple packages, use plural case
+          abovetext="$abovetext
+- This app installs these packages: <b>$(cat ${DIRECTORY}/apps/${app}/packages | sed 's/ /, /g')</b>"
+        fi
+      fi
+      
+      abovetext="$abovetext
 - Current status: $(echo "$(app_status "${app}")" | sed 's/corrupted/corrupted (installation failed)/g' | sed 's/disabled/disabled (installation is prevented on your system)/g')"
       if [ -f "${DIRECTORY}/apps/${app}/website" ];then
         #show website if it exists

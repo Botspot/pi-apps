@@ -1,7 +1,6 @@
 #!/bin/bash
-install_packages yad aria2 cabextract wimtools chntpw genisoimage exfat-fuse exfat-utils wget || exit 1
+install_packages yad aria2 udftools cabextract wimtools chntpw genisoimage exfat-fuse exfat-utils wget || exit 1
 
-rm -rf ~/wor-flasher || sudo rm -rf ~/wor-flasher || error "Failed to first remove ~/wor-flasher folder!"
 git_clone https://github.com/Botspot/wor-flasher || error "Failed to download wor-flasher repository!"
 if [ -d ~/wor-flasher-files ];then
   echo -e "\nDuring use, WoR-flasher downloads all files to $HOME/wor-flasher-files\nThis folder exists right now.\nIf WoR-flasher is malfunctioning, deleting this folder may help.\n"

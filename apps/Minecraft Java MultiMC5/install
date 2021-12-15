@@ -125,7 +125,7 @@ case "$__os_id" in
             *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
         esac
         ;;
-    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary)
+    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
         # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME first from lsb-release (for ubuntu) and then from the upstream for derivatives
         source /etc/lsb-release
         source /etc/upstream-release/lsb-release
@@ -173,7 +173,7 @@ cd src
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
-git checkout --recurse-submodules 0022aed8bb03c21ca6828092f7f4c5655699f9a9 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git checkout --recurse-submodules 80beccb2c4585260e5d170c68f72d3d303f777e0 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
 # add secrets files
 mkdir -p secrets
 tee secrets/Secrets.h <<'EOF' >>/dev/null
