@@ -617,8 +617,12 @@ bitly_link() { #Runs whenever an app is installed/uninstalled to tally the numbe
   fi
 }
 
-usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
-  clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
+usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
+  #If clicklist file missing or over a day old, download it.
+  if [ ! -f "${DIRECTORY}/data/clicklist" ] || [ ! -z "$(find "${DIRECTORY}/data/clicklist" -mtime +1 -print)" ]; then
+    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" || return 1
+  fi
+  clicklist="$(cat "${DIRECTORY}/data/clicklist")"
   
   [ -z "$clicklist" ] && error "usercount(): clicklist empty. Likely no internet connection"
   
@@ -626,7 +630,7 @@ usercount() { #Return number of users for specified app. $1 is app name. if empt
     echo "$clicklist"
   else
     # $1 is app
-    echo "$clicklist" | grep " $1"'$' | awk '{print $1}' | head -n1
+    echo "$clicklist" | grep "[0-9] $1"'$' | awk '{print $1}' | head -n1
   fi
   
 }
