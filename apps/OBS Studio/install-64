@@ -3,7 +3,8 @@
 #remove obs-studio package first
 if package_installed obs-studio ;then
   echo "Removing obs-studio package first..."
-  sudo apt purge -y obs-studio
+  apt_lock_wait
+  sudo apt purge -y --autoremove obs-studio
 fi
 
 #Install all debs. Local dependencies, obs_armhf.deb, normal dependencies, and libxcb*
