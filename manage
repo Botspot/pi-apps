@@ -37,8 +37,9 @@ EOF
 ) &>/dev/null
 
 #check for internet connection
-if ! wget --spider github.com &>/dev/null ;then
-  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
+errors="$(command wget --spider https://github.com 2>&1)"
+if [ $? != 0 ];then
+  error "No internet connection! (github.com failed to respond)\nErrors:\n$errors"
 fi
 
 #Silently re-download repo if github repository is over 3 months out of date
@@ -130,29 +131,37 @@ $app"
       text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
     fi
     
-    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, then enable the "Send report button"
-    if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
-      text+=$'\n'"Your 'Send report' button is gone because it's not an issue with Pi-Apps."
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, AND the app is not a package-app, then enable the "Send report button"
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"Error report cannot be sent because this \"app\" is really just a shortcut to $action a Debian package. It's not a problem that Pi-Apps can fix."
+    elif [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Error report cannot be sent because this is not an issue with Pi-Apps."
     elif ! list_apps online | grep -q "$app" ;then
-      text+=$'\n'"Your 'Send report' button is gone because this app is not in the official repository."
+      text+=$'\n'"Error report cannot be sent because this app is not in the official repository."
     elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
-      text+=$'\n'"Your 'Send report' button is gone because this app is not the official version."
+      text+=$'\n'"Error report cannot be sent because this app is not the official version."
     elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
-      text+=$'\n'"Your 'Send report' button is gone because this app does not match the official version."
+      text+=$'\n'"Error report cannot be sent because this app does not match the official version."
     elif [ "$supported" == no ];then
-      text+=$'\n'"Your 'Send report' button is gone because your system is unsupported."
+      text+=$'\n'"Error report cannot be sent because your system is unsupported."
     else
       #if all of the above checks evaluate to FALSE, then display the "Send report" button.
       send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
     fi
-    text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    
+    #display support links, depending on if this was a package-app or a script-app
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"As this is an APT error, consider Googling the errors or asking for help in the <a href=\"https://forums.raspberrypi.com\">Raspberry Pi Forums</a>."
+    else
+      text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    fi
     
     #if the error_caption is empty, display logfile instead
     if [ -z "$error_caption" ];then
-      text+=$'\n'"You can view the $([ "$action" == install ] && echo 'installation' || echo 'uninstall') output below."
+      text+=$'\n'"You can view the $(echo "$action" | sed 's/install/installation/g') output below."
       error_caption="$(cat "$logfile")"
     else
-      text+=$'\n'"Below, Pi-Apps explains the error."
+      text+=$'\n'"Below, Pi-Apps explains what went wrong and how you can fix it."
     fi
     
     echo "$error_caption" | yad "${yadflags[@]}" --text-info --width=700 --height=300 --title="Error occured when ${action}ing $app" \
@@ -257,28 +266,28 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
   
-  format_logfile "$logfile" #remove escape sequences from logfile
-  
-  #if app script succeeded
+  #if app succeeded
   if [ $exitcode == 0 ];then
     status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
     echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     
-  else
-    echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
+    format_logfile "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #rename logfile to indicate it was successful
+    
+  else #if app failed to install/uninstall
+    echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
-    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet, system, package
-    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
+    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet or system or package, AND if the app is a script-type app
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == app ];then
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
+    format_logfile "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" #rename logfile to indicate it was unsuccessful
   fi
-  
  
   #if the app is a package, set its status to whatever dpkg thinks it is
   if [ "$(app_type "$app")" == package ];then
