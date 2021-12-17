@@ -1,0 +1,57 @@
+#!/bin/bash
+
+### make directory ~/Unciv if not available
+if [[ ! -d ~/Unciv ]]; then
+  mkdir ~/Unciv || error 'Failed to make folder $HOME/Unciv!'
+fi
+
+### Add LICENSE from Github if doesn't exist
+if [[ ! -f ~/Unciv/LICENSE ]]; then
+  wget -O ~/Unciv/LICENSE ~ https://raw.githubusercontent.com/yairm210/Unciv/master/LICENSE || error 'Failed to make folder $HOME/Unciv!'
+fi
+
+
+### Download Zulu OpenJDK 8.58.0.13 and Extract JRE from it
+### https://www.azul.com/downloads/?os=linux&architecture=arm-64-bit&package=jdk
+
+# the package 'default-jre' can't be used as it takes too much ram
+# thus using Zulu is better as it performs much much smoother
+# with 'default-jre' the game is hardly playable
+
+## if ~/Unciv/jre doesn't exist
+if [[ ! -d ~/Unciv/jre ]]: then
+	# -c countinue, -P directory
+	wget -cP ~ https://cdn.azul.com/zulu-embedded/bin/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64.tar.gz || error 'Failed to download jre for Unciv!'
+
+	# Extract jre folder
+	tar --overwrite -xvf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64.tar.gz --wildcards */jre || error 'Failed to ectract jre for Unciv!'
+
+	# move jre to ~/Unciv
+	mv ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64/jre ~/Unciv/jre || error "Failed to move jre for Unciv to $HOME/Unciv!"
+fi
+
+## remove artifacts
+if [[ -f ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64.tar.gz ]]; then
+	rm ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64.tar.gz || echo 'Failed to remove jre artifatcs! Skipping ...'
+fi
+
+if [[ -d ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64 ]]; then
+  rm -rf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64 || echo 'Failed to remove jre artifatcs! Skipping ...'
+fi
+
+### Download or continue downloading Unciv.jar
+wget -c -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || error 'Failed to download Unciv.jar!'
+
+### Make Desktop entry
+echo "[Desktop Entry]
+Encoding=UTF-8
+Comment=Open-source Android/Desktop remake of Civ V
+Exec=$HOME/Unciv/jre/bin/java -jar $HOME/Unciv/Unciv.jar
+GenericName=4X Game
+Icon=$(dirname "$0")/icon-64.png
+Name=Unciv
+NoDisplay=false
+StartupNotify=true
+Terminal=0
+Type=Application
+Categories=Game" > ~/.local/share/applications/unciv.desktop || error "Failed to create menu button for Unciv!"
