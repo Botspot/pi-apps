@@ -925,7 +925,9 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   
   # check for 'Could not resolve' or 'Failed to fetch'
   if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Network is unreachable\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
-    error_caption+=("APT reported an unresolvable repository.")
+    error_caption+=("APT reported an unresolvable repository.
+
+Check your Internet connection and try again.")
     error_type="internet"
   fi
   
@@ -1220,7 +1222,7 @@ Maybe reinstalling this package would help?")
   fi
   
   if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
-    error_caption+=("The android-androresolvd on your system is causing problems.
+    error_caption+=("The android-androresolvd package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
@@ -1230,6 +1232,13 @@ Maybe reinstalling this package would help?")
     error_caption+=("What did you do to your system? The "\""systemd"\"" package is not installing correctly.
 
 Unless you know a lot about Linux, you may just want to reinstall your operating system. :(")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed dahdi-dkms package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The dahdi-dkms package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
@@ -1327,7 +1336,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -qF "xz: (stdin): Unexpected end of input" <<<"$errors" ;then
+  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data--length error\|gzip: stdin: invalid compressed data--crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
@@ -1731,7 +1740,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
     status_green "Done" 1>&2
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
-    error "\nFailed to download: $url" 1>&2
+    echo -e "\n\e[91mFailed to download: $url\e[0m" 1>&2
   fi
   
   return $exitcode
