@@ -20,19 +20,19 @@ fi
 
 ## if ~/Unciv/jre doesn't exist
 if [[ ! -d ~/Unciv/jre ]]: then
-	# -c countinue, -P directory
-	wget -cP ~ https://cdn.azul.com/zulu-embedded/bin/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || error 'Failed to download jre for Unciv!'
+  # -c countinue, -P directory
+  wget -cP ~ https://cdn.azul.com/zulu-embedded/bin/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || error 'Failed to download jre for Unciv!'
 
-	# Extract jre folder
-	tar --overwrite -xvf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz --wildcards */jre || error 'Failed to ectract jre for Unciv!'
+  # Extract jre folder
+  tar --overwrite -xvf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz --wildcards */jre || error 'Failed to ectract jre for Unciv!'
 
-	# move jre to ~/Unciv
-	mv ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf/jre ~/Unciv/jre || error "Failed to move jre for Unciv to $HOME/Unciv!"
+  # move jre to ~/Unciv
+  mv ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf/jre ~/Unciv/jre || error "Failed to move jre for Unciv to $HOME/Unciv!"
 fi
 
 ## remove artifacts
 if [[ -f ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz ]]; then
-	rm ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || echo 'Failed to remove jre artifatcs! Skipping ...'
+  rm ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || echo 'Failed to remove jre artifatcs! Skipping ...'
 fi
 
 if [[ -d ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf ]]; then
