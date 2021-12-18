@@ -7,7 +7,7 @@ fi
 
 ### Add LICENSE from Github if doesn't exist
 if [[ ! -f ~/Unciv/LICENSE ]]; then
-  wget -O ~/Unciv/LICENSE ~ https://raw.githubusercontent.com/yairm210/Unciv/master/LICENSE || error 'Failed to make folder $HOME/Unciv!'
+  wget -O ~/Unciv/LICENSE https://raw.githubusercontent.com/yairm210/Unciv/master/LICENSE || error 'Failed to make folder $HOME/Unciv!'
 fi
 
 
