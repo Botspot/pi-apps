@@ -37,16 +37,26 @@ rm -rf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch64 || echo 'Failed to remove jre
 ### Download or continue downloading Unciv.jar
 wget -c -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || error 'Failed to download Unciv.jar!'
 
+### Make Unciv.sh
+# Don't remove this step. By default Unciv saves it data in the folder from
+# where the java -jar Unciv.jar command was executed. Removing this will
+# result in Unciv saving its data to $HOME folder. Don't try to put these
+# lines in unciv.desktop as desktop-file-validate shows some error.
+# see https://github.com/yairm210/Unciv/blob/master/desktop/linuxFilesForJar/Unciv.sh
+echo "cd $HOME/Unciv
+./jre/bin/java -jar ./Unciv.jar" > ~/Unciv/Unciv.sh || error "Failed to write $HOME/Unciv/Unciv.sh!"
+
+chmod +x ~/Unciv/Unciv.sh || error error "Failed to make $HOME/Unciv/Unciv.sh! executable"
+
 ### Make Desktop entry
 echo "[Desktop Entry]
-Encoding=UTF-8
 Comment=Open-source Android/Desktop remake of Civ V
-Exec=$HOME/Unciv/jre/bin/java -jar $HOME/Unciv/Unciv.jar
+Exec=$HOME/Unciv/Unciv.sh
 GenericName=4X Game
 Icon=$(dirname "$0")/icon-64.png
 Name=Unciv
 NoDisplay=false
 StartupNotify=true
-Terminal=0
+Terminal=false
 Type=Application
-Categories=Game" > ~/.local/share/applications/unciv.desktop || error "Failed to create menu button for Unciv!"
+Categories=Game" > ~/.local/share/applications/unciv.desktop || error 'Failed to make menu button for Unciv!'
