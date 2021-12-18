@@ -1707,6 +1707,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     else
       status -n "Downloading $(basename "$url")... " 1>&2
     fi
+    echo
   fi
   
   #now, perform the download using the chosen method
@@ -1723,7 +1724,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #use these flags for aria2c
     aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
-      --console-log-level=error --show-console-readout=false --summary-interval=5 "$url" --dir '/' -o "${file:1}")
+      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
@@ -1731,13 +1732,58 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       echo '--quiet'
     fi
     
-    #run aria2c and reduce its output. Example output line: "135MiB/1.1GiB(11%) DL:16MiB ETA:1m3s"
-    aria2c "${aria2_flags[@]}" | grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' | awk -W interactive '{print $2 " " $4 " " substr($5, 1, length($5)-1)}'
+    terminal_width="$(tput cols)"
+    
+    #run aria2c and reduce its output.
+    aria2c "${aria2_flags[@]}" | while read -r line ;do
+      
+      #filter out unnecessary lines
+      line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+      
+      if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
+        
+        #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
+        if [[ "$line" == '['*']' ]];then
+          
+          
+          #print the total data only, like: "1.1GiB/1.1GiB"
+          statsline=" $(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
+          #get the length of statsline
+          characters_subtract=${#statsline}
+          
+          #determine how many characters are available for the progress bar
+          available_width=$(($terminal_width - ${#statsline} + 1))
+          #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
+          [ "$available_width" -le 0 ] && available_width=20
+          
+          #get progress percentage from aria2c output
+          percent="$(grep -o '(.*)' <<<"$line" | tr -d '()%')"
+          
+          #echo "percent: $percent"
+          #echo "available_width: $available_width"
+          
+          #determine how many characters in progress bar to light up
+          progress_characters=$(((percent*available_width)/100))
+          
+          statsline+="\e[92m$(for ((i=0; i<$progress_characters; i++)); do printf "🭸"; done)\e[39m" # other possible characters to put here: █—🭸
+          echo -ne "\e[0K${statsline}\r\033" #clear and print over previous line
+          
+          #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
+          #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
+          
+        else
+          #this line is not a progress-stat line; don't format output
+          echo "$line"
+        fi
+      fi
+      
+    done
     local exitcode=${PIPESTATUS[0]}
   fi
   
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
+    echo
     status_green "Done" 1>&2
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
     echo -e "\n\e[91mFailed to download: $url\e[0m" 1>&2
