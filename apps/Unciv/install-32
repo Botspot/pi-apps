@@ -31,13 +31,8 @@ if [[ ! -d ~/Unciv/jre ]]: then
 fi
 
 ## remove artifacts
-if [[ -f ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz ]]; then
-  rm ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || echo 'Failed to remove jre artifatcs! Skipping ...'
-fi
-
-if [[ -d ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf ]]; then
-  rm -rf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf || echo 'Failed to remove jre artifatcs! Skipping ...'
-fi
+rm -f ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf.tar.gz || echo 'Failed to remove jre artifatcs! Skipping ...'
+rm -rf ~/zulu8.58.0.13-ca-jdk8.0.312-linux_aarch32hf || echo 'Failed to remove jre artifatcs! Skipping ...'
 
 ### Download or continue downloading Unciv.jar
 wget -c -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || error 'Failed to download Unciv.jar!'
