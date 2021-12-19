@@ -148,9 +148,9 @@ apt_update() { #run an apt update with error-checking and minimal output
   fi
   
   #exit on apt error
-  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
-    echo -e "\e[91minstall_packages failed to run \e[4msudo apt update\e[0m\e[39m!"
+    echo -e "\e[91mFailed to run \e[4msudo apt update\e[0m\e[39m!"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
@@ -377,7 +377,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   status "Apt finished."
   
-  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
   if [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -416,7 +416,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     local output="$(sudo -E apt purge -y "$package_name" --autoremove 2>&1 | less_apt | tee /dev/stderr)"
     status "Apt finished."
     
-    errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
     if [ ! -z "$errors" ];then
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -435,7 +435,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     local output="$(sudo -E apt purge -y $packages 2>&1)"
     exitcode=$?
     
-    errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
     if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -574,15 +574,16 @@ read_category_files() { #Generates a combined categories-list from several sourc
 app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
   
   #Subtract a type of app if enabled
+  local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
   local filter=()
-  if [ "$(cat "${DIRECTORY}/data/settings/Show apps")" == 'standard' ];then
+  if [ "$show_apps_setting" == 'standard' ];then
     #if only showing standard apps, hide package apps
     filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
-  elif [ "$(cat "${DIRECTORY}/data/settings/Show apps")" == 'package' ];then
+  elif [ "$show_apps_setting" == 'packages' ];then
     #if only showing package apps, hide standard apps
     filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
   else
-    #the setting is "standard and package" or missing, don't filter.
+    #is the setting is "all" or missing, don't filter.
     filter=(cat)
   fi
   
@@ -593,7 +594,9 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   list_apps installed | sed 's+^+Installed/+g'
   
   #show special "Packages" category
-  list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  if [ "$show_apps_setting" != standard ];then
+    list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  fi
   
   #show special "All Apps" category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
