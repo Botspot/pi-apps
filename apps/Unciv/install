@@ -25,7 +25,7 @@ cd $HOME/Unciv
 $(echo /usr/lib/jvm/java-8-openjdk-*/bin/java) -jar ./Unciv.jar" \
 > ~/Unciv/Unciv.sh || error "Failed to write $HOME/Unciv/Unciv.sh!"
 
-chmod +x ~/Unciv/Unciv.sh || error error "Failed to make $HOME/Unciv/Unciv.sh! executable"
+chmod +x $HOME/Unciv/Unciv.sh || error "Failed to make $HOME/Unciv/Unciv.sh executable!"
 
 ### Make Desktop entry
 echo "\
