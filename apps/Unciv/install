@@ -9,9 +9,9 @@ if [[ ! -f ~/Unciv/LICENSE ]]; then
 fi
 
 ### install openjdk-8-jre-headless
-# the 'default jre' (OpenJDK-11-jre) package takes too much RAM and runs sloppy in Raspberry Pi 3B+
-# so, we will use a minimal OpenJDK 8 JRE installation to run this.
-"${DIRECTORY}/pkg-install" openjdk-8-jre-headless || exit 1
+# the 'default jre' (OpenJDK-11-jre) package takes too much RAM and runs very sloppy in Raspberry Pi 3B+
+# so, we will use a minimal OpenJDK 8 JRE installation so that it runs smoothly
+install_packages openjdk-8-jre-headless || exit 1
 
 ### Download Unciv.jar
 wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || exit 1
