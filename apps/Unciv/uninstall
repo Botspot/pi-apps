@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -f ~/.local/share/applications/unciv.desktop
+rm -rf ~/Unciv
+"${DIRECTORY}/purge-installed" openjdk-8-jre-headless || exit 1

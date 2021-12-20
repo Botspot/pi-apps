@@ -1,0 +1,45 @@
+#!/bin/bash
+
+### Make directory ~/Unciv if not available
+if [[ ! -d ~/Unciv ]]; then
+  mkdir ~/Unciv || error 'Failed to make folder $HOME/Unciv!'
+fi
+
+### Add LICENSE from Github if doesn't exist
+if [[ ! -f ~/Unciv/LICENSE ]]; then
+  wget -O ~/Unciv/LICENSE https://raw.githubusercontent.com/yairm210/Unciv/master/LICENSE || error 'Failed to make folder $HOME/Unciv!'
+fi
+
+### install openjdk-8-jre-headless
+# the 'default jre' (OpenJDK-11-jre) package takes too much RAM and runs sloppy in Raspberry Pi 3B+
+# so, we will use a minimal OpenJDK 8 JRE installation to run this.
+"${DIRECTORY}/pkg-install" openjdk-8-jre-headless || exit 1
+
+### Download or continue downloading Unciv.jar
+wget -c -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || error 'Failed to download Unciv.jar!'
+
+### Make Unciv.sh
+# This is necessary because some special characters are supported in Desktop Entry Files.
+# Without running Unciv.jar from ~/Unciv, the Game Data will be saved in ~ by default (not ~/Unciv).
+# see https://github.com/yairm210/Unciv/blob/master/desktop/linuxFilesForJar/Unciv.sh
+echo "\
+cd $HOME/Unciv
+$(echo /usr/lib/jvm/java-8-openjdk-*/bin/java) -jar ./Unciv.jar" \
+> ~/Unciv/Unciv.sh || error "Failed to write $HOME/Unciv/Unciv.sh!"
+
+chmod +x ~/Unciv/Unciv.sh || error error "Failed to make $HOME/Unciv/Unciv.sh! executable"
+
+### Make Desktop entry
+echo "\
+[Desktop Entry]
+Comment=Open-source Android/Desktop remake of Civ V
+Exec=$HOME/Unciv/Unciv.sh
+GenericName=4X Game
+Icon=$(dirname "$0")/icon-64.png
+Name=Unciv
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Game" \
+> ~/.local/share/applications/unciv.desktop || error 'Failed to make menu button for Unciv!'
