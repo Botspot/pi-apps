@@ -13,8 +13,8 @@ fi
 # so, we will use a minimal OpenJDK 8 JRE installation to run this.
 "${DIRECTORY}/pkg-install" openjdk-8-jre-headless || exit 1
 
-### Download or continue downloading Unciv.jar
-wget -c -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || error 'Failed to download Unciv.jar!'
+### Download Unciv.jar
+wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || exit 1
 
 ### Make Unciv.sh
 # This is necessary because some special characters are supported in Desktop Entry Files.
