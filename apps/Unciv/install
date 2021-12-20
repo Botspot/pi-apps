@@ -1,9 +1,7 @@
 #!/bin/bash
 
 ### Make directory ~/Unciv if not available
-if [[ ! -d ~/Unciv ]]; then
-  mkdir ~/Unciv || error 'Failed to make folder $HOME/Unciv!'
-fi
+mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
 
 ### Add LICENSE from Github if doesn't exist
 if [[ ! -f ~/Unciv/LICENSE ]]; then
