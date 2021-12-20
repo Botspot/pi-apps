@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -f ~/.local/share/applications/unciv.desktop
+rm -rf ~/Unciv
+purge_packages || exit 1
