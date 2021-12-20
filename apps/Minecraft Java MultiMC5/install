@@ -44,86 +44,71 @@ case "$__os_id" in
     Raspbian|Debian)
         case "$__os_codename" in
             bullseye|buster|stretch|jessie)
-                install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
+                install_packages lsb-release wget apt-transport-https gnupg || error "Failed to install dependencies"
                 hash -r
-                cd /tmp
-                rm -rf public
-                rm -rf adoptopenjdk-keyring.gpg
-                wget https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-                gpg --no-default-keyring --keyring ./adoptopenjdk-keyring.gpg --import public
-                gpg --no-default-keyring --keyring ./adoptopenjdk-keyring.gpg --export --output adoptopenjdk-archive-keyring.gpg 
-                rm -rf public
-                rm -rf adoptopenjdk-keyring.gpg
-                sudo mv adoptopenjdk-archive-keyring.gpg /usr/share/keyrings
-                cd ~
-                echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list
+                status "Adding AdoptOpenJDK repository:"
+
+                echo "- public key -> keyring"
+
+                rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
+                wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key
+                rm -f /tmp/adoptopenjdk-public-key
+
+                echo " - keyring -> GPG key"
+                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg 
+                rm -f /tmp/adoptopenjdk-keyring.gpg
+
+                echo " - Moving GPG key to /usr/share/keyrings"
+                sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings
+
+                echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
+                echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+
+                echo " - Installing adoptopenjdk-16-hotspot-jre"
+                #try to install adoptopenjdk java version; if it fails, remove repository to avoid breaking user's system
+                (install_packages adoptopenjdk-16-hotspot-jre)
+                if [ $? != 0 ];then
+                    sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+                    warning "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed." && warning "It is up to you to download and install a working java 16 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 16"
+                fi      
+
+                status "Adding Adoptium repository:"
+
+                echo "- public key -> keyring"
+                rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+                wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+                gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+                rm -f /tmp/adoptium-public-key
+
+                echo " - keyring -> GPG key"
+                gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+                rm -f /tmp/adoptium-keyring.gpg
+
+                echo " - Moving GPG key to /usr/share/keyrings"
+                sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+                echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+                echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+                echo " - Installing temurin-8-jdk temurin-17-jdk"
+                #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
+                (install_packages temurin-8-jdk temurin-17-jdk)
+                if [ $? != 0 ];then
+                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                    warning "Failed to install temurin packages. Adoptium repository has been removed."  && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
+                fi
+
+                # remove old java installs to free up space
+                rm -rf ~/MultiMC/install/java
                 ;;
             *)
                 error "Debian version ($__os_codename) is too old, update to debian Jessie or newer"
                 ;;
         esac
-        # install dependencies
-        # for now don't install openjdk-8-jre on debian based 32bit installs... the repo versions (from adoptopenjdk and raspbian) are broken and don't work
-        # refer to the below bug reports for updates
-        # https://bugs.launchpad.net/raspbian/+bug/1944774
-        # https://github.com/adoptium/adoptium-support/issues/368
-        # download java 8 from adoptium github tar.gz as a workaround
-        case "$arch" in
-            "64")
-                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
-                hash -r
-                mkdir -p ~/MultiMC/install/java || exit 1
-                cd ~/MultiMC/install/java || exit 1
-                # download java 8 (unavailable in some debian versions)
-                rm -rf jdk8u302-b08
-                rm -rf java-8-temurin-aarch64
-                rm -rf OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz
-                wget https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz && tar -xzf OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz
-                mv jdk8u302-b08 java-8-temurin-aarch64
-                rm -rf OpenJDK8U-jdk_aarch64_linux_hotspot_8u302b08.tar.gz
-                # check if java is working and remove if broken
-                ./java-8-temurin-aarch64/bin/java -version || ( warning "The downloaded java 8 version does not work, removing it now..." && warning "It is up to you to download and install a working java 8 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8" && rm -rf java-8-temurin-aarch64 )
 
-                # download java 17 (unavailable in some debian versions)
-                rm -rf jdk-17.0.1+12
-                rm -rf java-17-temurin-aarch64
-                rm -rf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.1_12.tar.gz
-                wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.1_12.tar.gz && tar -xzf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.1_12.tar.gz
-                mv jdk-17.0.1+12 java-17-temurin-aarch64
-                rm -rf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.1_12.tar.gz
-                # check if java is working and remove if broken
-                ./java-17-temurin-aarch64/bin/java -version || ( warning "The downloaded java 17 version does not work, removing it now..." && warning "It is up to you to download and install a working java 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 17" && rm -rf java-17-temurin-aarch64 )
-                cd ~
-                ;;
-            "32") 
-                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk adoptopenjdk-16-hotspot-jre qtbase5-dev || error "Failed to install dependencies"
-                hash -r
-                mkdir -p ~/MultiMC/install/java || exit 1
-                cd ~/MultiMC/install/java || exit 1
-                # download java 8 (unavailable or broken in some debian versions)
-                rm -rf jdk8u302-b08-aarch32-20210726
-                rm -rf java-8-temurin-armhf
-                rm -rf OpenJDK8U-jdk_arm_linux_hotspot_8u302b08.tar.gz
-                wget https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_arm_linux_hotspot_8u302b08.tar.gz && tar -xzf OpenJDK8U-jdk_arm_linux_hotspot_8u302b08.tar.gz
-                mv jdk8u302-b08-aarch32-20210726 java-8-temurin-armhf
-                rm -rf OpenJDK8U-jdk_arm_linux_hotspot_8u302b08.tar.gz
-                # check if java is working and remove if broken
-                ./java-8-temurin-armhf/bin/java -version || ( warning "The downloaded java 8 version does not work, removing it now..." && warning "It is up to you to download and install a working java 8 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8" && rm -rf java-8-temurin-armhf )
-
-                # download java 17 (unavailable in some debian versions)
-                rm -rf jdk-17.0.1+12
-                rm -rf java-17-temurin-armhf
-                rm -rf OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz
-                wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz && tar -xzf OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz
-                mv jdk-17.0.1+12 java-17-temurin-armhf
-                rm -rf OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz
-                # check if java is working and remove if broken
-                ./java-17-temurin-armhf/bin/java -version || ( warning "The downloaded java 17 version does not work, removing it now..." && warning "It is up to you to download and install a working java 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 17" && rm -rf java-17-temurin-armhf )
-                
-                cd ~
-                ;;
-            *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
-        esac
+        # install normal dependencies from raspbian/debian repos
+        install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies"
         ;;
     LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
         # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME first from lsb-release (for ubuntu) and then from the upstream for derivatives
