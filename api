@@ -1747,10 +1747,10 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
         
         #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
         if [[ "$line" == '['*']' ]];then
-
+          
           #hide cursor
           printf "\033[?25l"
-
+          
           #print the total data only, like: "1.1GiB/1.1GiB"
           statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
           #get the length of statsline
@@ -1772,7 +1772,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
           
           statsline+="\e[92m$(for ((i=0; i<$progress_characters; i++)); do echo -ne "\e[1m—"; done)\e[39m" # other possible characters to put here: █🭸
           echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
-
+          
           #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
           #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
           
