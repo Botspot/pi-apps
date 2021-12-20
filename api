@@ -1735,7 +1735,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       echo '--quiet'
     fi
     
-    terminal_width="$(tput cols || exho 80)"
+    terminal_width="$(tput cols || echo 80)"
     
     #run aria2c and reduce its output.
     aria2c "${aria2_flags[@]}" | while read -r line ;do
