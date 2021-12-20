@@ -1735,7 +1735,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       echo '--quiet'
     fi
     
-    terminal_width="$(tput cols)"
+    terminal_width="$(tput cols || exho 80)"
     
     #run aria2c and reduce its output.
     aria2c "${aria2_flags[@]}" | while read -r line ;do
@@ -1770,7 +1770,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
           #determine how many characters in progress bar to light up
           progress_characters=$(((percent*available_width)/100))
           
-          statsline+="\e[92m$(for ((i=0; i<$progress_characters; i++)); do echo -ne "\e[1m—"; done)\e[39m" # other possible characters to put here: █🭸
+          statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
           echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
           
           #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
@@ -1854,4 +1854,3 @@ elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ]
 fi
 
 export DIRECTORY
-
