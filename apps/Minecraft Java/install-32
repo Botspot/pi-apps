@@ -1,10 +1,9 @@
 #!/bin/bash
-install_packages kmod zip unzip libfuse2 || exit 1
+install_packages kmod zip unzip libfuse2 lsb-release wget gpg || exit 1
 
 echo
 echo "Creating directories"
 mkdir -p ~/.minecraft ~/lwjgl3arm32 ~/lwjgl2arm32 ~/lunarassets
-sudo mkdir -p /opt/jdk
 
 #Download client and assorted java stuff
 echo "Downloading lunarclient.AppImage"
@@ -14,12 +13,32 @@ errors="$(chmod +x ~/lunarassets/lunarclient.AppImage 2>&1)" || error "Failed to
 echo "Downloading lunarclient.png"
 errors="$(wget -O ~/lunarassets/lunarclient.png https://github.com/gl91306/lunar/raw/master/lunarclient.png 2>&1)" || error "Failed to download lunarclient.png\nErrors:\n$errors"
 
-echo "Downloading jdk-17.tar.gz"
-sudo rm -rf ~/jdk-17.tar.gz /opt/jdk/jdk-17.0.1+12
-errors="$(wget -O ~/jdk-17.tar.gz 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz' 2>&1)" || error "Failed to download jdk-17.tar.gz\nErrors:\n$errors"
-echo "Extracting jdk-16.tar.gz to /opt/jdk"
-sudo tar -zxf ~/jdk-17.tar.gz -C /opt/jdk || error "Failed to extract jdk-17.tar.gz"
-rm -f ~/jdk-17.tar.gz
+# adding temurin JDK from apt repo
+status "Adding Adoptium repository:"
+
+echo "- public key -> keyring"
+rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+rm -f /tmp/adoptium-public-key
+
+echo " - keyring -> GPG key"
+gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+rm -f /tmp/adoptium-keyring.gpg
+
+echo " - Moving GPG key to /usr/share/keyrings"
+sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+echo " - Installing temurin-17-jdk"
+#try to install temurin-17-jdk; if it fails, remove repository to avoid breaking user's system
+(install_packages temurin-17-jdk)
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+  error "Failed to install temurin packages. Adoptium repository has been removed."
+fi
 
 echo "Setting up lwjgl3arm32 folder"
 echo "- Downloading lwjgl3arm32.tar.gz"
@@ -66,7 +85,7 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
+Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/usr/lib/jvm/java-17-temurin-armhf PATH=/usr/lib/jvm/java-17-temurin-armhf/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
 

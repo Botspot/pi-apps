@@ -12,8 +12,10 @@ echo "Removing lwjgl folders
   - ~/lwjgl2arm64"
 rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64
 
-echo "Removing Java runtime environment
+echo "Removing Java runtime environment from old installs
   - /opt/jdk/jdk-16.0.1+9-jre"
 sudo rm -rf /opt/jdk/jdk-17.0.1+12
 
-purge_packages || :
+purge_packages || error "Could not purge dependency packages"
+
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
