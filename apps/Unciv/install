@@ -38,7 +38,7 @@ wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/downl
 # see https://github.com/yairm210/Unciv/blob/master/desktop/linuxFilesForJar/Unciv.sh
 echo "\
 cd $HOME/Unciv
-$(echo /usr/lib/jvm/java-8-openjdk-*/bin/java) -jar ./Unciv.jar" \
+$(echo /usr/lib/jvm/temurin-8-*/jre/bin/java) -jar ./Unciv.jar" \
 > ~/Unciv/Unciv.sh || error "Failed to write $HOME/Unciv/Unciv.sh!"
 
 chmod +x $HOME/Unciv/Unciv.sh || error "Failed to make $HOME/Unciv/Unciv.sh executable!"
