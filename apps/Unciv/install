@@ -30,7 +30,7 @@ sudo apt update
 install_packages temurin-8-jdk || error "Failed to install temurin packages"
 
 ### Download Unciv.jar
-wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || exit 1
+wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.11/Unciv.jar || exit 1
 
 ### Make Unciv.sh
 # This is necessary because some special characters are supported in Desktop Entry Files.
