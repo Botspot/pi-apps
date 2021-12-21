@@ -39,6 +39,11 @@ if [ $? != 0 ];then
   error "Failed to install temurin packages. Adoptium repository has been removed."
 fi
 
+# this is a hack because Lunar client is coded in such a way as to hardcode this path
+# please remove this hack if Lunar client gets an update to fix this functionality and read the JAVA_HOME variable
+sudo mkdir -p  /opt/jdk/jdk-17.0.1+12/bin
+sudo ln -s /usr/lib/jvm/temurin-17-jdk-arm64/bin/java  /opt/jdk/jdk-17.0.1+12/bin/java
+
 echo "Setting up lwjgl3arm64 folder"
 echo "- Downloading lwjgl3arm64.tar.gz"
 errors="$(wget -O ~/lwjgl3arm64.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm64.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm64.tar.gz\nErrors:\n$errors"
