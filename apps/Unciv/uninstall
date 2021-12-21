@@ -3,6 +3,6 @@
 rm -f ~/.local/share/applications/unciv.desktop
 rm -rf ~/Unciv
 
-remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
-
 purge_packages || exit 1
+
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
