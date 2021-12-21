@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=arduino-1.8.18
+VERSION=arduino-1.8.19
 
 cd ~/.local/share
 wget https://downloads.arduino.cc/$VERSION-linuxaarch64.tar.xz || error "failed to download!"
