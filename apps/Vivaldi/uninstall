@@ -1,2 +1,4 @@
 #!/bin/bash
 purge_packages || exit 1
+
+sudo rm -f /usr/share/keyrings/vivaldi-browser.gpg /etc/apt/sources.list.d/vivaldi-archive.list
