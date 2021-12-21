@@ -52,7 +52,7 @@ wget -c -O /tmp/Unciv.jar https://github.com/yairm210/Unciv/releases/download/3.
 echo '- moving /tmp/Unciv.jar to ~/Unciv/Unciv.jar'
 mv /tmp/Unciv.jar ~/Unciv/Unciv.jar || exit 1
 echo '- removing /tmp/Unciv.jar'
-rm -f '- removing /tmp/Unciv.jar'
+rm -f /tmp/Unciv.jar
 
 status "Creating runner script ($HOME/Unciv/Unciv.sh)"
 # This is necessary because some special characters are supported in Desktop Entry Files.
