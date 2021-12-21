@@ -17,34 +17,42 @@ fi
 # so, we will use Temurin OpenJDK 8 installation cause thats the minimal Java version Unciv needs
 # Temurin very smoothly on Raspberry Pi 3B+ without any problems
 
-status "Adding Adoptium repository:"
+if [[ ! -f /usr/share/keyrings/adoptium-archive-keyring.gpg ]]; then
+  status "Adding Adoptium repository:"
 
-echo "- public key -> keyring"
-rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-rm -f /tmp/adoptium-public-key
+  echo "- public key -> keyring"
+  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+  rm -f /tmp/adoptium-public-key
 
-echo " - keyring -> GPG key"
-gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-rm -f /tmp/adoptium-keyring.gpg
+  echo " - keyring -> GPG key"
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+  rm -f /tmp/adoptium-keyring.gpg
 
-echo " - Moving GPG key to /usr/share/keyrings"
-sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+  echo " - Moving GPG key to /usr/share/keyrings"
+  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
 
-echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+  echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+fi
 
-echo " - Installing temurin-8-jdk"
+status "Installing temurin-8-jdk"
 #try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
 (install_packages temurin-8-jdk)
-if [ $? != 0 ];then
+if [ $? != 0 ]; then
   sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
   error "Failed to install temurin packages. Adoptium repository has been removed."
 fi
 
-### Download Unciv.jar
-wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || exit 1
+status "Downloading Unciv.jar"
+echo '- writing into /tmp/Unciv.jar'
+wget -c -O /tmp/Unciv.jar https://github.com/yairm210/Unciv/releases/download/3.18.11/Unciv.jar \
+    || error 'Failed to download Unciv.jar!'
+echo '- moving /tmp/Unciv.jar to ~/Unciv/Unciv.jar'
+mv /tmp/Unciv.jar ~/Unciv/Unciv.jar || exit 1
+echo '- removing /tmp/Unciv.jar'
+rm -f '- removing /tmp/Unciv.jar'
 
 status "Creating runner script ($HOME/Unciv/Unciv.sh)"
 # This is necessary because some special characters are supported in Desktop Entry Files.
