@@ -14,10 +14,23 @@ wget -O ~/Unciv/LICENSE https://raw.githubusercontent.com/yairm210/Unciv/master/
 # the 'default-jre' (OpenJDK-11-jre) package takes too much RAM and runs very sloppy in Raspberry Pi 3B+
 # so, we will use Temurin OpenJDK 8 installation cause thats the minimal Java version Unciv needs
 # Temurin very smoothly on Raspberry Pi 3B+ without any problems
+if [ "$arch" == 32 ]; then
+  wget -O "$HOME/Unciv/openjdk-8.tar.gz" https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u312-b07/OpenJDK8U-jre_arm_linux_hotspot_8u312b07.tar.gz || exit 1
+elif [ "$arch" == 64 ]; then
+  wget -O "$HOME/Unciv/openjdk-8.tar.gz" https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u312-b07/OpenJDK8U-jre_aarch64_linux_hotspot_8u312b07.tar.gz
+else
+  error "Cannot detect architecture."
+fi
 
-wget -O "$HOME/Unciv/openjdk-8.tar.gz" https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u312-b07/OpenJDK8U-jre_arm_linux_hotspot_8u312b07.tar.gz || exit 1
 tar -xf "$HOME/Unciv/openjdk-8.tar.gz" -C  "$HOME/Unciv" || error "Failed to extract $HOME/Unciv/openjdk-8.tar.gz"
-mv -f "$HOME/Unciv/jdk8u312-b07-aarch32-20211101-jre" "$HOME/Unciv/openjdk-8-jre" || error "Failed to rename "$HOME/Unciv/jdk8u312-b07-aarch32-20211101-jre" to "$HOME/Unciv/openjdk-8-jre""
+
+if [ "$arch" == 32 ]; then
+  mv -f "$HOME/Unciv/jdk8u312-b07-aarch32-20211101-jre" "$HOME/Unciv/openjdk-8-jre" || error "Failed to rename "$HOME/Unciv/jdk8u312-b07-aarch32-20211101-jre" to "$HOME/Unciv/openjdk-8-jre""
+elif [ "$arch" == 64 ]; then
+  mv -f "$HOME/Unciv/jdk8u312-b07-jre" "$HOME/Unciv/openjdk-8-jre" || error "Failed to rename "$HOME/Unciv/jdk8u312-b07-jre" to "$HOME/Unciv/openjdk-8-jre""
+else
+  error "Cannot detect architecture."
+fi
 rm -rf "$HOME/Unciv/openjdk-8.tar.gz" 
 
 ### Download Unciv.jar
