@@ -61,6 +61,109 @@ add_english() {  # add en_US locale for more accurate error
   export LC_ALL="en_US.UTF-8"
 }
 
+#package functions
+package_info() { #list everything dpkg knows about the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_info(): no package specified!"
+  #list lines in /var/lib/dpkg/status between the package name and the next empty line
+  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
+  true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
+}
+
+package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
+  local package="$1"
+  [ -z "$package" ] && error "package_installed(): no package specified!"
+  #find the package listed in /var/lib/dpkg/status
+  #package_info "$package" | grep -q '^Status: install ok installed$'
+  
+  #directly search /var/lib/dpkg/status
+  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep "$package" --after 1 | grep -q 'Status: install ok installed'
+}
+
+package_available() { #determine if the specified package-name exists in a repository
+  local package="$1"
+  [ -z "$package" ] && error "package_available(): no package name specified!"
+  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
+  grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
+}
+
+package_dependencies() { #outputs the list of dependencies for the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_dependencies(): no package specified!"
+  
+  #find the package listed in /var/lib/dpkg/status
+  package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
+}
+
+anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
+  [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
+  
+  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard
+  local url="$(echo "$1" | sed 's+.*://++g' | sed 's+/+_+g')"
+  
+  #find all package-lists pertaining to the url
+  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
+  
+  #for every repo-file, chack if any of them have an installed file
+  local found=0
+  local IFS=$'\n'
+  local repofile
+  for repofile in $repofiles ;do
+    #search the repo-file for installed packages
+    grep '^Package' "$repofile" | awk '{print $2}' | while read -r package ;do
+      if package_installed "$package" ;then
+        echo "Package installed: $package"
+        exit 1
+      fi
+    done #if exit code is 1, search was successful. If exit code is 0, no packages from the repo were installed.
+    
+    found=$?
+    
+    if [ $found == 1 ];then
+      break
+    fi
+  done
+  
+  #return an exit code
+  if [ $found == 1 ];then
+    return 0
+  else
+    return 1
+  fi
+}
+
+remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing from that repository is currently installed. Deletion skipped if $2 is 'test'
+  local file="$1"
+  local testmode="$2"
+  [ -z "$file" ] && error "remove_repo_if_unnecessary: no sources.list.d file specified!"
+  
+  if [ ! -f "$file" ];then
+    echo "remove_repo_if_unnecessary: The specified sources.list.d file does not exist. Continuing..."
+    exit 0
+  fi
+  
+  #determine what repo-urls are in the file
+  local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
+  
+  #there could be multiple urls in one file. Check each url and set the in_use variuable to 1 if any packages are found
+  local IFS=$'\n'
+  local in_use=0
+  local url
+  for url in $urls ;do
+    if anything_installed_from_repo "$url" >/dev/null;then
+      in_use=1
+      break
+    fi
+  done
+  
+  if [ "$in_use" == 0 ] && [ "$testmode" == test ];then
+    echo "The given repository is not in use and can be deleted:"$'\n'"$file"
+  elif [ "$in_use" == 0 ];then
+    sudo rm -f "$file"
+  fi
+  
+}
+
 #apt functions
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
@@ -90,37 +193,6 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
   [ "$displayed" == 1 ] && echo "Done"
   true
-}
-
-package_info() { #list everything dpkg knows about the $1 package
-  local package="$1"
-  [ -z "$package" ] && error "package_info(): no package specified!"
-  #list lines in /var/lib/dpkg/status between the package name and the next empty line
-  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
-  true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
-}
-
-package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
-  local package="$1"
-  [ -z "$package" ] && error "package_installed(): no package specified!"
-  
-  #find the package listed in /var/lib/dpkg/status
-  package_info "$package" | grep -q '^Status: install ok installed$'
-}
-
-package_available() { #determine if the specified package-name exists in a repository
-  local package="$1"
-  [ -z "$package" ] && error "package_available(): no package name specified!"
-  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
-}
-
-package_dependencies() { #outputs the list of dependencies for the $1 package
-  local package="$1"
-  [ -z "$package" ] && error "package_dependencies(): no package specified!"
-  
-  #find the package listed in /var/lib/dpkg/status
-  package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
 }
 
 less_apt() { #remove unwanted lines from apt output
