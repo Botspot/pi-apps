@@ -1820,9 +1820,6 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
         #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
         if [[ "$line" == '['*']' ]];then
           
-          #hide cursor
-          printf "\033[?25l"
-          
           #print the total data only, like: "1.1GiB/1.1GiB"
           statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
           #get the length of statsline
@@ -1858,8 +1855,6 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     local exitcode=${PIPESTATUS[0]}
   fi
   
-  #show cursor
-  printf "\033[?25h"
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
     echo
