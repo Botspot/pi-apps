@@ -1801,65 +1801,67 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
-      aria2_flags+=(--quiet)
-      echo '--quiet'
-    fi
-    
-    terminal_width="$(tput cols || echo 80)"
-    
-    #run aria2c and reduce its output.
-    aria2c "${aria2_flags[@]}" | while read -r line ;do
+      aria2c --quiet "${aria2_flags[@]}"
+      local exitcode=$?
       
-      #filter out unnecessary lines
-      line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+    else #run aria2c without quietness and format download-progress output
+      terminal_width="$(tput cols || echo 80)"
       
-      if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
+      #run aria2c and reduce its output.
+      aria2c "${aria2_flags[@]}" | while read -r line ;do
         
-        #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
-        if [[ "$line" == '['*']' ]];then
+        #filter out unnecessary lines
+        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+        
+        if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
           
-          #hide cursor
-          printf "\033[?25l"
-          
-          #print the total data only, like: "1.1GiB/1.1GiB"
-          statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
-          #get the length of statsline
-          characters_subtract=${#statsline}
-          
-          #determine how many characters are available for the progress bar
-          available_width=$(($terminal_width - ${#statsline} + 1))
-          #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
-          [ "$available_width" -le 0 ] && available_width=20
-          
-          #get progress percentage from aria2c output
-          percent="$(grep -o '(.*)' <<<"$line" | tr -d '()%')"
-          
-          #echo "percent: $percent"
-          #echo "available_width: $available_width"
-          
-          #determine how many characters in progress bar to light up
-          progress_characters=$(((percent*available_width)/100))
-          
-          statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
-          echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
-          
-          #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
-          #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
-          
-        else
-          #this line is not a progress-stat line; don't format output
-          echo "$line"
+          #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
+          if [[ "$line" == '['*']' ]];then
+            
+            #hide cursor
+            printf "\033[?25l"
+            
+            #print the total data only, like: "1.1GiB/1.1GiB"
+            statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
+            #get the length of statsline
+            characters_subtract=${#statsline}
+            
+            #determine how many characters are available for the progress bar
+            available_width=$(($terminal_width - ${#statsline} + 1))
+            #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
+            [ "$available_width" -le 0 ] && available_width=20
+            
+            #get progress percentage from aria2c output
+            percent="$(grep -o '(.*)' <<<"$line" | tr -d '()%')"
+            
+            #echo "percent: $percent"
+            #echo "available_width: $available_width"
+            
+            #determine how many characters in progress bar to light up
+            progress_characters=$(((percent*available_width)/100))
+            
+            statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
+            echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
+            
+            #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
+            #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
+            
+          else
+            #this line is not a progress-stat line; don't format output
+            echo "$line"
+          fi
         fi
-      fi
-      
-    done
-    local exitcode=${PIPESTATUS[0]}
+        
+      done
+      local exitcode=${PIPESTATUS[0]}
+    fi
   fi
   
-  #show cursor
-  printf "\033[?25h"
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
+    #show cursor
+    printf "\033[?25h"
+    
     echo
     status_green "Done" 1>&2
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
