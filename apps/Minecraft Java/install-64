@@ -34,9 +34,16 @@ echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://a
 echo " - Installing temurin-17-jdk"
 #try to install temurin-17-jdk; if it fails, remove repository to avoid breaking user's system
 (install_packages temurin-17-jdk)
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-  error "Failed to install temurin packages. Adoptium repository has been removed."
+if [ $? != 0 ]; then
+  anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+  if [ $? != 0 ]; then
+    # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+    # safe to remove
+    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+    error "Failed to install temurin packages. Adoptium repository has been removed."
+  else
+    error "Failed to install temurin packages."
+  fi
 fi
 
 # this is a hack because Lunar client is coded in such a way as to hardcode this path
