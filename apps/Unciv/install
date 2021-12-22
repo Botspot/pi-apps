@@ -17,25 +17,23 @@ fi
 # so, we will use Temurin OpenJDK 8 installation cause thats the minimal Java version Unciv needs
 # Temurin very smoothly on Raspberry Pi 3B+ without any problems
 
-if [[ ! -f /usr/share/keyrings/adoptium-archive-keyring.gpg ]]; then
-  status "Adding Adoptium repository:"
+status "Adding Adoptium repository:"
 
-  echo "- public key -> keyring"
-  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-  rm -f /tmp/adoptium-public-key
+echo "- public key -> keyring"
+rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+rm -f /tmp/adoptium-public-key
 
-  echo " - keyring -> GPG key"
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-  rm -f /tmp/adoptium-keyring.gpg
+echo " - keyring -> GPG key"
+gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+rm -f /tmp/adoptium-keyring.gpg
 
-  echo " - Moving GPG key to /usr/share/keyrings"
-  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+echo " - Moving GPG key to /usr/share/keyrings"
+sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
 
-  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-  echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-fi
+echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
 
 status "Installing temurin-8-jdk"
 #try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
