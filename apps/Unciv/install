@@ -35,16 +35,22 @@ sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
 echo " - Creating /etc/apt/sources.list.d/adoptium.list"
 echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
 
-echo " - Installing temurin-8-jdk"
+status "Installing temurin-8-jdk"
 #try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
 (install_packages temurin-8-jdk)
-if [ $? != 0 ];then
+if [ $? != 0 ]; then
   sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
   error "Failed to install temurin packages. Adoptium repository has been removed."
 fi
 
-### Download Unciv.jar
-wget -O "$HOME/Unciv/Unciv.jar" https://github.com/yairm210/Unciv/releases/download/3.18.10-patch1/Unciv.jar || exit 1
+status "Downloading Unciv.jar"
+echo '- writing into /tmp/Unciv.jar'
+wget -O /tmp/Unciv.jar https://github.com/yairm210/Unciv/releases/download/3.18.11-patch1/Unciv.jar \
+    || error 'Failed to download Unciv.jar!'
+echo '- moving /tmp/Unciv.jar to ~/Unciv/Unciv.jar'
+mv /tmp/Unciv.jar ~/Unciv/Unciv.jar || exit 1
+echo '- removing /tmp/Unciv.jar'
+rm -f /tmp/Unciv.jar
 
 status "Creating runner script ($HOME/Unciv/Unciv.sh)"
 # This is necessary because some special characters are supported in Desktop Entry Files.
