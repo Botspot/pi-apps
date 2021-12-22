@@ -45,7 +45,7 @@ fi
 
 status "Downloading Unciv.jar"
 echo '- writing into /tmp/Unciv.jar'
-wget -O /tmp/Unciv.jar https://github.com/yairm210/Unciv/releases/download/3.18.11/Unciv.jar \
+wget -O /tmp/Unciv.jar https://github.com/yairm210/Unciv/releases/download/3.18.11-patch1/Unciv.jar \
     || error 'Failed to download Unciv.jar!'
 echo '- moving /tmp/Unciv.jar to ~/Unciv/Unciv.jar'
 mv /tmp/Unciv.jar ~/Unciv/Unciv.jar || exit 1
