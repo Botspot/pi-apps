@@ -68,10 +68,15 @@ case "$__os_id" in
                 echo " - Installing adoptopenjdk-16-hotspot-jre"
                 #try to install adoptopenjdk java version; if it fails, remove repository to avoid breaking user's system
                 (install_packages adoptopenjdk-16-hotspot-jre)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+                if [ $? != 0 ]; then
+                    anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb"
+                    if [ $? != 0 ]; then
+                        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                        # safe to remove
+                        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+                    fi
                     warning "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed." && warning "It is up to you to download and install a working java 16 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 16"
-                fi      
+                fi
 
                 status "Adding Adoptium repository:"
 
@@ -94,8 +99,13 @@ case "$__os_id" in
                 echo " - Installing temurin-8-jdk temurin-17-jdk"
                 #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
                 (install_packages temurin-8-jdk temurin-17-jdk)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                if [ $? != 0 ]; then
+                    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+                    if [ $? != 0 ]; then
+                        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                        # safe to remove
+                        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                    fi
                     warning "Failed to install temurin packages. Adoptium repository has been removed."  && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
                 fi
 
