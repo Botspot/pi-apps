@@ -116,63 +116,61 @@ esac
 
 case "$arch" in
     "64")
-        case "$java_selection" in
-            "Java 8")
-                (install_packages temurin-8-jdk)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install temurin packages"
-                fi
-                java_location="/usr/lib/jvm/java-8-temurin-arm64/bin/java"
-                ;;
-            "Java 16")
-                (install_packages adoptopenjdk-16-hotspot-jre)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install adoptopenjdk packages"
-                fi
-                java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-arm64/bin/java"
-                ;;
-            "Java 17")
-                (install_packages temurin-17-jdk)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install temurin packages"
-                fi
-                java_location="/usr/lib/jvm/java-17-temurin-arm64/bin/java"
-                ;;
-        esac
+        dpkg_arch="arm64"
         ;;
     "32")
-        case "$java_selection" in
-            "Java 8")
-                (install_packages temurin-8-jdk)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install temurin packages"
-                fi
-                java_location="/usr/lib/jvm/java-8-temurin-armhf/bin/java"
-                ;;
-            "Java 16")
-                (install_packages adoptopenjdk-16-hotspot-jre)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install adoptopenjdk packages"
-                fi
-                java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-armhf/bin/java"
-                ;;
-            "Java 17")
-                (install_packages temurin-17-jdk)
-                if [ $? != 0 ];then
-                    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                    error "Failed to install temurin packages"
-                fi
-                java_location="/usr/lib/jvm/java-17-temurin-armhf/bin/java"
-                ;;
-        esac
+        dpkg_arch="armhf"
         ;;
     *)
         error "arch variable is not set, can not continue"
+        ;;
+esac
+
+case "$java_selection" in
+    "Java 8")
+        (install_packages temurin-8-jdk)
+        if [ $? != 0 ]; then
+            anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+            if [ $? != 0 ]; then
+                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                # safe to remove
+                sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                error "Failed to install temurin packages. Adoptium repository has been removed."
+            else
+                error "Failed to install temurin packages."
+            fi
+        fi
+        java_location="/usr/lib/jvm/java-8-temurin-$dpkg_arch/bin/java"
+        ;;
+    "Java 16")
+        (install_packages adoptopenjdk-16-hotspot-jre)
+        if [ $? != 0 ]; then
+            anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb"
+            if [ $? != 0 ]; then
+                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                # safe to remove
+                sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+                error "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed."
+            else
+                error "Failed to install adoptopenjdk packages."
+            fi
+        fi
+        java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
+        ;;
+    "Java 17")
+        (install_packages temurin-17-jdk)
+        if [ $? != 0 ]; then
+            anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+            if [ $? != 0 ]; then
+                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                # safe to remove
+                sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                error "Failed to install temurin packages. Adoptium repository has been removed."
+            else
+                error "Failed to install temurin packages."
+            fi
+        fi
+        java_location="/usr/lib/jvm/java-17-temurin-$dpkg_arch/bin/java"
         ;;
 esac
 
