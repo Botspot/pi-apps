@@ -51,7 +51,7 @@ if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
 Name=Pi Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
-Icon=${DIRECTORY}/icons/logo.png
+Icon=${DIRECTORY}/icons/settings.png
 Terminal=false
 Type=Application
 Categories=Settings;" > ~/.local/share/applications/pi-apps-settings.desktop
