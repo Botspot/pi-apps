@@ -39,8 +39,15 @@ status "Installing temurin-8-jdk"
 #try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
 (install_packages temurin-8-jdk)
 if [ $? != 0 ]; then
-  sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-  error "Failed to install temurin packages. Adoptium repository has been removed."
+  anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+  if [ $? != 0 ]; then
+    # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+    # safe to remove
+    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+    error "Failed to install temurin packages. Adoptium repository has been removed."
+  else
+    error "Failed to install temurin packages."
+  fi
 fi
 
 status "Downloading Unciv.jar"
