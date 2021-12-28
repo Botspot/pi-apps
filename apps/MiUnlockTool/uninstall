@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+
+function error {
+  echo -e "\\e[91m$1\\e[39m"
+  exit 1
+}
+
+echo "Uninstalling Mi Tool..."
+rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2
+echo "Do you wanna uninstall dependencies installed in install script?"
+echo -ne "Type in your answer [y/N]: "
+read ans
+if [ "$ans" == N ] || [ "$ans" == n ] || [ -z "$ans" ]; then
+exit 0
+fi
+sudo apt purge -y openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk
+echo " "
+echo "Successfully uninstalled Mi Unlock Tool!"
+exit 0
