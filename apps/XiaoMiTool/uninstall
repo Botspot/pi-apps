@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2
+sudo rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2 /usr/local/bin/xiaomitool
 echo "Do you wanna uninstall dependencies installed in install script?"
 echo -ne "Type in your answer [y/N]: "
 read ans
