@@ -11,7 +11,7 @@ install_packages openjfx adb android-tools-fastboot openjdk-11-jdk || exit 1
 
 git_clone https://github.com/francescotescari/XiaoMiToolV2 -b linux || exit 1
 cd XiaoMiToolV2
-echo "Build Unlock Tool..."
+echo "Building XiaoMi Tool..."
 ./gradlew build || error "Failed to build XiaoMiToolV2!"
 
 echo "Writing launch desktop file..."
