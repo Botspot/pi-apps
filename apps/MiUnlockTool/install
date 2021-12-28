@@ -45,6 +45,3 @@ fi
  " | sudo tee /usr/bin/unlocktool.sh
 sudo chmod +x /usr/bin/unlocktool.sh
 
-echo "Installation Finished without errors! Enjoy!"
-echo
-exit 0
