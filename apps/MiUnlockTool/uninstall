@@ -2,6 +2,3 @@
 
 rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2
 purge_packages || exit 1
-echo " "
-echo "Successfully uninstalled Mi Unlock Tool!"
-exit 0
