@@ -8,16 +8,11 @@ exit 1
 }
 echo "Starting Installation..."
 sleep 5
-echo "Checking Network..."
-wget_error=$(wget --spider github.com >/dev/null 1>&2)
-if [ "$?" ! = 0 ]; then
-error "Internet Connection failed! Please Connect to a network!!"
-fi
 echo "Installing Dependencies..."
 sudo apt update && sudo apt install openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk -y || exit 1
 
 echo "Downloading MiUnlockTool..."
-git clone https://github.com/francescotescari/XiaoMiToolV2 -b linux || error "Failed to clone git repository!"
+git_clone https://github.com/francescotescari/XiaoMiToolV2 -b linux || exit 1
 cd XiaoMiToolV2
 echo "Build Unlock Tool..."
 ./gradlew build || error "Failed to build XiaoMiToolV2!"
@@ -45,6 +40,3 @@ fi
  " | sudo tee /usr/bin/unlocktool.sh
 sudo chmod +x /usr/bin/unlocktool.sh
 
-echo "Installation Finished without errors! Enjoy!"
-echo
-exit 0
