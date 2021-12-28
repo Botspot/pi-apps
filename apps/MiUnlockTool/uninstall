@@ -1,4 +1,0 @@
-#!/bin/bash
-
-rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2
-purge_packages || exit 1
