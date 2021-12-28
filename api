@@ -540,7 +540,7 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
   if [ -z "$1" ] || [ "$1" == local ];then
     #list all apps
-    ls "${DIRECTORY}/apps"
+    grep -v template <(ls "${DIRECTORY}/apps")
     
   elif [ "$1" == all ];then
     #combined list of apps, both online and local. Removes duplicate apps from the list.
@@ -575,15 +575,15 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
   elif [ "$1" == cpu_installable ];then
     #list apps that can be installed on the device's OS architecture (32-bit or 64-bit)
     #find all apps that have install-XX script, install script, or a packages file
-    find "${DIRECTORY}/apps" -type f \( -name "install-$arch" -o -name "install" -o -name "packages" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq
+    find "${DIRECTORY}/apps" -type f \( -name "install-$arch" -o -name "install" -o -name "packages" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq | grep -v template 
     
   elif [ "$1" == package ];then
     #list apps that have a "packages" file
-    find "${DIRECTORY}/apps" -type f -name "packages" | sed "s+/packages++g" | sed "s+${DIRECTORY}/apps/++g" | sort | uniq
+    find "${DIRECTORY}/apps" -type f -name "packages" | sed "s+/packages++g" | sed "s+${DIRECTORY}/apps/++g" | sort | uniq | grep -v template 
     
   elif [ "$1" == standard ];then
     #list apps that have scripts
-    find "${DIRECTORY}/apps" -type f \( -name "install-32" -o -name "install-64" -o -name "install" -o -name "uninstall" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq
+    find "${DIRECTORY}/apps" -type f \( -name "install-32" -o -name "install-64" -o -name "install" -o -name "uninstall" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq | grep -v template 
     
   elif [ "$1" == hidden ];then
     #list apps that are hidden
@@ -597,10 +597,10 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     #list apps that exist on the online git repo
     if [ -d "${DIRECTORY}/update/pi-apps/apps" ];then
       #if update folder exists, just use that
-      ls "${DIRECTORY}/update/pi-apps/apps" | grep .
+      ls "${DIRECTORY}/update/pi-apps/apps" | grep . | grep -v template 
     else
       #if update folder doesn't exist, then parse github HTML to get a list of online apps. Horrible idea, but it works!
-      wget -qO- "${repo_url}/tree/master/apps" | grep 'title=".*" data-pjax=' -o | sed 's/title="//g' | sed 's/" data-pjax=//g'
+      wget -qO- "${repo_url}/tree/master/apps" | grep 'title=".*" data-pjax=' -o | sed 's/title="//g' | sed 's/" data-pjax=//g' | grep -v template 
     fi
     
   elif [ "$1" == online_only ];then
