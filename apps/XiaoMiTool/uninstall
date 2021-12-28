@@ -1,11 +1,5 @@
 #!/bin/bash
 
 sudo rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2 /usr/local/bin/xiaomitool
-echo "Do you wanna uninstall dependencies installed in install script?"
-echo -ne "Type in your answer [y/N]: "
-read ans
-if [ "$ans" == N ] || [ "$ans" == n ] || [ -z "$ans" ]; then
-exit 0
-fi
 purge_packages openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk || exit 1
 
