@@ -8,9 +8,8 @@ echo "Building XiaoMi Tool..."
 
 echo "Creating menu shortcut..."
 echo "[Desktop Entry]
-Name=Mi Unlock Tool
-GenericName=Unlock Tool
-Comment=Mi Unlock Tool helps you to unlock your Xiaomi Phone without risk or data loss.
+Name=XiaoMi Tool
+Comment=XiaoMiTool is the all-in-one tool to make modding easy for everyone with a Xiaomi smartphone.
 Exec=gksudo -k -u root /home/pi/XiaoMiToolV2/gradlew run
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
