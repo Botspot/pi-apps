@@ -17,15 +17,8 @@ Terminal=false
 Type=Application
 Categories=System" > ~/.local/share/applications/MiUnlocktool.desktop
 
-echo "Writing Execution file..."
+echo "Creating execution script..."
 echo "#!/bin/sh
-if [ ! -f /bin/bash ]; then
-shell='sh -c'
-else
-shell='bash -c'
-fi
-
-"$shell" /home/pi/XiaoMiToolV2/gradlew run
- " | sudo tee /usr/bin/unlocktool.sh
-sudo chmod +x /usr/bin/unlocktool.sh
+$HOME/XiaoMiToolV2/gradlew run " | sudo tee /usr/local/bin/xiaomitool >/dev/null
+sudo chmod +x /usr/local/bin/xiaomitool || error "Failed to make execution script executable."
 
