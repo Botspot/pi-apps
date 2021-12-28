@@ -1,5 +1,5 @@
 #!/bin/bash
 
 sudo rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2 /usr/local/bin/xiaomitool
-purge_packages openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk || exit 1
+purge_packages || exit 1
 
