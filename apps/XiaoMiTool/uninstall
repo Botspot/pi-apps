@@ -15,7 +15,5 @@ read ans
 if [ "$ans" == N ] || [ "$ans" == n ] || [ -z "$ans" ]; then
 exit 0
 fi
-sudo apt purge -y openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk
-echo " "
-echo "Successfully uninstalled Mi Unlock Tool!"
-exit 0
+purge_packages openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk || exit 1
+
