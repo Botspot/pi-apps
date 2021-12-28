@@ -6,7 +6,7 @@ cd XiaoMiToolV2
 echo "Building XiaoMi Tool..."
 ./gradlew build || error "Failed to build XiaoMiToolV2!"
 
-echo "Writing launch desktop file..."
+echo "Creating menu shortcut..."
 echo "[Desktop Entry]
 Name=Mi Unlock Tool
 GenericName=Unlock Tool
