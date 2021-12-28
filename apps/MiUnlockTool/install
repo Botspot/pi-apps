@@ -8,11 +8,6 @@ exit 1
 }
 echo "Starting Installation..."
 sleep 5
-echo "Checking Network..."
-wget_error=$(wget --spider github.com >/dev/null 1>&2)
-if [ "$?" ! = 0 ]; then
-error "Internet Connection failed! Please Connect to a network!!"
-fi
 echo "Installing Dependencies..."
 sudo apt update && sudo apt install openjfx nautilus android-tools-adb android-tools-fastboot openjdk-11-jdk -y || exit 1
 
