@@ -14,7 +14,7 @@ Exec=gksudo -k -u root /home/pi/XiaoMiToolV2/gradlew run
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 Type=Application
-Categories=System" > ~/.local/share/applications/MiUnlocktool.desktop
+Categories=System" > ~/.local/share/applications/MiUnlocktool.desktop || error "Failed to create menu shortcut."
 
 echo "Creating execution script..."
 echo "#!/bin/sh
