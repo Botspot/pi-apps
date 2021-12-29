@@ -173,6 +173,64 @@ mkdir -p "$HOME/MultiMC"
 cd "$HOME/MultiMC" || error "Could not move to directory"
 mkdir -p build
 mkdir -p install
+mkdir -p scripts
+
+modmanager="0"
+case "$__os_id" in
+    Raspbian|Debian)
+        case "$__os_codename" in
+            bullseye) modmanager="1"; python_version="python3";;
+        esac
+        ;;
+    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
+        source /etc/lsb-release
+        source /etc/upstream-release/lsb-release
+        case "$DISTRIB_CODENAME" in
+            bionic) modmanager="1"; python_version="python3.8";;
+            *) modmanager="1"; python_version="python3";;
+        esac
+        ;;
+esac
+
+if [[ $modmanager == 1 ]]; then
+    echo -e "IMPORTANT: Do you want to add an experimental automatic mod updater/installer script?.\
+\n\nThis is used to automatically install appropriate performance mods to each of your minecraft instances on launch.\
+\n\nIf you want an easy way to install the Fabric performance mods or want a way to easily update your mods, click YES.\
+\nIf you ever want to remove this functionality, go to MultiMC->Settings->Custom Commands and remove the Pre-launch command." | yad --image "dialog-question" \
+    --borders="20" --center --fixed\
+    --text-info --fontname="@font@ 11" --wrap --width=800 --height=250 \
+    --show-uri \
+    --button="YES, add the mod script":0 \
+    --button="NO, do NOT add the mod script":1
+    case "$?" in
+        "0")
+            # install modmanager python script
+            install_packages $python_version python3-pip jq || error "Failed to install mod installer script dependencies"
+            hash -r
+            $python_version -m pip install --upgrade pip minecraft-mod-manager
+            unset python_version
+
+            # creating mod updater script
+            wget -O scripts/pre-launch.sh "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/pre-launch.sh"
+            chmod +x scripts/pre-launch.sh
+
+            # fabric mods installed by default
+            # mods are disabled by default until the user uses the "Install Fabric" button in MultiMC
+            echo "Setting list of mods installed by the megascript by default"
+            echo "Make sure to click the Install Fabric button within MultiMC to enable these mods"
+            echo ""
+            wget -O scripts/megascript-mods.txt "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/megascript-mods.txt"
+            status "Mod script installed."
+            ;;
+        *)
+            modmanager="0"
+            status "Mod script skipped."
+            ;;
+    esac
+else
+    status "Mod script uninstallable since your OS does not have python 3.8+"
+fi
+
 # clone the complete source
 status "Downloading the MultiMC5 Source Code directly from the official repository..."
 git clone --recursive https://github.com/MultiMC/Launcher.git src
@@ -245,7 +303,24 @@ esac
 status "Starting Compilation"
 make -j$(nproc) install || error "Make install failed"
 
-cd .. || error "Could not move to directory"
+# enable pre-launch script if chosen
+# this can always be overwritten by the user after the first installation
+cd ..
+if [[ $modmanager == 1 ]]; then
+    if cat install/multimc.cfg | grep -q "PreLaunchCommand="; then
+        if cat install/multimc.cfg | grep -q "PreLaunchCommand=."; then
+            warning "Skipping Adding a Prelaunch Script as there is already one specified by the user or a previous installation"
+            status "The current Prelaunch Sript is set to: $(cat install/multimc.cfg | grep "PreLaunchCommand=")"
+        else
+            status "Adding a Prelaunch Script to handle automatic mod installation"
+            sed -i "s/PreLaunchCommand=.*/PreLaunchCommand=\/home\/$USER\/MultiMC\/scripts\/pre-launch.sh/g" install/multimc.cfg
+        fi
+    else
+        status "Adding a Prelaunch Script to handle automatic mod installation"
+        echo "PreLaunchCommand=/home/$USER/MultiMC/scripts/pre-launch.sh" >> install/multimc.cfg
+    fi
+fi
+
 # add Jvm Arguments for increased performance
 # these can always be overwritten by the user after the first installation
 if cat install/multimc.cfg | grep -q "JvmArgs="; then
