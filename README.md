@@ -42,11 +42,13 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
 Supported systems:
 
-- Raspberry Pi OS 32-bit: fully supported.
-- Twister OS: fully supported.
-- Raspberry Pi OS 64-bit: fully supported.
-- Bullseye, Kali, Ubuntu: you may encounter errors for some apps.
-- Android, ChromeOS, non-ARM, non-Debian: Not supported. Your mileage may vary.
+- <a href="https://www.raspberrypi.com/software/operating-systems/">
+    Raspberry Pi OS 32 and 64-bit</a>: fully supported.
+- <a href="https://twisteros.com/download.html">Twister OS</a>: fully supported, preinstalled.
+- <a href="https://www.amogos.studio/">
+    AmogOS</a>: fully supported, preinstalled.
+- Raspberry Pi OS Bullseye, Kali Linux, Ubuntu, Ubuntu Mate: you may encounter errors for some apps.
+- Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
