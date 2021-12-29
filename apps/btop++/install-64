@@ -1,7 +1,7 @@
 #!/bin/bash
 mkdir btop && cd btop
-wget https://github.com/aristocratos/btop/releases/download/v1.0.24/btop-1.0.24-aarch64-linux-musl.tbz || error 'Failed to download "btop-1.0.24-aarch64-linux-musl.tbz"'
-tar -xjf btop-1.0.24-aarch64-linux-musl.tbz || error 'Failed to decompress "btop-1.0.24-aarch64-linux-musl.tbz"!'
+wget https://github.com/aristocratos/btop/releases/download/v1.1.3/btop-aarch64-linux-musl.tbz || error 'Failed to download "btop-aarch64-linux-musl.tbz"!'
+tar -xjf btop-aarch64-linux-musl.tbz || error 'Failed to decompress "btop-aarch64-linux-musl.tbz"!'
 sudo make -B install || error 'Failed to install btop with "sudo make install"!'
 rm -rf $HOME/btop || sudo rm -rf $HOME/btop || error 'Failed to remove install directory!'
 
