@@ -4,8 +4,11 @@ install_packages openjfx adb android-tools-fastboot openjdk-11-jdk || exit 1
 git_clone https://github.com/francescotescari/XiaoMiToolV2 -b linux || exit 1
 cd XiaoMiToolV2
 echo "Building XiaoMi Tool..."
-./gradlew build || error "Failed to build XiaoMiToolV2!"
-
+case "$arch" in
+    "32") JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf ./gradlew build || error "Failed to build XiaoMiToolV2!" ;;
+    "64") JAVA_HOME=/usr/lib/jvm/java-11-openjdk-arm64 ./gradlew build || error "Failed to build XiaoMiToolV2!" ;;
+    *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
 echo "Creating menu shortcut..."
 echo "[Desktop Entry]
 Name=XiaoMi Tool
