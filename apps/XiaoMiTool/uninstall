@@ -1,5 +1,5 @@
 #!/bin/bash
 
-sudo rm -rf ~/.local/share/applications/MiUnlocktool.desktop ~/XiaoMiToolV2 /usr/local/bin/xiaomitool
+sudo rm -rf ~/.local/share/applications/XiaoMiTool.desktop ~/XiaoMiToolV2 /usr/local/bin/xiaomitool
 purge_packages || exit 1
 
