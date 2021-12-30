@@ -3,6 +3,10 @@ install_packages openjfx adb android-tools-fastboot openjdk-11-jdk || exit 1
 
 git_clone https://github.com/francescotescari/XiaoMiToolV2 -b linux || exit 1
 cd XiaoMiToolV2
+for i in {adb,fastboot}; do
+echo "Copying ${i}..."
+cp `which $i` ./res/tools/${i} || error "Failed to copy ${i}!"
+done
 echo "Building XiaoMi Tool..."
 case "$arch" in
     "32") JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf ./gradlew build || error "Failed to build XiaoMiToolV2!" ;;
