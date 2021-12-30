@@ -21,6 +21,6 @@ Categories=Utilities;" > ~/.local/share/applications/XiaoMiTool.desktop || error
 
 echo "Creating execution script..."
 echo "#!/bin/bash
-$HOME/XiaoMiToolV2/gradlew run " | sudo tee /usr/local/bin/xiaomitool >/dev/null
+JAVA_HOME=$JAVA_HOME $HOME/XiaoMiToolV2/gradlew run " | sudo tee /usr/local/bin/xiaomitool >/dev/null
 sudo chmod +x /usr/local/bin/xiaomitool || error "Failed to make execution script executable."
 
