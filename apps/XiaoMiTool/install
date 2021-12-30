@@ -21,10 +21,10 @@ Exec=gksudo -k -u root JAVA_HOME=$JAVA_HOME $HOME/XiaoMiToolV2/gradlew run
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 Type=Application
-Categories=System" > ~/.local/share/applications/XiaoMiTool.desktop || error "Failed to create menu shortcut."
+Categories=Utilities;" > ~/.local/share/applications/XiaoMiTool.desktop || error "Failed to create menu shortcut."
 
 echo "Creating execution script..."
-echo "#!/bin/sh
-$HOME/XiaoMiToolV2/gradlew run " | sudo tee /usr/local/bin/xiaomitool >/dev/null
+echo "#!/bin/bash
+JAVA_HOME=$JAVA_HOME $HOME/XiaoMiToolV2/gradlew run " | sudo tee /usr/local/bin/xiaomitool >/dev/null
 sudo chmod +x /usr/local/bin/xiaomitool || error "Failed to make execution script executable."
 
