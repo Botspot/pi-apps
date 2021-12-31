@@ -27,7 +27,22 @@
 # pi_apps_ver="$(cat 'install' | grep 'version=' | sed 's/version=//')"
 
 # make sure webVer variable is supplied by the sourcing script
-if [ ! -z "$webVer" ]; then
+if [ -n "$webVer" ]; then
+#iterate through all webVer supplied if an array
+for (( iter=0; iter<${#webVer[@]}; iter++ )); do
+#make array appear as one variable inside for loop
+webVer=${webVer[$iter]}
+pi_apps_ver_32=${pi_apps_ver_32[$iter]}
+pi_apps_ver_64=${pi_apps_ver_64[$iter]}
+pi_apps_ver=${pi_apps_ver[$iter]}
+armhf_url=${armhf_url[$iter]}
+arm64_url=${arm64_url[$iter]}
+all_url=${all_url[$iter]}
+if [[ $iter == "0" ]]; then
+    version_number=""
+else
+    version_number=$((iter + 1))
+fi
 # echo the versions
 status "The latest online version is:  $webVer"
 
@@ -40,8 +55,8 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
     else
         #If version is not current do:
         if validate_url "$armhf_url"; then
-            status_green "Updating pi-apps $app_name install-32 to: $webVer"
-            sed -i "s/version=.*/version=${webVer}/g" install-32
+            status_green "Updating pi-apps $app_name install-32 to: $armhf_url"
+            sed -i "s/version${version_number}=.*/version${version_number}=${webVer}/g" install-32
             echo "$app_name-armhf " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist."
@@ -57,8 +72,8 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
         status_green "Pi-Apps install-64 version for $app_name is current!"
     else
         if validate_url "$arm64_url"; then
-            status_green "Updating pi-apps $app_name install-64 to: $webVer"
-            sed -i "s/version=.*/version=${webVer}/g" install-64
+            status_green "Updating pi-apps $app_name install-64 to: $arm64_url"
+            sed -i "s/version${version_number}=.*/version${version_number}=${webVer}/g" install-64
             echo "$app_name-arm64 " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist."
@@ -74,8 +89,8 @@ if [ -n "$pi_apps_ver" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
         status_green "Pi-Apps install version for $app_name is current!"
     else
         if validate_url "$all_url"; then
-            status_green "Updating pi-apps $app_name install to: $webVer"
-            sed -i "s/version=.*/version=${webVer}/g" install
+            status_green "Updating pi-apps $app_name install to: $all_url"
+            sed -i "s/version${version_number}=.*/version${version_number}=${webVer}/g" install
             echo "$app_name-all " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
@@ -83,6 +98,7 @@ if [ -n "$pi_apps_ver" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
     fi
 fi
 
+done
 else
 
 warning "webVer variable is missing for $appname update script, please fix this script, skipping update check"

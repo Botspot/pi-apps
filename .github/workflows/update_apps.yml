@@ -47,13 +47,14 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/.github/workflows/updates/*.sh
           cd $GITHUB_WORKSPACE
           apps=( .github/workflows/updates/*.sh )
-          for app_directory in ${apps[@]}; do
+          for app_directory in "${apps[@]}"; do
             #make sure we are still in the main workspace (incase an update script left off elsewhere)
             cd $GITHUB_WORKSPACE
-            export app_name=$(echo ${app_directory%.*} | sed 's:.*/::')
+            export app_name="$(echo ${app_directory%.*} | sed 's:.*/::')"
+            echo "$app_name"
             status "Checking $app_name for updates"
             # move to app folder
-            cd "./apps/$app_name"
+            cd "$GITHUB_WORKSPACE/apps/$app_name"
             # run app update script
             "$GITHUB_WORKSPACE/$app_directory"
           done
