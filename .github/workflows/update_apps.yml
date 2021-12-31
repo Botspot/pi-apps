@@ -1,0 +1,78 @@
+name: Update_Apps
+
+# Controls when the workflow will run
+on:  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  update-apps:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run app update scripts
+        run: |
+          #source pi-apps functions
+
+          #export all functions and variables
+          set -a
+          #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
+          DIRECTORY=$GITHUB_WORKSPACE
+          source $GITHUB_WORKSPACE/api
+
+          #add special functions
+          get_release() {
+            curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
+          }
+
+          function validate_url(){
+            if [[ `wget -S --spider $1  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+              return 0
+            else
+              return 1
+            fi
+          }
+
+          #stop exporting functions
+          set +a
+          
+          #make sure all update scripts are executable
+          chmod +x $GITHUB_WORKSPACE/.github/workflows/updates/*.sh
+          cd $GITHUB_WORKSPACE
+          apps=( .github/workflows/updates/*.sh )
+          for app_directory in ${apps[@]}; do
+            #make sure we are still in the main workspace (incase an update script left off elsewhere)
+            cd $GITHUB_WORKSPACE
+            export app_name=$(echo ${app_directory%.*} | sed 's:.*/::')
+            status "Checking $app_name for updates"
+            # move to app folder
+            cd "./apps/$app_name"
+            # run app update script
+            "$GITHUB_WORKSPACE/$app_directory"
+          done
+          cd
+          if test -f /tmp/updated_apps; then
+            updated_apps=$(cat /tmp/updated_apps)
+            rm -f /tmp/updated_apps
+            echo UPDATED_APPS=$updated_apps >> $GITHUB_ENV
+          fi
+
+      - name: Push changes to repo
+        uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
+        with:
+
+          default_author: github_actions
+
+          # The message for the commit.
+          # Default: 'Commit from GitHub Actions (name of the workflow)'
+          message: |
+            Update App Versions, run by GitHub Actions - Apps updated:
+
+            ${{ env.UPDATED_APPS }}
