@@ -17,7 +17,7 @@ echo "Creating menu shortcut..."
 echo "[Desktop Entry]
 Name=XiaoMi Tool
 Comment=XiaoMiTool is the all-in-one tool to make modding easy for everyone with a Xiaomi smartphone.
-Exec=gksudo -k -u root JAVA_HOME=$JAVA_HOME $HOME/XiaoMiToolV2/gradlew run
+Exec=JAVA_HOME=$JAVA_HOME $HOME/XiaoMiToolV2/gradlew run
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 Type=Application
