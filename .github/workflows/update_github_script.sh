@@ -46,6 +46,19 @@ fi
 # echo the versions
 status "The latest online version is:  $webVer"
 
+#set defaults for pi_app_ver if not supplied
+if [ -z "$pi_apps_ver_32" ] && [ -n "$armhf_url" ]; then
+    pi_apps_ver_32="$(cat 'install-32' | grep "version${version_number}=" | sed "s/version${version_number}=//")"
+fi
+
+if [ -z "$pi_apps_ver_64" ] && [ -n "$arm64_url" ]; then
+    pi_apps_ver_64="$(cat 'install-64' | grep "version${version_number}=" | sed "s/version${version_number}=//")"
+fi
+
+if [ -z "$pi_apps_ver" ] && [ -n "$all_url" ]; then
+    pi_apps_ver="$(cat 'install' | grep "version${version_number}=" | sed "s/version${version_number}=//")"
+fi
+
 # install-32 exists
 if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; then
     status "The current version in Pi-Apps install-32 is:  $pi_apps_ver_32"
@@ -104,3 +117,11 @@ else
 warning "webVer variable is missing for $appname update script, please fix this script, skipping update check"
 
 fi
+
+unset webVer
+unset pi_apps_ver_32
+unset pi_apps_ver_64
+unset pi_apps_ver
+unset armhf_url
+unset arm64_url
+unset all_url
