@@ -203,70 +203,68 @@ if [[ $modmanager == 1 ]]; then
     --show-uri \
     --button="YES, add the mod script":0 \
     --button="NO, do NOT add the mod script":1
-    case "$?" in
-        "0")
-            case "$__os_codename" in
-                buster)
-                    status "Adding deb-pascalroeleven repository for python3.8 backport:"
-
-                    echo "- public key -> keyring"
-
-                    rm -f /tmp/deb-pascalroeleven-public-key /tmp/deb-pascalroeleven-archive-keyring.gpg
-                    wget -O /tmp/deb-pascalroeleven-public-key https://pascalroeleven.nl/deb-pascalroeleven.gpg
-                    gpg --no-default-keyring --keyring /tmp/deb-pascalroeleven-keyring.gpg --import /tmp/deb-pascalroeleven-public-key
-                    rm -f /tmp/deb-pascalroeleven-public-key
-
-                    echo " - keyring -> GPG key"
-                    gpg --no-default-keyring --keyring /tmp/deb-pascalroeleven-keyring.gpg --export --output /tmp/deb-pascalroeleven-archive-keyring.gpg 
-                    rm -f /tmp/deb-pascalroeleven-keyring.gpg
-
-                    echo " - Moving GPG key to /usr/share/keyrings"
-                    sudo mv -f /tmp/deb-pascalroeleven-archive-keyring.gpg /usr/share/keyrings
-
-                    echo " - Creating /etc/apt/sources.list.d/deb-pascalroeleven.list"
-                    echo "deb [signed-by=/usr/share/keyrings/deb-pascalroeleven-archive-keyring.gpg] http://deb.pascalroeleven.nl/python3.8 buster-backports main" | sudo tee /etc/apt/sources.list.d/deb-pascalroeleven.list >/dev/null
-
-                    (install_packages python3.8)
-                    if [ $? != 0 ]; then
-                        anything_installed_from_repo "http://deb.pascalroeleven.nl/python3.8"
-                        if [ $? != 0 ]; then
-                            # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-                            # safe to remove
-                            sudo rm -f /etc/apt/sources.list.d/deb-pascalroeleven.list /usr/share/keyrings/deb-pascalroeleven-archive-keyring.gpg
-                        fi
-                        warning "Failed to install python3.8 packages. deb-pascalroeleven repository has been removed."  && warning "Forcefully skipping installing the mod installer script." && echo "" && warning "Continuing the MultiMC5 Install without automatic mod installer."
-                        modmanager="0"
-                    fi
-            esac
-            # check again if modmanager is still 1 incase python3.8 failed to install on buster
-            if [[ $modmanager == 1 ]]; then
-                # install modmanager python script
-                install_packages $python_version python3-pip jq || error "Failed to install mod installer script dependencies"
-                hash -r
-                $python_version -m pip install --upgrade pip minecraft-mod-manager
-                unset python_version
-
-                # creating mod updater script
-                wget -O scripts/pre-launch.sh "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/pre-launch.sh"
-                chmod +x scripts/pre-launch.sh
-
-                # fabric mods installed by default
-                # mods are disabled by default until the user uses the "Install Fabric" button in MultiMC
-                echo "Setting list of mods installed by the megascript by default"
-                echo "Make sure to click the Install Fabric button within MultiMC to enable these mods"
-                echo ""
-                wget -O scripts/megascript-mods.txt "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/megascript-mods.txt"
-                status "Mod script installed."
-            fi
-            ;;
-        *)
-            modmanager="0"
-            status "Mod script skipped."
-            ;;
-    esac
 else
     status "Mod script uninstallable since your OS does not have python 3.8+"
 fi
+
+if [[ "$?" == 0 ]] && [[ $modmanager == 1 ]]; then
+    if [[ "$__os_codename" == "buster" ]]; then
+        status "Adding deb-pascalroeleven repository for python3.8 backport:"
+
+        echo "- public key -> keyring"
+
+        rm -f /tmp/deb-pascalroeleven-public-key /tmp/deb-pascalroeleven-archive-keyring.gpg
+        wget -O /tmp/deb-pascalroeleven-public-key https://pascalroeleven.nl/deb-pascalroeleven.gpg
+        gpg --no-default-keyring --keyring /tmp/deb-pascalroeleven-keyring.gpg --import /tmp/deb-pascalroeleven-public-key
+        rm -f /tmp/deb-pascalroeleven-public-key
+
+        echo " - keyring -> GPG key"
+        gpg --no-default-keyring --keyring /tmp/deb-pascalroeleven-keyring.gpg --export --output /tmp/deb-pascalroeleven-archive-keyring.gpg 
+        rm -f /tmp/deb-pascalroeleven-keyring.gpg
+
+        echo " - Moving GPG key to /usr/share/keyrings"
+        sudo mv -f /tmp/deb-pascalroeleven-archive-keyring.gpg /usr/share/keyrings
+
+        echo " - Creating /etc/apt/sources.list.d/deb-pascalroeleven.list"
+        echo "deb [signed-by=/usr/share/keyrings/deb-pascalroeleven-archive-keyring.gpg] http://deb.pascalroeleven.nl/python3.8 buster-backports main" | sudo tee /etc/apt/sources.list.d/deb-pascalroeleven.list >/dev/null
+
+        (install_packages python3.8)
+        if [ $? != 0 ]; then
+            anything_installed_from_repo "http://deb.pascalroeleven.nl/python3.8"
+            if [ $? != 0 ]; then
+                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                # safe to remove
+                sudo rm -f /etc/apt/sources.list.d/deb-pascalroeleven.list /usr/share/keyrings/deb-pascalroeleven-archive-keyring.gpg
+            fi
+            warning "Failed to install python3.8 packages. deb-pascalroeleven repository has been removed."  && warning "Forcefully skipping installing the mod installer script." && echo "" && warning "Continuing the MultiMC5 Install without automatic mod installer in 10 seconds."
+            sleep 10
+            modmanager="0"
+        fi
+    fi
+    # check again if modmanager is still 1 incase python3.8 failed to install on buster
+    if [[ $modmanager == 1 ]]; then
+        # install modmanager python script
+        install_packages $python_version python3-pip jq || error "Failed to install mod installer script dependencies"
+        hash -r
+        $python_version -m pip install --upgrade pip minecraft-mod-manager
+        unset python_version
+
+        # creating mod updater script
+        wget -O scripts/pre-launch.sh "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/pre-launch.sh"
+        chmod +x scripts/pre-launch.sh
+
+        # fabric mods installed by default
+        # mods are disabled by default until the user uses the "Install Fabric" button in MultiMC
+        echo "Setting list of mods installed by the megascript by default"
+        echo "Make sure to click the Install Fabric button within MultiMC to enable these mods"
+        echo ""
+        wget -O scripts/megascript-mods.txt "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/megascript-mods.txt"
+        status "Mod script installed."
+    fi
+else
+    status "Mod script skipped."
+fi
+
 
 # clone the complete source
 status "Downloading the MultiMC5 Source Code directly from the official repository..."
@@ -342,7 +340,7 @@ make -j$(nproc) install || error "Make install failed"
 
 # enable pre-launch script if chosen
 # this can always be overwritten by the user after the first installation
-cd ..
+cd .. || error "Could not move to directory"
 if [[ $modmanager == 1 ]]; then
     if cat install/multimc.cfg | grep -q "PreLaunchCommand="; then
         if cat install/multimc.cfg | grep -q "PreLaunchCommand=."; then
