@@ -300,7 +300,7 @@ Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/c
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
     #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet or system or package, AND if the app is a script-type app
-    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == app ];then
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == standard ];then
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
