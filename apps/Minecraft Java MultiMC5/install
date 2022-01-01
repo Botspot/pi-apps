@@ -247,19 +247,24 @@ if [[ "$?" == 0 ]] && [[ $modmanager == 1 ]]; then
         install_packages $python_version python3-pip jq || error "Failed to install mod installer script dependencies"
         hash -r
         $python_version -m pip install --upgrade pip minecraft-mod-manager
+        if [[ $? == 0 ]]; then
+            # creating mod updater script
+            wget -O scripts/pre-launch.sh "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/pre-launch.sh"
+            chmod +x scripts/pre-launch.sh
+
+            # fabric mods installed by default
+            # mods are disabled by default until the user uses the "Install Fabric" button in MultiMC
+            echo "Setting list of mods installed by the megascript by default"
+            echo "Make sure to click the Install Fabric button within MultiMC to enable these mods"
+            echo ""
+            wget -O scripts/megascript-mods.txt "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/megascript-mods.txt"
+            status "Mod script installed."
+        else
+            warning "PIP errored on install of dependencies, cannot add the Mod Installer Script."
+            warning "Continuing the install without the Mod Install Script in 10 seconds."
+            sleep 10
+        fi
         unset python_version
-
-        # creating mod updater script
-        wget -O scripts/pre-launch.sh "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/pre-launch.sh"
-        chmod +x scripts/pre-launch.sh
-
-        # fabric mods installed by default
-        # mods are disabled by default until the user uses the "Install Fabric" button in MultiMC
-        echo "Setting list of mods installed by the megascript by default"
-        echo "Make sure to click the Install Fabric button within MultiMC to enable these mods"
-        echo ""
-        wget -O scripts/megascript-mods.txt "https://raw.githubusercontent.com/cobalt2727/L4T-Megascript/master/assets/MultiMC/megascript-mods.txt"
-        status "Mod script installed."
     fi
 else
     status "Mod script skipped."
