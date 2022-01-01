@@ -113,31 +113,35 @@ runonce <<"EOF"
   fi
 EOF
 
-#ensure curl is installed
 runonce <<"EOF"
+  #ensure curl is installed
   if ! command -v curl >/dev/null ;then
     sudo apt install -y curl
   fi
-EOF
-
-#install aria2c for faster downloading
-runonce <<"EOF"
+  
+  #install aria2c for faster downloading
   if ! command -v aria2c >/dev/null ;then
     sudo apt install -y aria2
   fi
-EOF
-
-#ensure lsb-release is installed
-runonce <<"EOF"
+  
+  #ensure lsb-release is installed
   if ! command -v lsb_release >/dev/null ;then
     sudo apt install -y lsb-release
   fi
-EOF
-
-# ensure apt-utils is installed
-runonce <<"EOF"
-  if ! command -v apt-ftparchive >/dev/null;then
+  
+  # ensure apt-utils is installed
+  if ! command -v apt-ftparchive >/dev/null ;then
     sudo apt install -y apt-utils
+  fi
+  
+  # ensure apt-utils is installed
+  if ! command -v apt-ftparchive >/dev/null ;then
+    sudo apt install -y apt-utils
+  fi
+  
+  # ensure bc is installed
+  if ! command -v bc >/dev/null ;then
+    sudo apt install -y bc
   fi
 EOF
 
