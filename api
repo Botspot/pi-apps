@@ -427,18 +427,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   #install dummy deb
   {
-  #If this app's dummy deb is already insalled, uninstall it
-  if package_installed "$package_name" ;then
-    status "Reinstalling the $package_name package..."
-    apt_lock_wait
-    local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
-    if [ $? != 0 ];then
-      echo "$output"
-      error "Failed to purge dummy deb ($package_name)"
-    fi
-  else
-    status "Installing the $package_name package..."
-  fi
+  status "Installing the $package_name package..."
   
   apt_lock_wait
   local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
