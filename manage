@@ -277,14 +277,22 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   else #if app failed to install/uninstall
 
     #remove dummy deb if app failed to install (to avoid dummy debs being left on a users install for broken apps)
-    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]]; then
-      local package_name="$(app_to_pkgname "$app")"
-      local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
-      if [ $? != 0 ];then
-        echo "$output"
-        warning "Failed to purge dummy deb ($package_name)"
+    package_name="$(app_to_pkgname "$app")"
+    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
+      if [[ "$script_input" == "update" ]]; then
+        #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
+        output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
+        if [ $? != 0 ];then
+          echo "$output"
+          warning "Failed to purge dummy deb ($package_name)"
+        fi
+        unset output
+      else
+        #install and not update failed, run purge_packages
+        purge_packages || warning "Failed to purge dummy deb ($package_name)"
       fi
     fi
+    unset package_name
 
     echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m◢◣\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
