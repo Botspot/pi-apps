@@ -139,6 +139,12 @@ runonce <<"EOF"
   if ! command -v convert >/dev/null ;then
     sudo apt install -y --no-install-recommends imagemagick
   fi
+
+  # ensure rsvg2-bin is installed
+
+  if ! command -v rsvg-convert >/dev/null ;then
+    sudo apt install -y --no-install-recommends librsvg2-bin
+  fi
   
   # ensure bc is installed
   if ! command -v bc >/dev/null ;then
