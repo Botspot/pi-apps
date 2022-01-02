@@ -6,9 +6,6 @@ install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfr
 #Clone the Repository
 git_clone https://github.com/KolpixTV/ddnet --recursive || exit 1
 
-#Set permission
-chmod 777 $HOME/ddnet
-
 #Build
 cd $HOME/ddnet
 mkdir build
