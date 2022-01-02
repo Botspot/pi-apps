@@ -113,18 +113,19 @@ runonce <<"EOF"
   fi
 EOF
 
+#install dependencies
 runonce <<"EOF"
-  #ensure curl is installed
+  # ensure curl is installed
   if ! command -v curl >/dev/null ;then
     sudo apt install -y curl
   fi
   
-  #install aria2c for faster downloading
+  # install aria2c for faster downloading
   if ! command -v aria2c >/dev/null ;then
     sudo apt install -y aria2
   fi
   
-  #ensure lsb-release is installed
+  # ensure lsb-release is installed
   if ! command -v lsb_release >/dev/null ;then
     sudo apt install -y lsb-release
   fi
@@ -134,9 +135,9 @@ runonce <<"EOF"
     sudo apt install -y apt-utils
   fi
   
-  # ensure apt-utils is installed
-  if ! command -v apt-ftparchive >/dev/null ;then
-    sudo apt install -y apt-utils
+  # ensure imagemagick is installed
+  if ! command -v convert >/dev/null ;then
+    sudo apt install -y --no-install-recommends imagemagick
   fi
   
   # ensure bc is installed
@@ -175,11 +176,13 @@ runonce <<"EOF"
   
   refresh_all_pkgapp_status
 EOF
-
 ) &
 
 #check for updates in background
-"${DIRECTORY}/updater" set-status &>/dev/null &
+(sleep 2; "${DIRECTORY}/updater" set-status &>/dev/null) &
+
+#Generate a new random splash screen
+(sleep 10 ; generate_splashscreen) &
 
 install() {
   app="$1" #one app name per line
