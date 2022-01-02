@@ -141,6 +141,8 @@ do
 done
 IFS="$PREIFS"
 
-
+#refresh app list just in case the theme or app-arrangement
+echo "Refreshing app list..."
+"${DIRECTORY}/etc/preload-daemon" "$(cat "${DIRECTORY}/data/settings/App List Style")" once
 
 
