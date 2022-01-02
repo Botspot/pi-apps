@@ -9,7 +9,7 @@ cd "$HOME"
 
 #ensure non-root
 if [[ "$(id -u)" == 0 ]]; then
-	error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
+  error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
 fi
 
 #ensure debian
@@ -22,11 +22,13 @@ fi
 
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
-#install deoendencies
-if ! command -v yad >/dev/null;then
-  echo "Installing dependencies..."
-  sudo apt install -y -f --no-install-recommends yad curl wget aria2 lsb-release apt-utils imagemagick bc || error "Failed to install necessary dependency packages."
+#install dependencies
+dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc'
+## Install dependencies if necessary
+if ! dpkg -s $dependencies >/dev/null 2>&1; then
+  sudo apt install $dependencies -y -f --no-install-recommends
 fi
+
 #remove annoying "YAD icon browser" launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
