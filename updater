@@ -311,6 +311,14 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     exit 0
   fi
   
+  #wait until internet works
+  while ! command wget --spider https://github.com &>/dev/null ;do
+    echo -n "Pi-Apps updater script: no internet connection yet. "
+    sleep 1
+    echo " Waiting 10 seconds..."
+    sleep 10
+  done
+  
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
