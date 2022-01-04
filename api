@@ -119,7 +119,6 @@ package_available() { #determine if the specified package-name exists in a repos
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
   sudo grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
-  exit $?
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -1943,6 +1942,7 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
   export DIRECTORY
   "$@"
+  exit $?
 #if being sourced, ensure DIRECTORY variable set
 elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
