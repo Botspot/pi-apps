@@ -119,6 +119,7 @@ package_available() { #determine if the specified package-name exists in a repos
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
   sudo grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
+  exit $?
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
