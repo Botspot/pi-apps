@@ -34,13 +34,14 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
-  echo -e "   ${green}┏━━━┓
-${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
-\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
+  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m  ▕ᑐ • ▁  ʌ
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
+ \e[107m${blue}🭐  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  🭅\e[40m\e[97m            ▕  ▕
+ ${blue}🭓\e[107m🭑🬭🬰🬰🬰🬰🬰🬰🬭🭆\e[40m🭞\e[49m
 \e[0m\e[0m"
 }
 
