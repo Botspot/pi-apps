@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#check for armhf arch with arm64 kernel
 if [ "$(uname -m)" == "arm64" ] && [ "$(dpkg --print-architecture)" == "armhf" ]; then 
   warning "You can't install DroidCam on armhf OS with arm64 kernel."
   exit 1
@@ -17,7 +18,7 @@ git_clone https://github.com/open-sorcerer64/Droid-Cam-RPi || exit 1
 git_clone https://github.com/dev47apps/droidcam || exit 1
 
 # Get dependencies
-install_packages $HOME/Droid-Cam-RPi/libjpeg-turbo_${libjpegturbo_version}_${package_arch}.deb raspberrypi-kernel-headers libplist-dev libavutil-dev libswscale-dev libswscale-dev libspeex-dev libusbmuxd-dev libasound2-dev make gcc pkg-config libgtk-3-dev adb || exit 1
+install_packages http://ftp.us.debian.org/debian/pool/main/liba/libappindicator/libappindicator3-1_0.4.92-7_${package_arch}.deb http://ftp.us.debian.org/debian/pool/main/liba/libappindicator/libappindicator3-dev_0.4.92-7_${package_arch}.deb http://ftp.us.debian.org/debian/pool/main/liba/libappindicator/gir1.2-appindicator3-0.1_0.4.92-7_${package_arch}.deb $HOME/Droid-Cam-RPi/libjpeg-turbo_${libjpegturbo_version}_${package_arch}.deb raspberrypi-kernel-headers libplist-dev libavutil-dev libswscale-dev libswscale-dev libspeex-dev libusbmuxd-dev libasound2-dev make gcc pkg-config libgtk-3-dev adb || exit 1
 
 cd $HOME/droidcam
 make all || sudo make all || error "Failed to make droidcam and droidcam-cli!"
