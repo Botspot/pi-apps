@@ -1564,10 +1564,10 @@ files_to_functions() { #turn every file in the function-files directory back int
 }
 
 get_codename() { #get debian/ubuntu codename
-	if ! command -v lsb_release &>/dev/null; then
-		apt_update && sudo apt-get install lsb-release
-	fi
-	lsb_release -sc
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt install -y lsb-release
+  fi
+  lsb_release -sc
 }
 
 #command interceptors - functions that enhance a command
