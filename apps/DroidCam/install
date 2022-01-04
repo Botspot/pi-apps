@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$(uname -m)" == "arm64" ] && [ "$(dpkg --print-architecture)" == "armhf" ]; then 
+  warning "You can't install DroidCam on armhf OS with arm64 kernel."
+  exit 1
+fi
+
 libjpegturbo_version=2.1.3
 
 case $arch in
