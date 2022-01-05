@@ -39,28 +39,58 @@ function userinput_func {
 mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
-# open browser to download the server version of user choice
-setsid x-www-browser "https://mcversions.net/" > /dev/null 2>&1 &
+description="What type of server do you want to run?.\
+\n\nVanilla Minecraft, Fabric, or Forge?"
+table=("Vanilla" "Fabric" "Forge")
+userinput_func "$description" "${table[@]}"
+server_type="$output"
+
 # open folder for user to place the downloaded file
 xdg-open "$HOME/Minecraft-Java-Server" 2>/dev/null
 
-# tell user to choose java 8, 16, or 17
-description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
-\n\nIn order to run Minecraft, the game requires a specific version of Java.\
-\nPlease choose below which version of java the server of your choice should run with.\
-\nJava versions can be 8, 16, or 17.\
-\n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-\nMinecraft 1.17.X should use java 16 and Minecraft 1.18.X should use java 17."
-table=("Java 17" "Java 16" "Java 8")
-userinput_func "$description" "${table[@]}"
-java_selection="$output"
+case "$server_type" in
+    "Vanilla")
+        # open browser to download the server version of user choice
+        setsid x-www-browser "https://mcversions.net/" > /dev/null 2>&1 &
+        server_jar="server.jar"
+        ;;
+    "Fabric")
+        # open browser to download the server version of user choice
+        setsid x-www-browser "https://fabricmc.net/use/server/" > /dev/null 2>&1 &
+        server_jar="fabric-server*.jar"
+        
+        ;;
+    "Forge")
+        # open browser to download the server version of user choice
+        setsid x-www-browser "https://files.minecraftforge.net/net/minecraftforge/forge/" > /dev/null 2>&1 &
+        server_jar="forge-*-installer.jar"
+        ;;
+    *)
+        error "You did not choose an option, exiting the script."
+        ;;
+esac
 
-while [[ ! -a server.jar ]]; do
-    description="Please add your server.jar file to the folder opened and press OK.\
-    \n\nYou have not added a server.jar."
+
+while [[ ! -a $(echo ${server_jar}) ]]; do
+    description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
+    \nAdd your ${server_jar} file to the folder opened and press OK.\
+    \n\nYou have not added a ${server_jar}."
     table=("OK")
     userinput_func "$description" "${table[@]}"
 done
+
+# use * to get full name of server jar
+server_jar=$(echo ${server_jar})
+
+# tell user to choose java 8, 16, or 17
+description="In order to run Minecraft, the game requires a specific version of Java.\
+\nPlease choose below which version of java the server of your choice should run with.\
+\nJava versions can be 8, 16, or 17.\
+\n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
+\nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+table=("Java 17" "Java 16" "Java 8")
+userinput_func "$description" "${table[@]}"
+java_selection="$output"
 
 install_packages lsb-release wget gpg || error "Failed to install dependencies"
 
@@ -174,11 +204,21 @@ case "$java_selection" in
         ;;
 esac
 
-
-sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
-$java_location -jar $HOME/Minecraft-Java-Server/server.jar nogui
-_EOF_"
-chmod +x "$HOME/Minecraft-Java-Server/start-server.sh"
+if [[ "$server_type" == "Forge" ]]; then
+    # run the server installer
+    rm -f start-server.sh
+    $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --install-server || error "Failed to install forge server"
+    rm -f ${server_jar}
+    sed -i "s:java:${java_location}:g" run.sh
+    sed -i 's:"$@":nogui:g' run.sh
+    mv run.sh start-server.sh
+    chmod +x start-server.sh
+else
+    sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
+    $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui
+    _EOF_"
+    chmod +x start-server.sh
+fi
 
 # sign eula without starting server
 echo "eula=true" > eula.txt
