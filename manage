@@ -275,13 +275,32 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #rename logfile to indicate it was successful
     
   else #if app failed to install/uninstall
+
+    #remove dummy deb if app failed to install (to avoid dummy debs being left on a users install for broken apps)
+    package_name="$(app_to_pkgname "$app")"
+    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
+      if [[ "$script_input" == "update" ]]; then
+        #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
+        output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
+        if [ $? != 0 ];then
+          echo "$output"
+          warning "Failed to purge dummy deb ($package_name)"
+        fi
+        unset output
+      else
+        #install and not update failed, run purge_packages
+        purge_packages || warning "Failed to purge dummy deb ($package_name)"
+      fi
+    fi
+    unset package_name
+
     echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m◢◣\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
     #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet or system or package, AND if the app is a script-type app
-    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == app ];then
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == standard ];then
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     

@@ -34,18 +34,53 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
-  echo -e "   ${green}┏━━━┓
-${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
-\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
+  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m  ▕ᑐ • ▁  ʌ
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m            ▕  ▕
+ ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[49m
 \e[0m\e[0m"
+}
+
+generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
+  
+  #get 10 random apps. Some are exempted because they don't display well.
+  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
+  
+  local app1="$(sed -n 1p <<<"$apps")"
+  local app2="$(sed -n 2p <<<"$apps")"
+  local app3="$(sed -n 3p <<<"$apps")"
+  local app4="$(sed -n 4p <<<"$apps")"
+  local app5="$(sed -n 5p <<<"$apps")"
+  local app6="$(sed -n 6p <<<"$apps")"
+  local app7="$(sed -n 7p <<<"$apps")"
+  local app8="$(sed -n 8p <<<"$apps")"
+  local app9="$(sed -n 9p <<<"$apps")"
+  local app10="$(sed -n 10p <<<"$apps")"
+  
+  #display the chosen apps
+  #echo "$apps" | head -n 10
+  
+  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
+  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
+  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
+  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
+  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
+  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
+  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
+  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
+  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
+  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
+  
+  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
+  
 }
 #end of output functions
 
-add_english() {  # add en_US locale for more accurate error 
+add_english() { #add en_US locale for more accurate error
   if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
     locale=$(locale -a | grep -oF 'en_US.utf8')
     if [ "$locale" != 'en_US.utf8' ]; then
@@ -84,7 +119,7 @@ package_available() { #determine if the specified package-name exists in a repos
   local package="$1"
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
+  grep -rq "^Package: $package"'$' /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -427,18 +462,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   #install dummy deb
   {
-  #If this app's dummy deb is already insalled, uninstall it
-  if package_installed "$package_name" ;then
-    status "Reinstalling the $package_name package..."
-    apt_lock_wait
-    local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
-    if [ $? != 0 ];then
-      echo "$output"
-      error "Failed to purge dummy deb ($package_name)"
-    fi
-  else
-    status "Installing the $package_name package..."
-  fi
+  status "Installing the $package_name package..."
   
   apt_lock_wait
   local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
@@ -1692,6 +1716,13 @@ files_to_functions() { #turn every file in the function-files directory back int
   done
 }
 
+get_codename() { #get debian/ubuntu codename
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt-get install -y lsb-release
+  fi
+  lsb_release -sc
+}
+
 #command interceptors - functions that enhance a command
 git_clone() { #silently clone a git repository but display the output if an error occurs
   # $1 is repo
@@ -1919,6 +1950,7 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
   export DIRECTORY
   "$@"
+  exit $?
 #if being sourced, ensure DIRECTORY variable set
 elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
