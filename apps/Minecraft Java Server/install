@@ -73,7 +73,7 @@ esac
 
 while [[ ! -a $(echo ${server_jar}) ]]; do
     description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
-    \nAdd your ${server_jar} file to the folder opened and press OK.\
+    \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
     \n\nYou have not added a ${server_jar}."
     table=("OK")
     userinput_func "$description" "${table[@]}"
@@ -83,7 +83,8 @@ done
 server_jar=$(echo ${server_jar})
 
 # tell user to choose java 8, 16, or 17
-description="In order to run Minecraft, the game requires a specific version of Java.\
+description="You can now close your browser.\
+\nIn order to run Minecraft, the game requires a specific version of Java.\
 \nPlease choose below which version of java the server of your choice should run with.\
 \nJava versions can be 8, 16, or 17.\
 \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
@@ -239,3 +240,8 @@ EOF
 status "Your IP address is one of the following: 
 $(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 status "The IP address is used to play on your local network."
+
+status_green "As a reminder:
+To run: Menu -> Games -> Minecraft Java Server
+To run in a terminal: ~/Minecraft-Java-Server/start-server.sh
+"
