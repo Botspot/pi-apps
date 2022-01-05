@@ -93,7 +93,7 @@ table=("Java 17" "Java 16" "Java 8")
 userinput_func "$description" "${table[@]}"
 java_selection="$output"
 
-install_packages lsb-release wget gpg || error "Failed to install dependencies"
+install_packages lsb-release wget gpg screen || error "Failed to install dependencies"
 
 case "$java_selection" in
     "Java 8"|"Java 17")
@@ -171,7 +171,7 @@ case "$java_selection" in
                 error "Failed to install temurin packages."
             fi
         fi
-        java_location="/usr/lib/jvm/java-8-temurin-$dpkg_arch/bin/java"
+        java_location="/usr/lib/jvm/temurin-8-jdk-$dpkg_arch/bin/java"
         ;;
     "Java 16")
         (install_packages adoptopenjdk-16-hotspot-jre)
@@ -201,7 +201,7 @@ case "$java_selection" in
                 error "Failed to install temurin packages."
             fi
         fi
-        java_location="/usr/lib/jvm/java-17-temurin-$dpkg_arch/bin/java"
+        java_location="/usr/lib/jvm/temurin-17-jdk-$dpkg_arch/bin/java"
         ;;
 esac
 
@@ -216,32 +216,67 @@ if [[ "$server_type" == "Forge" ]]; then
     chmod +x start-server.sh
 else
     sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
-    $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui
-    _EOF_"
+#!/bin/bash
+
+$java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui
+_EOF_"
     chmod +x start-server.sh
 fi
 
 # sign eula without starting server
 echo "eula=true" > eula.txt
 
+# make mods directory
+mkdir mods
+
 mkdir -p "$HOME/.local/share/applications"
 tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
-Exec=$HOME/Minecraft-Java-Server/start-server.sh
+Exec=bash -c "sudo systemctl start minecraft-server; screen -r Minecraft_Server"
 Path=$HOME/Minecraft-Java-Server
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application
 Categories=Game
 Terminal=true
 EOF
+# used for absolute executable path (necessary on some OSes)
+screen_location=$(which screen)
+sleep_location=$(which sleep)
 
+sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
+[Service]
+RemainAfterExit=yes
+WorkingDirectory=$HOME/Minecraft-Java-Server
+User=$USER
+# Start Screen, Java, and Minecraft
+ExecStart=$screen_location -S Minecraft_Server -U -d -m $HOME/Minecraft-Java-Server/start-server.sh
+# Tell Minecraft to gracefully stop.
+# Ending Minecraft will terminate Java
+# systemd will kill Screen after the 10-second delay. No explicit kill for Screen needed
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "say SERVER SHUTTING DOWN. Saving map..."\015'
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "save-all"\015'
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "stop"\015'
+ExecStop=$sleep_location 10
+[Install]
+WantedBy=multi-user.target
+EOF
+echo
+
+# update services
+sudo systemctl daemon-reload
+sudo systemctl disable minecraft-server
 
 status "Your IP address is one of the following: 
 $(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-status "The IP address is used to play on your local network."
-
-status_green "As a reminder:
+status "The IP address is used to play on your local network
+(or you can create a port forward on your internet router/modem at port 25565 to play over the internet)."
+echo
+status_green "You might want to copy this down:
 To run: Menu -> Games -> Minecraft Java Server
-To run in a terminal: ~/Minecraft-Java-Server/start-server.sh
+Attach to a server in the background with: screen -r Minecraft_Server
+Detach from a running server session with: CTRL+A then D
+To start from a terminal: sudo systemctl start minecraft-server
+To stop the server: sudo systemctl stop minecraft-server
+To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
 "
