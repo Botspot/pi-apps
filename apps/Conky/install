@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if [ -f "$HOME/.conkyrc" ]; then
   error "User error: Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again."
 fi
@@ -19,13 +11,10 @@ if [ ! -z "$interface" ];then
   sed -i "s/eth0/$interface/g" ~/.conkyrc
 fi
 
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "conky" "$(dirname "$0")" || exit 1
-
+install_packages conky || exit 1
 #run conky this time
 conky &
-
 #make autostart entry to run it next time
 mkdir -p ~/.config/autostart
 sudo rm -f ~/.config/autostart/conky.desktop
@@ -37,4 +26,3 @@ Terminal=false
 Icon=${DIRECTORY}/apps/Conky/icon-64.png
 Comment=system monitoring tool.
 Categories=Utility;" > ~/.config/autostart/conky.desktop
-

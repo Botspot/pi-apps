@@ -1,14 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip" "$(dirname "$0")" || exit 1
+install_packages libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip || exit 1
 cd ~/
 rm -f ppsspp.zip
 wget -O ppsspp.zip https://github.com/ryanfortner/ppsspp-rpi/releases/download/v1.12.3/ppsspp_1.12.3_arm64.zip || error "Failed to download zip!"

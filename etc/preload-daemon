@@ -14,7 +14,7 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 #variable 1 is yad or xlunch
 #variable 2 is 'once', if you only want this to run once and exit.
 
-if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ];then
+if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ] && [ "$2" != 'once' ];then
   #echo "Another instance of preload-daemon is already running. Exiting now."
   exit 0
 fi
@@ -22,6 +22,7 @@ fi
 #generate list of folders to preload, including special folders
 folders="$(read_category_files | awk -F '|' '{print $2}' | sort | uniq | grep .)
 Installed
+Packages
 All Apps"
 #echo "$folders"
 
@@ -35,6 +36,10 @@ for i in {1..20};do
     echo "Preloading $folder..."
     "${DIRECTORY}/preload" "$1" "$folder" &>/dev/null
   done
+  
+  #hide package-apps that are unavailable in the repositories, and change their status accordingly
+  refresh_all_pkgapp_status
+  
   [ "$2" == 'once' ] && exit 0
   sleep 30
 done

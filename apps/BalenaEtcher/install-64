@@ -1,16 +1,4 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+install_packages https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.7.0/balena-etcher-electron_1.7.0+1c2ef4b1_arm64.deb || exit 1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/etcher.deb
-wget -O ~/etcher.deb https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.6.0/balena-etcher-electron_1.6.0+b165fb78_arm64.deb || error "Failed to download!"
-
-"${DIRECTORY}/pkg-install" "$HOME/etcher.deb" "$(dirname "$0")" || error "failed to install etcher.deb file!"
-rm -f ~/etcher.deb
-
-exit 0

@@ -1,21 +1,10 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 echo "Removing menu launcher"
 rm -f ~/.local/share/applications/minecraftjava.desktop
-
 echo "Removing $HOME/.lunarclient"
 rm -rf ~/.lunarclient
-
 echo "Removing $HOME/lunarassets"
 rm -rf ~/lunarassets
-
 echo "Removing lwjgl folders
   - ~/lwjgl2arm32
   - ~/lwjgl3arm32
@@ -25,6 +14,6 @@ rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64
 
 echo "Removing Java runtime environment
   - /opt/jdk/jdk-16.0.1+9-jre"
-sudo rm -rf /opt/jdk/jdk-16.0.1+9-jre
+sudo rm -rf /opt/jdk/jdk-17.0.1+12
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || :
+purge_packages || :

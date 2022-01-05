@@ -1,15 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # remove dependencies
 purge_packages || error "Dependencies failed to uninstall"
-
 # remove Chiaki folder and desktop entry
 rm -rf $HOME/Chiaki || error "failed to delete Chiaki folder!"
 rm -f $HOME/.local/share/applications/chiaki.desktop || error "failed to delete Chiaki desktop entry!"

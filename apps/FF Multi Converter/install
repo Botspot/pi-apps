@@ -1,0 +1,17 @@
+#!/bin/bash
+
+install_packages python3 python3-pyqt5 ffmpeg imagemagick unoconv || exit 1
+git_clone https://github.com/ilstam/FF-Multi-Converter || exit 1
+
+cd $HOME/FF-Multi-Converter || error 'Failed to cd into "FF-Multi-Converter" directory!'
+errors="$(sudo python3 setup.py install 2>&1)" || error "Failed to install FF Multi Converter!\nErrors:\n$errors"
+
+echo "[Desktop Entry]
+Name=FF Multi Converter
+Comment=FF Multi Converter is a simple graphical application for Linux which enables you to convert audio, video, image and document files.
+Exec=ffmulticonverter
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Utility;
+StartpuNotify=true" > $HOME/.local/share/applications/ffmulticonverter.desktop || error 'Failed to create desktop configuration file!'

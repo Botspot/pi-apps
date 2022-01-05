@@ -1,15 +1,7 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if command -v webapp-manager >/dev/null ;then
   sudo apt purge webapp-manager -y || error "Failed to uninstall webapp-manager"
 fi
 
-#if your app installs any packages, keep this command here so those packages will be removed.
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || error "Failed to uninstall dependencies"
+
+purge_packages || exit 1

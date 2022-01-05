@@ -1,0 +1,4 @@
+#!/bin/bash
+
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/deskreen_1.0.11_arm64.deb || exit 1
+

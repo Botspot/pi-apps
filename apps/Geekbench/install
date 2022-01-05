@@ -1,15 +1,7 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-wget -O Geekbench.tar.gz https://cdn.geekbench.com/Geekbench-5.4.0-LinuxARMPreview.tar.gz
+wget -O Geekbench.tar.gz https://cdn.geekbench.com/Geekbench-5.4.3-LinuxARMPreview.tar.gz
 tar -xf Geekbench.tar.gz || error "Failed to extract files!"
-sudo mv -f ./Geekbench-5.4.0-LinuxARMPreview /opt/geekbench || error "Failed to move source folder to /opt!"
+sudo mv -f ./Geekbench-5.4.3-LinuxARMPreview /opt/geekbench || error "Failed to move source folder to /opt!"
 
 # Create symbolic link
 if [ $arch == 32 ]; then

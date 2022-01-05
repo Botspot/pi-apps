@@ -1,0 +1,3 @@
+#!/bin/bash
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/s/sysmontask/sysmontask_1.3.9-ubuntu20.10_all.deb python3-psutil || exit 1

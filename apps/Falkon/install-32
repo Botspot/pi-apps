@@ -1,25 +1,9 @@
 #!/bin/bash
+# install falkon if its availabe in apt (debian/ubuntu have this but rpiOS/raspbian does not)
+package_available falkon
+if [[ $? == "0" ]]; then
+  install_packages falkon || error "Could not install falkon"
+else
+  install_packages "http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb" "http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb" "http://ftp.debian.org/debian/pool/main/f/falkon/falkon_3.0.0-3_armhf.deb" || error "Could not install falkon"
+fi
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-
-cd $HOME 
-
-( rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* || sudo rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* ) &> /dev/null
-
-# libqt5webenginecore5
-wget http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb
-# libqt5webenginewidgets5
-wget http://ftp.debian.org/debian/pool/main/q/qtwebengine-opensource-src/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb
-# falkon
-wget http://ftp.debian.org/debian/pool/main/f/falkon/falkon_3.0.0-3_armhf.deb
-
-"${DIRECTORY}/pkg-install" "$HOME/libqt5webenginecore5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/libqt5webenginewidgets5_5.11.3+dfsg-2+deb10u1_armhf.deb $HOME/falkon_3.0.0-3_armhf.deb" "$(dirname "$0")" || exit 1
-
-# Remove files after install
-( rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* || sudo rm -f *libqt5webenginecore5* *libqt5webenginewidgets5* *falkon* ) &> /dev/null

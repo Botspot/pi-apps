@@ -1,10 +1,11 @@
 #!/bin/bash
+purge_packages || exit 1
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+#remove symlinked libraries
+if [ -L /usr/lib/libbrcmGLESv2.so ];then
+  sudo rm -f /usr/lib/libbrcmGLESv2.so
+fi
+if [ -L /usr/lib/libbrcmEGL.so ];then
+  sudo rm -f /usr/lib/libbrcmEGL.so
+fi
+true

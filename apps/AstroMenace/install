@@ -1,13 +1,5 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/pkg-install" "g++ cmake make ninja-build libsdl2-dev libogg-dev libvorbis-dev libopenal-dev libalut-dev libfreetype6-dev" "$(dirname "$0")" || exit 1
+install_packages g++ cmake make ninja-build libsdl2-dev libogg-dev libvorbis-dev libopenal-dev libalut-dev libfreetype6-dev || exit 1
 
 #download
 rm -rf master.zip astromenace-master/
@@ -19,7 +11,6 @@ rm -f master.zip
 cd astromenace-master/
 cmake . || error 'Failed to run cmake'
 make || error 'Failed to run make'
-
 #menu button
 echo "[Desktop Entry]
 Version=1.1

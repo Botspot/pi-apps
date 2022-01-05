@@ -1,15 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "libsfml-dev libsdl2-dev libxdo-dev" "$(dirname "$0")" || exit 1
-
+install_packages libsfml-dev libsdl2-dev libxdo-dev || exit 1
 #Download
 rm -rf ~/bongocat-armv7l-* ~/bongocam
 wget -O ~/bongocat.zip https://github.com/mobilegmYT/bongocat-osu/releases/download/1.5.3/bongocat-armv7l-1.5.3.zip

@@ -1,16 +1,12 @@
 #!/bin/bash
-
 #shellcheck disable=SC2145
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
 red="\e[31m"
 normal="\e[0m"
-
 function error() {
   echo -e "${red}$1${normal}"
   exit 1
 }
-
 echo -n "removing the terminal command and the script..."
 sudo rm -f /usr/local/bin/pi-apps || error "Failed to remove /usr/local/bin/pi-apps"
 rm -f "$HOME/pi-apps/pi-apps-terminal-bash-edition.sh"

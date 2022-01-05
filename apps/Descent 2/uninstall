@@ -1,7 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
 rm -fr ~/.d2x-rebirth
 rm ~/.local/share/applications/d2x-rebirth.desktop
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || exit 1

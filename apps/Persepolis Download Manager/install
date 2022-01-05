@@ -1,0 +1,30 @@
+#!/bin/bash
+install_packages lsb-release software-properties-common || error "Failed to install dependencies"
+
+# get debian version
+mapfile -t os < <(lsb_release -s -i -d -r -c)
+__os_id="${os[0]}"
+__os_desc="${os[1]}"
+__os_release="${os[2]}"
+__os_codename="${os[3]}"
+case "$__os_codename" in
+    buster)
+        sudo add-apt-repository "deb http://deb.debian.org/debian buster-backports main" -y
+        # add pin priority for youtube-dl so it will download from the backports repo
+        # this is not necessary for bullseye
+        # this will not interfere if the user has pinned the backports repo themselves
+        sudo sh -c "cat > /etc/apt/preferences.d/youtube-dl-backports << _EOF_
+Package: youtube-dl
+Pin: release a=buster-backports
+Pin-Priority: 500
+_EOF_"
+        sudo apt update
+        ;;
+esac
+# install some dependencies (these could be skipped as the .deb requires them, but it is good to check if they will install first)
+install_packages adwaita-qt python3-setproctitle python3 youtube-dl || error "Failed to install dependencies"
+install_packages "https://github.com/persepolisdm/persepolis/releases/download/3.2.0/persepolis_3.2.0.2_all.deb" || error "Failed to install persepolis"
+
+echo -e "\nYou may want to install Persepolis Download Manager Integration on your browser. For more info, see here: \e[4mhttps://github.com/persepolisdm/persepolis/wiki/Home-en#extensions\e[0m"
+
+

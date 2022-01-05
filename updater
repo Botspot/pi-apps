@@ -239,6 +239,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       done
       IFS="$PREIFS"
       echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+      "${DIRECTORY}/api" refresh_app_list
     ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
   fi
   
@@ -277,8 +278,8 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   status_green "\nPi-Apps updates complete."
 }
 
-screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
-screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
+screen_width="$(xrandr | grep -oP '(?<=primary )\d+')"
+screen_height="$(xrandr | grep -oP '(?<=primary )[x\d]+' | cut -d x -f 2)"
 
 runmode="$1"
 speed="$2"
@@ -309,6 +310,14 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     status "No apps have been installed yet, so exiting now."
     exit 0
   fi
+  
+  #wait until internet works
+  while ! command wget --spider https://github.com &>/dev/null ;do
+    echo -n "Pi-Apps updater script: no internet connection yet. "
+    sleep 1
+    echo " Waiting 10 seconds..."
+    sleep 10
+  done
   
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
@@ -458,7 +467,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
     echo
   fi
   
-  read -p "$(status 'Update now? [Y/n] ')" answer
+  read -p "$(status -n 'Update now? [Y/n] ')" answer
   
   if [ "$answer" == n ] || [ "$answer" == N ];then
     echo
@@ -482,7 +491,7 @@ elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   fi
   
   if [ -z "$updatable_apps" ];then
-    status "No apps is updatable."
+    status "No apps can be updated."
     echo
   else
     status "These apps can be updated:"
@@ -492,7 +501,7 @@ elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   fi
   
   if [ -z "$updatable_files" ];then
-    status "No files is updatable"
+    status "No files can be updated."
     echo
   else
     status "These files can be updated:"

@@ -1,14 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || exit 1
 
 sudo rm -f /etc/apt/sources.list.d/box64.list || error "Failed to remove repo!"
 
-sudo apt-key del "DF9A 1B85 23C3 2EEE FF2A  6CDA 7759 FA1D 9FEC AC9E" || error "Failed to remove GPG key!"
+sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg || error "Failed to remove GPG key!"

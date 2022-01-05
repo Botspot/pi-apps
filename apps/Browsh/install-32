@@ -1,17 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/browsh.deb
-wget -O browsh.deb https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_armv7.deb || error 'Failed to download browsh!'
-
-"${DIRECTORY}/pkg-install" "firefox-esr $HOME/browsh.deb" "$(dirname "$0")" || error 'Failed to install browsh.deb!'
-rm -f ~/browsh.deb
+install_packages firefox-esr https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_armv7.deb || exit 1
 
 echo "[Desktop Entry]
 Version=1.1
@@ -22,3 +11,4 @@ Icon=$(dirname "$0")/icon-64.png
 Exec=browsh
 Terminal=true
 Categories=Network;" > ~/.local/share/applications/browsh.desktop
+
