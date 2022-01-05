@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#stop swapfiles - this may take a while if they are full
+status -n "Disabling swap and zram... "
+sudo swapoff -a
+status "Done"
+#now running this command should list no swapfiles: cat /proc/swaps
+
+status "Disabling zram kernel module"
+sudo rmmod zram || true
+
+status "Removing system changes:"
+
+echo "  - Disabling autostarted zram script"
+sudo sed -i '/zram\.sh/d' /etc/rc.local
+
+echo "  - Removing zram script"
+sudo rm -f /usr/bin/zram.sh
+
+echo "  - Removing customized CONF_SWAPSIZE setting"
+sudo sed -i '/^CONF_SWAPSIZE=1024$/d' /etc/dphys-swapfile
+
+echo "  - Removing customized swappiness value"
+sudo sed -i '/^vm\.swappiness=50$/d' /etc/sysctl.conf
+
+#Allow dphys-swapfile package to be removed
+purge_packages || exit 1

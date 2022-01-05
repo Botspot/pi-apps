@@ -1,0 +1,8 @@
+Of course Pi-Apps lets you download more RAM!
+This app sets up ZRAM and a swapfile.
+ZRAM compresses the data stored in RAM, thereby increasing the capacity. Swap allows RAM to overflow to the disk, only if absolutely necessary.
+These modifications prevent the system from locking up under heavy memory usage. Under low memory usage, neither ZRAM nor swap are used.
+
+How much RAM do you get?
+- ZRAM will double the total capacity available. (4GB of ZRAM on a 4GB Pi, 1GB on a 1GB Pi)
+- Swap will add 1GB of overflow capacity. This will be skipped if your SD card is nearly full. (<2GB free space)

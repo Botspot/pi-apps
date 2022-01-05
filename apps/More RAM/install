@@ -1,0 +1,137 @@
+#!/bin/bash
+
+#variables to know if zram failed or if swap failed
+swap_failed=0
+zram_failed=0
+
+if sudo modprobe zram ;then
+  status "Creating zram script: /usr/bin/zram.sh"
+  #original zram script from novaspirit: https://github.com/novaspirit/rpi_zram
+  echo '#!/bin/bash
+
+export LANG=C
+
+if [ $(id -u) -ne 0 ]; then
+  echo "$0 must be run as root user"
+  exit 1
+fi
+
+cores=$(nproc --all)
+
+# disable zram
+core=0
+while [ $core -lt $cores ]; do
+  if [[ -b /dev/zram$core ]]; then
+    swapoff /dev/zram$core &>/dev/null
+  fi
+  let core=core+1
+done
+if [[ -n $(lsmod | grep zram) ]]; then
+  rmmod zram
+fi
+if [[ $1 == stop ]]; then
+  exit 0
+fi
+
+# enable zram
+modprobe zram num_devices=$cores
+
+echo lz4 > /sys/block/zram0/comp_algorithm
+
+totalmem=$(free | grep -e "^Mem:" | awk '\''{print $2}'\'')
+mem=$(( ($totalmem / $cores)* 1024 ))
+
+core=0
+while [ $core -lt $cores ]; do
+  echo $mem > /sys/block/zram$core/disksize
+  mkswap /dev/zram$core
+  swapon -p 5 /dev/zram$core
+  let core=core+1
+done' | sudo tee /usr/bin/zram.sh >/dev/null
+  
+  sudo chmod +x /usr/bin/zram.sh
+  
+  status "Making it run on startup"
+  if ! grep -qxF '/usr/bin/zram.sh &' /etc/rc.local ;then
+    sudo sed -i 's+^exit 0$+/usr/bin/zram.sh \&\nexit 0+g' /etc/rc.local
+  fi
+  
+  status -n "Running it now."
+  echo " Output:"
+  sudo /usr/bin/zram.sh
+else
+  warning "Not enabling ZRAM because your system kernel does not support it."
+  zram_failed=1
+fi
+
+#Skip swapfile setup if available free space is less than 2GB
+if [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((2*1024*1024*1024)) ];then
+  swap_failed=1
+  warning "Not enabling a 1GB swap file because your SD card has less than 2GB of free space."
+fi
+
+if [ $swap_failed == 0 ] && ! package_installed dphys-swapfile ;then
+  echo
+  (install_packages dphys-swapfile)
+  #if dphys-swapfile could not be installed, skip everything swap-related
+  if [ $? != 0 ];then
+    swap_failed=1
+    warning "Not enabling a swap file because the dphys-swapfile package could not be installed."
+  fi
+fi
+
+if [ $swap_failed == 0 ];then
+  echo
+  status "Setting up a 1GB swapfile"
+  
+  echo "  - Turning off swap"
+  sudo systemctl stop dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
+  #systemctl will run this command:
+  #sudo /usr/sbin/dphys-swapfile swapoff
+  
+  echo "  - Changing CONF_SWAPSIZE to 1GB"
+  sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/g' /etc/dphys-swapfile
+  #ensure sed actually did something; if not, add line to end of file
+  if ! grep -qxF 'CONF_SWAPSIZE=1024' /etc/dphys-swapfile ;then
+    echo 'CONF_SWAPSIZE=1024' | sudo tee -a /etc/dphys-swapfile >/dev/null
+  fi
+  
+  #change swappiness if not already 50. See: https://linuxize.com/post/how-to-change-the-swappiness-value-in-linux
+  if [ -e /usr/sbin/sysctl ];then
+    echo "  - Changing swappiness value to 50"
+    #change value temporarily for this boot
+    sudo sysctl vm.swappiness=50 >/dev/null
+    #change value for subsequent boots
+    sudo sed -i 's/^vm.swappiness=.*/vm.swappiness=50/g' /etc/sysctl.conf
+    
+    #ensure sed actually did something; if not, add line to end of file
+    if ! grep -qxF 'vm.swappiness=50' /etc/sysctl.conf ;then
+      echo 'vm.swappiness=50' | sudo tee -a /etc/sysctl.conf >/dev/null
+    fi
+  fi
+  
+  echo "  - Turning swap back on"
+  sudo systemctl unmask dphys-swapfile.service
+  errors="$(sudo systemctl enable dphys-swapfile.service 2>&1)" || echo "Failed to run dphys-swapfile.service"
+  sudo /usr/sbin/dphys-swapfile swapon
+fi
+
+echo
+if [ $swap_failed == 0 ] && [ $zram_failed == 0 ];then
+  status_green "Swap and ZRAM should now be set up. Consider rebooting your device."
+
+elif [ $swap_failed == 1 ] && [ $zram_failed == 0 ];then
+  status_green "ZRAM should now be set up. Consider rebooting your device."
+
+elif [ $swap_failed == 0 ] && [ $zram_failed == 1 ];then
+  status_green "Swap should now be set up. Consider rebooting your device."
+
+elif [ $swap_failed == 1 ] && [ $zram_failed == 1 ];then
+  error "User error: Unable to setup both Swap and ZRAM! You are probably using an unsupported device."
+fi
+
+status "Below is a summary:"
+swapon -s
+status "You can see this at any time by running 'swapon -s'"
+sleep 1
+
