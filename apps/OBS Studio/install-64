@@ -17,4 +17,9 @@ MESA_GL_VERSION_OVERRIDE=3.3 /usr/bin/obs-exec "$@"' | sudo tee /usr/bin/obs >/d
 sudo chmod +x /usr/bin/obs
 
 #temporary fix of `error while loading shared libraries: libxcb-util.so.0: cannot open shared object file: No such file or directory`
-! dpkg -S libxcb-util.so.0 2>/dev/null && ! [ -a "$(dirname "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{printf $2}')")/libxcb-util.so.0" ] && sudo ln -sf "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{printf $2}')" "$(dirname "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{printf $2}')")/libxcb-util.so.0"
+if ! package_installed libxcb-util.so.0 ;then
+  libpath="$(dirname "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{printf $2}')")" #Value on RPiOS Bullseye: /usr/lib/arm-linux-gnueabihf
+  if [ ! -e "${libpath}/libxcb-util.so.0" ] ;then
+    sudo ln -sf "${libpath}/libxcb-util.so.1" "${libpath}/libxcb-util.so.0"
+  fi
+fi
