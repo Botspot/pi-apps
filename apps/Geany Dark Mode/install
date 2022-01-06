@@ -1,7 +1,7 @@
 #!/bin/bash
+
 #get theme files
-rm -rf ~/geany-themes
-git_clone --depth 1 https://github.com/codebrainz/geany-themes || error "Failed to git_clone the geany themes repository!"
+git_clone --depth 1 https://github.com/geany/geany-themes || exit 1
 
 #copy theme files
 mkdir -p ~/.config/geany/colorschemes
