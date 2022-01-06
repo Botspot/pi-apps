@@ -1,8 +1,7 @@
 #!/bin/bash
 
 if ! package_installed geany; then
-  warning "Geany is not installed, these themes are useless to you."
-  exit 1
+  error "User error: Geany is not installed, these themes are useless to you."
 fi
 
 #get theme files
