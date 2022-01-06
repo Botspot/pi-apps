@@ -112,7 +112,7 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   #package_info "$package" | grep -q '^Status: install ok installed$'
   
   #directly search /var/lib/dpkg/status
-  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep "$package$" --after 1 | grep -q 'Status: install ok installed'
+  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -q "^Package: $package$" 
 }
 
 package_available() { #determine if the specified package-name exists in a repository
