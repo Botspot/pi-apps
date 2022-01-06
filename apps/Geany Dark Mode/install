@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! package_installed geany; then
+  warning "Geany is not installed, these themes are useless to you."
+  exit 1
+fi
+
 #get theme files
 git_clone --depth 1 https://github.com/geany/geany-themes || exit 1
 
@@ -16,12 +21,11 @@ else
 fi
 
 #clean up
-rm -rf ~/geany-themes
-if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
+if pidof geany -q; then
   
   echo -e "\nThis script was unable to change Geany's config file, because Geany is already running.\nPlease close Geany."
   
-  while [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];do
+  while pidof geany -q;do
     sleep 1
     echo -n '.'
   done
@@ -36,3 +40,8 @@ if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
   fi
   
 fi
+
+#tell user where to change theme
+status "Added $(ls  ~/geany-themes/colorschemes/ | wc -l) themes.\nYou can change theme by navigate to View → Editor → Change Color Scheme in Geany."
+
+rm -rf ~/geany-themes
