@@ -7,4 +7,4 @@ sudo rm -rf "/usr/local/share/doc/pacman"
 
 sudo update-desktop-database -q
 
-purge_packages || error "Dependencies failed to uninstall"
+purge_packages || exit 1
