@@ -233,7 +233,7 @@ mkdir -p "$HOME/.local/share/applications"
 tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
-Exec=bash -c "sudo systemctl start minecraft-server; screen -r Minecraft_Server"
+Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server"
 Path=$HOME/Minecraft-Java-Server
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application
