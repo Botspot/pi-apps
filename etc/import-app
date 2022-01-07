@@ -179,14 +179,31 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   echo "Done"
   
   #get list of apps that are unique to this pi-apps folder. (not on main repo)
-  #apps="$("$(pwd)/pi-apps/api" list_apps local_only)"
+  applist="$("$(pwd)/pi-apps/api" list_apps local_only)"
   
   #get apps that don't match the ones in main branch - find only new apps
   imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Only in $(pwd)/pi-apps/apps:"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
-  #if no new apps, find modified apps
-  [ -z "$imported_apps" ] && imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Files .* and .* differ"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
-  
-  echo -e "\nModified apps in this branch:"
+
+  IFS=$'\n'
+  for app in $applist
+  do
+    echo -en "Scanning apps... $app\033[0K\r" 1>&2
+
+    if [ -d "$(pwd)/pi-apps/apps/${app}" ] && [ -d "$(pwd)/pi-apps-master/apps/${app}" ] && ! diff -r "$(pwd)/pi-apps/apps/${app}" "$(pwd)/pi-apps-master/apps/${app}" -q >/dev/null 2>&1; then
+      #if app hashes don't match, add to imported list
+      #find only changed apps
+      if [ -z "$imported_apps" ]; then
+        # imported apps is blank, do not add newline
+        imported_apps="${app}"
+      else
+        # imported apps is not blank, add newline
+        imported_apps="${imported_apps}
+${app}"
+      fi
+    fi
+  done
+
+  echo -e "\nModified or new apps in this branch:"
   echo "$imported_apps" | sed 's/^/- /g'
   
   imported_apps="$(echo -n "$imported_apps" | sed 's/^/TRUE\n/g' | yad "${yadflags[@]}" --list --checklist --column=chk:CHK --column=app --no-headers --print-column=2 --no-selection \
@@ -194,6 +211,9 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   
   IFS=$'\n'
   for app in $imported_apps ;do
+    #remove directory first and replace with copied version from PR
+    #this prevents orphaned files when moving from install-32/install-64 to install
+    rm -rf "${DIRECTORY}/apps/$app"
     cp -af "$(pwd)/pi-apps/apps/$app" "${DIRECTORY}/apps"
     echo "Copied '$(pwd)/pi-apps/apps/${app}' to ${DIRECTORY}/apps"
   done
