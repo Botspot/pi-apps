@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sudo rm -f "/usr/local/bin/pacman"
+sudo rm -rf "/usr/local/share/pacman"
+sudo rm -f "/usr/local/share/applications/pacman.desktop"
+sudo rm -rf "/usr/local/share/doc/pacman"
+
+sudo update-desktop-database -q
+
+purge_packages || error "Dependencies failed to uninstall"

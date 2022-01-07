@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cd /tmp || error "Could not move to tmp folder"
+
+install_packages libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev || error "Could not install dependencies"
+rm -rf /tmp/pacman
+
+git_clone https://github.com/ebuc99/pacman || error "Could not clone source"
+cd pacman || error "Could not move to directory"
+./autogen.sh || error "Autogen failed"
+./configure || error "configure failed"
+make -j$(nproc) || error "Could not build source"
+sudo make install || error "Could not install pacman"
+
+rm -rf /tmp/pacman
+
+sudo wget -O /usr/local/share/pacman/txt/gamecontrollerdb.txt  https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
+
+status_green 'Installation is now done! To run: Menu -> Games -> Pacman (SDL)'
