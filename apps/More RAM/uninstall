@@ -1,27 +1,35 @@
 #!/bin/bash
 
 #stop swapfiles - this may take a while if they are full
-status -n "Disabling swap and zram... "
-sudo swapoff -a
-status "Done"
+status -n "Disabling ZRAM... "
+
+# disable all zram devices
+IFS=$'\n'
+for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
+  #if zram device is a swap device, disable it
+  sudo swapoff /dev/zram${device_number} 2>/dev/null
+  
+  #if zram device is mounted, unmount it
+  sudo umount /dev/zram${device_number} 2>/dev/null
+  
+  #remove device
+  echo $device_number | sudo tee /sys/class/zram-control/hot_remove >/dev/null
+done
+
+rm -rf /zram
+
+status_green "Done"
 #now running this command should list no swapfiles: cat /proc/swaps
 
 status "Disabling zram kernel module"
 sudo rmmod zram || true
 
-status "Removing system changes:"
-
-echo "  - Disabling autostarted zram script"
-sudo sed -i '/zram\.sh/d' /etc/rc.local
-
-echo "  - Removing zram script"
+status "Removing zram script"
 sudo rm -f /usr/bin/zram.sh
+sudo rm -f /etc/systemd/system/zram-swap.service
 
-echo "  - Removing customized CONF_SWAPSIZE setting"
-sudo sed -i '/^CONF_SWAPSIZE=1024$/d' /etc/dphys-swapfile
-
-echo "  - Removing customized swappiness value"
-sudo sed -i '/^vm\.swappiness=50$/d' /etc/sysctl.conf
-
-#Allow dphys-swapfile package to be removed
-purge_packages || exit 1
+status "Reverting kernel parameters"
+sudo sed -i '/^vm\.swappiness/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.vfs_cache_pressure/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.dirty_background_ratio/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.dirty_ratio/d' /etc/sysctl.conf
