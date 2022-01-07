@@ -16,7 +16,7 @@ for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;
   echo $device_number | sudo tee /sys/class/zram-control/hot_remove >/dev/null
 done
 
-rm -rf /zram
+sudo rm -rf /zram
 
 status_green "Done"
 #now running this command should list no swapfiles: cat /proc/swaps
@@ -26,6 +26,7 @@ sudo rmmod zram || true
 
 status "Removing zram script"
 sudo rm -f /usr/bin/zram.sh
+sudo systemctl disable zram-swap.service
 sudo rm -f /etc/systemd/system/zram-swap.service
 
 status "Reverting kernel parameters"
