@@ -60,15 +60,16 @@ jobs:
           done
           cd
           if test -f /tmp/updated_apps; then
-            updated_apps=$(cat /tmp/updated_apps)
-            rm -f /tmp/updated_apps
+            sort /tmp/updated_apps | uniq -u > /tmp/updated_apps_sorted
+            updated_apps=$(cat /tmp/updated_apps_sorted)
+            rm -f /tmp/updated_apps /tmp/updated_apps_sorted
             echo UPDATED_APPS=$updated_apps >> $GITHUB_ENV
           fi
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          author: github-actions <https://github.com/apps/github-actions>
+          author: github-actions <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: |
             Update App Versions, run by GitHub Actions - Apps updated:
 
