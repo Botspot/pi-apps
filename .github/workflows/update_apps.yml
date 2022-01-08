@@ -64,9 +64,9 @@ jobs:
           cd
           if test -f /tmp/updated_apps; then
             sort -u /tmp/updated_apps > /tmp/updated_apps_sorted
-            updated_apps=$(cat /tmp/updated_apps_sorted)
-            rm -f /tmp/updated_apps /tmp/updated_apps_sorted
-            echo UPDATED_APPS=$updated_apps >> $GITHUB_ENV
+            echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
+            cat /tmp/updated_apps_sorted >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           fi
 
       - name: Create Pull Request
