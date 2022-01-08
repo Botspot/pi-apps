@@ -1,7 +1,10 @@
 name: Update_Apps
 
 # Controls when the workflow will run
-on:  
+on:
+  # run at 21:00 UTC every day
+  schedule:
+     - cron: '0 21 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -74,6 +77,7 @@ jobs:
             Update App Versions, run by GitHub Actions - Apps updated:
 
             ${{ env.UPDATED_APPS }}
+          branch: "auto-app-updates"
           title: "[AUTO] Update App Versions"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action:
