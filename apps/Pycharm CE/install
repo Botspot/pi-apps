@@ -2,7 +2,7 @@
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
-wget https://download.jetbrains.com/python/pycharm-community-2021.3.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
+wget https://download.jetbrains.com/python/pycharm-community-2021.3.1.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
 status "Extracting pycharm-community.tar.gz to /opt"
 sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
 sudo tar xzf pycharm-community.tar.gz -C /opt/pycharm-community || error "Failed to extract pycharm-community.tar.gz"
@@ -23,17 +23,17 @@ wget https://github.com/Pi-Apps-Coders/files/raw/main/fsnotifier-pycharm-rpi.zip
 unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rpi.zip."
 cd $HOME/fsnotifier-pycharm-rpi/
 bash ./make.sh || error "Failed to compile file watcher."
-mkdir -p $HOME/.config/JetBrains/PyCharmCE2021.3/options
-mv -f $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.3/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.3/."
-[ -a $HOME/.config/JetBrains/PyCharmCE2021.3/idea.properties ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE2021.3/idea.properties | grep -v idea.filewatcher.executable.path)" > $HOME/.config/JetBrains/PyCharmCE2021.3/idea.properties
-echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.3/fsnotifier" >> $HOME/.config/JetBrains/PyCharmCE2021.3/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.3/idea.properties."
+mkdir -p $HOME/.config/JetBrains/PyCharmCE2021.3.1/options
+mv -f $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.3.1/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.3.1/."
+[ -a $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties | grep -v idea.filewatcher.executable.path)" > $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.3.1/fsnotifier" >> $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties."
 
 status "Remove bundled JRE version message ..."
 echo '<application>
   <component name="PropertiesComponent">
     <property name="ignore.bundled.jre.version.message" value="true" />
   </component>
-</application>' > $HOME/.config/JetBrains/PyCharmCE2021.3/options/other.xml
+</application>' > $HOME/.config/JetBrains/PyCharmCE2021.3.1/options/other.xml
 
 status "Creating desktop shortcut ..."
 echo "[Desktop Entry]
