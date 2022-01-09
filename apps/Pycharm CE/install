@@ -24,7 +24,7 @@ unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rp
 cd $HOME/fsnotifier-pycharm-rpi/
 bash ./make.sh || error "Failed to compile file watcher."
 mkdir -p $HOME/.config/JetBrains/PyCharmCE2021.3/options
-mv -f $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.3.1/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.3.1/."
+mv -f $HOME/fsnotifier-pycharm-rpi/fsnotifier $HOME/.config/JetBrains/PyCharmCE2021.3/ || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE2021.3/."
 [ -a $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties | grep -v idea.filewatcher.executable.path)" > $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties
 echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE2021.3.1/fsnotifier" >> $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE2021.3.1/idea.properties."
 
