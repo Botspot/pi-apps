@@ -33,7 +33,7 @@ echo '<application>
   <component name="PropertiesComponent">
     <property name="ignore.bundled.jre.version.message" value="true" />
   </component>
-</application>' > $HOME/.config/JetBrains/PyCharmCE2021.3.1/options/other.xml
+</application>' > $HOME/.config/JetBrains/PyCharmCE2021.3/options/other.xml
 
 status "Creating desktop shortcut ..."
 echo "[Desktop Entry]
