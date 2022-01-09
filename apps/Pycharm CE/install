@@ -2,7 +2,9 @@
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
-wget https://download.jetbrains.com/python/pycharm-community-2021.3.1.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
+version="2021.3.1"
+
+wget https://download.jetbrains.com/python/pycharm-community-${version}.tar.gz -O pycharm-community.tar.gz || exit 1
 status "Extracting pycharm-community.tar.gz to /opt"
 sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
 sudo tar xzf pycharm-community.tar.gz -C /opt/pycharm-community || error "Failed to extract pycharm-community.tar.gz"
