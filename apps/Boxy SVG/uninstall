@@ -1,6 +1,5 @@
 #!/bin/bash
-rm -f ~/.local/share/applications/*gaoogdonmngmdlbinmiclicjpbjhgomg*
-rm -rf ~/Boxy-SVG-RPi
-rm -rf ~/.config/BoxySVG
+
+sudo rm -rf /usr/share/applications/boxy-svg.desktop /opt/boxy-svg /usr/local/bin/boxy-svg
 
 exit 0
