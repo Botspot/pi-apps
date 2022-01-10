@@ -88,7 +88,7 @@ get_updatable_files() { #sets the updatable_files variable
     
     for file in $file_list ;do
       
-      echo -en "Scanning files... $file\033[0K\r" 1>&2
+      echo -en "Scanning files... $file\e[0K\r" 1>&2
       if [ ! -f "${DIRECTORY}/${file}" ];then
         #file is missing locally - add to updatable_files list
         updatable_files="${updatable_files}
@@ -115,7 +115,7 @@ ${file}"
   done
   
   echo "$updatable_files"
-  echo -e "Scanning files... Done\033[0K" 1>&2
+  echo -e "Scanning files... Done\e[0K" 1>&2
   
   #if any files were excluded by update-exclusion, list them now, after echoing "Done"
   [ ! -z "$exclusion_msg" ] && echo -e "$exclusion_msg\n" 1>&2

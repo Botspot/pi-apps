@@ -438,7 +438,7 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    echo -en "Scanning apps... $app\033[0K\r" 1>&2
+    echo -en "Scanning apps... $app\e[0K\r" 1>&2
     
     if [ ! -d "${DIRECTORY}/apps/${app}" ];then
       #add to updatable list
@@ -459,7 +459,7 @@ ${app}"
   #remove initial newline character
   updatable="${updatable:1}"
   
-  echo -e "Scanning apps... Done\033[0K" 1>&2
+  echo -e "Scanning apps... Done\e[0K" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then
