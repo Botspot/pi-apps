@@ -3,12 +3,17 @@
 #This script enables ZRAM and attempts to optimize its effectiveness on Raspberry Pi computers.
 #Useful links:
 #https://haydenjames.io/linux-performance-almost-always-add-swap-part2-zram
+#https://haydenjames.io/raspberry-pi-performance-add-zram-kernel-parameters/
 #https://linuxreviews.org/Zram
 #https://linuxize.com/post/how-to-change-the-swappiness-value-in-linux
 
 #original zram script from novaspirit: https://github.com/novaspirit/rpi_zram
 
-#define status and status_green functions incase pi-apps api script was not sourced
+#define error, status and status_green functions in case this script is being run standalone without pi-apps api (wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/apps/More%20RAM/install | bash)
+error() { #red text and exit 1
+  echo -e "\e[91m$1\e[0m" 1>&2
+  exit 1
+}
 status() { #cyan text to indicate what is happening
   
   #detect if a flag was passed, and if so, pass it on to the echo command
@@ -18,7 +23,6 @@ status() { #cyan text to indicate what is happening
     echo -e "\e[96m$1\e[0m" 1>&2
   fi
 }
-
 status_green() { #announce the success of a major action
   echo -e "\e[92m$1\e[0m" 1>&2
 }
