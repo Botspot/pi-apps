@@ -8,6 +8,21 @@
 
 #original zram script from novaspirit: https://github.com/novaspirit/rpi_zram
 
+#define status and status_green functions incase pi-apps api script was not sourced
+status() { #cyan text to indicate what is happening
+  
+  #detect if a flag was passed, and if so, pass it on to the echo command
+  if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
+    echo -e $1 "\e[96m$2\e[0m" 1>&2
+  else
+    echo -e "\e[96m$1\e[0m" 1>&2
+  fi
+}
+
+status_green() { #announce the success of a major action
+  echo -e "\e[92m$1\e[0m" 1>&2
+}
+
 set_value() { #Add the $1 line to the $2 config file. (setting=value format) This function changes the setting if it's already there.
   local file="$2"
   [ -z "$file" ] && error "set_value: path to config-file must be specified."
@@ -33,14 +48,16 @@ set_sysctl_value() { #Change a setting for sysctl. Displays value, changes confi
 }
 
 #disable dphys-swapfile service if running
-if [ -f /usr/sbin/dphys-swapfile ] && systemctl is-active --quiet dphys-swapfile.service;then
+if [ -f /usr/sbin/dphys-swapfile ] && systemctl is-active --quiet dphys-swapfile.service ;then
   status "Disabling swap"
   #swapoff and remove swapfile
   sudo /usr/sbin/dphys-swapfile uninstall
   
   #prevent dphys-swapfile from running on boot
-  sudo systemctl disable dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
+  sudo systemctl mask dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
 fi
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 status -n "Checking system for compatibility... "
 if [ "$(ps --no-headers -o comm 1)" != systemd ];then
@@ -62,10 +79,38 @@ status "Creating zram script: /usr/bin/zram.sh"
 echo '#!/bin/bash
 
 export LANG=C
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 if [ $(id -u) -ne 0 ]; then
   echo "$0 must be run as root user"
   exit 1
+fi
+
+if [ "$1" == --help ] || [ "$1" == -h ];then
+  echo -e "This is a script made by Botspot to increase usable RAM by setting up ZRAM.
+ZRAM uses compression to fit more memory in your available RAM.
+This script will setup a ZRAM swapspace that is 4 times larger than usable RAM.
+It also configures high-speed RAM-based file-storage at /zram.
+
+Usage:
+
+sudo zram.sh               Setup zram-swap and storage (if enabled)
+sudo zram.sh stop          Disable all ZRAM devices and exit
+sudo zram.sh storage-off   Disable the file-storage at /zram on next run
+sudo zram.sh storage-on    Enable the file-storage at /zram on next run
+zram.sh --help, -h         Display this information and exit"
+  exit 0
+#avoid creating /zram storage if storage-off flag passed
+elif [ "$1" == storage-off ]; then
+  #retain this flag for next boot
+  sed -i "s+^ExecStart=/usr/bin/zram.sh$+ExecStart=/usr/bin/zram.sh storage-off+g" /etc/systemd/system/zram-swap.service && \
+  echo -e "zram.sh will not set up file-storage at /zram.\nChanges take effect when this script is run normally."
+  exit 0
+#the /zram storage can be re-enabled with storage-on flag
+elif [ "$1" == storage-on ]; then
+  sed -i "s+^ExecStart=/usr/bin/zram.sh storage-off$+ExecStart=/usr/bin/zram.sh+g" /etc/systemd/system/zram-swap.service && \
+  echo -e "zram.sh will set up file-storage at /zram.\nChanges take effect when this script is run normally."
+  exit 0
 fi
 
 # Load zram module
@@ -75,6 +120,7 @@ if ! modprobe zram ;then
 fi
 
 # disable all zram devices
+echo -n "Disabling zram... "
 IFS=$'\''\n'\''
 for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
   #if zram device is a swap device, disable it
@@ -86,11 +132,12 @@ for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;
   #remove device
   echo $device_number >/sys/class/zram-control/hot_remove
 done
+echo Done
 
 rm -rf /zram
 
 #exit script now if "exit" flag passed
-if [[ $1 == stop ]]; then
+if [ "$1" == stop ]; then
   exit 0
 fi
 
@@ -114,21 +161,24 @@ echo $((totalmem * 1024 * 4)) > /sys/block/zram${drive_num}/disksize
 mkswap /dev/zram${drive_num}
 swapon /dev/zram${drive_num} -d -p 1
 
-
-
 #create second zram drive: for temporary user-storage at /zram
-drive_num=$(cat /sys/class/zram-control/hot_add)
-
-# set compression algorithm
-echo $algorithm > /sys/block/zram${drive_num}/comp_algorithm
-
-#set the size of drive to be 4 times the available RAM
-echo $((totalmem * 1024 * 4)) > /sys/block/zram${drive_num}/disksize
-
-#create a partition and mount it
-mkfs.ext4 /dev/zram${drive_num} >/dev/null
-mkdir -p /zram
-mount /dev/zram${drive_num} /zram' | sudo tee /usr/bin/zram.sh >/dev/null
+if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram-swap.service ;then
+  echo "Setting up ZRAM-powered file storage at /zram"
+  #create new zram drive
+  drive_num=$(cat /sys/class/zram-control/hot_add)
+  
+  # set compression algorithm
+  echo $algorithm > /sys/block/zram${drive_num}/comp_algorithm
+  
+  #set the size of drive to be 4 times the available RAM
+  echo $((totalmem * 1024 * 4)) > /sys/block/zram${drive_num}/disksize
+  
+  #create a partition and mount it
+  mkfs.ext4 /dev/zram${drive_num} >/dev/null
+  mkdir -p /zram
+  chmod -R a+rw /zram #make writable for any user
+  mount /dev/zram${drive_num} /zram
+fi' | sudo tee /usr/bin/zram.sh >/dev/null
 
 sudo chmod +x /usr/bin/zram.sh
 

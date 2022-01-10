@@ -37,6 +37,7 @@ sudo sed -i '/^vm\.dirty_ratio/d' /etc/sysctl.conf
 
 if [ -f /usr/sbin/dphys-swapfile ];then
   status "Allowing dphys-swapfile.service to run on boot"
+  sudo systemctl unmask dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
   sudo systemctl enable dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
 fi
 true
