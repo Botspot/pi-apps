@@ -1,12 +1,16 @@
 #!/bin/bash
+
+version=7.2.11
+version2=2021.06.06
+
 cd $HOME
 mkdir -p xdm 
 cd xdm
 
 install_packages openjdk-11-jdk ffmpeg || exit 1
 
-wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/7.2.11/xdm-setup-7.2.11.tar.xz || error "Failed to download XDM setup tar file!"
-wget https://github.com/ytdl-org/youtube-dl/releases/download/2021.06.06/youtube-dl || error "Failed to download youtube-dl binary!"
+wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/${version}/xdm-setup-${version}.tar.xz || error "Failed to download XDM setup tar file!"
+wget https://github.com/ytdl-org/youtube-dl/releases/download/${version2}/youtube-dl || error "Failed to download youtube-dl binary!"
 tar -xf xdm.tar.xz || error "Failed to extract XDM setup tar file!"
 echo "Executing XDM setup script..."
 sudo ./install.sh &>/dev/null || error "Failed to execute XDM setup script!"
