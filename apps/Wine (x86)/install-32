@@ -260,7 +260,7 @@ Type=Application
 Name=Wine Reset
 Comment=Clean out the default Wine prefix and start over
 Icon=/opt/wine/icons/wine-regenerate.png
-Exec=bash -c "\""yad --window-icon=/opt/wine/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && winetricks annihilate && wine wineboot"\""
+Exec=bash -c "\""yad --window-icon=/opt/wine/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && ${DIRECTORY}/etc/terminal-run 'set -x ; echo y | winetricks annihilate -q ; wine wineboot ; W_OPT_UNATTENDED=1 winetricks mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 ; wine wineboot -u' 'Generating Wine prefix...'"\""
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-regenerate.desktop
 status_green "Done"
