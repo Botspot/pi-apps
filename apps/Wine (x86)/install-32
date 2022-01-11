@@ -1,14 +1,11 @@
 #!/bin/bash
-hardware="$(cat /proc/cpuinfo)"
-if [ ! -z "$(echo "$hardware" | grep ARMv7)" ];then
+if grep -q ARMv7 /proc/cpuinfo ;then
   hardware='pi3'
-elif [ ! -z "$(echo "$hardware" | grep ARMv6)" ];then
+elif grep -q ARMv6 /proc/cpuinfo ;then
   hardware='pi0'
+  error "Wine is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
 else
   hardware='pi4'
-fi
-if [ "$hardware" == 'pi0' ];then
-  error "Wine is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
 fi
 
 if [ ! -e /proc/config.gz ];then
@@ -134,55 +131,95 @@ fi
 if ! command -v box86 >/dev/null ;then
   error "User error: Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
 fi
+echo "Installed Box86 version:"
+box86 -v || error "User error: Something went wrong when trying to run Box86."
 
-pkill -9 wine
-sudo apt purge -y wine &>/dev/null &
 # Remove old wine, while leaving config intact
-sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg /usr/local/bin/winetricks ~/wine.tgz ~/wine ~/.cache/winetricks ~/.cache/wine 2>/dev/null
+pkill -9 wine
+command -v wineserver >/dev/null && wineserver -k
+command -v wine >/dev/null && sudo apt purge -y wine &>/dev/null &
+sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg /usr/local/bin/winetricks ~/wine.tgz /opt/wine ~/.cache/winetricks ~/.cache/wine 2>/dev/null
+
 # Get dependencies
-install_packages cabextract || exit 1
-# Download
-wget https://twisteros.com/wine.tgz -O ~/wine.tgz || error 'Failed to download wine!'
-tar zxf ~/wine.tgz || error 'Failed to extract wine!'
-rm ~/wine.tgz
-[ ! -f ~/wine/bin/wine ] && error "the wine.tgz extraction succeeded, but the file '$HOME/wine/bin/wine' is missing!"
+install_packages cabextract p7zip-full || exit 1
+# Download wine to /opt
+wget https://github.com/phoenixbyrd/TwisterOS/raw/master/wine.tgz -O ~/wine.tgz || error 'Failed to download wine!'
+sudo tar zxf ~/wine.tgz -C /opt || error 'Failed to extract wine!'
+rm -f ~/wine.tgz
+[ ! -f /opt/wine/bin/wine ] && error "The wine.tgz extraction succeeded, but the file '/opt/wine/bin/wine' is missing!"
 
-# Install
-#sudo ln -s ~/wine/bin/wine /usr/local/bin/wine
-sudo ln -s ~/wine/bin/winecfg /usr/local/bin/winecfg
-sudo ln -s ~/wine/bin/wineserver /usr/local/bin/wineserver
-sudo ln -s ~/wine/bin/wineboot /usr/local/bin/wineboot
+#download winetricks
+wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /opt/wine/bin/winetricks || error "Failed to download winetricks!"
+chmod +x /opt/wine/bin/winetricks
 
+#download Mono to universal location (to be installed automatically in all wine prefixes)
+#according to https://wiki.winehq.org/Mono#Versions, use Mono 5.1.0 for Wine 5.13
+mkdir -p /opt/wine/mono
+wget -O "/opt/wine/mono/wine-mono-5.1.0-x86.msi" 'https://dl.winehq.org/wine/wine-mono/5.1.0/wine-mono-5.1.0-x86.msi'
+
+#download Gecko to universal location (to be installed automatically in all wine prefixes)
+#according to https://wiki.winehq.org/Gecko, use Gecko 2.47.1 for Wine 5.13
+mkdir -p /opt/wine/gecko
+wget -O "/opt/wine/gecko/wine-gecko-2.47.1-x86.msi" 'https://dl.winehq.org/wine/wine-gecko/2.47.1/wine-gecko-2.47.1-x86.msi'
+
+status "Creating terminal commands:"
+echo "  - winecfg"
+sudo ln -s /opt/wine/bin/winecfg /usr/local/bin/winecfg
+echo "  - wineserver"
+sudo ln -s /opt/wine/bin/wineserver /usr/local/bin/wineserver
+echo "  - wineboot"
+sudo ln -s /opt/wine/bin/wineboot /usr/local/bin/wineboot
+
+echo "  - wine"
 echo "#!/bin/bash
-setarch linux32 -L $HOME/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
-sudo chmod +x /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg
+export LD_LIBRARY_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/
+export LIBGL_DRIVERS_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/dri/  
+export VK_ICD_FILENAMES=/opt/wine/mesa/share/vulkan/icd.d/broadcom_icd.armv7l.json
+setarch linux32 -L /opt/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
 
-sudo wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks || error "Failed to download winetricks!"
-sudo chmod +x /usr/local/bin/winetricks
-#create menu button to winecfg
+echo "  - winetricks"
+echo "#!/bin/bash
+BOX86_NOBANNER=1 /opt/wine/bin/winetricks"' "$@"' | sudo tee /usr/local/bin/winetricks >/dev/null
+#make them all executable
+status -n "Making executable... "
+sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/wine /usr/local/bin/winetricks || error "\nFailed to mark all commands as executable. Most likely one failed to be generated or copied. These files are:\n/usr/local/bin/winecfg\n/usr/local/bin/wineserver\n/usr/local/bin/wineboot\n/usr/local/bin/wine\n/usr/local/bin/winetricks"
+status_green "Done"
+echo
+
+#get mesa and icons from wine-stuff repo
+rm -rf "$PWD/wine-stuff"
+git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
+sudo mv "$PWD/wine-stuff/icons" /opt/wine
+sudo mv "$PWD/wine-stuff/mesa" /opt/wine
+rm -rf "$PWD/wine-stuff"
+
+#create menu launchers
+status -n "Creating Menu launchers... "
 echo "[Desktop Entry]
 StartupNotify=true
 Terminal=false
 Type=Application
 Name=Wine Configuration
 Exec=wine winecfg
-Icon=$(dirname "$0")/icon-64.png
+Icon=/opt/wine/icons/winecfg.png
 Categories=System;
 Comment=Configure wine" > ~/.local/share/applications/wine-config.desktop
+
 echo "[Desktop Entry]
 Name=Winetricks
 Comment=Work around problems and install applications under Wine
 Exec=bash -c 'BOX86_NOBANNER=1 box86 winetricks --gui'
 Terminal=false
-Icon=$(dirname "$0")/icon-64.png
+Icon=/opt/wine/icons/winetricks.png
 Type=Application
 Categories=System;" > ~/.local/share/applications/wine-tricks.desktop
+
 echo "[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Wine Desktop
 Comment=Wine graphical desktop environment to mimic a Windows OS
-Icon=$(dirname "$0")/icon-64.png
+Icon=/opt/wine/icons/wine-desktop.png
 Exec=wine explorer /desktop=shell,1280x720
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
@@ -192,7 +229,7 @@ Version=1.0
 Type=Application
 Name=Wine Program Manager
 Comment=Install/Remove Windows programs
-Icon=$(dirname "$0")/icon-64.png
+Icon=/opt/wine/icons/wine-program-manager.png
 Exec=wine uninstaller
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-uninstaller.desktop
@@ -202,23 +239,66 @@ Version=1.0
 Type=Application
 Name=Wine Task Manager
 Comment=View running processes within Wine
-Icon=$(dirname "$0")/icon-64.png
+Icon=/opt/wine/icons/winetask.png
 Exec=wine taskmgr
 Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-taskmgr.desktop
 
-# Boot wine (make fresh wineprefix in ~/.wine
-BOX86_NOBANNER=1
-setarch linux32 -L box86 ~/wine/bin/wine wineboot
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Killer
+Comment=Terminate any running Wine processes
+Icon=/opt/wine/icons/winestop.png
+Exec=wineserver -k
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-killer.desktop
 
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Reset
+Comment=Clean out the default Wine prefix and start over
+Icon=/opt/wine/icons/wine-regenerate.png
+Exec=bash -c "\""yad --window-icon=/opt/wine/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && winetricks annihilate && wine wineboot"\""
+Terminal=false
+Categories=System;" > ~/.local/share/applications/wine-regenerate.desktop
+status_green "Done"
+
+echo
+if [ -e "$HOME/.wine" ];then
+  status "Checking Wine prefix..."
+else
+  status "Generating Wine prefix..."
+fi
+sleep 5
+
+# Boot wine (make fresh wineprefix in ~/.wine
+export BOX86_NOBANNER=1 #hide box86 output (for cosmetics)
+#export WINEDLLOVERRIDES="mscoree,mshtml=" #Avoid asking user to install gecko or mono
+wine wineboot #this won't display any dialog boxes that require a button to be clicked
 #wait until above process exits
+sleep 2
 while [ ! -z "$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
-echo "First wineboot finished. Now updating wine prefix..."
+
+#install some packages with winetricks for a better out-of-the-box experience
+export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
+for i in mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 ;do
+  echo
+  status "Installing $i with winetricks..."
+  winetricks $i
+done
+status "Winetricks finished"
 
 #update the wine prefix (~/.wine) to fix the issue that causes wine to not know its system drive
-#running as background process - terminal will exit but that's ok
-setsid wine wineboot -u
+wine wineboot -u
+#wait until above process exits
+sleep 2
+while [ ! -z "$(pgrep -i 'wine C:')" ];do
+  sleep 1
+done
 
 exit 0
+
