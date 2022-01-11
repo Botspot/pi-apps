@@ -32,20 +32,17 @@ status_green() { #announce the success of a major action
 generate_logo() { #display colorized Pi-Apps logo in terminal
   #generate pi-apps logo
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
-  blue_text='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
-  green_text='\e[38;5;46m'
-  darkgreen_text='\e[38;5;34m'
-  red_text='\e[38;5;197m'
-  white_text='\e[97m'
-  default_background='\e[49m'
-  white_background='\e[107m'
-  black_background='\e[40m'
-  echo -e "${black_background}${white_text}    ${green_text}🭊${darkgreen_text}▅▅▅▅${green_text}🬿${black_background}${white_text}
- ${blue_text}🭈▂▂${green_text}█${blue_text}▂▂▂▂${green_text}█${blue_text}▂▂🬽${black_background}${white_text}                    
- ${white_background}${blue_text}▌  ${red_text}${black_background}▗▖▗▖▗▖${white_background}${blue_text}  ▐${black_background}${white_text}   █▀█ █ ▄▄ ▄▀█ █▀█ █▀█ █▀
- ${white_background}${blue_text}▌  ${red_text}${black_background}▗▖▗▖▗▖${white_background}${blue_text}  ▐${black_background}${white_text}   █▀▀ █    █▀█ █▀▀ █▀▀ ▄█
- ${white_background}${blue_text}▌  ${red_text}${black_background}▗▖▗▖▗▖${white_background}${blue_text}  ▐${black_background}${white_text}
- ${blue_text}🭓${white_background}🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭${black_background}🭞${default_background} ${black_background}${white_text}\e[0m\n" 
+  blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
+  green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
+  red='\e[38;5;197m'
+  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
+ ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
+\e[0m\e[0m"
 }
 
 generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
