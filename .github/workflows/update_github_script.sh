@@ -48,15 +48,15 @@ status "The latest online version is:  $webVer"
 
 #set defaults for pi_app_ver if not supplied
 if [ -z "$pi_apps_ver_32" ] && [ -n "$armhf_url" ]; then
-    pi_apps_ver_32="$(cat 'install-32' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//")"
+    pi_apps_ver_32="$(cat 'install-32' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
 if [ -z "$pi_apps_ver_64" ] && [ -n "$arm64_url" ]; then
-    pi_apps_ver_64="$(cat 'install-64' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//")"
+    pi_apps_ver_64="$(cat 'install-64' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
 if [ -z "$pi_apps_ver" ] && [ -n "$all_url" ]; then
-    pi_apps_ver="$(cat 'install' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//")"
+    pi_apps_ver="$(cat 'install' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
 # install-32 exists
