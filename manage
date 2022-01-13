@@ -91,13 +91,36 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   IFS=$'\n'
   for app in $app_list ;do
     if [ "$(app_status "${app}")" == "${action}ed" ];then
-      yad --text="$app is already ${action}ed. Are you sure you want to $action it again?" \
+      yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
         --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
       
       if [ $? != 0 ];then
         #user clicked No, so remove the app from list
         app_list="$(echo "$app_list" | grep -vx "$app")"
+      fi
+    fi
+  done
+  
+  #Check if any apps are updatable and ask user if they really want to install/uninstall an outdated version
+  for app in $app_list ;do
+    #determine the filename for the app's script to be run
+    if [ $action == install ];then
+      script_name_cpu="$(script_name_cpu "$app")"
+    elif [ $action == uninstall ];then
+      script_name_cpu='uninstall'
+    fi
+    #if the app-script doesn't match version in update folder
+    if ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+      yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to $action an outdated version, or you've made changes to the script yourself."$'\n'"Would you like to update $app before ${action}ing it?" \
+        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
+        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+      
+      if [ $? == 0 ];then
+        #if user clicked Yes, update the app first
+        rm -rf "${DIRECTORY}/apps/${app}"
+        #copy new version from update/ to apps/
+        cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
       fi
     fi
   done
