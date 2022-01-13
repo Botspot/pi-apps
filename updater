@@ -59,11 +59,11 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
   
   #list all files in update folder
   cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
-  local updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+  local updatefiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^data/')"
 
   #list all files in main folder
   cd "${DIRECTORY}"
-  local localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'logs/' | grep -v 'xlunch/')"
+  local localfiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^update/\|^data/\|^logs/\|^xlunch/')"
 
   echo -e "${localfiles}\n${updatefiles}" | sort | uniq
   cd $HOME
@@ -324,6 +324,9 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
 
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
+    exit 0
+  elif [ -z "$updatable_files" ] && [ -z "$(echo "$updatable_apps" | list_intersect "$(list_apps installed)")" ];then
+    status "No installed apps are updatable."
     exit 0
   fi
   
