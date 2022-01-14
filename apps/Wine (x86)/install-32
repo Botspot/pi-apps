@@ -14,6 +14,7 @@ if [ ! -e /proc/config.gz ];then
     error "/proc/config.gz does not exist after running sudo modprobe configs!"
   fi
 fi
+
 vmsplit_output="$(gunzip < /proc/config.gz | grep VMSPLIT)"
 if [ -z "$vmsplit_output" ];then
   kernel="$(uname -m)"
@@ -26,9 +27,12 @@ if [ -z "$vmsplit_output" ];then
   fi
 elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_output" | grep -q "^# CONFIG_VMSPLIT_3G is not set" ;then
   
-  #ensure hardware is pi3 for kernel compiling to work
+  #ensure hardware is armv7 for kernel compiling to work
   if [ "$hardware" != 'pi3' ];then
-    error "This script is not capable of handling your $hardware board with a 2G/2G memory split.\nWhatever you did to get yourself into this situation, undo it and try installing Wine again."
+    error "User error: This script is not capable of handling your $hardware board with a 2G/2G memory split.\nWhatever you did to get yourself into this situation, undo it and try installing Wine again."
+  #ensure /boot/config.txt exists to make sure this is a rpi board
+  elif [ ! -f /boot/config.txt ];then
+    error "User error: Your system is not currently compatible with Wine. It needs a kernel with 3G/1G memory split. This is easy to do: switch to the 64-bit kernel by adding a line to /boot/config.txt. However, that file does not exist. Most likely you are trying to use Pi-Apps on an unsupported device or operating system."
   fi
   
   #continue asking until valid answer
@@ -143,24 +147,27 @@ sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserve
 # Get dependencies
 install_packages cabextract p7zip-full || exit 1
 # Download wine to /opt
-wget https://github.com/phoenixbyrd/TwisterOS/raw/master/wine.tgz -O ~/wine.tgz || error 'Failed to download wine!'
-sudo tar zxf ~/wine.tgz -C /opt || error 'Failed to extract wine!'
-rm -f ~/wine.tgz
+wget https://github.com/phoenixbyrd/TwisterOS/raw/master/wine.tgz -O /tmp/wine.tgz || error 'Failed to download wine!'
+sudo tar zxf /tmp/wine.tgz -C /opt --no-same-owner || error 'Failed to extract wine!' #use the --no-same-owner flag, because we want the folder's owner to be root, not hardcoded as pi.
+rm -f /tmp/wine.tgz
 [ ! -f /opt/wine/bin/wine ] && error "The wine.tgz extraction succeeded, but the file '/opt/wine/bin/wine' is missing!"
 
 #download winetricks
-wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /opt/wine/bin/winetricks || error "Failed to download winetricks!"
-chmod +x /opt/wine/bin/winetricks
+wget -O /tmp/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" || exit 1
+sudo mv /tmp/winetricks /opt/wine/bin/winetricks || error "Failed to move winetricks script to /opt/wine/bin folder!"
+sudo chmod +x /opt/wine/bin/winetricks
 
 #download Mono to universal location (to be installed automatically in all wine prefixes)
 #according to https://wiki.winehq.org/Mono#Versions, use Mono 5.1.0 for Wine 5.13
-mkdir -p /opt/wine/mono
-wget -O "/opt/wine/mono/wine-mono-5.1.0-x86.msi" 'https://dl.winehq.org/wine/wine-mono/5.1.0/wine-mono-5.1.0-x86.msi'
+sudo mkdir -p /opt/wine/mono
+wget -O "/tmp/wine-mono-5.1.0-x86.msi" 'https://dl.winehq.org/wine/wine-mono/5.1.0/wine-mono-5.1.0-x86.msi' || exit 1
+sudo mv "/tmp/wine-mono-5.1.0-x86.msi" "/opt/wine/mono/wine-mono-5.1.0-x86.msi" || exit 1
 
 #download Gecko to universal location (to be installed automatically in all wine prefixes)
 #according to https://wiki.winehq.org/Gecko, use Gecko 2.47.1 for Wine 5.13
-mkdir -p /opt/wine/gecko
-wget -O "/opt/wine/gecko/wine-gecko-2.47.1-x86.msi" 'https://dl.winehq.org/wine/wine-gecko/2.47.1/wine-gecko-2.47.1-x86.msi'
+sudo mkdir -p /opt/wine/gecko
+wget -O "/tmp/wine-gecko-2.47.1-x86.msi" 'https://dl.winehq.org/wine/wine-gecko/2.47.1/wine-gecko-2.47.1-x86.msi' || exit 1
+sudo mv "/tmp/wine-gecko-2.47.1-x86.msi" "/opt/wine/gecko/wine-gecko-2.47.1-x86.msi" || exit 1
 
 status "Creating terminal commands:"
 echo "  - winecfg"
@@ -180,6 +187,7 @@ setarch linux32 -L /opt/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/d
 echo "  - winetricks"
 echo "#!/bin/bash
 BOX86_NOBANNER=1 /opt/wine/bin/winetricks"' "$@"' | sudo tee /usr/local/bin/winetricks >/dev/null
+
 #make them all executable
 status -n "Making executable... "
 sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/wine /usr/local/bin/winetricks || error "\nFailed to mark all commands as executable. Most likely one failed to be generated or copied. These files are:\n/usr/local/bin/winecfg\n/usr/local/bin/wineserver\n/usr/local/bin/wineboot\n/usr/local/bin/wine\n/usr/local/bin/winetricks"
@@ -187,11 +195,13 @@ status_green "Done"
 echo
 
 #get mesa and icons from wine-stuff repo
+cd /tmp
 rm -rf "$PWD/wine-stuff"
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv "$PWD/wine-stuff/icons" /opt/wine
 sudo mv "$PWD/wine-stuff/mesa" /opt/wine
 rm -rf "$PWD/wine-stuff"
+cd
 
 #create menu launchers
 status -n "Creating Menu launchers... "
@@ -245,6 +255,7 @@ Terminal=false
 Categories=System;" > ~/.local/share/applications/wine-taskmgr.desktop
 
 echo "[Desktop Entry]
+StartupNotify=false
 Version=1.0
 Type=Application
 Name=Wine Killer
