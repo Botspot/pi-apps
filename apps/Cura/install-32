@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=20211110
+version=20220111
 version2=0.4.0
 wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-armhf-${version}.AppImage || error "Failed to download!"
 
