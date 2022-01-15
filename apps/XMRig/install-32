@@ -73,7 +73,7 @@ done
 
 check=0
 until [ "$check" == "1" ]; do
-read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/xmrig.json. " wallet_address
+read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json. " wallet_address
 read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [Y/n] " wallet_conf
 case $wallet_conf in
         Y|y|yes|Yes|YES) check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
@@ -189,8 +189,8 @@ done
 
 cat << EOT | sudo tee /usr/bin/xmrig || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
 #!/bin/bash
-echo -e "\e[96mPress CTRL+C twice to exit.\n\e[0m" 1>&2
-sudo chroot /home/pi/xmrig/bullseye xmrig | grep -v 'unable to open "".' | grep -vq 'unable to open "/root/.xmrig.json".'
+
+sudo chroot /home/pi/xmrig/bullseye xmrig | grep -v 'unable to open "".' | grep -v 'unable to open "/root/.xmrig.json".' | grep -v 'unable to open "/root/.config/xmrig.json".'
 EOT
 sudo chmod 775 /usr/local/bin/xmrig || error 'Failed to make "/usr/local/bin/xmrig" executable!'
 status_green 'Done!'
