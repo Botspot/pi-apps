@@ -1,10 +1,131 @@
 #!/bin/bash
 version=6.16.2
 
+config_helper() {
+# Set mining pool
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032 " pool_pref
+read -p "Your mining pool will be set to ${pool_pref}. Is this ok? [Y/n] " pool_conf
+case $pool_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in '$HOME/.config/xmrig.json.'." ;;
+        N|n|no|No|NO) check=0 ;;
+        *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set SSL/TLS options
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "Does your mining pool support SSL/TLS? If you don't know what this is, just say no. [Y/n] " tls_supp
+if [ "$tls_supp" == "y" ] || [ "$tls_supp" == "Y" ] || [ "$tls_supp" == "Yes" ] || [ "$tls_supp" == "yes" ] || [ "$tls_supp" == "YES" ]; then
+conf_text="WILL"
+inf_text="enabled"
+tls="true"
+elif [ "$tls_supp" == "n" ] || [ "$tls_supp" == "N" ] || [ "$tls_supp" == "No" ] || [ "$tls_supp" == "no" ] || [ "$tls_supp" == "NO" ]; then
+conf_text="WILL NOT"
+inf_text="disabled"
+tls="false"
+fi
+read -p "Your config ${conf_text} support SSL/TLS.  Is this ok? [Y/n] " tls_conf
+case $tls_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your config now has SSL/TLS ${inf_text}. You can change this by editing the '\"tls\":' field in '$HOME/.config/xmrig.json.'." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set keepalive options
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "Does your mining pool support keepalived packets? If you don't know what this is, just say no. [y/N] " keepalived_supp
+if [ "$keepalived_supp" == "y" ] || [ "$keepalived_supp" == "Y" ] || [ "$keepalived_supp" == "Yes" ] || [ "$keepalived_supp" == "yes" ] || [ "$keepalived_supp" == "YES" ]; then
+conf_text="WILL"
+inf_text="enabled"
+keepalived="true"
+elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ]; then
+conf_text="WILL NOT"
+inf_text="disabled"
+keepalived="false"
+fi
+read -p "Your config ${conf_text} support keepalived packets.  Is this ok? [Y/n] " keepalived_conf
+case $keepalived_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your config now has keepalived packets ${inf_text}. You can change this by editing the '\"tls\":' field in '$HOME/.config/xmrig.json'." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set Wallet Address
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json. " wallet_address
+read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [Y/n] " wallet_conf
+case $wallet_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in '$HOME/.config/xmrig.json'." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set miner name
+
+check=0
+read -p "Do you want to name your Miner? [Y/n] " qminername
+if [ "$qminername" == "y" ] || [ "$qminername" == "Y" ] || [ "$qminername" == "Yes" ] || [ "$qminername" == "yes" ] || [ "$qminername" == "YES" ]; then
+until [ "$check" == "1" ]; do
+read -p "What to you want to name your Miner? " miner_name
+read -p "Your Miner's name will be ${miner_name}. Is this ok? [Y/n] " name_conf
+case $name_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in '$HOME/.config/xmrig.json'." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+elif [ "$qminername" == "n" ] || [ "$qminername" == "N" ] || [ "$qminername" == "No" ] || [ "$qminername" == "no" ] || [ "$qminername" == "NO" ]; then
+status "You chose not to name your Miner. If you change your mind, you can edit the '\"rig-id\":' line in '$HOME/.config/xmrig.json'. Continuing..."
+fi
+
+# copy the settings to $HOME/.config/xmrig.json.
+
+cat << EOT | sudo tee $HOME/.config/xmrig.json || error '$HOME/.config/xmrig.json!'
+{
+    "autosave": true,
+    "cpu": true,
+    "opencl": false,
+    "cuda": false,
+    "pools": [
+        {
+            "url": "${pool_pref}",
+            "user": "${wallet_address}",
+            "rig-id": "${miner_name}",
+            "keepalive": ${keepalived},
+            "tls": ${tls}
+        }
+    ]
+}
+EOT
+
+} # End config_helper()
+
 cd $HOME
 install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev || exit 1
 git_clone --branch $version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
 mkdir $HOME/xmrig/build && cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
-sudo make install || error 'Failed to "make install"!'
+sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig
+
+until [ "$check" == "1" ]; do
+read -p "Do you want to setup your xmrig.json? This will make running xmrig easier. [Y/n] " runwiz_pref
+read -p "I will now run the config helper. Is this ok? [Y/n] " runwiz_conf
+case $runwiz_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Starting helper..."; sleep 1; config_helper ;;
+        N|n|no|No|NO) check=1 ;;
+        *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
