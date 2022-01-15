@@ -102,7 +102,7 @@ fi
 
 # copy the settings to xmrig.conf
 
-cat << EOT | sudo tee $chroot_dir/root/.config/.xmrig.json || error 'Failed to make $chroot_dir/root/xmrig.json!'
+cat << EOT | sudo tee $chroot_dir/root/.config/xmrig.json || error 'Failed to make $chroot_dir/root/xmrig.json!'
 {
     "autosave": true,
     "cpu": true,
