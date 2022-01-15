@@ -2,13 +2,13 @@
 version=6.16.2
 
 enable_64bit() {
-sudo cat /boot/config.txt &>/dev/null
-if [ "$?" == "1" ]; then
-error 'I was not able to detect /boot/config.txt! Something is very wrong!'
-fi
+if [ -f /boot/config.txt ]; then
 echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
 echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the XMRig app again."
 sleep infinity
+else
+error 'I was not able to detect /boot/config.txt! Something is very wrong!'
+fi
 }
 
 config_helper() {
@@ -119,7 +119,18 @@ cat << EOT | sudo tee $chroot_dir/root/.config/xmrig.json || error 'Failed to ma
     ]
 }
 EOT
-}
+
+# Create xmrig command in host
+
+cat << EOT | sudo tee /usr/bin/xmrig || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
+#!/bin/bash
+
+sudo chroot /home/pi/xmrig/bullseye xmrig | grep -v 'unable to open "".' | grep -v 'unable to open "/root/.xmrig.json".' | grep -v 'unable to open "/root/.config/xmrig.json".'
+EOT
+sudo chmod 775 /usr/bin/xmrig || error 'Failed to make "/usr/bin/xmrig" executable!'
+status_green 'Done!'
+
+} # End config_helper()
 
 # Hardware and kernel checks
 
@@ -166,7 +177,7 @@ git clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to 
 mkdir /xmrig/build && cd /xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
-cp xmrig /usr/bin/xmrig
+cp xmrig /usr/bin/xmrig || error 'Failed to copy xmrig onto PATH!'
 EOT
 sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh
 status_green 'Done.'
@@ -185,16 +196,19 @@ esac
 done
 
 
-# Make the xmrig shortcut command available in the host
+# Make the xmrig-chroot command
 
-cat << EOT | sudo tee /usr/bin/xmrig || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
+status 'Making xmrig-chroot command...'
+cat << EOT | sudo tee /usr/bin/xmrig-chroot || error 'Failed to make xmrig-chroot command in /usr/bin/xmrig-chroot!'
 #!/bin/bash
-
-sudo chroot /home/pi/xmrig/bullseye xmrig | grep -v 'unable to open "".' | grep -v 'unable to open "/root/.xmrig.json".' | grep -v 'unable to open "/root/.config/xmrig.json".'
+sudo chroot /home/pi/xmrig/bullseye
 EOT
+sudo chmod 775 /usr/bin/xmrig-chroot || error 'Failed to make "/usr/bin/xmrig-chroot" executable!'
+status_green 'Done!'
+
 sudo chmod 775 /usr/local/bin/xmrig || error 'Failed to make "/usr/local/bin/xmrig" executable!'
 status_green 'Done!'
 echo
 status_green "All done!"
-status "You can now run XMRig by running 'xmrig' in from your Terminal.\nDoing this will run 'sudo chroot $HOME/xmrig/bullseye /xmrig/build/xmrig', and try to run XMRig with 'xmrig.conf'. If you did not setup the config file, you can run xmrig like this:\n1. Run 'sudo chroot $HOME/xmrig/bullseye'.\n2. Now that you're inside the chroot, you can just run 'xmrig' with all the flags and arguments you want, or setup a more complex 'xmrig.conf'! Have fun!"
+status "If you chose to run the config helper, you can now run XMRig by running 'xmrig' in from your Terminal.\nDoing this will run 'sudo chroot $HOME/xmrig/bullseye xmrig', and try to run XMRig with '$chroot_dir/root/xmrig.conf'. If you did not setup the config file, you can run xmrig like this:\n1. Run 'xmrig-chroot'.\n2. Now that you're inside the chroot, you can just run 'xmrig' with all the flags and arguments you want, or setup a more complex '$chroot_dir/root/.config/xmrig.json'! Have fun!"
 
