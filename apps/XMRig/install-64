@@ -1,0 +1,10 @@
+#!/bin/bash
+version=6.16.2
+
+cd $HOME
+install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev || exit 1
+git_clone --branch $version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
+mkdir $HOME/xmrig/build && cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
+cmake .. || error 'Failed to generate build files!'
+make -j$(nproc) || error 'Failed to build XMRig!'
+sudo make install || error 'Failed to "make install"!'

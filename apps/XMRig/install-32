@@ -1,0 +1,200 @@
+#!/bin/bash
+version=6.16.2
+
+enable_64bit() {
+sudo cat /boot/config.txt &>/dev/null
+if [ "$?" == "1" ]; then
+error 'I was not able to detect /boot/config.txt! Something is very wrong!'
+fi
+echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
+echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the XMRig app again."
+sleep infinity
+}
+
+config_helper() {
+# Set mining pool
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032 " pool_pref
+read -p "Your mining pool will be set to ${pool_pref}. Is this ok? [Y/n] " pool_conf
+case $pool_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in $HOME/xmrig/bullseye/root/xmrig.json" ;;
+        N|n|no|No|NO) check=0 ;;
+        *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set SSL/TLS options
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "Does your mining pool support SSL/TLS? If you don't know what this is, just say no. [Y/n] " tls_supp
+if [ "$tls_supp" == "y" ] || [ "$tls_supp" == "Y" ] || [ "$tls_supp" == "Yes" ] || [ "$tls_supp" == "yes" ] || [ "$tls_supp" == "YES" ]; then
+conf_text="WILL"
+inf_text="enabled"
+tls="true"
+elif [ "$tls_supp" == "n" ] || [ "$tls_supp" == "N" ] || [ "$tls_supp" == "No" ] || [ "$tls_supp" == "no" ] || [ "$tls_supp" == "NO" ]; then
+conf_text="WILL NOT"
+inf_text="disabled"
+tls="false"
+fi
+read -p "Your config ${conf_text} support SSL/TLS.  Is this ok? [Y/n] " tls_conf
+case $tls_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your config now has SSL/TLS ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set keepalive options
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "Does your mining pool support keepalived packets? If you don't know what this is, just say no. [y/N] " keepalived_supp
+if [ "$keepalived_supp" == "y" ] || [ "$keepalived_supp" == "Y" ] || [ "$keepalived_supp" == "Yes" ] || [ "$keepalived_supp" == "yes" ] || [ "$keepalived_supp" == "YES" ]; then
+conf_text="WILL"
+inf_text="enabled"
+keepalived="true"
+elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ]; then
+conf_text="WILL NOT"
+inf_text="disabled"
+keepalived="false"
+fi
+read -p "Your config ${conf_text} support keepalived packets.  Is this ok? [Y/n] " keepalived_conf
+case $keepalived_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your config now has keepalived packets ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set Wallet Address
+
+check=0
+until [ "$check" == "1" ]; do
+read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/xmrig.json. " wallet_address
+read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [Y/n] " wallet_conf
+case $wallet_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+# Set miner name
+
+check=0
+read -p "Do you want to name your Miner? [Y/n] " qminername
+if [ "$qminername" == "y" ] || [ "$qminername" == "Y" ] || [ "$qminername" == "Yes" ] || [ "$qminername" == "yes" ] || [ "$qminername" == "YES" ]; then
+until [ "$check" == "1" ]; do
+read -p "What to you want to name your Miner? " miner_name
+read -p "Your Miner's name will be ${miner_name}. Is this ok? [Y/n] " name_conf
+case $name_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+        N|n|no|No|NO) check=0 ;;
+	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+elif [ "$qminername" == "n" ] || [ "$qminername" == "N" ] || [ "$qminername" == "No" ] || [ "$qminername" == "no" ] || [ "$qminername" == "NO" ]; then
+status "You chose not to name your Miner. If you change your mind, you can edit the '\"rig-id\":' line in '$HOME/xmrig/bullseye/root/xmrig.json'. Continuing..."
+fi
+
+# copy the settings to xmrig.conf
+
+cat << EOT | sudo tee $chroot_dir/root/.config/.xmrig.json || error 'Failed to make $chroot_dir/root/xmrig.json!'
+{
+    "autosave": true,
+    "cpu": true,
+    "opencl": false,
+    "cuda": false,
+    "pools": [
+        {
+            "url": "${pool_pref}",
+            "user": "${wallet_address}",
+            "rig-id": "${miner_name}",
+            "keepalive": ${keepalived},
+            "tls": ${tls}
+        }
+    ]
+}
+EOT
+}
+
+# Hardware and kernel checks
+
+if grep -q ARMv6 /proc/cpuinfo; then
+  error "XMRig is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
+fi
+
+if [ "$(uname -m)" != "aarch64" ] && [ "$(uname -m)" != "arm64" ]; then
+    while [ "$check" == "0" ]; do
+      read -n 3 -p 'You need a 64-bit kernel to install XMRig. Do you want me to enable 64-bit kernel? [Y/n] ' input
+      case $input in
+              Y|y|yes|Yes|YES) check=1; enable_64bit ;;
+              N|n|no|No|NO) check=1; error "User error: 64-bit kernel is required but user chose to not enable it." ;;
+              *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+      esac
+    done
+elif [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
+    status 'You have a 64-bit kernel. Continuing...'
+fi
+# Setup chroot
+
+install_packages debootstrap
+mkdir -p $HOME/xmrig/
+sudo debootstrap --variant=buildd --arch arm64 bullseye $HOME/xmrig/bullseye http://ftp.us.debian.org/debian/ || error 'Failed to debootstrap chroot environment!!!'
+chroot_dir="$HOME/xmrig/bullseye"
+sudo mkdir -p $chroot_dir/home/$USER/ $chroot_dir/root/.config
+sudo cp /etc/resolv.conf $HOME/xmrig/bullseye/etc/resolv.conf || error "Failed to copy /etc/resolv.conf' into chroot environment!"
+echo "export LANG=C" &>/dev/null | sudo tee --append $HOME/xmrig/bullseye/root/.bashrc || error "Failed to echo 'export LANG=C' to chroot environment's .bashrc"
+
+status 'Generating chroot XMRig install script...'
+sudo touch $chroot_dir/chroot-xmrig-inst.sh
+sudo cat << EOT | sudo tee $chroot_dir/chroot-xmrig-inst.sh || error 'Failed to create XMRig install script!'
+#!/bin/bash
+version=$version
+apt-get update
+#install xmrig
+error() { #red text and exit 1
+  echo -e "\e[91m$1\e[0m" 1>&2
+  exit 1
+}
+
+apt install git build-essential cmake make libuv1-dev libssl-dev libhwloc-dev -y || error 'Failed to install dependecies!'
+git clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
+mkdir /xmrig/build && cd /xmrig/build || error 'Failed to create and cd into build directory!'
+cmake .. || error 'Failed to generate build files!'
+make -j$(nproc) || error 'Failed to build XMRig!'
+cp xmrig /usr/bin/xmrig
+EOT
+sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh
+status_green 'Done.'
+# Run install script
+sudo chroot $HOME/xmrig/bullseye ./chroot-xmrig-inst.sh
+
+# Setup xmrig command
+until [ "$check" == "1" ]; do
+read -p "Do you want to setup your xmrig.json? This will make running xmrig easier. [Y/n] " runwiz_pref
+read -p "I will now run the config helper. Is this ok? [Y/n] " runwiz_conf
+case $runwiz_conf in
+        Y|y|yes|Yes|YES) check=1; status_green "Starting helper..."; sleep 1; config_helper ;;
+        N|n|no|No|NO) check=1 ;;
+        *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+esac
+done
+
+
+# Make the xmrig shortcut command available in the host
+
+cat << EOT | sudo tee /usr/bin/xmrig || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
+#!/bin/bash
+echo -e "\e[96mPress CTRL+C twice to exit.\n\e[0m" 1>&2
+sudo chroot /home/pi/xmrig/bullseye xmrig | grep -v 'unable to open "".' | grep -vq 'unable to open "/root/.xmrig.json".'
+EOT
+sudo chmod 775 /usr/local/bin/xmrig || error 'Failed to make "/usr/local/bin/xmrig" executable!'
+status_green 'Done!'
+echo
+status_green "All done!"
+status "You can now run XMRig by running 'xmrig' in from your Terminal.\nDoing this will run 'sudo chroot $HOME/xmrig/bullseye /xmrig/build/xmrig', and try to run XMRig with 'xmrig.conf'. If you did not setup the config file, you can run xmrig like this:\n1. Run 'sudo chroot $HOME/xmrig/bullseye'.\n2. Now that you're inside the chroot, you can just run 'xmrig' with all the flags and arguments you want, or setup a more complex 'xmrig.conf'! Have fun!"
+

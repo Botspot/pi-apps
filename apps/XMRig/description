@@ -1,0 +1,8 @@
+XMRig is a RandomX, KawPow, CryptoNight, AstroBWT and GhostRider unified CPU/GPU cryptominer and RandomX benchmark
+
+Run from Terminal: xmrig [OPTIONS]
+
+See the website for more information.
+
+If you want to get started mining right away, go to https://wallet.mymonero.com/, create a wallet, and save the mnumonic somewhere safe. Copy the below command into a terminal. Once you're logged in to the Web Wallet, click on "My Monero Wallet", copy the Wallet Address, and paste it where YOUR_WALLET_ADDRESS is in the command you just copied. Have fun!
+xmrig -o gulf.moneroocean.stream:10032 -u YOUR_WALLET_ADDRESS

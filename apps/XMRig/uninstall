@@ -1,0 +1,4 @@
+#!/bin/bash
+purge_installed || exit 1
+rm -rf $HOME/xmrig || sudo rm -rf $HOME/xmrig || error 'Failed to remove $HOME/xmrig dir!'
+sudo rm /usr/local/bin/xmrig || error 'Failed to remove "xmrig" command!'
