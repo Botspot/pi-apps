@@ -1,5 +1,5 @@
 #!/bin/bash
-version=1.1.4
+version=1.2.0
 mkdir btop && cd btop
 wget https://github.com/aristocratos/btop/releases/download/v${version}/btop-armv7l-linux-musleabihf.tbz || error 'Failed to download "btop-armv7l-linux-musleabihf.tbz"!'
 tar -xjf btop-armv7l-linux-musleabihf.tbz|| error 'Failed to decompress "btop-armv7l-linux-musleabihf.tbz"!'
