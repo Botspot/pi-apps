@@ -36,7 +36,7 @@ To learn more:
   > "Thanks so much to Botspot for creating this; it's a great program."
 
 ## To install Pi-Apps
-```
+```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
