@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version=3.7.6
+version=3.8.0
 install_packages openjdk-11-jdk rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1
