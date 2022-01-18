@@ -1,0 +1,24 @@
+#!/bin/bash
+version=7.2.1
+
+rm -rf "$HOME/powershell"
+install_packages libssl1.1 libunwind8 || exit 1
+wget https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-arm${arch}.tar.gz || exit 1
+mkdir -p ~/powershell || error "Unable to create Powershell Directory!"
+tar -xf ./powershell-${version}-linux-arm${arch}.tar.gz -C ~/powershell || error "Unable to extract / copy Powershell to directory!"
+rm -f ./powershell-${version}-linux-arm${arch}.tar.gz || sudo rm -f ./powershell-${version}-linux-arm${arch}.tar.gz
+status 'Creating symlink...'
+sudo "$HOME/powershell/pwsh" -command 'New-Item -ItemType SymbolicLink -Path "/usr/local/bin/pwsh" -Target "$PSHOME/pwsh" -Force' || error "Unable to link Powershell to /usr/local/bin!"
+
+status 'Creating menu entry...'
+echo "[Desktop Entry]
+Version=${version}
+Name=Microsoft PowerShell
+GenericName=shell
+Exec=pwsh %U
+Terminal=true
+X-MultipleArgs=false
+Type=Application
+Icon=$(dirname "$0")/icon-64.png
+Categories=Utility
+StartupNotify=true" >> $HOME/.local/share/applications/powershell.desktop || error 'Failed to create menu entry!'
