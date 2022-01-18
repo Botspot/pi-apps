@@ -1617,7 +1617,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
+  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then

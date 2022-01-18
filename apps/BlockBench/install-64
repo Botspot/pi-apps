@@ -1,4 +1,4 @@
 #!/bin/bash
 
-install_packages https://apt.raspbian-addons.org/debian/pool/main/b/blockbench/blockbench_4.1.2-364_arm64.deb || exit 1
+install_packages https://apt.raspbian-addons.org/debian/pool/main/b/blockbench/blockbench_4.1.3-365_arm64.deb || exit 1
 
