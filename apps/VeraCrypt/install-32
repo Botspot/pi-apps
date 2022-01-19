@@ -2,5 +2,5 @@
 
 version=1.25.4
 
-install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%201.24-Update7/veracrypt-${version}-Debian-10-armhf.deb/download || exit 1
+install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-armhf.deb/download || exit 1
 
