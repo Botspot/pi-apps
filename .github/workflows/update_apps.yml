@@ -51,7 +51,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           apps=( .github/workflows/updates/*.sh )
           for app_directory in "${apps[@]}"; do
-	    echo
+            echo
             #make sure we are still in the main workspace (incase an update script left off elsewhere)
             cd $GITHUB_WORKSPACE
             export app_name="$(echo ${app_directory%.*} | sed 's:.*/::')"
