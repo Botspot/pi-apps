@@ -1,12 +1,12 @@
 #!/bin/bash
 #change version to latest each time
-VER="1.0.8"
+version="1.0.8"
 rm -rf ~/usbimager
 mkdir -p ~/usbimager
 cd ~/usbimager
 
 echo "Downloading..."
-wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${VER}-armv7l-linux-x11.zip || error "Failed to download usbimager.zip!"
+wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${version}-armv7l-linux-x11.zip || error "Failed to download usbimager.zip!"
 echo "Extracting..."
 unzip $(pwd)/usbimager.zip || error "Failed to extract!"
 rm -f $(pwd)/usbimager.zip

@@ -36,16 +36,17 @@ To learn more:
   > "Thanks so much to Botspot for creating this; it's a great program."
 
 ## To install Pi-Apps
-```
+```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
-Supported systems:
+    
+#### Supported systems:
 
 - [Raspberry Pi OS 32 and 64-bit](https://www.raspberrypi.com/software/operating-systems/): fully supported.
 - [Twister OS](https://twisteros.com/download.html): fully supported, preinstalled.
 - [AmogOS for Raspberry Pi](https://www.amogos.studio/): fully supported, preinstalled.
-- Raspberry Pi OS Bullseye, Kali Linux, Ubuntu, Ubuntu Mate: you may encounter errors for some apps.
+- Raspberry Pi OS Bullseye, Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: you may encounter errors for some apps.
 - Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
 <details>
@@ -95,12 +96,18 @@ Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENT
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
 Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
+
 - After selecting a category, you will see a list of apps:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
-- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
+
+- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the 
+
+**Details window**.  
 ![details](icons/screenshots/details%20window.png?raw=true)  
+
 - Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
 ![updates](icons/screenshots/updates%20available.png?raw=true)  
+
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
 
@@ -123,7 +130,9 @@ You can also join our cheerful community: <img src="https://img.shields.io/disco
 
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
+
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
+
 Embed code:  
 ```
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  

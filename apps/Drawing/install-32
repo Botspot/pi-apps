@@ -2,5 +2,7 @@
 
 #PACKAGES FOUND IN: https://launchpad.net/~cartes/+archive/ubuntu/ppa/+packages
 
-install_packages https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_0.8.5-0ubuntu1~focal_armhf.deb || exit 1
+version=0.8.5-0ubuntu1~focal
+
+install_packages https://launchpad.net/~cartes/+archive/ubuntu/drawing/+files/drawing_${version}_armhf.deb || exit 1
 
