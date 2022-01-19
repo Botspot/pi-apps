@@ -1,6 +1,8 @@
 #!/bin/bash
 
-install_packages https://apt.raspbian-addons.org/debian/pool/main/s/stuntrally/stuntrally_2.6.1-1_armhf.deb || exit 1
+version=2.6.1-1
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/s/stuntrally/stuntrally_${version}_armhf.deb || exit 1
 
 mkdir -p ~/.config/stuntrally
 echo '

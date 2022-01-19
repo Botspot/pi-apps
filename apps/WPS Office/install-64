@@ -2,4 +2,6 @@
 
 #package found in: https://linux.wps.cn/
 
-install_packages https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/10702/wps-office_11.1.0.10702_arm64.deb xdg-utils libglu1-mesa bsdmainutils locales || exit 1
+version=11.1.0.10702
+
+install_packages "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" xdg-utils libglu1-mesa bsdmainutils locales || exit 1
