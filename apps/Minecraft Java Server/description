@@ -1,0 +1,13 @@
+This is a simple tool to create a Minecraft server of whatever version you choose.
+
+You can play over your local network
+
+Minecraft Server for the Raspberry Pi
+To run: Menu -> Games -> Minecraft Java Server
+Attach to a server in the background with: screen -r Minecraft_Server
+Detach from a running server session with: CTRL+A then D
+To start from a terminal: sudo systemctl start minecraft-server
+To stop the server: sudo systemctl stop minecraft-server
+To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
+
+Temurin (Adoptium) or AdoptOpenJDK Java 8/16/17 apt repos are used in this installer for compatibility.
