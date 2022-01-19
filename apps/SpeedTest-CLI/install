@@ -1,6 +1,7 @@
 #!/bin/bash
 
 version=1.1.1
+
 case "$arch" in
     "64") tar_arch="aarch64" ;;
     "32") tar_arch="armhf" ;;
@@ -30,4 +31,3 @@ echo "#!/bin/bash
 $HOME/speedtest/speedtest \"\$@\"" | sudo tee /usr/local/bin/speedtest >/dev/null
 sudo chmod +x /usr/local/bin/speedtest
 echo "done"
-

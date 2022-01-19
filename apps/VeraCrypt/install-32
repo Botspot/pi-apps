@@ -1,4 +1,6 @@
 #!/bin/bash
 
-install_packages 'https://sourceforge.net/projects/veracrypt/files/VeraCrypt%201.24-Update7/veracrypt-1.24-Update7-Debian-10-armhf.deb/download' || exit 1
+version=1.25.4
+
+install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%201.24-Update7/veracrypt-${version}-Debian-10-armhf.deb/download || exit 1
 
