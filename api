@@ -1348,7 +1348,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
-    error_caption+=("Download failed. Check your internet connection and try again.")
+    error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
@@ -1520,7 +1520,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
   
-  errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
@@ -1537,7 +1537,7 @@ send_error_report_gui() { #Ask user for permission to send error report
     --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
     --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent.":"bash -c 'view_file "\""$1"\""'" \
     --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
-  button=$?
+  local button=$?
   #echo "Button: $button"
   
   if [ "$button" == 0 ];then
@@ -1691,29 +1691,6 @@ get_device_info() { #returns information about current install and hardware
     echo "Language: $LC_ALL"
   fi
   
-}
-
-functions_to_files() { #for every function, create a bash script for every function
-  local functions="$(cat "${DIRECTORY}/api" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
-  
-  mkdir -p "${DIRECTORY}/function-files"
-  
-  local IFS=$'\n'
-  local function
-  for function in $functions ;do
-    echo '#!/bin/bash' > "${DIRECTORY}/function-files/$function"
-    sed -n -e "/${function}() {/,/^}"\$"/p" "$file" | sed 's/.*() {.//g' | sed 's/^}$//g' >> "${DIRECTORY}/function-files/$function"
-    chmod u+x "${DIRECTORY}/function-files/$function"
-  done
-}
-
-files_to_functions() { #turn every file in the function-files directory back into a collection of functions
-  local IFS=$'\n'
-  for file in $(find "${DIRECTORY}/function-files" -type f) ;do
-    echo -ne "\n$(basename "$file")() { "
-    cat "$file" | grep -v '#!/bin/bash'
-    echo '}'
-  done
 }
 
 get_codename() { #get debian/ubuntu codename
