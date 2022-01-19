@@ -4,36 +4,37 @@ status "This script helps you setup a Minecraft-Java-Server (for any version)."
 
 # userinput function to display yad prompts to the user
 function userinput_func {
-    unset uniq_selection
-    if [[ "${#@}" == "2" ]];then
-        echo -e "$1" |  yad --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
-        --text-info --fontname="@font@ 11" --wrap --width=800 --height=200 --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
-        --show-uri \
-        --button="$2":0
-        output="$2"
-    else
-        for string in "${@:2}"; do
-        uniq_selection+=(FALSE "$string")
-        done
-        uniq_selection[0]=TRUE
-        output=$(
-        yad --center \
-            --borders="20" \
-            --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
-            --text "$1" \
-            --list \
-            --radiolist \
-            --center \
-            --fixed \
-            --height="400" \
-            --column "" \
-            --column "Selection" \
-            --print-column=2 \
-            --separator='' \
-            --button="Ok":0 \
-            "${uniq_selection[@]}"
-        )
-    fi
+  unset uniq_selection
+  if [[ "${#@}" == "2" ]];then
+    echo -e "$1" |  yad --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
+    --text-info --fontname="@font@ 11" --wrap --width=800 --height=200 --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
+    --show-uri \
+    --button="$2":0
+    output="$2"
+  else
+    for string in "${@:2}"; do
+    uniq_selection+=(FALSE "$string")
+    done
+    uniq_selection[0]=TRUE
+    output=$(
+    yad --center \
+      --borders="20" \
+      --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --fixed \
+      --height="400" \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="Ok":0 \
+      "${uniq_selection[@]}"
+    )
+  fi
 }
 
 mkdir -p "$HOME/Minecraft-Java-Server"
@@ -49,34 +50,34 @@ server_type="$output"
 xdg-open "$HOME/Minecraft-Java-Server" 2>/dev/null
 
 case "$server_type" in
-    "Vanilla")
-        # open browser to download the server version of user choice
-        setsid x-www-browser "https://mcversions.net/" > /dev/null 2>&1 &
-        server_jar="server.jar"
-        ;;
-    "Fabric")
-        # open browser to download the server version of user choice
-        setsid x-www-browser "https://fabricmc.net/use/server/" > /dev/null 2>&1 &
-        server_jar="fabric-server*.jar"
-        
-        ;;
-    "Forge")
-        # open browser to download the server version of user choice
-        setsid x-www-browser "https://files.minecraftforge.net/net/minecraftforge/forge/" > /dev/null 2>&1 &
-        server_jar="forge-*-installer.jar"
-        ;;
-    *)
-        error "You did not choose an option, exiting the script."
-        ;;
+  "Vanilla")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://mcversions.net/" > /dev/null 2>&1 &
+    server_jar="server.jar"
+    ;;
+  "Fabric")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://fabricmc.net/use/server/" > /dev/null 2>&1 &
+    server_jar="fabric-server*.jar"
+    
+    ;;
+  "Forge")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://files.minecraftforge.net/net/minecraftforge/forge/" > /dev/null 2>&1 &
+    server_jar="forge-*-installer.jar"
+    ;;
+  *)
+    error "You did not choose an option, exiting the script."
+    ;;
 esac
 
 
 while [[ ! -a $(echo ${server_jar}) ]]; do
-    description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
-    \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
-    \n\nYou have not added a ${server_jar}."
-    table=("OK")
-    userinput_func "$description" "${table[@]}"
+  description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
+  \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
+  \n\nYou have not added a ${server_jar}."
+  table=("OK")
+  userinput_func "$description" "${table[@]}"
 done
 
 # use * to get full name of server jar
@@ -93,134 +94,129 @@ table=("Java 17" "Java 16" "Java 8")
 userinput_func "$description" "${table[@]}"
 java_selection="$output"
 
-install_packages lsb-release wget gpg screen || error "Failed to install dependencies"
+install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
-    "Java 8"|"Java 17")
-        # temurin repo is NOW live
-        # add temurin repo for java 8/11/17
-        status "Adding Adoptium repository:"
+  "Java 8"|"Java 17")
+    # temurin repo is NOW live
+    # add temurin repo for java 8/11/17
+    status "Adding Adoptium repository:"
 
-        echo "- public key -> keyring"
-        rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-        wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-        gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-        rm -f /tmp/adoptium-public-key
+    echo "- public key -> keyring"
+    rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+    wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public || exit 1
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key || error "Failed to create a keyring with gpg"
+    rm -f /tmp/adoptium-public-key
 
-        echo " - keyring -> GPG key"
-        gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-        rm -f /tmp/adoptium-keyring.gpg
+    echo " - keyring -> GPG key"
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg || error "Failed to create a GPG key"
+    rm -f /tmp/adoptium-keyring.gpg
 
-        echo " - Moving GPG key to /usr/share/keyrings"
-        sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+    echo " - Moving GPG key to /usr/share/keyrings"
+    sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
 
-        echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-        echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-        sudo apt update
-        ;;
-    "Java 16")
-        # add old adoptopenjdk for java 16
-        status "Adding AdoptOpenJDK repository:"
+    echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  "Java 16")
+    # add old adoptopenjdk for java 16
+    status "Adding AdoptOpenJDK repository:"
 
-        echo "- public key -> keyring"
+    echo "- public key -> keyring"
 
-        rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
-        wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-        gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key
-        rm -f /tmp/adoptopenjdk-public-key
+    rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
+    wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public || exit 1
+    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key || error "Failed to create a keyring with gpg"
+    rm -f /tmp/adoptopenjdk-public-key
 
-        echo " - keyring -> GPG key"
-        gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg 
-        rm -f /tmp/adoptopenjdk-keyring.gpg
+    echo " - keyring -> GPG key"
+    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg || error "Failed to create a GPG key"
+    rm -f /tmp/adoptopenjdk-keyring.gpg
 
-        echo " - Moving GPG key to /usr/share/keyrings"
-        sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings
+    echo " - Moving GPG key to /usr/share/keyrings"
+    sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
 
-        echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
-        echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
-        sudo apt update
-        ;;
-    *)
-        error "No java version selected, exiting the script"
-        ;;
+    echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
+    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+    ;;
+  *)
+    error "No java version selected, exiting the script"
+    ;;
 esac
 
 case "$arch" in
-    "64")
-        dpkg_arch="arm64"
-        ;;
-    "32")
-        dpkg_arch="armhf"
-        ;;
-    *)
-        error "arch variable is not set, can not continue"
-        ;;
+  "64")
+    dpkg_arch="arm64"
+    ;;
+  "32")
+    dpkg_arch="armhf"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    ;;
 esac
 
 case "$java_selection" in
-    "Java 8")
-        (install_packages temurin-8-jdk)
-        if [ $? != 0 ]; then
-            anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
-            if [ $? != 0 ]; then
-                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-                # safe to remove
-                sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                error "Failed to install temurin packages. Adoptium repository has been removed."
-            else
-                error "Failed to install temurin packages."
-            fi
-        fi
-        java_location="/usr/lib/jvm/temurin-8-jdk-$dpkg_arch/bin/java"
-        ;;
-    "Java 16")
-        (install_packages adoptopenjdk-16-hotspot-jre)
-        if [ $? != 0 ]; then
-            anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb"
-            if [ $? != 0 ]; then
-                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-                # safe to remove
-                sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
-                error "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed."
-            else
-                error "Failed to install adoptopenjdk packages."
-            fi
-        fi
-        java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
-        ;;
-    "Java 17")
-        (install_packages temurin-17-jdk)
-        if [ $? != 0 ]; then
-            anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
-            if [ $? != 0 ]; then
-                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-                # safe to remove
-                sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-                error "Failed to install temurin packages. Adoptium repository has been removed."
-            else
-                error "Failed to install temurin packages."
-            fi
-        fi
-        java_location="/usr/lib/jvm/temurin-17-jdk-$dpkg_arch/bin/java"
-        ;;
+  "Java 8")
+    (install_packages temurin-8-jdk)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+        error "Failed to install temurin packages. Adoptium repository has been removed."
+      else
+        error "Failed to install temurin packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/temurin-8-jdk-$dpkg_arch/bin/java"
+    ;;
+  "Java 16")
+    (install_packages adoptopenjdk-16-hotspot-jre)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+        error "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed."
+      else
+        error "Failed to install adoptopenjdk packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
+    ;;
+  "Java 17")
+    (install_packages temurin-17-jdk)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+        error "Failed to install temurin packages. Adoptium repository has been removed."
+      else
+        error "Failed to install temurin packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/temurin-17-jdk-$dpkg_arch/bin/java"
+    ;;
 esac
 
 if [[ "$server_type" == "Forge" ]]; then
-    # run the server installer
-    rm -f start-server.sh
-    $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --install-server || error "Failed to install forge server"
-    rm -f ${server_jar}
-    sed -i "s:java:${java_location}:g" run.sh
-    sed -i 's:"$@":nogui:g' run.sh
-    mv run.sh start-server.sh
-    chmod +x start-server.sh
+  # run the server installer
+  rm -f start-server.sh
+  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --install-server || error "Failed to install forge server"
+  rm -f ${server_jar}
+  sed -i "s:java:${java_location}:g" run.sh
+  sed -i 's:"$@":nogui:g' run.sh
+  mv run.sh start-server.sh
+  chmod +x start-server.sh
 else
-    sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
+  sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
 #!/bin/bash
 
 $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui
 _EOF_"
-    chmod +x start-server.sh
+  chmod +x start-server.sh
 fi
 
 # sign eula without starting server
