@@ -47,15 +47,20 @@ fi
 status "The latest online version is:  $webVer"
 
 #set defaults for pi_app_ver if not supplied
-if [ -z "$pi_apps_ver_32" ] && [ -n "$armhf_url" ]; then
+if [ -z "$pi_apps_ver_32" ] && [ -n "$armhf_url" ] && [ -f install-32 ]; then
     pi_apps_ver_32="$(cat 'install-32' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
-if [ -z "$pi_apps_ver_64" ] && [ -n "$arm64_url" ]; then
+if [ -z "$pi_apps_ver_64" ] && [ -n "$arm64_url" ] && [ -f install-64 ]; then
     pi_apps_ver_64="$(cat 'install-64' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
-if [ -z "$pi_apps_ver" ] && [ -n "$all_url" ]; then
+if [ -z "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -f install ]; then
+    pi_apps_ver="$(cat 'install' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
+fi
+
+# check for armhf and arm64 URL with a single install script using the same version
+if [ -z "$pi_apps_ver" ] && [ -z "$pi_apps_ver_32" ] && [ -z "$pi_apps_ver_64" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -f install ]; then
     pi_apps_ver="$(cat 'install' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 fi
 
@@ -94,8 +99,8 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
     fi
 fi
 
-# install exists
-if [ -n "$pi_apps_ver" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
+# install exists and all_url is used
+if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
     status "The current version in Pi-Apps install is:  $pi_apps_ver"
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
@@ -107,6 +112,23 @@ if [ -n "$pi_apps_ver" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
             echo "$app_name-all " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
+        fi
+    fi
+fi
+
+# install exists and individual armhf_url and arm64_url are supplied
+if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "$DIRECTORY/apps/$app_name/install" ]; then
+    status "The current version in Pi-Apps install is:  $pi_apps_ver"
+    if [[ "$pi_apps_ver" = "$webVer" ]]; then
+        #If the version is current do:
+        status_green "Pi-Apps install version for $app_name is current!"
+    else
+        if validate_url "$armhf_url" && validate_url "$arm64_url"; then
+            status_green "Updating pi-apps $app_name install to: $armhf_url $arm64_url"
+            sed -i "0,/version${version_number}=.*/s//version${version_number}=${webVer}/g" install
+            echo "$app_name-all " >> /tmp/updated_apps
+        else
+            warning "Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist."
         fi
     fi
 fi
