@@ -164,7 +164,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
   
   echo -n "Downloading repository... "
-  errors="$(git clone "https://github.com/${repo}" -b $branch -q 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
+  errors="$(git clone "https://github.com/${repo}" -b $branch -q pi-apps 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
   echo "Done"
   
   echo -n "Syncing fork with upstream repo... "
