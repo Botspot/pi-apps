@@ -66,6 +66,11 @@ case "$server_type" in
     setsid x-www-browser "https://files.minecraftforge.net/net/minecraftforge/forge/" > /dev/null 2>&1 &
     server_jar="forge-*-installer.jar"
     ;;
+    "Paper")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://papermc.io/downloads/" > /dev/null 2>&1 &
+    server_jar="paper-*.jar"
+    ;;
   *)
     error "You did not choose an option, exiting the script."
     ;;
