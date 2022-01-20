@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
+
+mkdir ~/.local/share/fonts/fira-code
+git_clone https://github.com/open-sorcerer64/fira-code-fonts.git || error 'Failed to download fonts'
+cd ~/fira-code-fonts || error 'Failed to move fonts'
+mv *.ttf ~/.local/share/fonts/fira-code || error 'Failed to move fonts'
+mv *.otf ~/.local/share/fonts/fira-code || error 'Failed to move fonts'
+
+echo fontname >> ~/.config/lxterminal/lxterminal.conf
+sed -i '/fontname/c\fontname=Fira Code Medium Nerd Font 11' ~/.config/lxterminal/lxterminal.conf
+echo FontName >> ~/.config/xfce4/terminal/terminalrc
+sed -i '/FontName/c\FontName=Fira Code Medium Nerd Font 12' ~/.config/xfce4/terminal/terminalrc
+
+sh -c "$(curl -fsSL https://starship.rs/install.sh)" || error 'Failed to download starship prompt'
+echo  eval "$(starship init bash)" >> ~/.bashrc || error 'Failed to set starship prompt'

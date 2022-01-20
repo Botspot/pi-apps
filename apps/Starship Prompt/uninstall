@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sh -c 'rm "$(command -v 'starship')"' || error 'Failed to remove starship'
+
+#HOW CAN I REMOVE TEXT FROM ~/.bashrc????
+
+rm -rf ~/.local/share/fonts/fira-code || error 'Failed to remove fonts'
