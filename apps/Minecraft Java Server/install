@@ -204,7 +204,7 @@ esac
 if [[ "$server_type" == "Forge" ]]; then
   # run the server installer
   rm -f start-server.sh
-  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --install-server || error "Failed to install forge server"
+  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
   rm -f ${server_jar}
   sed -i "s:java:${java_location}:g" run.sh
   sed -i 's:"$@":nogui:g' run.sh
