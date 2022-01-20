@@ -71,6 +71,16 @@ case "$server_type" in
     setsid x-www-browser "https://papermc.io/downloads/" > /dev/null 2>&1 &
     server_jar="paper-*.jar"
     ;;
+    "Spigot")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://getbukkit.org/download/spigot" > /dev/null 2>&1 &
+    server_jar="spigot-*.jar"
+    ;;
+    "CraftBukkit")
+    # open browser to download the server version of user choice
+    setsid x-www-browser "https://getbukkit.org/download/craftbukkit" > /dev/null 2>&1 &
+    server_jar="CraftBukkit-*.jar"
+    ;;
   *)
     error "You did not choose an option, exiting the script."
     ;;
