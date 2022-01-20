@@ -213,8 +213,10 @@ if [[ "$server_type" == "Forge" ]]; then
 else
   sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
 #!/bin/bash
-
-$java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui
+echo 'Minecraft Server starting'
+$java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
+echo 'Minecraft Server has stopped'
+sleep 3
 _EOF_"
   chmod +x start-server.sh
 fi
@@ -229,7 +231,7 @@ mkdir -p "$HOME/.local/share/applications"
 tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
-Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server"
+Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ $? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
 Path=$HOME/Minecraft-Java-Server
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application
