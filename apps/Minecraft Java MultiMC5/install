@@ -161,19 +161,19 @@ case "$__os_id" in
 esac
 
 # make all the folders
-cd ~
-mkdir -p ~/MultiMC
-cd ~/MultiMC || exit 1
+cd "$HOME"
+mkdir -p "$HOME/MultiMC"
+cd "$HOME/MultiMC" || error "Could not move to directory"
 mkdir -p build
 mkdir -p install
 # clone the complete source
 status "Downloading the MultiMC5 Source Code directly from the official repository..."
 git clone --recursive https://github.com/MultiMC/Launcher.git src
-cd src
+cd src || error "Could not move to directory"
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
-git checkout --recurse-submodules 3dd6cea8dad821ce3049288b224e7faa11b4494e || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git checkout --recurse-submodules 63098b6f196cbfdb6b48b013d4dd495f890011ea || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
 # add secrets files
 mkdir -p secrets
 tee secrets/Secrets.h <<'EOF' >>/dev/null
@@ -220,9 +220,9 @@ set(Launcher_Branding_ICNS "notsecrets/Launcher.icns" PARENT_SCOPE)
 set(Launcher_Branding_WindowsRC "notsecrets/launcher.rc" PARENT_SCOPE)
 set(Launcher_Branding_LogoQRC "notsecrets/logo.qrc" PARENT_SCOPE)
 EOF
-cd ..
+cd .. || error "Could not move to directory"
 # configure the project
-cd build
+cd build || error "Could not move to directory"
 
 # temporary hotfix to build with java 8 (build currently fails on java 16 autodetection)
 # https://github.com/MultiMC/MultiMC5/issues/3949
@@ -237,6 +237,22 @@ esac
 # build & install (use -j with the number of cores your CPU has)
 status "Starting Compilation"
 make -j$(nproc) install || error "Make install failed"
+
+cd .. || error "Could not move to directory"
+# add Jvm Arguments for increased performance
+# these can always be overwritten by the user after the first installation
+if cat install/multimc.cfg | grep -q "JvmArgs="; then
+    if cat install/multimc.cfg | grep -q "JvmArgs=."; then
+        warning "Skipping Adding JvmArgs as they are already populated by the user or a previous installation"
+        status "The current JvmArgs are set to: $(cat install/multimc.cfg | grep "JvmArgs=")"
+    else
+        status "Adding JvmArgs which help with performance overall in all minecraft versions"
+        sed -i "s/JvmArgs=.*/JvmArgs=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1/g" install/multimc.cfg
+    fi
+else
+    status "Adding JvmArgs which help with performance overall in all minecraft versions"
+    echo "JvmArgs=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" >> install/multimc.cfg
+fi
 
 cd
 mkdir -p  ~/.local/share/applications
@@ -276,3 +292,4 @@ warning "The upstream, MultiMC5, does not give support for custom builds"
 warning "Bugs which appear on this build should only be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Pi-Apps Discord Server"
 status "Make sure to visit the upstream wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
 status "If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine"
+status "How to choose the correct java version: https://github.com/MultiMC/Launcher/wiki/Using-the-right-Java#setting-up-java-in-multimc"

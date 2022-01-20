@@ -3,5 +3,5 @@ sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium
 
 version=1.63.2
 
-install_packages "https://github.com/VSCodium/vscodium/releases/download/$(curl -s https://github.com/VSCodium/vscodium/releases/tag/${version} | grep "arm64.deb<" | awk -F '[<>]' '{print $3}')" || exit 1
+install_packages "https://github.com/VSCodium/vscodium/releases/download/$version/$(curl -s https://github.com/VSCodium/vscodium/releases/tag/${version} | grep "arm64.deb<" | awk -F '[<>]' '{print $3}')" || exit 1
 
