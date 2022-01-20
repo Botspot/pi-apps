@@ -103,8 +103,8 @@ description="You can now close your browser.\
 \nIn order to run Minecraft, the game requires a specific version of Java.\
 \nPlease choose below which version of java the server of your choice should run with.\
 \nJava versions can be 8, 16, or 17.\
-\n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-\nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+\n\nAll version of minecraft before and including minecraft 1.16.5 should use Java 8.\
+\nminecraft 1.17.X should use java 16 and minecraft 1.18+ should use java 17."
 table=("Java 17" "Java 16" "Java 8")
 userinput_func "$description" "${table[@]}"
 java_selection="$output"
