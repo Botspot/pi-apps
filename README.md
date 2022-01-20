@@ -46,6 +46,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 - [Raspberry Pi OS 32 and 64-bit](https://www.raspberrypi.com/software/operating-systems/): fully supported.
 - [Twister OS](https://twisteros.com/download.html): fully supported, preinstalled.
 - [AmogOS for Raspberry Pi](https://www.amogos.studio/): fully supported, preinstalled.
+- [ShadityOS](https://shadityos.github.io/): fully supported, preinstalled.
 - Raspberry Pi OS Bullseye, Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: you may encounter errors for some apps.
 - Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
