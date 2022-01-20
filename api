@@ -12,7 +12,7 @@ error() { #red text and exit 1
 }
 
 warning() { #yellow text
-  echo -e "\e[93m\e[5m🔺\e[25m WARNING: $1\e[0m" 1>&2
+  echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
 }
 
 status() { #cyan text to indicate what is happening
@@ -34,18 +34,53 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
-  echo -e "   ${green}┏━━━┓
-${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
-\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
+  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
+ ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
 \e[0m\e[0m"
+}
+
+generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
+  
+  #get 10 random apps. Some are exempted because they don't display well.
+  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
+  
+  local app1="$(sed -n 1p <<<"$apps")"
+  local app2="$(sed -n 2p <<<"$apps")"
+  local app3="$(sed -n 3p <<<"$apps")"
+  local app4="$(sed -n 4p <<<"$apps")"
+  local app5="$(sed -n 5p <<<"$apps")"
+  local app6="$(sed -n 6p <<<"$apps")"
+  local app7="$(sed -n 7p <<<"$apps")"
+  local app8="$(sed -n 8p <<<"$apps")"
+  local app9="$(sed -n 9p <<<"$apps")"
+  local app10="$(sed -n 10p <<<"$apps")"
+  
+  #display the chosen apps
+  #echo "$apps" | head -n 10
+  
+  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
+  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
+  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
+  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
+  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
+  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
+  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
+  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
+  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
+  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
+  
+  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
+  
 }
 #end of output functions
 
-add_english() {  # add en_US locale for more accurate error 
+add_english() { #add en_US locale for more accurate error
   if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
     locale=$(locale -a | grep -oF 'en_US.utf8')
     if [ "$locale" != 'en_US.utf8' ]; then
@@ -59,6 +94,107 @@ add_english() {  # add en_US locale for more accurate error
   export LANG="en_US.UTF-8"
   export LANGUAGE="en_US.UTF-8"
   export LC_ALL="en_US.UTF-8"
+}
+
+#package functions
+package_info() { #list everything dpkg knows about the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_info(): no package specified!"
+  #list lines in /var/lib/dpkg/status between the package name and the next empty line
+  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
+  true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
+}
+
+package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
+  local package="$1"
+  [ -z "$package" ] && error "package_installed(): no package specified!"
+  #find the package listed in /var/lib/dpkg/status
+  #package_info "$package" | grep -q '^Status: install ok installed$'
+  
+  #directly search /var/lib/dpkg/status
+  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -xF "Package: $package" --after 1 | grep -q 'Status: install ok installed'
+}
+
+package_available() { #determine if the specified package-name exists in a repository
+  local package="$1"
+  [ -z "$package" ] && error "package_available(): no package name specified!"
+  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
+  grep -rq "^Package: $package"'$' /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
+}
+
+package_dependencies() { #outputs the list of dependencies for the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_dependencies(): no package specified!"
+  
+  #find the package listed in /var/lib/dpkg/status
+  package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
+}
+
+anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
+  [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
+  
+  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard
+  local url="$(echo "$1" | sed 's+.*://++g' | sed 's+/+_+g')"
+  
+  #find all package-lists pertaining to the url
+  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
+  
+  #for every repo-file, chack if any of them have an installed file
+  local found=0
+  local IFS=$'\n'
+  local repofile
+  for repofile in $repofiles ;do
+    #search the repo-file for installed packages
+    grep '^Package' "$repofile" | awk '{print $2}' | while read -r package ;do
+      if package_installed "$package" ;then
+        echo "Package installed: $package"
+        exit 1
+      fi
+    done #if exit code is 1, search was successful. If exit code is 0, no packages from the repo were installed.
+    
+    found=$?
+    
+    if [ $found == 1 ];then
+      break
+    fi
+  done
+  
+  #return an exit code
+  if [ $found == 1 ];then
+    return 0
+  else
+    return 1
+  fi
+}
+
+remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing from that repository is currently installed. Deletion skipped if $2 is 'test'
+  local file="$1"
+  local testmode="$2"
+  [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
+  #exit now if the list file does not exist
+  [ -f "$file" ] || exit 0
+  
+  #determine what repo-urls are in the file
+  local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
+  
+  #there could be multiple urls in one file. Check each url and set the in_use variuable to 1 if any packages are found
+  local IFS=$'\n'
+  local in_use=0
+  local url
+  for url in $urls ;do
+    if anything_installed_from_repo "$url" >/dev/null;then
+      in_use=1
+      break
+    fi
+  done
+  
+  if [ "$in_use" == 0 ] && [ "$testmode" == test ];then
+    echo "The given repository is not in use and can be deleted:"$'\n'"$file" 1>&2
+  elif [ "$in_use" == 0 ];then
+    status "Removing the $(basename "$file" | sed 's/.list$//g') repo as it is not being used"
+    sudo rm -f "$file"
+  fi
+  
 }
 
 #apt functions
@@ -92,37 +228,6 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   true
 }
 
-package_info() { #list everything dpkg knows about the $1 package
-  local package="$1"
-  [ -z "$package" ] && error "package_info(): no package specified!"
-  #list lines in /var/lib/dpkg/status between the package name and the next empty line
-  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
-  true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
-}
-
-package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
-  local package="$1"
-  [ -z "$package" ] && error "package_installed(): no package specified!"
-  
-  #find the package listed in /var/lib/dpkg/status
-  package_info "$package" | grep -q '^Status: install ok installed$'
-}
-
-package_available() { #determine if the specified package-name exists in a repository
-  local package="$1"
-  [ -z "$package" ] && error "package_available(): no package name specified!"
-  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
-}
-
-package_dependencies() { #outputs the list of dependencies for the $1 package
-  local package="$1"
-  [ -z "$package" ] && error "package_dependencies(): no package specified!"
-  
-  #find the package listed in /var/lib/dpkg/status
-  package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
-}
-
 less_apt() { #remove unwanted lines from apt output
   grep --line-buffered -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Get:\|Fetched\|Selecting previously unselected package\|Preparing to unpack\|Unpacking \|Setting up \|Processing triggers for \|^$"
 }
@@ -148,9 +253,9 @@ apt_update() { #run an apt update with error-checking and minimal output
   fi
   
   #exit on apt error
-  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
   if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
-    echo -e "\e[91minstall_packages failed to run \e[4msudo apt update\e[0m\e[39m!"
+    echo -e "\e[91mFailed to run \e[4msudo apt update\e[0m\e[39m!"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
     
     #run some apt error diagnosis
@@ -183,7 +288,7 @@ repo_refresh() { #index the pi-apps local apt repository
   [ -d /tmp/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /tmp/pi-apps-local-packages"
   
   #index the repository by creating a Packages file
-  cd /tmp/pi-apps-local-packages ; apt-ftparchive packages . > Packages || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
+  (cd /tmp/pi-apps-local-packages && apt-ftparchive packages . > Packages) || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages"
   
   #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
   sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
@@ -357,18 +462,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   #install dummy deb
   {
-  #If this app's dummy deb is already insalled, uninstall it
-  if package_installed "$package_name" ;then
-    status "Reinstalling the $package_name package..."
-    apt_lock_wait
-    local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
-    if [ $? != 0 ];then
-      echo "$output"
-      error "Failed to purge dummy deb ($package_name)"
-    fi
-  else
-    status "Installing the $package_name package..."
-  fi
+  status "Installing the $package_name package..."
   
   apt_lock_wait
   local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
@@ -377,7 +471,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   status "Apt finished."
   
-  errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
   if [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -416,7 +510,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     local output="$(sudo -E apt purge -y "$package_name" --autoremove 2>&1 | less_apt | tee /dev/stderr)"
     status "Apt finished."
     
-    errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
     if [ ! -z "$errors" ];then
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -435,7 +529,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     local output="$(sudo -E apt purge -y $packages 2>&1)"
     exitcode=$?
     
-    errors="$(echo "$output" | grep '^[(W)|(E)|(Err]:')"
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
     if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
       echo -e "\e[91mFailed to uninstall the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
@@ -574,15 +668,16 @@ read_category_files() { #Generates a combined categories-list from several sourc
 app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
   
   #Subtract a type of app if enabled
+  local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
   local filter=()
-  if [ "$(cat "${DIRECTORY}/data/settings/Show apps")" == 'standard' ];then
+  if [ "$show_apps_setting" == 'standard' ];then
     #if only showing standard apps, hide package apps
     filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
-  elif [ "$(cat "${DIRECTORY}/data/settings/Show apps")" == 'package' ];then
+  elif [ "$show_apps_setting" == 'packages' ];then
     #if only showing package apps, hide standard apps
     filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
   else
-    #the setting is "standard and package" or missing, don't filter.
+    #is the setting is "all" or missing, don't filter.
     filter=(cat)
   fi
   
@@ -593,7 +688,9 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   list_apps installed | sed 's+^+Installed/+g'
   
   #show special "Packages" category
-  list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  if [ "$show_apps_setting" != standard ];then
+    list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  fi
   
   #show special "All Apps" category
   list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
@@ -617,8 +714,12 @@ bitly_link() { #Runs whenever an app is installed/uninstalled to tally the numbe
   fi
 }
 
-usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
-  clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
+usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
+  #If clicklist file missing or over a day old, download it.
+  if [ ! -f "${DIRECTORY}/data/clicklist" ] || [ ! -z "$(find "${DIRECTORY}/data/clicklist" -mtime +1 -print)" ]; then
+    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" || return 1
+  fi
+  clicklist="$(cat "${DIRECTORY}/data/clicklist")"
   
   [ -z "$clicklist" ] && error "usercount(): clicklist empty. Likely no internet connection"
   
@@ -626,7 +727,7 @@ usercount() { #Return number of users for specified app. $1 is app name. if empt
     echo "$clicklist"
   else
     # $1 is app
-    echo "$clicklist" | grep " $1"'$' | awk '{print $1}' | head -n1
+    echo "$clicklist" | grep "[0-9] $1"'$' | awk '{print $1}' | head -n1
   fi
   
 }
@@ -921,7 +1022,9 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   
   # check for 'Could not resolve' or 'Failed to fetch'
   if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Network is unreachable\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
-    error_caption+=("APT reported an unresolvable repository.")
+    error_caption+=("APT reported an unresolvable repository.
+
+Check your Internet connection and try again.")
     error_type="internet"
   fi
   
@@ -1216,7 +1319,7 @@ Maybe reinstalling this package would help?")
   fi
   
   if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
-    error_caption+=("The android-androresolvd on your system is causing problems.
+    error_caption+=("The android-androresolvd package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
@@ -1229,6 +1332,13 @@ Unless you know a lot about Linux, you may just want to reinstall your operating
     error_type="package"
   fi
   
+  if grep -qF "installed dahdi-dkms package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The dahdi-dkms package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1238,7 +1348,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
-    error_caption+=("Download failed. Check your internet connection and try again.")
+    error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
@@ -1323,7 +1433,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -qF "xz: (stdin): Unexpected end of input" <<<"$errors" ;then
+  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data--length error\|gzip: stdin: invalid compressed data--crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
@@ -1410,7 +1520,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
   
-  errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
@@ -1427,7 +1537,7 @@ send_error_report_gui() { #Ask user for permission to send error report
     --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
     --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent.":"bash -c 'view_file "\""$1"\""'" \
     --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
-  button=$?
+  local button=$?
   #echo "Button: $button"
   
   if [ "$button" == 0 ];then
@@ -1489,7 +1599,7 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
     "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
   else
     #non-terminal text editor
-    "$preferrededitor" "$1"
+    GTK_THEME='' "$preferrededitor" "$1"
   fi
 }
 
@@ -1507,7 +1617,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
+  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
@@ -1583,27 +1693,11 @@ get_device_info() { #returns information about current install and hardware
   
 }
 
-functions_to_files() { #for every function, create a bash script for every function
-  local functions="$(cat "${DIRECTORY}/api" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
-  
-  mkdir -p "${DIRECTORY}/function-files"
-  
-  local IFS=$'\n'
-  local function
-  for function in $functions ;do
-    echo '#!/bin/bash' > "${DIRECTORY}/function-files/$function"
-    sed -n -e "/${function}() {/,/^}"\$"/p" "$file" | sed 's/.*() {.//g' | sed 's/^}$//g' >> "${DIRECTORY}/function-files/$function"
-    chmod u+x "${DIRECTORY}/function-files/$function"
-  done
-}
-
-files_to_functions() { #turn every file in the function-files directory back into a collection of functions
-  local IFS=$'\n'
-  for file in $(find "${DIRECTORY}/function-files" -type f) ;do
-    echo -ne "\n$(basename "$file")() { "
-    cat "$file" | grep -v '#!/bin/bash'
-    echo '}'
-  done
+get_codename() { #get debian/ubuntu codename
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt-get install -y lsb-release
+  fi
+  lsb_release -sc
 }
 
 #command interceptors - functions that enhance a command
@@ -1694,6 +1788,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     else
       status -n "Downloading $(basename "$url")... " 1>&2
     fi
+    echo
   fi
   
   #now, perform the download using the chosen method
@@ -1709,25 +1804,76 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
-      --console-log-level=error --show-console-readout=false --summary-interval=5 "$url" --dir '/' -o "${file:1}")
+    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false --allow-overwrite=true --auto-file-renaming=false \
+      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
-      aria2_flags+=(--quiet)
-      echo '--quiet'
+      aria2c --quiet "${aria2_flags[@]}"
+      local exitcode=$?
+      
+    else #run aria2c without quietness and format download-progress output
+      terminal_width="$(tput cols || echo 80)"
+      
+      #run aria2c and reduce its output.
+      aria2c "${aria2_flags[@]}" | while read -r line ;do
+        
+        #filter out unnecessary lines
+        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+        
+        if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
+          
+          #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
+          if [[ "$line" == '['*']' ]];then
+            
+            #hide cursor
+            printf "\033[?25l"
+            
+            #print the total data only, like: "1.1GiB/1.1GiB"
+            statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
+            #get the length of statsline
+            characters_subtract=${#statsline}
+            
+            #determine how many characters are available for the progress bar
+            available_width=$(($terminal_width - ${#statsline} + 1))
+            #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
+            [ "$available_width" -le 0 ] && available_width=20
+            
+            #get progress percentage from aria2c output
+            percent="$(grep -o '(.*)' <<<"$line" | tr -d '()%')"
+            
+            #echo "percent: $percent"
+            #echo "available_width: $available_width"
+            
+            #determine how many characters in progress bar to light up
+            progress_characters=$(((percent*available_width)/100))
+            
+            statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
+            echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
+            
+            #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
+            #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
+            
+          else
+            #this line is not a progress-stat line; don't format output
+            echo "$line"
+          fi
+        fi
+        
+      done
+      local exitcode=${PIPESTATUS[0]}
     fi
-    
-    #run aria2c and reduce its output. Example output line: "135MiB/1.1GiB(11%) DL:16MiB ETA:1m3s"
-    aria2c "${aria2_flags[@]}" | grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' | awk -W interactive '{print $2 " " $4 " " substr($5, 1, length($5)-1)}'
-    local exitcode=${PIPESTATUS[0]}
   fi
   
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
+    #show cursor
+    printf "\033[?25h"
+    
+    echo
     status_green "Done" 1>&2
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
-    error "\nFailed to download: $url" 1>&2
+    echo -e "\n\e[91mFailed to download: $url\e[0m" 1>&2
   fi
   
   return $exitcode
@@ -1781,6 +1927,7 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
   export DIRECTORY
   "$@"
+  exit $?
 #if being sourced, ensure DIRECTORY variable set
 elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
@@ -1788,4 +1935,3 @@ elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ]
 fi
 
 export DIRECTORY
-

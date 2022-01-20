@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=arduino-1.8.16
+VERSION=arduino-1.8.19
 
 if [ -f "$HOME/.local/share/$VERSION/uninstall.sh" ]; then
   sudo $HOME/.local/share/$VERSION/uninstall.sh || error "Failed to run Arduino uninstall script!"

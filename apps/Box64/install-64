@@ -5,7 +5,7 @@ if [ $? != 0 ];then
   error "Failed to add box64.list file!"
 fi
 
-wget -O- https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box64-debs-archive-keyring.gpg 
+wget -O- https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box64-debs-archive-keyring.gpg >/dev/null
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box64.list
   error "Failed to add KEY.gpg to APT keyring!"

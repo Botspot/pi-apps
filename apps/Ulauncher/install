@@ -1,5 +1,5 @@
 #!/bin/bash
-version='5.14.2'
+version=5.14.3
 
 install_packages https://github.com/Ulauncher/Ulauncher/releases/download/${version}/ulauncher_${version}_all.deb gir1.2-appindicator3-0.1 python3-distutils-extra python3-levenshtein python3-websocket || exit 1
 

@@ -1,4 +1,6 @@
 #!/bin/bash
 
-install_packages https://apt.raspbian-addons.org/debian/pool/main/b/blockbench/blockbench_4.0.5-358_armhf.deb || exit 1
+version=4.1.3-365
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/b/blockbench/blockbench_${version}_armhf.deb || exit 1
 

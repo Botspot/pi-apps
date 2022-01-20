@@ -101,9 +101,9 @@ case "$output" in
     ffmpeg_extra_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-codecs-ffmpeg-extra_92.0.4515.98~buster-rpt2_armhf.deb"
     ;;
   95)
-    cb_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser_95.0.4638.78-rpt1_armhf.deb"
-    l10n_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser-l10n_95.0.4638.78-rpt1_all.deb"
-    ffmpeg_extra_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-codecs-ffmpeg-extra_95.0.4638.78-rpt1_armhf.deb"
+    cb_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser_95.0.4638.78-rpt5_armhf.deb"
+    l10n_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-browser-l10n_95.0.4638.78-rpt5_all.deb"
+    ffmpeg_extra_url="https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/chromium-codecs-ffmpeg-extra_95.0.4638.78-rpt5_armhf.deb"
     ;;
   *)
     error "unrecognized chromium version '$output'."

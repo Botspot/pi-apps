@@ -14,7 +14,7 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 #variable 1 is yad or xlunch
 #variable 2 is 'once', if you only want this to run once and exit.
 
-if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ];then
+if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ] && [ "$2" != 'once' ];then
   #echo "Another instance of preload-daemon is already running. Exiting now."
   exit 0
 fi
