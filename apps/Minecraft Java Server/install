@@ -41,8 +41,8 @@ mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
 description="What type of server do you want to run?.\
-\n\nVanilla Minecraft, Fabric, or Forge?"
-table=("Vanilla" "Fabric" "Forge")
+\n\nVanilla Minecraft, Fabric, Paper, Spigot, CraftBukkit or Forge?"
+table=("Vanilla" "Fabric" "Forge" "Paper" "Spigot" "CraftBukkit")
 userinput_func "$description" "${table[@]}"
 server_type="$output"
 
