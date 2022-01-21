@@ -1,2 +1,5 @@
 #!/bin/bash
-install_packages https://github.com/electron/fiddle/releases/download/v0.27.2/electron-fiddle_0.27.2_arm64.deb || exit 1
+
+version=0.27.3
+
+install_packages https://github.com/electron/fiddle/releases/download/v$version/electron-fiddle_$version_arm64.deb || exit 1
