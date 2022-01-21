@@ -5,7 +5,7 @@ install_packages curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:ar
 
 #Download file
 cd ~
-curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.0-678/Minecraft_Bedrock_Launcher-arm_aarch64-0.0.678.AppImage --output MCBedrock.AppImage
+curl -L https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.2-682/Minecraft_Bedrock_Launcher-arm_aarch64-0.0.682.AppImage --output MCBedrock.AppImage
 chmod +x MCBedrock.AppImage
 sudo mv MCBedrock.AppImage /opt/MCBedrock.AppImage
 

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+version=2.0-1
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/t/tetris-cli/tetris-cli_${version}_armhf.deb || exit 1

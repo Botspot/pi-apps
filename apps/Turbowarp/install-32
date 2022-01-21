@@ -1,6 +1,7 @@
 #!/bin/bash
 
-install_packages https://github.com/TurboWarp/desktop/releases/download/v0.13.0/TurboWarp-linux-armv7l-0.13.0.deb || exit 1
+version=1.0.0
+install_packages https://github.com/TurboWarp/desktop/releases/download/v${version}/TurboWarp-linux-armv7l-${version}.deb || exit 1
 
 echo -n "Moving menu launcher from Education to Programming category... "
 sudo sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop

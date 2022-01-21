@@ -1,6 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm ~/PrusaSlicer.AppImage ~/.local/share/applications/PrusaSlicer.desktop
-
-exit 0
+rm -f ~/PrusaSlicer.AppImage ~/.local/share/applications/PrusaSlicer.desktop

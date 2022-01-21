@@ -1,4 +1,6 @@
 #!/bin/bash
 
-install_packages https://github.com/ryanfortner/minbrowser-arm-builds/releases/download/1.22.1/min_1.22.1_armhf.deb || exit 1
+version=1.22.2
+
+install_packages https://github.com/minbrowser/min/releases/download/v${version}/min_${version}_armhf.deb || exit 1
 

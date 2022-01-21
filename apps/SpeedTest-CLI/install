@@ -1,0 +1,33 @@
+#!/bin/bash
+
+version=1.1.1
+
+case "$arch" in
+    "64") tar_arch="aarch64" ;;
+    "32") tar_arch="armhf" ;;
+    *) error "arch variable is not set, can not continue" ;;
+esac
+
+cd ~
+mkdir speedtest
+wget https://install.speedtest.net/app/cli/ookla-speedtest-${version}-linux-${tar_arch}.tgz -O ~/speedtest.tgz || error 'Failed to download!'
+cd speedtest
+tar -xvzf ~/speedtest.tgz || error "failed to extract files!"
+rm ~/speedtest.tgz
+printf "Creating shortcut..."
+echo "[Desktop Entry]
+Type=Application
+Name=Run Speedtest
+Comment=CLI internet speed test
+Exec=bash -c $HOME'/speedtest/speedtest;echo -e "\Close this window to exit.";sleep infinity'
+Icon=$HOME/pi-apps/apps/SpeedTest-CLI/icon-64.png
+Categories=Network;WebBrowser;
+Path=$HOME/speedtest
+Terminal=true
+StartupNotify=false" > ~/.local/share/applications/speedtest.desktop || error "failed to create menu shortcut!"
+echo "done"
+echo -n "creating /usr/local/bin/speedtest so you can launch from terminal..."
+echo "#!/bin/bash
+$HOME/speedtest/speedtest \"\$@\"" | sudo tee /usr/local/bin/speedtest >/dev/null
+sudo chmod +x /usr/local/bin/speedtest
+echo "done"
