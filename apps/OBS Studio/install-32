@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#remove obs package first
-if package_installed obs ;then
-  echo "Removing obs package first..."
+#remove obs-studio package first
+if package_installed obs-studio ;then
+  echo "Removing obs-studio package first..."
   apt_lock_wait
-  sudo apt purge -y --autoremove obs
+  sudo apt purge -y --autoremove obs-studio
 fi
 
 #Install all debs. the obs-studio package will automatically install needed dependencies.
