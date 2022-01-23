@@ -2,6 +2,6 @@
 
 sh -c 'rm "$(command -v 'starship')"' || error 'Failed to remove starship'
 
-#HOW CAN I REMOVE TEXT FROM ~/.bashrc????
+sed -i '/\eval "$(starship init bash)"/d' "$HOME/.bashrc" || error 'Failed to remove starship from .bashrc'
 
 rm -rf ~/.local/share/fonts/fira-code || error 'Failed to remove fonts'
