@@ -560,6 +560,55 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
 }
 #end of apt functions
 
+#flatpak functions
+flatpak_install() { #install an app using flatpak
+  [ -z "$1" ] && error "flatpak_install(): This function is used to install a flatpak app, but nothing was specified."
+  
+  #make sure flatpak is installed
+  if ! command -v flatpak >/dev/null ;then
+    error "flatpak_install(): Could not install $@ because flatpak is not installed!"
+  fi
+  
+  #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+  
+  #Install the specified app, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep -v "Note that the directories 
+
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+}
+
+flatpak_uninstall() { #uninstall an app using flatpak
+  [ -z "$1" ] && error "flatpak_uninstall(): This function is used to uninstall a flatpak app, but nothing was specified."
+  
+  #if flatpak is not installed, then skip everything with code 0.
+  if ! command -v flatpak >/dev/null ;then
+    return 0
+  fi
+  
+  if flatpak list | grep -qF "$1" ;then
+    sudo flatpak uninstall "$1" -y || flatpak uninstall "$1" -y || error "Flatpak failed to uninstall $1!"
+  fi
+}
+#end of flatpak functions
+
 #app functions
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
   if [ -z "$1" ] || [ "$1" == local ];then
