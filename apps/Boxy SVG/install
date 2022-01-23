@@ -54,7 +54,7 @@ echo '#!/bin/bash
 init_numwindows="$(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | wc -l)"
 
 #run boxy-svg in background
-/opt/boxy-svg/boxy-svg &
+/opt/boxy-svg/boxy-svg "$@" &
 pid=$!
 #if this script is killed, also kill boxy svg
 trap "kill $pid &>/dev/null" EXIT
@@ -78,10 +78,15 @@ wait $pid
 ' | sudo tee /usr/local/bin/boxy-svg
 sudo chmod +x /usr/local/bin/boxy-svg
 
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'boxy-svg.desktop')" ];then
+  echo "Associating the SVG mimetype with Boxy SVG..."
+  echo "image/svg+xml=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+fi
+
 echo "[Desktop Entry]
 Name=Boxy SVG
 Comment=Scalable Vector Graphics (SVG) editor
-Exec=boxy-svg %u
+Exec=boxy-svg %f
 Icon=/opt/boxy-svg/boxy-svg.svg
 Type=Application
 Terminal=false
