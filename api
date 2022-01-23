@@ -475,9 +475,13 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   if [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-    
-    #run some apt error diagnosis
     echo "$output"
+    
+    #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
+    if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+      echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
+      cat /tmp/pi-apps-local-packages/Packages
+    fi
     
     exit 1
   fi
@@ -603,6 +607,7 @@ flatpak_uninstall() { #uninstall an app using flatpak
     return 0
   fi
   
+  #Only try to remove flatpak app if it's installed.
   if flatpak list | grep -qF "$1" ;then
     sudo flatpak uninstall "$1" -y || flatpak uninstall "$1" -y || error "Flatpak failed to uninstall $1!"
   fi
