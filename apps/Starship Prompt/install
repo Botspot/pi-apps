@@ -15,4 +15,5 @@ echo FontName >> ~/.config/xfce4/terminal/terminalrc
 sed -i '/FontName/c\FontName=Fira Code Medium Nerd Font 12' ~/.config/xfce4/terminal/terminalrc
 
 sh -c "$(curl -fsSL https://starship.rs/install.sh)" || error 'Failed to download starship prompt'
-echo  eval "$(starship init bash)" >> ~/.bashrc || error 'Failed to set starship prompt'
+sed -i '/\eval "$(starship init bash)"/d' "$HOME/.bashrc"
+echo 'eval "$(starship init bash)"' >> "$HOME/.bashrc" || error 'Failed to set starship prompt'
