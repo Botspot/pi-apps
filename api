@@ -1489,6 +1489,16 @@ If that doesn't work, then now is the time to restore your backup. Oh, you don't
     error_type="system"
   fi
   
+  if grep -qF "VCHI initialization failed" <<<"$errors" ;then
+    error_caption+=("You have encountered the 'VCHI initialization failed' error. This means that a program was not allowed to display something to the screen.
+
+You can try to fix the error by adding your user to the video group. Run this command in a terminal:
+sudo usermod -a -G video $USER
+
+See: https://raspberrypi.stackexchange.com/a/8423/107602")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
