@@ -4,7 +4,7 @@ install_packages flatpak || exit 1
 
 flatpak_install librepcb || exit 1
 
-sudo rm -f /var/lib/flatpak/app/org.librepcb.LibrePCB/*/export/share/applications/org.librepcb.LibrePCB.desktop
+sudo rm -f /var/lib/flatpak/exports/share/applications/org.librepcb.LibrePCB.desktop
 echo "[Desktop Entry]
 Type=Application
 Version=1.0
