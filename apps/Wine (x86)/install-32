@@ -196,16 +196,16 @@ sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wi
 status_green "Done"
 echo
 
-#get mesa and icons from wine-stuff repo - only if Pi4 to avoid breaking Lego Digital Designer on RPi3. See: https://github.com/Botspot/pi-apps/issues/1391
+#get mesa and icons from wine-stuff repo
+cd /tmp
+rm -rf "$PWD/wine-stuff"
+git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
+sudo mv "$PWD/wine-stuff/icons" /opt/wine
 if [ "$hardware" == pi4 ];then
-  cd /tmp
-  rm -rf "$PWD/wine-stuff"
-  git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
-  sudo mv "$PWD/wine-stuff/icons" /opt/wine
   sudo mv "$PWD/wine-stuff/mesa" /opt/wine
-  rm -rf "$PWD/wine-stuff"
-  cd
 fi
+rm -rf "$PWD/wine-stuff"
+cd
 
 #create menu launchers
 status -n "Creating Menu launchers... "
