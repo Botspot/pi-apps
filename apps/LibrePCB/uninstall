@@ -1,5 +1,6 @@
 #!/bin/bash
 
-purge_packages || exit 1
-
+flatpak_uninstall librepcb || exit 1
 rm -f ~/.local/share/applications/librepcb.desktop
+
+purge_packages || exit 1

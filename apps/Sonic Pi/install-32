@@ -2,5 +2,4 @@
 
 version=3.3.1_1
 
-install_packages https://sonic-pi.net/files/releases/v3.3.1/sonic-pi_${version}_armhf.deb libconfig9 || exit 1
-
+install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_armhf.deb libconfig9 || exit 1
