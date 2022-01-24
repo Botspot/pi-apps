@@ -139,7 +139,7 @@ case "$__os_id" in
                 ;;
             *)
                 requiredver="18.04"
-                if printf '%s\n' "$requiredver" "$DISTRIB_RELEASE" | sort -CV; then
+                if [printf '%s\n' "$requiredver" "$DISTRIB_RELEASE" | sort -CV] || [printf '%s\n' "$requiredver" "$VERSION_ID" | sort -CV]; then
                     status "Skipping OpenJDK PPA, $DISTRIB_CODENAME already has openjdk-16 in the default repositories"
                 else
                     error "$DISTRIB_CODENAME appears to be too old to run/compile MultiMC5"
