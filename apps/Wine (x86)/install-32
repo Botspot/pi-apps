@@ -179,9 +179,11 @@ sudo ln -s /opt/wine/bin/wineboot /usr/local/bin/wineboot
 
 echo "  - wine"
 echo "#!/bin/bash
-export LD_LIBRARY_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/
-export LIBGL_DRIVERS_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/dri/  
-export VK_ICD_FILENAMES=/opt/wine/mesa/share/vulkan/icd.d/broadcom_icd.armv7l.json
+if [ -d /opt/wine/mesa ];then
+  export LD_LIBRARY_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/
+  export LIBGL_DRIVERS_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/dri/
+  export VK_ICD_FILENAMES=/opt/wine/mesa/share/vulkan/icd.d/broadcom_icd.armv7l.json
+fi
 setarch linux32 -L /opt/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
 
 echo "  - winetricks"
@@ -199,7 +201,9 @@ cd /tmp
 rm -rf "$PWD/wine-stuff"
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv "$PWD/wine-stuff/icons" /opt/wine
-sudo mv "$PWD/wine-stuff/mesa" /opt/wine
+if [ "$hardware" == pi4 ];then
+  sudo mv "$PWD/wine-stuff/mesa" /opt/wine
+fi
 rm -rf "$PWD/wine-stuff"
 cd
 
@@ -286,6 +290,7 @@ sleep 5
 
 # Boot wine (make fresh wineprefix in ~/.wine
 export BOX86_NOBANNER=1 #hide box86 output (for cosmetics)
+export WINEARCH=win32 #Make sure Wine creates a 32-bit prefix
 #export WINEDLLOVERRIDES="mscoree,mshtml=" #Avoid asking user to install gecko or mono
 wine wineboot #this won't display any dialog boxes that require a button to be clicked
 #wait until above process exits
@@ -293,6 +298,26 @@ sleep 2
 while [ ! -z "$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
+
+#enable font smoothing - see https://askubuntu.com/a/219795
+status "Enabling font smoothing..."
+TMPFILE=$(mktemp) || exit 1
+
+MODE=2 # 0 = disabled; 2 = enabled
+TYPE=2 # 1 = regular;  2 = subpixel
+ORIENTATION=1 # 0 = BGR; 1 = RGB
+
+echo "REGEDIT4
+
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+\"FontSmoothing\"=\"$MODE\"
+\"FontSmoothingOrientation\"=dword:0000000$ORIENTATION
+\"FontSmoothingType\"=dword:0000000$TYPE
+\"FontSmoothingGamma\"=dword:00000578" > $TMPFILE
+
+wine regedit $TMPFILE
+
+rm -f $TMPFILE
 
 #install some packages with winetricks for a better out-of-the-box experience
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode

@@ -475,9 +475,13 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   if [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-    
-    #run some apt error diagnosis
     echo "$output"
+    
+    #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
+    if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+      echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
+      cat /tmp/pi-apps-local-packages/Packages
+    fi
     
     exit 1
   fi
@@ -559,6 +563,56 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
   dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$\|\.svg$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
+
+#flatpak functions
+flatpak_install() { #install an app using flatpak
+  [ -z "$1" ] && error "flatpak_install(): This function is used to install a flatpak app, but nothing was specified."
+  
+  #make sure flatpak is installed
+  if ! command -v flatpak >/dev/null ;then
+    error "flatpak_install(): Could not install $@ because flatpak is not installed!"
+  fi
+  
+  #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+  
+  #Install the specified app, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep -v "Note that the directories 
+
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+}
+
+flatpak_uninstall() { #uninstall an app using flatpak
+  [ -z "$1" ] && error "flatpak_uninstall(): This function is used to uninstall a flatpak app, but nothing was specified."
+  
+  #if flatpak is not installed, then skip everything with code 0.
+  if ! command -v flatpak >/dev/null ;then
+    return 0
+  fi
+  
+  #Only try to remove flatpak app if it's installed.
+  if flatpak list | grep -qF "$1" ;then
+    sudo flatpak uninstall "$1" -y || flatpak uninstall "$1" -y || error "Flatpak failed to uninstall $1!"
+  fi
+}
+#end of flatpak functions
 
 #app functions
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
@@ -1486,6 +1540,16 @@ sudo touch /forcefsck
 After running that command, reboot and see if that fixes the problem.
 
 If that doesn't work, then now is the time to restore your backup. Oh, you don't have one? Then you will have to re-flash your SD card and start over. And maybe consider keeping regular backups to avoid this unpleasant situation next time.")
+    error_type="system"
+  fi
+  
+  if grep -qF "VCHI initialization failed" <<<"$errors" ;then
+    error_caption+=("You have encountered the 'VCHI initialization failed' error. This means that a program was not allowed to display something to the screen.
+
+You can try to fix the error by adding your user to the video group. Run this command in a terminal:
+sudo usermod -a -G video $USER
+
+See: https://raspberrypi.stackexchange.com/a/8423/107602")
     error_type="system"
   fi
   
