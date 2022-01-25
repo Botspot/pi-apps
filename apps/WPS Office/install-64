@@ -4,4 +4,4 @@
 
 version=11.1.0.10702
 
-install_packages "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" xdg-utils libglu1-mesa bsdmainutils locales || exit 1
+install_packages "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 || exit 1
