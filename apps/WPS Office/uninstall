@@ -1,3 +1,27 @@
 #!/bin/bash
 
+if [ -d /opt/wps-office-chroot ];then
+  #remove all mimetype icons
+  find /opt/wps-office-chroot/usr/share/icons/hicolor/*/mimetypes -type f 2>/dev/null | sed 's+^/opt/wps-office-chroot++g' | xargs sudo rm -f
+  
+  #remove mimetypes
+  sudo rm -f /usr/share/mime/packages/wps-office-wpp.xml /usr/share/mime/packages/wps-office-et.xml /usr/share/mime/packages/wps-office-wps.xml
+  
+  #remove menu button
+  sudo rm -f /usr/share/applications/wps-office-prometheus.desktop
+  
+  #purge wps-office package to run the prerm and postrm scripts. This will reset the mimetypes and restore the /home directory
+  sudo schroot -c wps-office-chroot -- apt purge -y wps-office
+  
+  #end any running schroots
+  sudo schroot --all-sessions -e
+  
+  #remove schroot configuration
+  sudo rm -rf /etc/schroot/wps
+  sudo rm -f /etc/schroot/chroot.d/wps-office-chroot
+  
+  sudo rm -rf /opt/wps-office-chroot || true #this may fail if the chroot is already mounted, but it doesn't matter as the folder is basically empty now and a reboot will handle the unmounting
+  
+fi
+
 purge_packages || exit 1
