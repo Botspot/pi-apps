@@ -18,7 +18,7 @@ else
         error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
       fi
       echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the XMRig app again."
+      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the WPS Office app again."
       sleep infinity
     ;;
     N|n|no|No|NO)
