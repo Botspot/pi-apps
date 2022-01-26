@@ -2,7 +2,7 @@
 
 #package found in: https://linux.wps.cn/
 
-version=11.1.0.10702
+version=11.1.0.10920
 
 install_packages firejail "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv || exit 1
 
