@@ -18,7 +18,7 @@ else
         error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
       fi
       echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the WPS Office app again."
+      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install WPS Office again."
       sleep infinity
     ;;
     N|n|no|No|NO)
@@ -53,6 +53,9 @@ sudo rm -f /opt/wps-office-chroot/etc/resolv.conf /opt/wps-office-chroot/usr/bin
 sudo cp -a /etc/schroot/default /etc/schroot/wps
 sudo rm /etc/schroot/wps/copyfiles
 sudo touch /etc/schroot/wps/copyfiles
+
+#enable /dev/shm to prevent crashes
+sudo sed -i 's+^#/dev/shm+/dev/shm+g' /etc/schroot/wps/fstab
 
 #create a configuration file for schroot
 echo "[wps-office-chroot]
