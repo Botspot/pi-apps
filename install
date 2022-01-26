@@ -23,7 +23,7 @@ fi
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
 #install dependencies
-dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin'
+dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales'
 ## Install dependencies if necessary
 if ! dpkg -s $dependencies >/dev/null 2>&1; then
   sudo apt install $dependencies -y -f --no-install-recommends
