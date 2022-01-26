@@ -104,9 +104,26 @@ sudo rm -f /home/*/Desktop/wps-office-prometheus.desktop /home/*/Desktop/wps-off
 mouse="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sGtk/CursorThemeName' | sed 's/^sGtk\/CursorThemeName=//g')"
 if [ ! -z "$mouse" ] && [ -d "/usr/share/icons/$mouse/cursors" ];then
   #mouse cursor exists; copy it to chroot
+  status "Copying mouse cursor..."
   sudo mkdir -p "/opt/wps-office-chroot/usr/share/icons/$mouse"
   sudo cp -rf "/usr/share/icons/$mouse/cursors" "/opt/wps-office-chroot/usr/share/icons/$mouse"
   sudo cp -f "/usr/share/icons/$mouse/cursor.theme" "/opt/wps-office-chroot/usr/share/icons/$mouse"
+fi
+
+#copy gtk theme to guest to improve appearance during usage
+theme="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sNet/ThemeName' | sed 's/^sNet\/ThemeName=//g')"
+if [ ! -z "$theme" ] && [ -d "/usr/share/themes/$theme" ];then
+  #gtk theme exists; copy it to chroot
+  status "Copying icon theme..."
+  sudo cp -rf "/usr/share/themes/$theme" "/opt/wps-office-chroot/usr/share/themes"
+fi
+
+#copy icon theme to guest to improve appearance during usage
+theme="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sNet/IconThemeName' | sed 's/^sNet\/IconThemeName=//g')"
+if [ ! -z "$theme" ] && [ -d "/usr/share/icons/$theme" ];then
+  #gtk theme exists; copy it to chroot
+  status "Copying icon theme..."
+  sudo cp -rf "/usr/share/icons/$theme" "/opt/wps-office-chroot/usr/share/icons"
 fi
 
 #make wps command more verbose for easier debugging
