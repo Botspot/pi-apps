@@ -1393,6 +1393,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "ffmpeg : Depends: libsdl2-2.0-0 (>= 2.0.12) but 2.0.10+5rpi is installed" <<<"$errors" ;then
+    error_caption+=("The ffmpeg package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1487,7 +1494,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data--length error\|gzip: stdin: invalid compressed data--crc error" <<<"$errors" ;then
+  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
@@ -1858,7 +1865,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   #now, perform the download using the chosen method
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
-    command wget "$@"
+    command wget "$@" --progress=bar:force:noscroll
     local exitcode=$?
   elif [ "$use" == aria2c ];then
     
