@@ -1,6 +1,8 @@
 #!/bin/bash
 
-install_packages https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v1.0.20/teams-for-linux_1.0.20_arm64.deb || exit 1
+version=1.0.23
+
+install_packages https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${version}/teams-for-linux_${version}_arm64.deb || exit 1
 
 #change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
 ( sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null

@@ -34,18 +34,53 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
-  echo -e "   ${green}┏━━━┓
-${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
-\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
+  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
+ ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
 \e[0m\e[0m"
+}
+
+generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
+  
+  #get 10 random apps. Some are exempted because they don't display well.
+  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
+  
+  local app1="$(sed -n 1p <<<"$apps")"
+  local app2="$(sed -n 2p <<<"$apps")"
+  local app3="$(sed -n 3p <<<"$apps")"
+  local app4="$(sed -n 4p <<<"$apps")"
+  local app5="$(sed -n 5p <<<"$apps")"
+  local app6="$(sed -n 6p <<<"$apps")"
+  local app7="$(sed -n 7p <<<"$apps")"
+  local app8="$(sed -n 8p <<<"$apps")"
+  local app9="$(sed -n 9p <<<"$apps")"
+  local app10="$(sed -n 10p <<<"$apps")"
+  
+  #display the chosen apps
+  #echo "$apps" | head -n 10
+  
+  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
+  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
+  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
+  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
+  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
+  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
+  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
+  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
+  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
+  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
+  
+  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
+  
 }
 #end of output functions
 
-add_english() {  # add en_US locale for more accurate error 
+add_english() { #add en_US locale for more accurate error
   if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
     locale=$(locale -a | grep -oF 'en_US.utf8')
     if [ "$locale" != 'en_US.utf8' ]; then
@@ -77,14 +112,14 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   #package_info "$package" | grep -q '^Status: install ok installed$'
   
   #directly search /var/lib/dpkg/status
-  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep "$package" --after 1 | grep -q 'Status: install ok installed'
+  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -xF "Package: $package" --after 1 | grep -q 'Status: install ok installed'
 }
 
 package_available() { #determine if the specified package-name exists in a repository
   local package="$1"
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rq "^Package: $package"'$' /var/lib/apt/lists/ 2>/dev/null
+  grep -rq "^Package: $package"'$' /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -427,18 +462,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   
   #install dummy deb
   {
-  #If this app's dummy deb is already insalled, uninstall it
-  if package_installed "$package_name" ;then
-    status "Reinstalling the $package_name package..."
-    apt_lock_wait
-    local output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
-    if [ $? != 0 ];then
-      echo "$output"
-      error "Failed to purge dummy deb ($package_name)"
-    fi
-  else
-    status "Installing the $package_name package..."
-  fi
+  status "Installing the $package_name package..."
   
   apt_lock_wait
   local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
@@ -451,9 +475,13 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   if [ ! -z "$errors" ];then
     echo -e "\e[91mFailed to install the packages!\e[39m"
     echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-    
-    #run some apt error diagnosis
     echo "$output"
+    
+    #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
+    if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+      echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
+      cat /tmp/pi-apps-local-packages/Packages
+    fi
     
     exit 1
   fi
@@ -535,6 +563,56 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
   dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$\|\.svg$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
 #end of apt functions
+
+#flatpak functions
+flatpak_install() { #install an app using flatpak
+  [ -z "$1" ] && error "flatpak_install(): This function is used to install a flatpak app, but nothing was specified."
+  
+  #make sure flatpak is installed
+  if ! command -v flatpak >/dev/null ;then
+    error "flatpak_install(): Could not install $@ because flatpak is not installed!"
+  fi
+  
+  #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+  
+  #Install the specified app, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep -v "Note that the directories 
+
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+}
+
+flatpak_uninstall() { #uninstall an app using flatpak
+  [ -z "$1" ] && error "flatpak_uninstall(): This function is used to uninstall a flatpak app, but nothing was specified."
+  
+  #if flatpak is not installed, then skip everything with code 0.
+  if ! command -v flatpak >/dev/null ;then
+    return 0
+  fi
+  
+  #Only try to remove flatpak app if it's installed.
+  if flatpak list | grep -qF "$1" ;then
+    sudo flatpak uninstall "$1" -y || flatpak uninstall "$1" -y || error "Flatpak failed to uninstall $1!"
+  fi
+}
+#end of flatpak functions
 
 #app functions
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
@@ -1315,6 +1393,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "ffmpeg : Depends: libsdl2-2.0-0 (>= 2.0.12) but 2.0.10+5rpi is installed" <<<"$errors" ;then
+    error_caption+=("The ffmpeg package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
@@ -1324,7 +1409,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
-    error_caption+=("Download failed. Check your internet connection and try again.")
+    error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
@@ -1409,7 +1494,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data--length error\|gzip: stdin: invalid compressed data--crc error" <<<"$errors" ;then
+  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
@@ -1465,6 +1550,16 @@ If that doesn't work, then now is the time to restore your backup. Oh, you don't
     error_type="system"
   fi
   
+  if grep -qF "VCHI initialization failed" <<<"$errors" ;then
+    error_caption+=("You have encountered the 'VCHI initialization failed' error. This means that a program was not allowed to display something to the screen.
+
+You can try to fix the error by adding your user to the video group. Run this command in a terminal:
+sudo usermod -a -G video $USER
+
+See: https://raspberrypi.stackexchange.com/a/8423/107602")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
@@ -1496,7 +1591,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
   
-  errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
@@ -1513,7 +1608,7 @@ send_error_report_gui() { #Ask user for permission to send error report
     --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
     --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent.":"bash -c 'view_file "\""$1"\""'" \
     --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
-  button=$?
+  local button=$?
   #echo "Button: $button"
   
   if [ "$button" == 0 ];then
@@ -1575,7 +1670,7 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
     "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
   else
     #non-terminal text editor
-    "$preferrededitor" "$1"
+    GTK_THEME='' "$preferrededitor" "$1"
   fi
 }
 
@@ -1593,7 +1688,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
+  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
@@ -1669,27 +1764,11 @@ get_device_info() { #returns information about current install and hardware
   
 }
 
-functions_to_files() { #for every function, create a bash script for every function
-  local functions="$(cat "${DIRECTORY}/api" | grep '[a-z][a-z][a-z]() {' | sed 's/() {.*//g')"
-  
-  mkdir -p "${DIRECTORY}/function-files"
-  
-  local IFS=$'\n'
-  local function
-  for function in $functions ;do
-    echo '#!/bin/bash' > "${DIRECTORY}/function-files/$function"
-    sed -n -e "/${function}() {/,/^}"\$"/p" "$file" | sed 's/.*() {.//g' | sed 's/^}$//g' >> "${DIRECTORY}/function-files/$function"
-    chmod u+x "${DIRECTORY}/function-files/$function"
-  done
-}
-
-files_to_functions() { #turn every file in the function-files directory back into a collection of functions
-  local IFS=$'\n'
-  for file in $(find "${DIRECTORY}/function-files" -type f) ;do
-    echo -ne "\n$(basename "$file")() { "
-    cat "$file" | grep -v '#!/bin/bash'
-    echo '}'
-  done
+get_codename() { #get debian/ubuntu codename
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt-get install -y lsb-release
+  fi
+  lsb_release -sc
 }
 
 #command interceptors - functions that enhance a command
@@ -1786,7 +1865,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   #now, perform the download using the chosen method
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
-    command wget "$@"
+    command wget "$@" --progress=bar:force:noscroll
     local exitcode=$?
   elif [ "$use" == aria2c ];then
     
@@ -1796,7 +1875,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --allow-overwrite=true --auto-file-renaming=false \
+    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false --allow-overwrite=true --auto-file-renaming=false \
       --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" --dir '/' -o "${file:1}")
     
     #suppress output if -q flag passed
@@ -1919,6 +1998,7 @@ if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
   export DIRECTORY
   "$@"
+  exit $?
 #if being sourced, ensure DIRECTORY variable set
 elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"

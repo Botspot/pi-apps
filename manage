@@ -91,13 +91,36 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   IFS=$'\n'
   for app in $app_list ;do
     if [ "$(app_status "${app}")" == "${action}ed" ];then
-      yad --text="$app is already ${action}ed. Are you sure you want to $action it again?" \
+      yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
         --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
       
       if [ $? != 0 ];then
         #user clicked No, so remove the app from list
         app_list="$(echo "$app_list" | grep -vx "$app")"
+      fi
+    fi
+  done
+  
+  #Check if any apps are updatable and ask user if they really want to install/uninstall an outdated version
+  for app in $app_list ;do
+    #determine the filename for the app's script to be run
+    if [ $action == install ];then
+      script_name_cpu="$(script_name_cpu "$app")"
+    elif [ $action == uninstall ];then
+      script_name_cpu='uninstall'
+    fi
+    #if the app-script doesn't match version in update folder
+    if ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+      yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to $action an outdated version, or you've made changes to the script yourself."$'\n'"Would you like to update $app before ${action}ing it?" \
+        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
+        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+      
+      if [ $? == 0 ];then
+        #if user clicked Yes, update the app first
+        rm -rf "${DIRECTORY}/apps/${app}"
+        #copy new version from update/ to apps/
+        cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
       fi
     fi
   done
@@ -275,13 +298,32 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #rename logfile to indicate it was successful
     
   else #if app failed to install/uninstall
+
+    #remove dummy deb if app failed to install (to avoid dummy debs being left on a users install for broken apps)
+    package_name="$(app_to_pkgname "$app")"
+    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
+      if [[ "$script_input" == "update" ]]; then
+        #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
+        output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
+        if [ $? != 0 ];then
+          echo "$output"
+          warning "Failed to purge dummy deb ($package_name)"
+        fi
+        unset output
+      else
+        #install and not update failed, run purge_packages
+        purge_packages || warning "Failed to purge dummy deb ($package_name)"
+      fi
+    fi
+    unset package_name
+
     echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
 \e[40m\e[93m\e[5m◢◣\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
     #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet or system or package, AND if the app is a script-type app
-    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == app ];then
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == standard ];then
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
@@ -419,7 +461,7 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    echo -en "Scanning apps... $app\033[0K\r" 1>&2
+    echo -en "Scanning apps... $app\e[0K\r" 1>&2
     
     if [ ! -d "${DIRECTORY}/apps/${app}" ];then
       #add to updatable list
@@ -440,7 +482,7 @@ ${app}"
   #remove initial newline character
   updatable="${updatable:1}"
   
-  echo -e "Scanning apps... Done\033[0K" 1>&2
+  echo -e "Scanning apps... Done\e[0K" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then

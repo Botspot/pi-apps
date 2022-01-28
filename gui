@@ -13,9 +13,14 @@ if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
 
-#launch splash screen
-yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
-splashpid=$!
+#launch splash screen: use png if available, otherwise use svg
+if [ -s "${DIRECTORY}/icons/splashscreen.png" ];then
+  yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
+  splashpid=$!
+else
+  yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/vector/splashscreen.svg" --center --no-buttons --skip-taskbar &
+  splashpid=$!
+fi
 
 #for the text_editor(), runonce() and app_status() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
@@ -40,7 +45,7 @@ if [ -f /usr/local/bin/twistver ] && [[ "$(twistver)" != 'Twister OS version'* ]
 fi
 EOF
 
-#remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade" app
+#remove old apps and migrate chromium downgrading apps to the new "Downgrade Chromium" app
 runonce <<"EOF"
   #rework chromium downgrading apps to one single new app: 'Downgrade Chromium'
   rm -rf "${DIRECTORY}/apps/Back to Chromium v86"
@@ -113,31 +118,12 @@ runonce <<"EOF"
   fi
 EOF
 
-#ensure curl is installed
+#install dependencies
 runonce <<"EOF"
-  if ! command -v curl >/dev/null ;then
-    sudo apt install -y curl
-  fi
-EOF
-
-#install aria2c for faster downloading
-runonce <<"EOF"
-  if ! command -v aria2c >/dev/null ;then
-    sudo apt install -y aria2
-  fi
-EOF
-
-#ensure lsb-release is installed
-runonce <<"EOF"
-  if ! command -v lsb_release >/dev/null ;then
-    sudo apt install -y lsb-release
-  fi
-EOF
-
-# ensure apt-utils is installed
-runonce <<"EOF"
-  if ! command -v apt-ftparchive >/dev/null;then
-    sudo apt install -y apt-utils
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin'
+  # Install dependencies if necessary
+  if ! dpkg -s $dependencies >/dev/null 2>&1; then
+    sudo apt install $dependencies -y -f --no-install-recommends
   fi
 EOF
 
@@ -172,6 +158,7 @@ runonce <<"EOF"
   refresh_all_pkgapp_status
 EOF
 
+# change settings icon
 runonce <<"EOF"
   [ -a "$HOME/.local/share/applications/pi-apps-settings.desktop" ] && sed -i "s/logo.png/settings.png/g" "$HOME/.local/share/applications/pi-apps-settings.desktop" || true
 EOF
@@ -179,7 +166,10 @@ EOF
 ) &
 
 #check for updates in background
-"${DIRECTORY}/updater" set-status &>/dev/null &
+(sleep 2; "${DIRECTORY}/updater" set-status &>/dev/null) &
+
+#Generate a new random splash screen
+(sleep 10 ; generate_splashscreen) &
 
 install() {
   app="$1" #one app name per line

@@ -59,11 +59,11 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
   
   #list all files in update folder
   cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
-  local updatefiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/')"
+  local updatefiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^data/')"
 
   #list all files in main folder
   cd "${DIRECTORY}"
-  local localfiles="$(find . -type f | cut -c 3- | grep -v '.git/' | grep -v 'apps/' | grep -v 'data/' | grep -v 'logs/' | grep -v 'xlunch/')"
+  local localfiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^update/\|^data/\|^logs/\|^xlunch/')"
 
   echo -e "${localfiles}\n${updatefiles}" | sort | uniq
   cd $HOME
@@ -88,7 +88,7 @@ get_updatable_files() { #sets the updatable_files variable
     
     for file in $file_list ;do
       
-      echo -en "Scanning files... $file\033[0K\r" 1>&2
+      echo -en "Scanning files... $file\e[0K\r" 1>&2
       if [ ! -f "${DIRECTORY}/${file}" ];then
         #file is missing locally - add to updatable_files list
         updatable_files="${updatable_files}
@@ -115,7 +115,7 @@ ${file}"
   done
   
   echo "$updatable_files"
-  echo -e "Scanning files... Done\033[0K" 1>&2
+  echo -e "Scanning files... Done\e[0K" 1>&2
   
   #if any files were excluded by update-exclusion, list them now, after echoing "Done"
   [ ! -z "$exclusion_msg" ] && echo -e "$exclusion_msg\n" 1>&2
@@ -278,8 +278,8 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   status_green "\nPi-Apps updates complete."
 }
 
-screen_width="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $1}')"
-screen_height="$(xrandr | grep "HDMI-1" | awk '{print $4}' | tr 'x+' ' ' | awk '{print $2}')"
+screen_width="$(xrandr | grep -oP '(?<=primary )\d+')"
+screen_height="$(xrandr | grep -oP '(?<=primary )[x\d]+' | cut -d x -f 2)"
 
 runmode="$1"
 speed="$2"
@@ -311,11 +311,22 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     exit 0
   fi
   
+  #wait until internet works
+  while ! command wget --spider https://github.com &>/dev/null ;do
+    echo -n "Pi-Apps updater script: no internet connection yet. "
+    sleep 1
+    echo " Waiting 10 seconds..."
+    sleep 10
+  done
+  
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
+    exit 0
+  elif [ -z "$updatable_files" ] && [ -z "$(echo "$updatable_apps" | list_intersect "$(list_apps installed)")" ];then
+    status "No installed apps are updatable."
     exit 0
   fi
   

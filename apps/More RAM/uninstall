@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#stop swapfiles - this may take a while if they are full
+status -n "Disabling ZRAM... "
+
+# disable all zram devices
+IFS=$'\n'
+for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
+  #if zram device is a swap device, disable it
+  sudo swapoff /dev/zram${device_number} 2>/dev/null
+  
+  #if zram device is mounted, unmount it
+  sudo umount /dev/zram${device_number} 2>/dev/null
+  
+  #remove device
+  echo $device_number | sudo tee /sys/class/zram-control/hot_remove >/dev/null
+done
+
+sudo rm -rf /zram
+
+status_green "Done"
+#now running this command should list no swapfiles: cat /proc/swaps
+
+status "Disabling zram kernel module"
+sudo rmmod zram || true
+
+status "Removing zram script"
+sudo rm -f /usr/bin/zram.sh
+sudo systemctl disable zram-swap.service
+sudo rm -f /etc/systemd/system/zram-swap.service
+
+status "Reverting kernel parameters"
+sudo sed -i '/^vm\.swappiness/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.vfs_cache_pressure/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.dirty_background_ratio/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.dirty_ratio/d' /etc/sysctl.conf
+
+if [ -f /usr/sbin/dphys-swapfile ];then
+  status "Allowing dphys-swapfile.service to run on boot"
+  sudo systemctl unmask dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
+  sudo systemctl enable dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
+fi
+true

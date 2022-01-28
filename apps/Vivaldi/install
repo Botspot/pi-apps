@@ -7,4 +7,5 @@ echo "deb [signed-by=/usr/share/keyrings/vivaldi-browser.gpg arch=$(dpkg --print
 if [ $? != 0 ];then
   #exit cleanly if package failed to install
   sudo rm -f /usr/share/keyrings/vivaldi-browser.gpg /etc/apt/sources.list.d/vivaldi-archive.list
+  exit 1
 fi
