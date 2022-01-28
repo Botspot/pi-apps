@@ -36,13 +36,26 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   green='\e[38;5;46m'
   darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
-  echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+  
+  #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
+  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789')"
+  if [ -z "$version_id" ] || [ "$version_id" -lt 11 ];then
+    echo -e "\e[40m\e[97m    ${green}▅${darkgreen}▅▅▅▅${green}▅\e[40m\e[97m
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀▆ ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄\e[97m ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
+ ${blue}\e[7m▂\e[27m\e[107m▃▃▃▃▃▃▃▃▃▃\e[40m\e[7m▂\e[27m\e[40m\e[40m\e[97m                  █    █
+\e[0m\e[0m"
+  else
+    echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
  ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
  ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
 \e[0m\e[0m"
+  fi
 }
 
 generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
