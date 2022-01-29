@@ -8,8 +8,8 @@ if [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
   fi
 fi
 
-if ! package_installed "raspberrypi-kernel-headers"; then
-  warning "DroidCam needs kernel headers to work.\nPlease install raspberrypi-kernel-headers (sudo apt install raspberrypi-kernel-headers) and reboot your system.\n"
+if ! [ -d "/lib/modules/$(uname -r)/build" ]; then
+  warning "DroidCam needs kernel headers to work.\nPlease install kernel headers (sudo apt install linux-headers) and reboot your system.\n"
   exit 1
 fi
 
