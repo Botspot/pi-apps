@@ -50,11 +50,15 @@ server_type="$output"
 
 case "$server_type" in
   "Fabric")
-    # open folder for user to place the downloaded file
-    xdg-open "$HOME/Minecraft-Java-Server" 2>/dev/null
-    # open browser to download the server version of user choice
-    setsid x-www-browser "https://fabricmc.net/use/server/" > /dev/null 2>&1 &
-    server_jar="fabric-server*.jar"
+    available_versions=$(curl -s https://meta.fabricmc.net/v2/versions/game | jq -r '.[] | select( .stable == true ) | .version')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    loader_version=$(curl -s https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
+    installer_verison=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
+    server_jar="fabric-server-mc.$server_version-loader.$loader_version-launcher.$installer_verison.jar"
+    wget -O "$server_jar" https://meta.fabricmc.net/v2/versions/loader/$server_version/$loader_version/$installer_verison/server/jar
     ;;
   "Forge")
     # open folder for user to place the downloaded file
