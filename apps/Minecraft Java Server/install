@@ -61,12 +61,19 @@ case "$server_type" in
     wget -O "$server_jar" "https://meta.fabricmc.net/v2/versions/loader/$server_version/$loader_version/$installer_verison/server/jar" || exit 1
     ;;
   "Forge")
-    available_versions=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'keys_unsorted | reverse | .[]')
+    # remove versions without an "installer" form
+    available_versions=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'del((."1.1", ."1.2.3", ."1.2.4", ."1.2.5", ."1.3.2", ."1.4.0", ."1.4.1", ."1.4.2", ."1.4.3", ."1.4.4", ."1.4.5", ."1.4.6", ."1.4.7", ."1.5", ."1.5.1", ."1.5.2", ."1.6.1", ."1.6.2", ."1.6.3")) | keys_unsorted | reverse | .[]')
     description="What version of $server_type do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     installer_version=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
+
+    # example file formats
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.1-39.0.63/forge-1.18.1-39.0.63-installer.jar
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.3.2-4.3.5.318/forge-1.3.2-4.3.5.318-universal.zip
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.2.5-3.4.9.171/forge-1.2.5-3.4.9.171-server.zip
+
     server_jar="forge-$installer_version-installer.jar"
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
@@ -246,11 +253,31 @@ if [[ "$server_type" == "Forge" ]]; then
   rm -f start-server.sh
   $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
   rm -f ${server_jar}
-  sed -i "s:java:${java_location}:g" run.sh
-  sed -i 's:"$@":nogui:g' run.sh
-  mv run.sh start-server.sh
-  chmod +x start-server.sh
-else
+
+  # forge has MANY ways to launch depending on the version
+  # for some reason they like re-inventing the wheel and doing things differently than everyone else
+  # the below covers all the ways I have seen from 1.6.4 - 1.18.1
+  # its possible I missed an obscure format that was only used once... please create an issue if that is the case
+  if [[ -f "minecraftforge-universal-$installer_version.jar" ]]; then
+    server_jar="minecraftforge-universal-$installer_version.jar"
+  elif [[ -f "forge-$installer_version-universal.jar" ]]; then
+    server_jar="forge-$installer_version-universal.jar"
+  elif [[ -f "forge-$installer_version.jar" ]]; then
+    server_jar="forge-$installer_version.jar"
+  elif [[ -f "run.sh" ]]; then
+    # set server_jar to empty to skip start-server.sh universal script creation
+    # this is the most up to date forge launch format where their own run.sh file is provided
+    server_jar=""
+    sed -i "s:java:${java_location}:g" run.sh
+    sed -i 's:"$@":nogui:g' run.sh
+    mv run.sh start-server.sh
+    chmod +x start-server.sh
+  else
+    error "We have never seen this new obscure Forge format from $installer_version. Please report this error to pi-apps"
+  fi
+fi
+
+if [ -n "$server_jar" ]; then
   sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
 #!/bin/bash
 echo 'Minecraft Server starting'
