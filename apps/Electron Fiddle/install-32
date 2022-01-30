@@ -2,4 +2,4 @@
 
 version=0.27.3
 
-install_packages https://github.com/electron/fiddle/releases/download/v$version/electron-fiddle_$version_armhf.deb || exit 1
+install_packages https://github.com/electron/fiddle/releases/download/v"$version"/electron-fiddle_"$version"_armhf.deb || exit 1
