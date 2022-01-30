@@ -201,7 +201,8 @@ cd /tmp
 rm -rf "$PWD/wine-stuff"
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv "$PWD/wine-stuff/icons" /opt/wine
-if [ "$hardware" == pi4 ];then
+if [ $(ldd --version | head -n1 | awk '{print $NF}' | sed 's/\..*//g') -ge 2 ] && [ "$(ldd --version | head -n1 | awk '{print $NF}' | sed 's/.*\.//g')" -ge 30 ];then
+  #only install mesa if glibc is 2.30 or greater
   sudo mv "$PWD/wine-stuff/mesa" /opt/wine
 fi
 rm -rf "$PWD/wine-stuff"
