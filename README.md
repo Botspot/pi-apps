@@ -22,9 +22,9 @@
     <a href="https://github.com/Botspot/pi-apps/stargazers"><img src="https://img.shields.io/github/stars/Botspot/pi-apps" alt="stars">
     <a href="https://github.com/Botspot/pi-apps/network/members"><img src="https://img.shields.io/github/forks/Botspot/pi-apps" alt="forks">
     <a href="https://github.com/Botspot/pi-apps/graphs/contributors"><img src="https://img.shields.io/github/contributors/Botspot/pi-apps" alt="contributors">
-    <img src="https://img.shields.io/github/issues-pr/Botspot/pi-apps" alt="prs">
-    <img src="https://img.shields.io/github/issues/Botspot/pi-apps" alt="issues">
-    <img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license">
+    <a href="https://github.com/Botspot/pi-apps/pulls"><img src="https://img.shields.io/github/issues-pr/Botspot/pi-apps" alt="prs">
+    <a href="https://github.com/Botspot/pi-apps/issues"><img src="https://img.shields.io/github/issues/Botspot/pi-apps" alt="issues">
+    <a href="https://github.com/Botspot/pi-apps/blob/master/COPYING"><img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license">
     <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
