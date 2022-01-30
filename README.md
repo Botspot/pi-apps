@@ -19,9 +19,9 @@
     Submit an app</a>
 
 <p align="center">
-    <img src="https://img.shields.io/github/stars/Botspot/pi-apps" alt="stars">
-    <img src="https://img.shields.io/github/forks/Botspot/pi-apps" alt="forks">
-    <img src="https://img.shields.io/github/contributors/Botspot/pi-apps" alt="contributors">
+    <a href="https://github.com/Botspot/pi-apps/stargazers"><img src="https://img.shields.io/github/stars/Botspot/pi-apps" alt="stars">
+    <a href="https://github.com/Botspot/pi-apps/network/members"><img src="https://img.shields.io/github/forks/Botspot/pi-apps" alt="forks">
+    <a href="https://github.com/Botspot/pi-apps/graphs/contributors"><img src="https://img.shields.io/github/contributors/Botspot/pi-apps" alt="contributors">
     <img src="https://img.shields.io/github/issues-pr/Botspot/pi-apps" alt="prs">
     <img src="https://img.shields.io/github/issues/Botspot/pi-apps" alt="issues">
     <img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license">
