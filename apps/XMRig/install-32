@@ -159,7 +159,7 @@ fi
 # Setup chroot
 
 chroot_dir="$HOME/xmrig/bullseye"
-#install_packages debootstrap || exit 1
+install_packages debootstrap || exit 1
 check=0
 if [ -d "$HOME/xmrig" ]; then
 	until [ "$check" == "1" ]; do
