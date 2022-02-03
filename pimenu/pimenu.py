@@ -290,7 +290,7 @@ def main():
     root.geometry("640x480")
     root.wm_title('PiMenu')
     root.attributes('-alpha',0.0)
-    pabcf = open("/home/pi/pi-apps/pimenu/settings/Pi_apps_button_color")
+    pabcf = open(os.path.dirname(os.path.realpath(sys.argv[0])) + "/settings/Pi_apps_button_color")
     pabc = pabcf.read()
     if len(sys.argv) > 2 and sys.argv[2] == 'fs':
         root.wm_attributes('-fullscreen', True)
