@@ -1,113 +1,114 @@
 #!/bin/bash
+
 version=6.16.2
 
 function enable_64bit() {
-if [ -f /boot/config.txt ]; then
-echo "arm_64bit=1" | sudo tee --append /boot/config.txt 1&>2 || error 'Failed to append '\''arm_64bit=1'\'' to /boot/config.txt!'
-echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the XMRig app again. Press CTRL+C to exit."
-sleep infinity
-else
-error 'I was not able to detect /boot/config.txt! Something is very wrong!'
-fi
+    if [ -f /boot/config.txt ]; then
+        echo "arm_64bit=1" | sudo tee --append /boot/config.txt 1>&2 || error 'Failed to append '\''arm_64bit=1'\'' to /boot/config.txt!'
+        echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the XMRig app again. Press CTRL+C to exit."
+        sleep infinity
+    else
+        error 'I was not able to detect /boot/config.txt! Something is very wrong!'
+    fi
 }
 
 function config_helper() {
-# Set mining pool
+    # Set mining pool
 
-check=0
-until [ "$check" == "1" ]; do
-read -p "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032 " pool_pref
-read -p "Your mining pool will be set to ${pool_pref}. Is this ok? [y/n] " pool_conf
-case $pool_conf in
-        Y|y|yes|Yes|YES) check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in $HOME/xmrig/bullseye/root/xmrig.json" ;;
-        N|n|no|No|NO) check=0 ;;
-        *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-esac
-done
+    check=0
+    until [ "$check" == "1" ]; do
+        read -p "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032 " pool_pref
+        read -p "Your mining pool will be set to ${pool_pref}. Is this ok? [Y/n] " pool_conf
+        case $pool_conf in
+            Y|y|yes|Yes|YES|"") check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in $HOME/xmrig/bullseye/root/xmrig.json" ;;
+            N|n|no|No|NO) check=0 ;;
+            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+        esac
+    done
 
-# Set SSL/TLS options
+    # Set SSL/TLS options
 
-check=0
-until [ "$check" == "1" ]; do
-read -p "Does your mining pool support SSL/TLS? If you don't know what this is, just say no. [y/N] " tls_supp
-if [ "$tls_supp" == "y" ] || [ "$tls_supp" == "Y" ] || [ "$tls_supp" == "Yes" ] || [ "$tls_supp" == "yes" ] || [ "$tls_supp" == "YES" ]; then
-conf_text="WILL"
-inf_text="enabled"
-tls="true"
-elif [ "$tls_supp" == "n" ] || [ "$tls_supp" == "N" ] || [ "$tls_supp" == "No" ] || [ "$tls_supp" == "no" ] || [ "$tls_supp" == "NO" ] || [ "$tls_supp" == "" ]; then
-conf_text="WILL NOT"
-inf_text="disabled"
-tls="false"
-fi
-read -p "Your config ${conf_text} support SSL/TLS.  Is this ok? [y/n] " tls_conf
-case $tls_conf in
-        Y|y|yes|Yes|YES) check=1; status_green "Your config now has SSL/TLS ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
-        N|n|no|No|NO) check=0 ;;
-	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-esac
-done
+    check=0
+    until [ "$check" == "1" ]; do
+        read -p "Does your mining pool support SSL/TLS? If you don't know what this is, just say no. [y/N] " tls_supp
+        if [ "$tls_supp" == "y" ] || [ "$tls_supp" == "Y" ] || [ "$tls_supp" == "Yes" ] || [ "$tls_supp" == "yes" ] || [ "$tls_supp" == "YES" ]; then
+            conf_text="WILL"
+            inf_text="enabled"
+            tls="true"
+        elif [ "$tls_supp" == "n" ] || [ "$tls_supp" == "N" ] || [ "$tls_supp" == "No" ] || [ "$tls_supp" == "no" ] || [ "$tls_supp" == "NO" ] || [ "$tls_supp" == "" ]; then
+            conf_text="WILL NOT"
+            inf_text="disabled"
+            tls="false"
+        fi
+        read -p "Your config ${conf_text} support SSL/TLS.  Is this ok? [Y/n] " tls_conf
+        case $tls_conf in
+            Y|y|yes|Yes|YES|"") check=1; status_green "Your config now has SSL/TLS ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+            N|n|no|No|NO) check=0 ;;
+            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+        esac
+    done
 
-# Set keepalive options
+    # Set keepalive options
 
-check=0
-until [ "$check" == "1" ]; do
-read -p "Does your mining pool support keepalived packets? If you don't know what this is, just say no. [y/N] " keepalived_supp
-if [ "$keepalived_supp" == "y" ] || [ "$keepalived_supp" == "Y" ] || [ "$keepalived_supp" == "Yes" ] || [ "$keepalived_supp" == "yes" ] || [ "$keepalived_supp" == "YES" ]; then
-conf_text="WILL"
-inf_text="enabled"
-keepalived="true"
-elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ] || [ "$keepalived_supp" == "" ]; then
-conf_text="WILL NOT"
-inf_text="disabled"
-keepalived="false"
-fi
-read -p "Your config ${conf_text} support keepalived packets.  Is this ok? [y/n] " keepalived_conf
-case $keepalived_conf in
-        Y|y|yes|Yes|YES) check=1; status_green "Your config now has keepalived packets ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
-        N|n|no|No|NO) check=0 ;;
-	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-esac
-done
+    check=0
+    until [ "$check" == "1" ]; do
+        read -p "Does your mining pool support keepalived packets? If you don't know what this is, just say no. [y/N] " keepalived_supp
+        if [ "$keepalived_supp" == "y" ] || [ "$keepalived_supp" == "Y" ] || [ "$keepalived_supp" == "Yes" ] || [ "$keepalived_supp" == "yes" ] || [ "$keepalived_supp" == "YES" ]; then
+            conf_text="WILL"
+            inf_text="enabled"
+            keepalived="true"
+        elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ] || [ "$keepalived_supp" == "" ]; then
+            conf_text="WILL NOT"
+            inf_text="disabled"
+            keepalived="false"
+        fi
+        read -p "Your config ${conf_text} support keepalived packets.  Is this ok? [Y/n] " keepalived_conf
+        case $keepalived_conf in
+            Y|y|yes|Yes|YES|"") check=1; status_green "Your config now has keepalived packets ${inf_text}. You can change this by editing the '\"tls\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+            N|n|no|No|NO) check=0 ;;
+            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+        esac
+    done
 
-# Set Wallet Address
+    # Set Wallet Address
 
-check=0
-until [ "$check" == "1" ]; do
-read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json. " wallet_address
-read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [y/n] " wallet_conf
-case $wallet_conf in
-        Y|y|yes|Yes|YES) check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
-        N|n|no|No|NO) check=0 ;;
-	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-esac
-done
+    check=0
+    until [ "$check" == "1" ]; do
+        read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json. " wallet_address
+        read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [Y/n] " wallet_conf
+        case $wallet_conf in
+            Y|y|yes|Yes|YES|"") check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+            N|n|no|No|NO) check=0 ;;
+            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+        esac
+    done
 
-# Set miner name
+    # Set miner name
 
-check=0
-until [ "$check_1" == "1" ]; do
-read -p "Do you want to name your Miner? [Y/n] " qminername
-if [ "$qminername" == "" ] || [ "$qminername" == "y" ] || [ "$qminername" == "Y" ] || [ "$qminername" == "Yes" ] || [ "$qminername" == "yes" ] || [ "$qminername" == "YES" ] || [ "$qminername" == "" ]; then
-check_1=1
-until [ "$check" == "1" ]; do
-read -p "What do you want to name your Miner? " miner_name
-read -p "Your Miner's name will be ${miner_name}. Is this ok? [y/n] " name_conf
-case $name_conf in
-        Y|y|yes|Yes|YES) check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
-        N|n|no|No|NO) check=0 ;;
-	*) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-esac
-done
-elif [ "$qminername" == "n" ] || [ "$qminername" == "N" ] || [ "$qminername" == "No" ] || [ "$qminername" == "no" ] || [ "$qminername" == "NO" ]; then
-check_1=1
-status "You chose not to name your Miner. If you change your mind, you can edit the '\"rig-id\":' line in '$HOME/xmrig/bullseye/root/xmrig.json'. Continuing..."
-else
-check_1=0
-fi
-done
-# copy the settings to xmrig.json
+    check=0
+    until [ "$check_1" == "1" ]; do
+        read -p "Do you want to name your Miner? [Y/n] " qminername
+        if [ "$qminername" == "" ] || [ "$qminername" == "y" ] || [ "$qminername" == "Y" ] || [ "$qminername" == "Yes" ] || [ "$qminername" == "yes" ] || [ "$qminername" == "YES" ] || [ "$qminername" == "" ]; then
+            check_1=1
+            until [ "$check" == "1" ]; do
+                read -p "What do you want to name your Miner? " miner_name
+                read -p "Your Miner's name will be ${miner_name}. Is this ok? [Y/n] " name_conf
+                case $name_conf in
+                    Y|y|yes|Yes|YES|"") check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in $HOME/xmrig/bullseye/root/xmrig.json." ;;
+                    N|n|no|No|NO) check=0 ;;
+                    *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+                esac
+            done
+        elif [ "$qminername" == "n" ] || [ "$qminername" == "N" ] || [ "$qminername" == "No" ] || [ "$qminername" == "no" ] || [ "$qminername" == "NO" ]; then
+            check_1=1
+            status "You chose not to name your Miner. If you change your mind, you can edit the '\"rig-id\":' line in '$HOME/xmrig/bullseye/root/xmrig.json'. Continuing..."
+        else
+            check_1=0
+        fi
+    done
+    # copy the settings to xmrig.json
 
-cat << EOT | tee $HOME/xmrig/xmrig.json 1&>2 || error 'Failed to create $HOME/xmrig/xmrig.json!'
+    cat << EOT | tee $HOME/xmrig/xmrig.json 1>&2 || error 'Failed to create $HOME/xmrig/xmrig.json!'
 {
     "autosave": true,
     "cpu": true,
@@ -124,34 +125,34 @@ cat << EOT | tee $HOME/xmrig/xmrig.json 1&>2 || error 'Failed to create $HOME/xm
     ]
 }
 EOT
-sudo cp $HOME/xmrig/xmrig.json $chroot_dir/root/.config/xmrig.json
-# Create xmrig command in host
+    sudo cp $HOME/xmrig/xmrig.json $chroot_dir/root/.config/xmrig.json
+    # Create xmrig command in host
 
-cat << EOT | sudo tee /usr/bin/xmrig 1&>2 || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
+    cat << EOT | sudo tee /usr/bin/xmrig 1>&2 || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
 #!/bin/bash
 
 sudo chroot $HOME/xmrig/bullseye xmrig
 EOT
-sudo chmod 775 /usr/bin/xmrig || error 'Failed to make "/usr/bin/xmrig" executable!'
-status_green 'Done!'
+    sudo chmod 775 /usr/bin/xmrig || error 'Failed to make "/usr/bin/xmrig" executable!'
+    status_green 'Done!'
 
 } # End config_helper()
 
 # Hardware and kernel checks
 
 if grep -q ARMv6 /proc/cpuinfo; then
-  error "XMRig is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
+    error "XMRig is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
 fi
 
 if [ "$(uname -m)" != "aarch64" ] && [ "$(uname -m)" != "arm64" ]; then
     check=0
     while [ "$check" == "0" ]; do
-      read -n 3 -p 'You need a 64-bit kernel to install XMRig. Do you want me to enable 64-bit kernel? [Y/n] ' input
-      case $input in
-              Y|y|yes|Yes|YES|"") check=1; enable_64bit ;;
-              N|n|no|No|NO) check=1; error "User error: 64-bit kernel is required but user chose to not enable it." ;;
-              *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-      esac
+        read -p 'You need a 64-bit kernel to install XMRig. Do you want me to enable 64-bit kernel? [Y/n] ' input
+        case $input in
+            Y|y|yes|Yes|YES|"") check=1; enable_64bit ;;
+            N|n|no|No|NO) check=1; error "User error: 64-bit kernel is required but user chose to not enable it." ;;
+            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
+        esac
     done
 elif [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
     status 'You have a 64-bit kernel. Continuing...'
@@ -162,45 +163,45 @@ chroot_dir="$HOME/xmrig/bullseye"
 install_packages debootstrap || exit 1
 check=0
 if [ -d "$HOME/xmrig" ]; then
-	until [ "$check" == "1" ]; do
-			read -p "I tried to debootstrap '$chroot_dir', but '$HOME/xmrig' exists. Do you want to delete the chroot, or reuse it? If you have a 'xmrig.json' config file, it will be saved. [(d)elete/(r)euse/(m)ore info] " question
-		case $question in
-			d|D|DELETE|Delete|delete|del)
-				status 'Creating backup of '\''$HOME/xmrig/xmrig.json'\''...'
-				if [ ! -e "$HOME/xmrig/xmrig.json" ]; then
-					warning 'I couldn'\''t find your '\''xmrig.json'\''! I won'\''t be able to back it up! Please make sure a copy of your '\''xmrig.json'\'' is in '\''$HOME/xmrig/'\''!\nContinuing in 10 seconds...'; sleep 10
-				else
-					cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak &>/dev/null || sudo cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak || error 'Failed to create a backup of '\''$HOME/xmrig/xmrig.json'\''!'
-				fi				
-				status_green 'Done!'
-				status "Removing '$HOME/xmrig'..."
-				sudo rm -rf $HOME/xmrig || error 'I was not able to remove '\''$HOME/xmrig'\''!'
-				status_green 'Done!'
-				status 'Creating new '\''$HOME/xmrig'\'' directory...'
-				mkdir -p $HOME/xmrig/ || error 'I was not able to create '\''$HOME/xmrig'\''!'
-				status_green 'Done!'
-				status 'Starting debootstrap... This next part will take a while.\n'
-				sudo debootstrap --variant=buildd --arch arm64 bullseye $HOME/xmrig/bullseye http://ftp.us.debian.org/debian/ || error 'Failed to debootstrap chroot environment!!!'
-				status_green '\nDone!\n'
-				check=1 ;;
-			r|R|REUSE|Reuse|reuse)
-				status 'Your current chroot will be used. Continuing...'
-				check=1 ;;
-			m|M|MORE|More|more|i|I|info|Info|INFO) 
-				status "\nIf you select (d)elete, the XMRig chroot directory ($chroot_dir) will be removed, a new arm64 chroot created, and XMRig will be compiled and installed into it.\nThe whole install process (if delete is selected) will probably take around an hour, depending on your hardware.\nIf you select (r)euse, the same chroot will be used (the '$chroot_dir/xmrig' directory will still be removed, though, so if you have any important files in there, copy them out), and a new copy of XMRig compiled and installed. Your config (if you have one) will be saved.\nThis will take much less time.\n"
-				check=0 ;;
-			*) echo -e "\n\e[91mInvalid answer! Please choose 'd', 'r', or 'm'.\e[0m\n"; check=0 ;;
-		esac
-	done
+    until [ "$check" == "1" ]; do
+        read -p "I tried to debootstrap '$chroot_dir', but '$HOME/xmrig' exists. Do you want to delete the chroot, or reuse it? If you have a 'xmrig.json' config file, it will be saved. [(d)elete/(r)euse/(m)ore info] " question
+        case $question in
+            d|D|DELETE|Delete|delete|del)
+                status 'Creating backup of '\''$HOME/xmrig/xmrig.json'\''...'
+                if [ ! -e "$HOME/xmrig/xmrig.json" ]; then
+                    warning 'I couldn'\''t find your '\''xmrig.json'\''! I won'\''t be able to back it up! Please make sure a copy of your '\''xmrig.json'\'' is in '\''$HOME/xmrig/'\''!\nContinuing in 10 seconds...'; sleep 10
+                else
+                    cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak 1>&2 || sudo cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak || error 'Failed to create a backup of '\''$HOME/xmrig/xmrig.json'\''!'
+                fi
+                status_green 'Done!'
+                status "Removing '$HOME/xmrig'..."
+                sudo rm -rf $HOME/xmrig || error 'I was not able to remove '\''$HOME/xmrig'\''!'
+                status_green 'Done!'
+                status 'Creating new '\''$HOME/xmrig'\'' directory...'
+                mkdir -p $HOME/xmrig/ || error 'I was not able to create '\''$HOME/xmrig'\''!'
+                status_green 'Done!'
+                status 'Starting debootstrap... This next part will take a while.\n'
+                sudo debootstrap --variant=buildd --arch arm64 bullseye $HOME/xmrig/bullseye http://ftp.us.debian.org/debian/ || error 'Failed to debootstrap chroot environment!!!'
+                status_green '\nDone!\n'
+                check=1 ;;
+            r|R|REUSE|Reuse|reuse)
+                status 'Your current chroot will be used. Continuing...'
+                check=1 ;;
+            m|M|MORE|More|more|i|I|info|Info|INFO)
+                status "\nIf you select (d)elete, the XMRig chroot directory ($chroot_dir) will be removed, a new arm64 chroot created, and XMRig will be compiled and installed into it.\nThe whole install process (if delete is selected) will probably take around an hour, depending on your hardware.\nIf you select (r)euse, the same chroot will be used (the '$chroot_dir/xmrig' directory will still be removed, though, so if you have any important files in there, copy them out), and a new copy of XMRig compiled and installed. Your config (if you have one) will be saved.\nThis will take much less time.\n"
+                check=0 ;;
+            *) echo -e "\n\e[91mInvalid answer! Please choose 'd', 'r', or 'm'.\e[0m\n"; check=0 ;;
+        esac
+    done
 fi
 sudo mkdir -p $chroot_dir/home/$USER/ $chroot_dir/root/.config || error 'Failed to create folders in chroot!'
 sudo cp /etc/resolv.conf $chroot_dir/etc/resolv.conf || error 'Failed to copy '\''/etc/resolv.conf'\'' into chroot environment!'
-echo "export LANG=C" | sudo tee --append $HOME/xmrig/bullseye/etc/.bashrc 1&>2 || error 'Failed to echo '\''export LANG=C'\'' to chroot environment\''s .bashrc'
+echo "export LANG=C" | sudo tee --append $HOME/xmrig/bullseye/etc/.bashrc 1>&2 || error 'Failed to echo '\''export LANG=C'\'' to chroot environment\''s .bashrc'
 
 status 'Generating chroot XMRig install script...'
 sudo rm $chroot_dir/chroot-xmrig-inst.sh &>/dev/null && sudo touch $chroot_dir/chroot-xmrig-inst.sh
 # Start xmrig install script
-sudo cat << EOT | sudo tee $chroot_dir/chroot-xmrig-inst.sh 1&>2 || error 'Failed to create XMRig install script!'
+sudo cat << EOT | sudo tee $chroot_dir/chroot-xmrig-inst.sh 1>&2 || error 'Failed to create XMRig install script!'
 #!/bin/bash
 version=$version
 apt-get update
@@ -222,7 +223,7 @@ cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
 cp xmrig /usr/bin/xmrig || error 'Failed to copy xmrig onto PATH!'
 EOT
-sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh
+sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh || error 'Failed to make '\''$chroot_dir/chroot-xmrig-inst.sh'\'' executable!'
 status_green 'Done.'
 
 # Run install script
@@ -230,23 +231,23 @@ sudo chroot $HOME/xmrig/bullseye ./chroot-xmrig-inst.sh
 
 check=0
 until [ "$check" == "1" ]; do
-read -p "Do you want to setup your xmrig.json? This will make running xmrig easier. [Y/n] " runwiz_pref
-if [ "$runwiz_pref" == "y" ] || [ "$runwiz_pref" == "Y" ] || [ "$runwiz_pref" == "Yes" ] || [ "$runwiz_pref" == "yes" ] || [ "$runwiz_pref" == "YES" ] || [ "$runwiz_pref" == "" ]; then
-read -p "I will now run the config helper. Is this ok? [Y/n] " runwiz_conf
-case $runwiz_conf in
-        Y|y|yes|Yes|YES|"") check=1; status_green "\nStarting helper..."; sleep 1; config_helper ;;
-        N|n|no|No|NO) check=1 ;;
-        *) check=0; echo '\nInvalid input! Please answer y/n, or yes/no.' ;;
-esac
-elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ] || [ "$keepalived_supp" == "" ]; then
-status '\nI won'\''t run the config helper. Continuing...'
-fi
+    read -p "Do you want to setup your xmrig.json? This will make running xmrig easier. [Y/n] " runwiz_pref
+    if [ "$runwiz_pref" == "y" ] || [ "$runwiz_pref" == "Y" ] || [ "$runwiz_pref" == "Yes" ] || [ "$runwiz_pref" == "yes" ] || [ "$runwiz_pref" == "YES" ] || [ "$runwiz_pref" == "" ]; then
+        read -p "I will now run the config helper. Is this ok? [Y/n] " runwiz_conf
+        case $runwiz_conf in
+            Y|y|yes|Yes|YES|"") check=1; status_green "\nStarting helper..."; sleep 1; config_helper ;;
+            N|n|no|No|NO) check=1 ;;
+            *) check=0; echo -e '\nInvalid input! Please answer y/n, or yes/no.' ;;
+        esac
+    elif [ "$runwiz_pref" == "n" ] || [ "$runwiz_pref" == "N" ] || [ "$runwiz_pref" == "No" ] || [ "$runwiz_pref" == "no" ] || [ "$runwiz_pref" == "NO" ]; then
+        status '\nI won'\''t run the config helper. Continuing...'
+    fi
 done
 
 # Make the xmrig-chroot command
 
 status '\nMaking xmrig-chroot command...'
-cat << EOT | sudo tee /usr/bin/xmrig-chroot 1&>2 || error 'Failed to make xmrig-chroot command in /usr/bin/xmrig-chroot!'
+cat << EOT | sudo tee /usr/bin/xmrig-chroot 1>&2 || error 'Failed to make xmrig-chroot command in /usr/bin/xmrig-chroot!'
 #!/bin/bash
 sudo chroot $HOME/xmrig/bullseye
 EOT
