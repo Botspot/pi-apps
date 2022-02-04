@@ -157,6 +157,12 @@ runonce <<"EOF"
   
   refresh_all_pkgapp_status
 EOF
+
+# change settings icon
+runonce <<"EOF"
+  [ -a "$HOME/.local/share/applications/pi-apps-settings.desktop" ] && sed -i "s/logo.png/settings.png/g" "$HOME/.local/share/applications/pi-apps-settings.desktop" || true
+EOF
+
 ) &
 
 #check for updates in background
