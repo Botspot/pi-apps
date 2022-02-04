@@ -1,73 +1,102 @@
 #!/bin/bash
 version=6.16.2
 
+# userinput function to display yad prompts to the user
+function userinput_func {
+  unset uniq_selection
+  height=$(($(echo "$1" | grep -o '\\n' | wc -l) + 8))
+  height_gui=$(echo $(( height * 15 + ${#@} * 20 + 100 )))
+  height_gui_buttons=$(echo $(( height * 15 )))
+  if [[ "${#@}" == "2" ]];then
+    echo -e "$1" |  yad --fixed --no-escape --undecorated --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
+    --text-info --fontname="@font@ 11" --wrap --width=800 --height=$height_gui --window-icon="${DIRECTORY}/apps/XMRig/icon-64.png" \
+    --show-uri \
+    --button="$2":0
+    output="$2"
+  elif [[ "${#@}" == "3" ]];then
+    yad --image "dialog-question" \
+    --borders="20" --height=$height_gui_buttons --center --fixed\
+    --window-icon=${DIRECTORY}/apps/XMRig/icon-64.png \
+    --text="$1" \
+    --button="$2":0 \
+    --button="$3":1
+    if [[ $? -ne 0 ]]; then
+    output="$3"
+    else
+    output="$2"
+    fi
+  else
+    for string in "${@:2}"; do
+    uniq_selection+=(FALSE "$string")
+    done
+    uniq_selection[0]=TRUE
+    output=$(
+    yad --no-escape --undecorated --center \
+      --borders="20" --height=$height_gui\
+      --window-icon="${DIRECTORY}/apps/XMRig/icon-64.png" \
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --fixed \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="Ok":0 \
+      "${uniq_selection[@]}"
+    )
+  fi
+}
+
+function userinput_text_func {
+  yad --center --wrap --text "$1" --entry --button="Ok":0
+}
+
+default_table=("Yes" "No")
+
 function config_helper() {
     # Set mining pool
 
     check=0
     until [ "$check" == "1" ]; do
-        read -p "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032 " pool_pref
-        read -p "Your mining pool will be set to ${pool_pref}. Is this ok? [Y/n] " pool_conf
-        case $pool_conf in
-            Y|y|yes|Yes|YES|"") check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in '$HOME/.config/xmrig.json.'." ;;
-            N|n|no|No|NO) check=0 ;;
+        pool_pref=$(userinput_text_func "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032")
+        table=("Yes" "No")
+        userinput_func "Your mining pool will be set to ${pool_pref}. Is this ok?" "${default_table[@]}"
+        case $output in
+            Yes) check=1; status_green "Your pool is now set to ${pool_pref}. You can change this by editing the '\"url\":' field in '$HOME/.config/xmrig.json.'." ;;
+            No) check=0 ;;
             *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
         esac
     done
 
     # Set SSL/TLS options
 
-    check=0
-    until [ "$check" == "1" ]; do
-        read -p "Does your mining pool support SSL/TLS? If you don't know what this is, just say no. [Y/n] " tls_supp
-        if [ "$tls_supp" == "y" ] || [ "$tls_supp" == "Y" ] || [ "$tls_supp" == "Yes" ] || [ "$tls_supp" == "yes" ] || [ "$tls_supp" == "YES" ] || [ "$tls_supp" == "" ]; then
-            conf_text="WILL"
-            inf_text="enabled"
-            tls="true"
-        elif [ "$tls_supp" == "n" ] || [ "$tls_supp" == "N" ] || [ "$tls_supp" == "No" ] || [ "$tls_supp" == "no" ] || [ "$tls_supp" == "NO" ]; then
-            conf_text="WILL NOT"
-            inf_text="disabled"
-            tls="false"
-        fi
-        read -p "Your config ${conf_text} support SSL/TLS.  Is this ok? [Y/n] " tls_conf
-        case $tls_conf in
-            Y|y|yes|Yes|YES|"") check=1; status_green "Your config now has SSL/TLS ${inf_text}. You can change this by editing the '\"tls\":' field in '$HOME/.config/xmrig.json.'." ;;
-            N|n|no|No|NO) check=0 ;;
-            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-        esac
-    done
+    userinput_func "Does your mining pool support SSL/TLS? If you don't know what this is, just say no." "${default_table[@]}"
+    case $output in
+        Yes) tls="true"; status_green "Your config now has SSL/TLS enabled. You can change this by editing the '\"tls\":' field in '$HOME/.config/xmrig.json.'." ;;
+        *) tls="false";;
+    esac
 
     # Set keepalive options
 
-    check=0
-    until [ "$check" == "1" ]; do
-        read -p "Does your mining pool support keepalived packets? If you don't know what this is, just say no. [y/N] " keepalived_supp
-        if [ "$keepalived_supp" == "y" ] || [ "$keepalived_supp" == "Y" ] || [ "$keepalived_supp" == "Yes" ] || [ "$keepalived_supp" == "yes" ] || [ "$keepalived_supp" == "YES" ]; then
-            conf_text="WILL"
-            inf_text="enabled"
-            keepalived="true"
-        elif [ "$keepalived_supp" == "n" ] || [ "$keepalived_supp" == "N" ] || [ "$keepalived_supp" == "No" ] || [ "$keepalived_supp" == "no" ] || [ "$keepalived_supp" == "NO" ] || [ "$keepalived_supp" == "" ]; then
-            conf_text="WILL NOT"
-            inf_text="disabled"
-            keepalived="false"
-        fi
-        read -p "Your config ${conf_text} support keepalived packets.  Is this ok? [Y/n] " keepalived_conf
-        case $keepalived_conf in
-            Y|y|yes|Yes|YES|"") check=1; status_green "Your config now has keepalived packets ${inf_text}. You can change this by editing the '\"tls\":' field in '$HOME/.config/xmrig.json'." ;;
-            N|n|no|No|NO) check=0 ;;
-            *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
-        esac
-    done
+    userinput_func "Does your mining pool support keepalived packets? If you don't know what this is, just say no." "${default_table[@]}"
+    case $output in
+        Yes) keepalived="true"; status_green "Your config now has keepalived packets enabled. You can change this by editing the '\"keepalive\":' field in '$HOME/.config/xmrig.json'." ;;
+        *) keepalived="false" ;;
+    esac
+
 
     # Set Wallet Address
 
     check=0
     until [ "$check" == "1" ]; do
-        read -p "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json. " wallet_address
-        read -p "Your Wallet Address will be set to $wallet_address. Is this ok? [Y/n] " wallet_conf
-        case $wallet_conf in
-            Y|y|yes|Yes|YES|"") check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in '$HOME/.config/xmrig.json'." ;;
-            N|n|no|No|NO) check=0 ;;
+        wallet_address=$(userinput_text_func "What is your Wallet Address? This will only be used in $HOME/xmrig/bullseye/root/.config/xmrig.json.")
+        userinput_func "Your Wallet Address will be set to $wallet_address. Is this ok?" "${default_table[@]}"
+        case $output in
+            Yes) check=1; status_green "Your Wallet Address is now set to ${wallet_address}. You can change this by editing the '\"user\":' field in '$HOME/.config/xmrig.json'." ;;
+            No) check=0 ;;
             *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
         esac
     done
@@ -75,18 +104,18 @@ function config_helper() {
     # Set miner name
 
     check=0
-    read -p "Do you want to name your Miner? [Y/n] " qminername
-    if [ "$qminername" == "y" ] || [ "$qminername" == "Y" ] || [ "$qminername" == "Yes" ] || [ "$qminername" == "yes" ] || [ "$qminername" == "YES" ] || [ "$qminername" == "" ]; then
+    userinput_func "Do you want to name your Miner?" "${default_table[@]}"
+    if [ "$output" == "Yes" ]; then
         until [ "$check" == "1" ]; do
-            read -p "What to you want to name your Miner? " miner_name
-            read -p "Your Miner's name will be ${miner_name}. Is this ok? [Y/n] " name_conf
-            case $name_conf in
-                Y|y|yes|Yes|YES|"") check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in '$HOME/.config/xmrig.json'." ;;
-                N|n|no|No|NO) check=0 ;;
+            miner_name=$(userinput_text_func "What to you want to name your Miner?")
+            userinput_func "Your Miner's name will be ${miner_name}. Is this ok?" "${default_table[@]}"
+            case $output in
+                Yes) check=1; status_green "Your Miner's name is now set to ${miner_name}. You can change this by editing the '\"rig-id\":' field in '$HOME/.config/xmrig.json'." ;;
+                No) check=0 ;;
                 *) check=0; echo 'Invalid input! Please answer y/n, or yes/no.' ;;
             esac
         done
-    elif [ "$qminername" == "n" ] || [ "$qminername" == "N" ] || [ "$qminername" == "No" ] || [ "$qminername" == "no" ] || [ "$qminername" == "NO" ]; then
+    else
         status "You chose not to name your Miner. If you change your mind, you can edit the '\"rig-id\":' line in '$HOME/.config/xmrig.json'. Continuing..."
     fi
 
@@ -120,17 +149,10 @@ cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
 sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig
 
-check=0
-until [ "$check" == "1" ]; do
-    read -p "Do you want to setup your xmrig.json? This will make running xmrig easier. [Y/n] " runwiz_pref
-    if [ "$runwiz_pref" == "y" ] || [ "$runwiz_pref" == "Y" ] || [ "$runwiz_pref" == "Yes" ] || [ "$runwiz_pref" == "yes" ] || [ "$runwiz_pref" == "YES" ] || [ "$runwiz_pref" == "" ]; then
-        read -p "I will now run the config helper. Is this ok? [Y/n] " runwiz_conf
-        case $runwiz_conf in
-            Y|y|yes|Yes|YES|"") check=1; status_green "\nStarting helper..."; sleep 1; config_helper ;;
-            N|n|no|No|NO) check=1 ;;
-            *) check=0; echo '\nInvalid input! Please answer y/n, or yes/no.' ;;
-        esac
-    elif [ "$runwiz_pref" == "n" ] || [ "$runwiz_pref" == "N" ] || [ "$runwiz_pref" == "No" ] || [ "$runwiz_pref" == "no" ] || [ "$runwiz_pref" == "NO" ]; then
-        status '\nI won'\''t run the config helper. Continuing...'
-    fi
-done
+userinput_func "Do you want to setup your xmrig.json? This will make running xmrig easier."
+if [ "$output" == "Yes" ]; then
+    status_green "\nStarting helper..."
+    config_helper
+else
+    status '\nI won'\''t run the config helper...'
+fi
