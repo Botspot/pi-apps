@@ -51,7 +51,7 @@ function userinput_func {
 }
 
 function userinput_text_func {
-  yad --center --wrap --text "$1" --entry --button="Ok":0
+  yad --window-icon="${DIRECTORY}/apps/XMRig/icon-64.png" --center --wrap --text "$1" --entry --button="Ok":0
 }
 
 default_table=("Yes" "No")
