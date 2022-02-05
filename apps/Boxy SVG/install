@@ -1,3 +1,96 @@
 #!/bin/bash
-wget -qO- https://raw.githubusercontent.com/Botspot/Boxy-SVG-RPi/main/install.sh | bash
+#wget -qO- https://raw.githubusercontent.com/Botspot/Boxy-SVG-RPi/main/install.sh | bash
 
+#determine boxy svg download link
+if [ $arch == 32 ];then
+  processor=armhf
+elif [ $arch == 64 ];then
+  processor=arm64
+else
+  error '$arch variable not set!'
+  exit 1
+fi
+link="$(wget -qO- --header 'Snap-Device-Series: 16' http://api.snapcraft.io/v2/snaps/info/boxy-svg | sed 's/},{/}\n{/g' | grep $processor | tr '{,}' '\n' | grep '"url":"' | sed 's/^"url":"//g' | sed 's/"$//g')"
+
+if [ -z "$link" ];then
+  error "Failed to find a link to download the Boxy SVG snap from! Be sure you are connected to the Internet."
+fi
+
+status "Downloading the Boxy SVG snap package..."
+wget "$link" -O /tmp/boxy.snap || exit 1
+
+status "Mounting the snap package to copy files out..."
+mkdir -p /tmp/boxy-mount
+sudo umount -q /tmp/boxy-mount
+sudo mount -t squashfs -o ro /tmp/boxy.snap /tmp/boxy-mount || error "Failed to mount boxy.snap to copy files out!"
+
+status -n "Copying files... "
+sudo rm -rf /opt/boxy-svg
+sudo cp -a /tmp/boxy-mount/opt/boxy-svg /opt || error "Failed to copy files from mounted snap to /opt!"
+sudo cp /tmp/boxy-mount/meta/gui/boxy-svg.svg /opt/boxy-svg
+sudo cp "$(dirname "$0")/icon-64.png" /opt/boxy-svg
+sudo umount /tmp/boxy-mount
+status_green "Done"
+
+#compile xseticon to set the program's window icon
+if ! command -v xseticon >/dev/null ;then
+  echo "Compiling xseticon..."
+  cd /tmp
+  git_clone https://github.com/xeyownt/xseticon || exit 1
+  cd /tmp/xseticon
+  install_packages libxmu-headers libgd-dev libxmu-dev libglib2.0-dev || exit 1
+  make || error "Failed to compile xseticon with the 'make' command!"
+  sudo cp -f "$PWD/xseticon" /usr/local/bin
+  (purge_packages)
+  cd $HOME
+  rm -rf /tmp/xseticon
+fi
+
+#create a runscript to set the window icon
+echo '#!/bin/bash
+#This script runs Boxy SVG and will set its window-icon.
+
+#determine how many Boxy SVG windows are already open
+init_numwindows="$(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | wc -l)"
+
+#run boxy-svg in background
+/opt/boxy-svg/boxy-svg "$@" &
+pid=$!
+#if this script is killed, also kill boxy svg
+trap "kill $pid &>/dev/null" EXIT
+
+#wait for launch
+while [ "$init_numwindows" -lt "$(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | wc -l)" ];do
+  sleep 1
+done
+#now window opened
+
+echo "Boxy SVG window has opened, setting icon..."
+
+#set 
+IFS=$'\''\n'\''
+for windowid in $(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | awk '\''{print $1}'\'') ;do
+  xseticon -id $windowid "/opt/boxy-svg/icon-64.png"
+done
+
+#wait for window background-process to be closed before returning to shell
+wait $pid
+' | sudo tee /usr/local/bin/boxy-svg
+sudo chmod +x /usr/local/bin/boxy-svg
+
+if [ -z "$(cat ~/.config/mimeapps.list | grep 'boxy-svg.desktop')" ];then
+  echo "Associating the SVG mimetype with Boxy SVG..."
+  echo "image/svg+xml=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+fi
+
+echo "[Desktop Entry]
+Name=Boxy SVG
+Comment=Scalable Vector Graphics (SVG) editor
+Exec=boxy-svg %f
+Icon=/opt/boxy-svg/boxy-svg.svg
+Type=Application
+Terminal=false
+Categories=Graphics
+StartupWMClass=Boxy SVG
+MimeType=image/svg+xml;image/png;image/jpeg;image/gif;image/webp;application/pdf;application/illustrator;
+Keywords=SVG;Vector;Graphics;Editor;" | sudo tee /usr/share/applications/boxy-svg.desktop >/dev/null

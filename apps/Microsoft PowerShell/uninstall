@@ -1,0 +1,5 @@
+#!/bin/bash
+
+purge_packages || exit 1
+rm -rf "$HOME/powershell" $HOME/.local/share/applications/powershell.desktop || error 'Unable to remove Powershell!'
+sudo rm -f /usr/local/bin/pwsh || error 'Failed to remove shortcut!'

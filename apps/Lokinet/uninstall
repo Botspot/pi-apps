@@ -1,15 +1,5 @@
 #!/bin/bash
-purge_packages || exit 1
 
-  if [ -e /etc/systemd/system/lokinet.service.d ]; then
-     echo "removing systemd override"
-     sudo rm -r /etc/systemd/system/lokinet.service.d
-  fi
-  if [ -e /etc/systemd/system/lokinet.service ]; then
-     echo "removing lokinet service"
-     sudo rm /etc/systemd/system/lokinet.service
-  fi
-  if [ -e /etc/systemd/system/lokinet-testnet.service ]; then
-     echo "removing lokinet-testnet.service"
-     sudo rm /etc/systemd/system/lokinet-testnet.service
-  fi
+sudo rm -rf /etc/apt/sources.list.d/oxen.list /etc/apt/trusted.gpg.d/oxen.gpg /etc/systemd/system/lokinet.service /etc/systemd/system/lokinet.service.d /etc/systemd/system/lokinet-testnet.service
+
+purge_packages || exit 1

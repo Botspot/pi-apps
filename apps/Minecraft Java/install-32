@@ -1,6 +1,7 @@
 #!/bin/bash
 install_packages kmod zip unzip libfuse2 || exit 1
 
+echo
 echo "Creating directories"
 mkdir -p ~/.minecraft ~/lwjgl3arm32 ~/lwjgl2arm32 ~/lunarassets
 sudo mkdir -p /opt/jdk
@@ -8,17 +9,18 @@ sudo mkdir -p /opt/jdk
 #Download client and assorted java stuff
 echo "Downloading lunarclient.AppImage"
 errors="$(wget -O ~/lunarassets/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.8.0-armv7l.AppImage' 2>&1)" || error "Failed to download lunarclient.AppImage\nErrors:\n$errors"
-chmod +x ~/lunarassets/lunarclient.AppImage || error "Failed to make lunarclient.AppImage executable!"
+errors="$(chmod +x ~/lunarassets/lunarclient.AppImage 2>&1)" || error "Failed to make lunarclient.AppImage executable!\nErrors:\n$errors"
+
 echo "Downloading lunarclient.png"
 errors="$(wget -O ~/lunarassets/lunarclient.png https://github.com/gl91306/lunar/raw/master/lunarclient.png 2>&1)" || error "Failed to download lunarclient.png\nErrors:\n$errors"
-echo "Downloading jdk-16.tar.gz"
-sudo rm -rf /opt/jdk/jdk-16.0.1+9-jre ~/jdk-16.tar.gz
-errors="$(wget -O ~/jdk-16.tar.gz 'https://github.com/gl91306/lunar/raw/master/jdk-16.0.1%2B9-jre.tar.gz' 2>&1)" || error "Failed to download jdk-16.tar.gz\nErrors:\n$errors"
+
+echo "Downloading jdk-17.tar.gz"
+sudo rm -rf ~/jdk-17.tar.gz /opt/jdk/jdk-17.0.1+12
+errors="$(wget -O ~/jdk-17.tar.gz 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz' 2>&1)" || error "Failed to download jdk-17.tar.gz\nErrors:\n$errors"
 echo "Extracting jdk-16.tar.gz to /opt/jdk"
-sudo tar -zxf ~/jdk-16.tar.gz -C /opt/jdk || error "Failed to extract jdk-16.tar.gz"
-rm -f ~/jdk-16.tar.gz
-sudo mv /opt/jdk/opt/jdk/jdk-16.0.1+9-jre /opt/jdk
-sudo rm -rf /opt/jdk/opt
+sudo tar -zxf ~/jdk-17.tar.gz -C /opt/jdk || error "Failed to extract jdk-17.tar.gz"
+rm -f ~/jdk-17.tar.gz
+
 echo "Setting up lwjgl3arm32 folder"
 echo "- Downloading lwjgl3arm32.tar.gz"
 errors="$(wget -O ~/lwjgl3arm32.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm32.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm32.tar.gz\nErrors:\n$errors"
@@ -31,6 +33,7 @@ echo "- libgstreamer-lite.so"
 errors="$(wget -O ~/lwjgl3arm32/libgstreamer-lite.so 'https://github.com/gl91306/lunar/raw/master/libgstreamer-lite.so' 2>&1)" || error "Failed to download libgstreamer-lite.so\nErrors:\n$errors"
 echo "- libjfxmedia.so"
 errors="$(wget -O ~/lwjgl3arm32/libjfxmedia.so 'https://github.com/gl91306/lunar/raw/master/libjfxmedia.so' 2>&1)" || error "Failed to download libjfxmedia.so\nErrors:\n$errors"
+
 echo "Setting up lwjgl2arm32 folder"
 echo "- Downloading lwjgl2arm32.tar.gz"
 errors="$(wget -O ~/lwjgl2arm32.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl2arm32.tar.gz' 2>&1)" || error "Failed to download lwjgl2arm32.tar.gz\nErrors:\n$errors"
@@ -55,6 +58,7 @@ rm -f ~/javafx-sdk-17.zip
 
 echo "- libjfxwebkit.so"
 errors="$(wget -O ~/lunarassets/javafx-sdk-17/lib/libjfxwebkit.so 'https://github.com/gl91306/lunar/raw/master/libjfxwebkit.so' 2>&1)" || error "Failed to download libjfxwebkit.so\nErrors:\n$errors"
+
 #Then make menu shortcut
 echo "[Desktop Entry]
 Version=1.0
@@ -62,9 +66,10 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk1.8.0_251 PATH=/opt/jdk/jdk1.8.0_251/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
+Exec=bash -c "\""pkexec modprobe fuse ; JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
+
 echo "This fork of Lunar Client is made by the devs at Pi-Ware, an alternative to Pi-Apps with a focus on games and multi-os support (Arch and Manjaro).
 You can find more about Pi-Ware at https://github.com/piware14/pi-ware
 You should also contact them for support if a issue arises with the launcher. You can also try the 'Minecraft Java MultiMC5' app in the games section instead.

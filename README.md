@@ -5,20 +5,29 @@
 <p align="center">
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
-|
-  <a href="https://discord.gg/RXSTvaUvuu">
-    Join the <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md">
+  <a href="https://github.com/Botspot/pi-apps/wiki/Apps-List">
+    Apps List</a>
+  |
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml">
     Report an error</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml">
     Submit a suggestion</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.md">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-request.yml">
     Submit an app</a>
 
-<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">others</a>
+<p align="center">
+    <a href="https://github.com/Botspot/pi-apps/stargazers"><img src="https://img.shields.io/github/stars/Botspot/pi-apps" alt="stars"></a>
+    <a href="https://github.com/Botspot/pi-apps/network/members"><img src="https://img.shields.io/github/forks/Botspot/pi-apps" alt="forks"></a>
+    <a href="https://github.com/Botspot/pi-apps/graphs/contributors"><img src="https://img.shields.io/github/contributors/Botspot/pi-apps" alt="contributors"></a>
+    <a href="https://github.com/Botspot/pi-apps/pulls"><img src="https://img.shields.io/github/issues-pr/Botspot/pi-apps" alt="prs"></a>
+    <a href="https://github.com/Botspot/pi-apps/issues"><img src="https://img.shields.io/github/issues/Botspot/pi-apps" alt="issues"></a>
+    <a href="https://github.com/Botspot/pi-apps/blob/master/COPYING"><img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license"></a>
+    <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
+
+<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
 
 ## Introduction
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
@@ -33,17 +42,18 @@ To learn more:
   > "Thanks so much to Botspot for creating this; it's a great program."
 
 ## To install Pi-Apps
-```
+```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
-Supported systems:
+    
+#### Supported systems:
 
-- Raspberry Pi OS 32-bit: fully supported.
-- Twister OS: fully supported.
-- Raspberry Pi OS 64-bit: fully supported.
-- Bullseye, Kali, Ubuntu: you may encounter errors for some apps.
-- Android, ChromeOS, non-ARM, non-Debian: Not supported. Your mileage may vary.
+- [Raspberry Pi OS 32 and 64-bit](https://www.raspberrypi.com/software/operating-systems/): fully supported.
+- [Twister OS](https://twisteros.com/download.html): fully supported, preinstalled.
+- [AmogOS for Raspberry Pi](https://www.amogos.studio/): fully supported, preinstalled.
+- Raspberry Pi OS Bullseye, Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: you may encounter errors for some apps.
+- Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
 <details>
 <summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
@@ -84,18 +94,26 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 <hr>
 
-# Read [the wiki](https://github.com/Botspot/pi-apps/wiki)  for the full documentation
+# Documentation
+
+Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ### Basic usage
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
 Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
+
 - After selecting a category, you will see a list of apps:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
-- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
+
+- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the 
+
+**Details window**.  
 ![details](icons/screenshots/details%20window.png?raw=true)  
+
 - Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
 ![updates](icons/screenshots/updates%20available.png?raw=true)  
+
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
 
@@ -118,7 +136,9 @@ You can also join our cheerful community: <img src="https://img.shields.io/disco
 
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
+
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  
+
 Embed code:  
 ```
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  

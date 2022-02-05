@@ -3,7 +3,7 @@ if ! cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g' | grep -q 'Raspberry 
   error "User error: CommanderPi can only be installed on Raspberry Pi devices. Your device is: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
 fi
 
-rm -rf ~/CommanderPi || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
+rm -rf ~/CommanderPi &>/dev/null || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
 
 # Get dependencies
 install_packages python3-tk python3-pil python3-pil.imagetk || exit 1

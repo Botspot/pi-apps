@@ -1,9 +1,8 @@
 #!/bin/bash
 
-install_packages https://osdn.mirror.constant.com/storage/g/r/ra/raspbian-addons/debian/pool/bleachbit_4.4.0-0_all.deb || exit 1
+version=4.4.2-0
 
-# Remove extra 'BleachBit as Administrator' menu shortcut
-( rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop || sudo rm -f /usr/share/applications/org.bleachbit.BleachBit-root.desktop ) &>/dev/null
+install_packages https://download.bleachbit.org/bleachbit_${version}_all_debian11.deb || exit 1
+
 # Move BleachBit to Accessories category
-( sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop || sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop ) &> /dev/null
-
+sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop /usr/share/applications/org.bleachbit.BleachBit-root.desktop || error "Failed to move BleachBit to Accessories category."

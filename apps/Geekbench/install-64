@@ -1,0 +1,11 @@
+#!/bin/bash
+
+version=5.4.4
+
+wget -O /tmp/Geekbench.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
+tar -xf /tmp/Geekbench.tar.gz -C /tmp || error "Failed to extract files!"
+rm -f /tmp/Geekbench.tar.gz ./Geekbench.tar.gz
+sudo mv -f /tmp/Geekbench-${version}-LinuxARMPreview /opt/geekbench || error "Failed to move source folder to /opt!"
+
+# Create symbolic link
+sudo ln -sf /opt/geekbench/geekbench_aarch64 /usr/local/bin/geekbench || error "Failed to create symbolic link to /usr/local/bin!"

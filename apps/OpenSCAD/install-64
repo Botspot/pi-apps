@@ -1,5 +1,5 @@
 #!/bin/bash
-wget 'https://files.openscad.org/OpenSCAD-2021.01-aarch64.AppImage' -O ~/OpenSCAD.AppImage || error "Failed to download appimage!"
+wget 'https://github.com/koendv/openscad-raspberrypi/releases/download/v1.7/OpenSCAD-2021.09.13-aarch64.AppImage' -O ~/OpenSCAD.AppImage || error "Failed to download appimage!"
 
 chmod +x ~/OpenSCAD.AppImage || error "Failed to mark as executable!"
 

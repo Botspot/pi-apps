@@ -1,12 +1,10 @@
 #!/bin/bash
-if command -v wine >/dev/null ;then
+if command -v wine >/dev/null && [ -f ~/.wine/dosdevices/c:/ProgramData/Microsoft/Windows/Start\ Menu/Programs/LEGO\ Company/Uninstall\ LEGO\ Digital\ Designer.lnk ];then
   env WINEPREFIX="$HOME/.wine" wine C:\\windows\\command\\start.exe /Unix ~/.wine/dosdevices/c:/ProgramData/Microsoft/Windows/Start\ Menu/Programs/LEGO\ Company/Uninstall\ LEGO\ Digital\ Designer.lnk || error "Wine uninstallation command failed!"
-else
-  echo "WARNING: 'wine' command not found! Not uninstalling Lego Digital Designer."
+  #wait until finished
+  while ps aux | grep -v grep | grep wine | grep -q 'LEGO Digital Designer' ;do
+    sleep 1
+  done
 fi
 
-#wait until finished
-while ps aux | grep -v grep | grep wine | grep -q 'LEGO Digital Designer' ;do
-  sleep 1
-done
 rm -rf ~/'.local/share/applications/wine/Programs/LEGO Company'

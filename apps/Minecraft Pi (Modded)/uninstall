@@ -2,3 +2,5 @@
 purge_packages || error "Dependencies failed to uninstall"
 
 sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpi-revival.{list,gpg}
+
+rm -f ~/.local/share/applications/gmcpil.desktop ~/.local/share/applications/jmcpil.desktop ~/.local/share/applications/minecraft-pi-reborn-client.desktop
