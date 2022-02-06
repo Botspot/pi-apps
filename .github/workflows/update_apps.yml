@@ -90,7 +90,7 @@ jobs:
           title: "[AUTO] Update App Versions"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
-            Workflow run: https://github.com/cycool29/pi-apps/actions/runs/${{ github.run_id }}
+            Workflow run: https://github.com/Botspot/pi-apps/actions/runs/${{ github.run_id }}
             Apps updated:
 
             ${{ env.UPDATED_APPS }}
