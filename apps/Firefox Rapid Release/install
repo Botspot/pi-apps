@@ -1,7 +1,7 @@
 #!/bin/bash
 # Add repository source to apt sources.list
 echo "Adding ubuntu repository..."
-echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
+echo "deb [arch=$(dpkg --print-architecture)] http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
 
 # Add ubuntu keyring
 echo "Signing ubuntu repository..."
