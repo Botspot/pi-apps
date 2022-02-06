@@ -69,7 +69,15 @@ jobs:
             cat /tmp/updated_apps_sorted >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
           fi
-
+          
+          if test -f /tmp/failed_apps; then
+            echo "FAILED_APPS<<EOF" >> $GITHUB_ENV
+            cat /tmp/failed_apps | sed '0~1 a\\' >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          fi
+          
+          
+          
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
@@ -81,7 +89,11 @@ jobs:
           branch: "auto-app-updates"
           title: "[AUTO] Update App Versions"
           body: |
-            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action:
+            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+            Workflow run: https://github.com/cycool29/pi-apps/actions/runs/${{ github.run_id }}
             Apps updated:
 
             ${{ env.UPDATED_APPS }}
+
+            ${{ env.FAILED_APPS }}
+            
