@@ -1792,8 +1792,12 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
   local module="$1"
   [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
   
-  sudo modprobe "$module" || exit 1
+  #load the module now if not already loaded
+  if ! lsmod | awk '{print $1}' | grep -qxF "$module" ;then
+    sudo modprobe "$module" || exit 1
+  fi
   
+  #make it load on boot
   if [ ! -f "/etc/modules-load.d/${module}.conf" ];then
     echo "$module" | sudo tee "/etc/modules-load.d/${module}.conf" >/dev/null
   fi
