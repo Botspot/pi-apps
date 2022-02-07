@@ -306,13 +306,15 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
         #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
         output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
         if [ $? != 0 ];then
-          echo "$output"
-          warning "Failed to purge dummy deb ($package_name)"
+          echo "$output" | tee -a "$logfile"
+          warning "Failed to purge dummy deb ($package_name)" 2>&1 | tee -a "$logfile"
+        else
+          echo "$output" | tee -a "$logfile"
         fi
         unset output
       else
         #install and not update failed, run purge_packages
-        purge_packages || warning "Failed to purge dummy deb ($package_name)"
+        purge_packages | tee -a "$logfile"
       fi
     fi
     unset package_name
