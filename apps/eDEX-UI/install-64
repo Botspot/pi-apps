@@ -9,7 +9,7 @@ mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=eDEX-UI 2.2.8
 Comment=eDEX-UI sci-fi interface
-Exec=$HOME/eDEX-UI-RPi/eDEX-UI-Linux-arm64_2.2.8.AppImage %U
+Exec=$HOME/eDEX-UI.AppImage %U
 Terminal=false
 Type=Application
 Icon=$(dirname "$0")/icon-64.png
