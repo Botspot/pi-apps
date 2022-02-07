@@ -59,6 +59,8 @@ rm -f ~/javafx-sdk-17.zip
 echo "- libjfxwebkit.so"
 errors="$(wget -O ~/lunarassets/javafx-sdk-17/lib/libjfxwebkit.so 'https://github.com/gl91306/lunar/raw/master/libjfxwebkit.so' 2>&1)" || error "Failed to download libjfxwebkit.so\nErrors:\n$errors"
 
+enable_module fuse || exit 1
+
 #Then make menu shortcut
 echo "[Desktop Entry]
 Version=1.0

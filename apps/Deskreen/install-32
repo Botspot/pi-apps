@@ -8,8 +8,9 @@ rm -f $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage.zip || error 'Failed to rem
 
 chmod +x $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage || error "Failed to make $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage as executable."
 
+enable_module fuse || exit 1
+
 echo "#!/bin/bash
-sudo modprobe fuse
 $HOME/.Deskreen/Deskreen-1.0.1-armv7l.AppImage --no-sandbox" | sudo tee /usr/local/bin/deskreen >/dev/null || error 'Failed to create /usr/local/bin/deskreen!'
 
 sudo chmod +x /usr/local/bin/deskreen || error "Failed to make /usr/local/bin/deskreen executable."
