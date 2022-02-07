@@ -1788,6 +1788,17 @@ get_codename() { #get debian/ubuntu codename
   lsb_release -sc
 }
 
+enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
+  local module="$1"
+  [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
+  
+  sudo modprobe "$module" || exit 1
+  
+  if [ ! -f "/etc/modules-load.d/${module}.conf" ];then
+    echo "$module" | sudo tee "/etc/modules-load.d/${module}.conf" >/dev/null
+  fi
+}
+
 #command interceptors - functions that enhance a command
 git_clone() { #silently clone a git repository but display the output if an error occurs
   # $1 is repo
