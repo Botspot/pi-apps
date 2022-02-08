@@ -4,9 +4,9 @@
 install_packages curl libx11-6 libxext6 libegl1-mesa zlib1g libstdc++6 libgl1-mesa-dri libasound2 libcom-err2 libgmp10 libp11-kit0 || exit 1
 
 #Download file
-wget -O ~/MCBedrock.AppImage 'https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.2-682/Minecraft_Bedrock_Launcher-arm-0.0.682.AppImage'
-chmod +x ~/MCBedrock.AppImage
-sudo mv -f ~/MCBedrock.AppImage /opt/MCBedrock.AppImage
+mkdir -p ~/.local/bin || error "Could not make directory"
+wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.2-682/Minecraft_Bedrock_Launcher-arm-0.0.682.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+chmod +x ~/.local/bin/MCBedrock.AppImage
 
 enable_module fuse || exit 1
 
@@ -17,7 +17,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=env GALLIUM_HUD=simple,fps /opt/MCBedrock.AppImage
+Exec=env GALLIUM_HUD=simple,fps $HOME/.local/bin/MCBedrock.AppImage
 Categories=Game;
 Terminal=false
 StartupNotify=true" > ~/.local/share/applications/minecraftbedrock.desktop
