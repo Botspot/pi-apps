@@ -4,7 +4,7 @@
 install_packages curl libx11-6 libxext6 libegl1-mesa zlib1g libstdc++6 libgl1-mesa-dri libasound2 libcom-err2 libgmp10 libp11-kit0 || exit 1
 
 #Download file
-wget -O ~/MCBedrock.AppImage 'https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.2-682/Minecraft_Bedrock_Launcher-arm-0.0.682.AppImage'
+wget -O ~/MCBedrock.AppImage 'https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.3-683/Minecraft_Bedrock_Launcher-arm-v0.3.3.683.AppImage'
 chmod +x ~/MCBedrock.AppImage
 sudo mv -f ~/MCBedrock.AppImage /opt/MCBedrock.AppImage
 
