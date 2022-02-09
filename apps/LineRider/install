@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_packages apt-transport-https dirmngr gnupg ffmpeg mono-complete || exit 1
+install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
 
 mkdir -p ~/LineRider
 cd ~/LineRider || error "Could not move to folder"
