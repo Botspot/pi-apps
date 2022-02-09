@@ -1,0 +1,28 @@
+#!/bin/bash
+
+install_packages apt-transport-https dirmngr gnupg ffmpeg mono-complete || exit 1
+
+mkdir -p ~/LineRider
+cd ~/LineRider || error "Could not move to folder"
+
+#Download
+wget -O linerider.zip https://github.com/Tran-Foxxo/LRTran/releases/download/6%2F16%2F20-1/LRTran.6-16-20.-.Build.1.zip || error "Could not download linerider"
+
+#Install
+unzip linerider.zip || error "Could not unzip the files"
+rm linerider.zip
+
+#Add system ffmpeg to expected location
+mkdir -p ~/Documents/LRA/ffmpeg/linux
+cp $(command -v ffmpeg) ~/Documents/LRA/ffmpeg/linux/ffmpeg
+
+#Menu shortcut
+echo "[Desktop Entry]
+Name=LineRider
+Comment=An Open Source spiritual successor to the flash game Line Rider
+Icon=$(dirname "$0")/icon-64.png
+Exec=mono $HOME/LineRider/linerider.exe
+Path=$HOME/LineRider/
+Type=Application
+Terminal=false
+Categories=Game;" > ~/.local/share/applications/LineRider.desktop
