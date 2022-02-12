@@ -49,6 +49,8 @@ check_repo() { #download pi-apps repository to the update/pi-apps folder
         sleep 60
       fi
     done
+  else
+    echo "Done" 1>&2
   fi
   cd #don't exit the function with the current directory being "${DIRECTORY}/update"
 }
@@ -107,21 +109,19 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
-  echo -n "Scanning files... " 1>&2
-  
-  #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
-  local file_list="$(list_files)" || exit 1
-  
-  updatable_files='' #the variable to be returned
-  
-  #exclude files mentioned in data/update-exclusion file, ignoring any commented lines
-  local IFS=$'\n'
   
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
+    echo -n "Scanning files... " 1>&2
+    
+    #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
+    local file_list="$(list_files)" || exit 1
+    
+    updatable_files='' #the variable to be returned
+    local IFS=$'\n'
     
     for file in $file_list ;do
       
@@ -148,7 +148,7 @@ ${file}"
   #If an updatable file is listed in update-exclusion, remove it from list and save notification text for later.
   for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]") ;do
     updatable_files="$(echo "$updatable_files" | grep -v "$file")"
-    local exclusion_msg="$exclusion_msg\n'$file' won't be updated - it's listed in data/update-exclusion."
+    local exclusion_msg+="\n'$file' won't be updated - it's listed in data/update-exclusion."
   done
   
   echo "$updatable_files"
@@ -183,10 +183,9 @@ get_updatable_apps() { #sets the updatable_apps variable
       fi
     done
     updatable_apps="${updatable_apps:1}" #remove initial newline character
-    
-    echo -e "Scanning apps... Done\e[0K" 1>&2
   fi
   echo "$updatable_apps"
+  echo -e "Scanning apps... Done\e[0K" 1>&2
 }
 
 generate_yad_list() { #input: updatable_apps and updatable_files variables
