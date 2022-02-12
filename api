@@ -1087,7 +1087,10 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   
   #check for 'NO_PUBKEY' or ' is no longer signed.'
   if grep -qF 'NO_PUBKEY' <<<"$errors" || grep -qF ' is no longer signed.' <<<"$errors" ;then
-    error_caption+=("APT reported an unsigned repository. Try signing it yourself, asking for help as needed.")
+    error_caption+=("APT reported an unsigned repository. This has to be solved before APT or Pi-Apps, will work.
+
+If you're not sure what to do, you can try to fix the problem by running this command in a terminal:
+sudo apt update 2>&1 | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "\""$key"\"" ]]; then sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "\""$key"\""; keys+=("\""$key"\""); fi; done")
     error_type="system"
   fi
   
