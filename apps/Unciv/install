@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=3.19.7
+version=3.19.8
 
 ### Install dependencies
 install_packages lsb-release wget gpg || error "Failed to install dependencies"
