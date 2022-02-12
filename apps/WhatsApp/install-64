@@ -1,3 +1,3 @@
 #!/bin/bash
 
-install_packages https://github.com/cycool29/whatsapp-for-linux/raw/main/whatsapp_arm64_1.0.deb || exit 1
+install_packages https://github.com/cycool29/whatsapp-for-linux/releases/download/1.0/whatsapp_arm64_1.0.deb || exit 1
