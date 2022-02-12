@@ -101,6 +101,10 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Tor Browser"
   mv -f "${DIRECTORY}/data/status/Tor Browser" "${DIRECTORY}/data/status/Tor" 2>/dev/null
   
+  #rename 'KeePassX' to 'KeePassXC'
+  rm -rf "${DIRECTORY}/apps/KeePassX"
+  mv -f "${DIRECTORY}/data/status/KeePassX" "${DIRECTORY}/data/status/KeePassXC" 2>/dev/null
+  
   true
 EOF
 
