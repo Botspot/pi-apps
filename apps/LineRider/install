@@ -24,8 +24,8 @@ echo "[Desktop Entry]
 Name=LineRider
 Comment=An Open Source spiritual successor to the flash game Line Rider
 Icon=$(dirname "$0")/icon-64.png
-Exec=mono $HOME/LineRider/LineRider/linerider.exe
-Path=$HOME/LineRider/LineRider/
+Exec=mono $HOME/LineRider/linerider.exe
+Path=$HOME/LineRider/
 Type=Application
 Terminal=false
 Categories=Game;" > ~/.local/share/applications/LineRider.desktop
