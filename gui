@@ -22,6 +22,22 @@ else
   splashpid=$!
 fi
 
+#in background, check mission-critical scripts and re-download them if they contain a syntax error
+(
+  sleep 10
+  command -v shellcheck >/dev/null || exit 0
+  
+  if ! shellcheck "${DIRECTORY}/updater" -S error ;then
+    echo "Downloading updater script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/updater" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/updater' 2>&1)" || echo "$errors"
+  fi
+  
+  if ! shellcheck "${DIRECTORY}/api" -S error ;then
+    echo "Downloading api script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/api" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/api' 2>&1)" || echo "$errors"
+  fi
+) &
+
 #for the text_editor(), runonce() and app_status() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
@@ -124,7 +140,7 @@ EOF
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin'
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin shellcheck'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     sudo apt install $dependencies -y -f --no-install-recommends
