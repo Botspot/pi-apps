@@ -212,33 +212,23 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
 
 #apt functions
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
-  
-  #only display a message if there was an apt lock
-  local displayed=0
-  
   #make sure english locale is added first
   add_english
   
+  #in a background subprocess, after 3 seconds, say "Waiting until APT locks are released... "
+  (sleep 3; echo -n "Waiting until APT locks are released... ") &
+  local pid=$!
+  
   #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
-    
-    #display a message to user only once
-    if [ "$displayed" == 0 ];then
-      echo -n "Waiting until APT locks are released... "
-      displayed=1
-    fi
-    sleep 3
+    sleep 1
   done
   while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-    #display a message to user only once
-    if [ "$displayed" == 0 ];then
-      echo -n "Waiting until APT locks are released... "
-      displayed=1
-    fi
+    sleep 1
   done
   
-  [ "$displayed" == 1 ] && echo "Done"
-  true
+  #If the background process finished, then that means the "waitint until" message was displayed. This means the kill command will return 1, so echo Done
+  kill $pid &>/dev/null || echo "Done"
 }
 
 less_apt() { #remove unwanted lines from apt output
@@ -587,7 +577,7 @@ flatpak_install() { #install an app using flatpak
   
   #make sure flatpak is installed
   if ! command -v flatpak >/dev/null ;then
-    error "flatpak_install(): Could not install $@ because flatpak is not installed!"
+    error "flatpak_install(): Could not install $1 because flatpak is not installed!"
   fi
   
   #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
@@ -1610,6 +1600,14 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   [ ! -f "$1" ] && error "send_error_report(): '$1' is not a valid file."
   
   command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
+  
+  #curl "https://api.paste.ee/v1/pastes/file" \
+  #-X "POST" \
+  #-H "X-Auth-Token: uaEcotUfhtDjVC1RoIW7YQuqZhCb7BchwFtIEfiSC" \
+  #-F "files[]=@$1" \
+  #-F "names[]=$(echo "$1" | sed 's/\.log.*/.txt/g')" \
+  #-F "syntaxes[]=text"
+  
   
   local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
