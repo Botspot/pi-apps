@@ -307,6 +307,9 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
 }
 
 repo_rm() { #remove the local apt repository
+  #wait for other operations to finish before continuing - hopefully this will solve cases when the pi-apps local repository was removed unexpectedly by a second process
+  apt_lock_wait
+  
   rm -rf /tmp/pi-apps-local-packages || sudo rm -rf /tmp/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /tmp/pi-apps-local-packages"
 }
 
