@@ -102,28 +102,30 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
     fi
   done
   
-  #Check if any apps are updatable and ask user if they really want to install/uninstall an outdated version
-  for app in $app_list ;do
-    #determine the filename for the app's script to be run
-    if [ $action == install ];then
-      script_name_cpu="$(script_name_cpu "$app")"
-    elif [ $action == uninstall ];then
-      script_name_cpu='uninstall'
-    fi
-    #if the app-script doesn't match version in update folder
-    if ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
-      yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to $action an outdated version, or you've made changes to the script yourself."$'\n'"Would you like to update $app before ${action}ing it?" \
-        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
-        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
-      
-      if [ $? == 0 ];then
-        #if user clicked Yes, update the app first
-        rm -rf "${DIRECTORY}/apps/${app}"
-        #copy new version from update/ to apps/
-        cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+  #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
+  if [ "$action" == install ];then
+    
+    #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
+    "${DIRECTORY}/updater" set-status &>/dev/null &
+    
+    for app in $app_list ;do
+      #determine the filename for the app's script to be run
+      if [ $action == install ];then
+        script_name_cpu="$(script_name_cpu "$app")"
       fi
-    fi
-  done
+      #if the app-script doesn't match version in update folder
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+        yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"Would you like to update $app before installing it?" \
+          --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
+          --button=No!"${DIRECTORY}/icons/forward.png":1 --button=Yes!"${DIRECTORY}/icons/download.png":0
+        
+        if [ $? == 0 ];then
+          #if user clicked Yes, run the updater and avoid launching a second terminal
+          use_terminal=0 "${DIRECTORY}/updater" gui fast
+        fi
+      fi
+    done
+  fi
   
   #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
   failed_apps=''
