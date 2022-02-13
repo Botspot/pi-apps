@@ -122,6 +122,9 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
         if [ $? == 0 ];then
           #if user clicked Yes, run the updater and avoid launching a second terminal
           use_terminal=0 "${DIRECTORY}/updater" gui fast
+          
+          #now that the api script was potentially updated, source it again to get new functions
+          source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
         fi
       fi
     done
