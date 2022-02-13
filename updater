@@ -1,12 +1,18 @@
 #!/bin/bash
 { #prevents errors if script was modified while in use
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
-
 function error {
-  echo -e "\e[91m$1\e[39m"
+  echo -e "\e[91m$1\e[39m" 1>&2
   exit 1
 }
+
+[ -z "$DIRECTORY" ] && DIRECTORY="$(readlink -f "$(dirname "$0")")"
+
+#if being sourced, ensure DIRECTORY variable set
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+  echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
 
 #for the will_reinstall() and list_intersect() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
@@ -14,6 +20,39 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 get_date() {
   #number of days since 1/1/1970
   echo $(($(date --utc +%s)/86400))
+}
+
+check_repo() { #download pi-apps repository to the update/pi-apps folder
+  echo -n "Checking for online changes... " 1>&2
+  
+  #if the updater script exists in update folder, then just git pull to save time
+  if [ -s "${DIRECTORY}/update/pi-apps/updater" ];then
+    cd "${DIRECTORY}/update/pi-apps"
+    git pull -q 1>&2 || rm -rf "${DIRECTORY}/update"
+  fi | grep -v "Already up to date." 1>&2
+  
+  git_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
+  
+  #if updater script still does not exist then do a git clone
+  if [ ! -s "${DIRECTORY}/update/pi-apps/updater" ];then
+    #keep trying until success
+    while true;do
+      rm -rf "${DIRECTORY}/update"
+      mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to create and enter the update directory!"
+      
+      #clone the repository, and display an error message if it fails
+      if git clone --depth=1 "$git_url" 1>&2 ;then
+        echo "Done" 1>&2
+        break #exit the loop
+      else
+        echo -e "\n${DIRECTORY}/updater: failed to download Pi-Apps repository!\nTrying again in 60 seconds." 1>&2
+        sleep 60
+      fi
+    done
+  else
+    echo "Done" 1>&2
+  fi
+  cd #don't exit the function with the current directory being "${DIRECTORY}/update"
 }
 
 check_update_interval() { #return 0 if update-interval allows update-checking today, exit 1 otherwise
@@ -70,21 +109,19 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
-  echo -n "Scanning files... " 1>&2
-  
-  #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
-  local file_list="$(list_files)" || exit 1
-  
-  updatable_files='' #the variable to be returned
-  
-  #exclude files mentioned in data/update-exclusion file, ignoring any commented lines
-  local IFS=$'\n'
   
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
+    echo -n "Scanning files... " 1>&2
+    
+    #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
+    local file_list="$(list_files)" || exit 1
+    
+    updatable_files='' #the variable to be returned
+    local IFS=$'\n'
     
     for file in $file_list ;do
       
@@ -111,7 +148,7 @@ ${file}"
   #If an updatable file is listed in update-exclusion, remove it from list and save notification text for later.
   for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]") ;do
     updatable_files="$(echo "$updatable_files" | grep -v "$file")"
-    local exclusion_msg="$exclusion_msg\n'$file' won't be updated - it's listed in data/update-exclusion."
+    local exclusion_msg+="\n'$file' won't be updated - it's listed in data/update-exclusion."
   done
   
   echo "$updatable_files"
@@ -127,16 +164,28 @@ get_updatable_apps() { #sets the updatable_apps variable
   
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-apps" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
-    cat "${DIRECTORY}/data/update-status/updatable-apps"
+    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
     
-  else #speed was not set to 'fast', so compare each file to the one in the update folder
-    
-    updatable_apps="$("${DIRECTORY}/manage" check-all)"
-    local exitcode=$?
-    echo "$updatable_apps"
-    
-    exit $exitcode #return the same code that the manage script exited with
+  else #compare each file to the one in the update folder
+    updatable_apps=''
+    IFS=$'\n'
+    for app in $(list_apps online)
+    do
+      echo -en "Scanning apps... $app\e[0K\r" 1>&2
+      
+      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+        #if app is missing locally, add to updatable list
+        updatable_apps+=$'\n'"${app}"
+        
+      elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
+        #if app-folder contents don't match, add to updatable list
+        updatable_apps+=$'\n'"${app}"
+      fi
+    done
+    updatable_apps="${updatable_apps:1}" #remove initial newline character
   fi
+  echo "$updatable_apps"
+  echo -e "Scanning apps... Done\e[0K" 1>&2
 }
 
 generate_yad_list() { #input: updatable_apps and updatable_files variables
@@ -185,7 +234,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   #echo "List: ${LIST}EOL"
   
   if [ -z "$LIST" ];then
-    status_green "mNothing to update. Nothing to do!"
+    status_green "Nothing to update. Nothing to do!"
     exit 0
   fi
   
@@ -207,47 +256,58 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   
 }
 
-update_now_gui() { #input: updatable_files and updatable_apps variables
+update_app() { #first word is app name
+  local app="$1"
+  [ -z "$app" ] && error "update_app(): no app specified!"
+  #don't check if app currently exists; it may be a new app!
   
-  local IFS=$'\n'
-  for file in $updatable_files ;do
-    mkdir -p "$(dirname "${DIRECTORY}/${file}")"
+  #detect which installation script exists and get the hash for that one
+  scriptname="$(script_name_cpu "$app")"
+  [ $? == 1 ] && exit 1
+  
+  status "Updating \e[1m${app}\e[0m\e[96m..."
+  echo
+  
+  local newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  local oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  
+  installback=no
+  #         if install script was changed                           #if installed already
+  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
+    installback=yes
+    status "$app's install script has been updated. Reinstalling $app..."
+    #uninstall it
+    "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
     
-    #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
-    
-    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
-    if [[ "$file" == *.c ]];then
-      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
+    #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
+    if [ "$(app_status "$app")" == installed ];then
+      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
     fi
-    
-    echo
-    status_green "${file} file was copied successfully."
-  done
-  IFS="$PREIFS"
-  
-  if [ ! -z "$updatable_apps" ];then
-    "${DIRECTORY}/etc/terminal-run" '
-      DIRECTORY="'"$DIRECTORY"'"
-      updatable_apps="'"$updatable_apps"'"
-      trap "sleep 10" EXIT
-      PREIFS="$IFS"
-      IFS=$'\''\n'\''
-      for i in $updatable_apps
-      do
-        "${DIRECTORY}/manage" update "$i" nofetch
-      done
-      IFS="$PREIFS"
-      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-      "${DIRECTORY}/api" refresh_app_list
-    ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
   fi
   
-  #delete .git folder, then copy the new one
-  rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
-  cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+  #move old program to trash - this allows app-developers to recover their work if update was accidental
+  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
+  #failsafe
+  rm -rf "${DIRECTORY}/apps/${app}"
   
-  status_green "\nPi-Apps updates complete.\n"
+  #copy new version from update/ to apps/
+  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+  
+  if [ "$installback" == 'yes' ];then
+    #install the app again
+    "${DIRECTORY}/manage" install "$app"
+    if [ $? != 0 ]; then
+      failed=true
+    fi
+  fi
+  
+  if [ "$failed" == 'true' ]; then
+    echo -e "\e[91mFailed to update ${app}.\e[0m"
+    return 1
+  else
+    status_green "${app} was updated successfully."
+    return 0
+  fi
 }
 
 update_now_cli() { #input: updatable_files and updatable_apps variables
@@ -268,12 +328,36 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   done
   
   for app in $updatable_apps ;do
-    "${DIRECTORY}/manage" update "$app" nofetch
+    update_app "$app"
   done
+  
+  #load the app list now to reduce launch time
+  refresh_app_list &
   
   #delete .git folder, then copy the new one
   rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
   cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+  
+  [ "$no_status" != true ] && status_green "\nPi-Apps updates complete."
+}
+
+update_now_gui() { #input: updatable_files and updatable_apps variables
+  
+  #update any files in the background - don't use a terminal for that. This is a safety measure.
+  updatable_apps='' no_status=true update_now_cli
+  
+  if [ ! -z "$updatable_apps" ];then
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      updatable_apps="'"$updatable_apps"'"
+      trap "sleep 10" EXIT
+      source "${DIRECTORY}/updater" source
+      update_now_cli
+      echo
+      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
+      
+    ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
+  fi
   
   status_green "\nPi-Apps updates complete."
 }
@@ -289,6 +373,8 @@ fi
 
 if [ "$runmode" == onboot ];then
   runmode=autostarted
+elif [ "$runmode" == source ];then
+  return 0
 elif [ -z "$runmode" ];then
   runmode=gui
 fi
@@ -319,6 +405,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     sleep 10
   done
   
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
@@ -395,6 +482,7 @@ elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable
   fi
   
 elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable apps/files to "${DIRECTORY}/data/update-status"
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   
@@ -405,7 +493,7 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   exit $?
   
 elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes and an Update button
-  
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   
@@ -423,12 +511,16 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
     exit 0
   fi
   
-  update_now_gui
+  if [ "$use_terminal" == 0 ];then
+    update_now_cli
+  else
+    update_now_gui
+  fi
   
   "$0" set-status
   
 elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
-  
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   
@@ -440,7 +532,7 @@ elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   update_now_gui
   
 elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user permission to update
-  
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   echo 
@@ -483,7 +575,7 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   update_now_cli
   
 elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
-  
+  check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   echo 
