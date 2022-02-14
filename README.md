@@ -87,11 +87,11 @@ This will not uninstall any apps that you installed through Pi-Apps.
 > "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
 > We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - email from a Raspberry Pi employee
 
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (RPi moderator) on the RPi forums
+> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (Raspberry Pi forum moderator)
+
+> "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi" - **[pi-top](https://pi-top.com)** employee
 
 > "Good luck with your projects, Botspot, you're really making waves!" - email from **[Sakaki](https://github.com/sakaki-)** - a legendary RPi developer
-
-<hr>
 
 # Documentation
 
