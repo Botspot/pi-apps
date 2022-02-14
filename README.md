@@ -119,9 +119,10 @@ Use the main window to select an app category you want to view. Open a category 
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
+The easiest way to help is to "Star" our repository - it helps more people find it. (Scroll up and on the top right there is a "Star" button)  
 You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md), or if you know a little bash you could [submit an app](https://github.com/Botspot/pi-apps/wiki/Creating-an-app)!
 
-You can also join our cheerful community: <img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
+You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
 ## To-do
 
