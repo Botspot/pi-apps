@@ -1225,7 +1225,7 @@ Please run this command in a terminal: sudo apt update --allow-releaseinfo-chang
 #apt/dpkg issues above, package issues below
 #------------------------------------------
   
-  if grep -q "installed .* post-installation script subprocess returned error exit status 10" <<<"$errors" ;then
+  if grep -q "installed .* post-installation script subprocess returned error exit status" <<<"$errors" ;then
     error_caption+=("Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
 
 Perhaps reinstalling the package would help?")
