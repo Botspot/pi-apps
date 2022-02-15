@@ -20,3 +20,4 @@ echo '#!/bin/bash
 '"${DIRECTORY}"'/pi-apps-terminal-bash-edition.sh "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null || error "Failed to create pi-apps command in '/usr/local/bin/'!"
 sudo chmod +x /usr/local/bin/pi-apps || error "Failed to make launcher script executable!"
 echo "done"
+
