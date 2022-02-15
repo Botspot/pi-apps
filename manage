@@ -44,24 +44,31 @@ fi
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
-upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d)"
-if ! [[ "$upstream_git_date" =~ ^[0-9]+$ ]]; then
-  # if upstream master git date can't be found, then fallback to local time server
-  # the above checks for an empty variable or a variable containing non-numerical values
-  upstream_git_date="$(date +%s)"
-fi
+command -v curl >/dev/null || sudo apt install -y curl
+upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
-if [ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ];then
-  yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+
+if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ]);then
+  yad --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
     --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
-  sleep 1
+  yadpid=$!
+  
   clear
   echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
   command -v git >/dev/null || sudo apt install -y git
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
+  cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
+  mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
+  mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   sleep 10
+  
+  kill $yadpid 2>/dev/null
+  
+  #run new manage script in background
+  "{DIRECTORY}/manage" "$@"
+  exit $?
 fi
 }
 
