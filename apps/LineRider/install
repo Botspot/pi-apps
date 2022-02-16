@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#v1.0.1
+#v1.0.2
 #^^^ When I edit the build at https://github.com/Pi-Apps-Coders/files it does not update this app, so I change this number + 1
 
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
