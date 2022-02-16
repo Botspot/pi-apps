@@ -33,7 +33,7 @@
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
 There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
 Surely there is a better way! **There is.**  
-Introducing Pi-Apps, an expanding, well-maintained collection of app installation-scripts that you can run with **one click**.  
+Introducing Pi-Apps, a well-maintained collection of app installation-scripts that you can run with **one click**.  
 
 To learn more:
 - [ETA Prime's video](https://www.youtube.com/watch?v=oqNWJ52DLes) to install Minecraft with Pi-Apps. At the end, he says:
@@ -41,12 +41,13 @@ To learn more:
 - [Pi-Apps walkthrough by leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I). He said:
   > "Thanks so much to Botspot for creating this; it's a great program."
 
-## To install Pi-Apps
+## Install Pi-Apps
+Open a terminal and run this command:
 ```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
-    
+
 #### Supported systems:
 
 - [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): fully supported.
@@ -55,7 +56,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 - Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
 <details>
-<summary><b>To install manually</b> if you prefer to see what happens under the hood</summary>
+<summary><b>To install Pi-Apps manually</b> if you prefer to see what happens under the hood</summary>
  
 ```
 git clone https://github.com/Botspot/pi-apps
@@ -76,20 +77,21 @@ This will not uninstall any apps that you installed through Pi-Apps.
 - From the start menu: Accessories -> Pi Apps
 - Use the terminal-command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
+
 ## To Update Pi-Apps
-- Pi-apps will update automatically
-- To forcefully update run `~/pi-apps/updater gui`
-- Or if you prefer cli interface `~/pi-apps/updater cli`
+- Pi-apps will automatically check for updates on boot and display a notification to update.
+- To manually run the updater, use this command: `~/pi-apps/updater gui`
+- It also supports a cli interface: `~/pi-apps/updater cli`
 
 ## What do others say about Pi-Apps?
+> "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi" - a **[pi-top](https://pi-top.com)** employee
+
 > "This is an awesome application for your Pi to install applications like WoR-flasher." - **[Novaspirit Tech](https://youtu.be/9dO448vYv18?t=164)** (large RPi YouTuber)
 
 > "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
 > We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - email from a Raspberry Pi employee
 
 > "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (Raspberry Pi forum moderator)
-
-> "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi" - **[pi-top](https://pi-top.com)** employee
 
 > "Good luck with your projects, Botspot, you're really making waves!" - email from **[Sakaki](https://github.com/sakaki-)** - a legendary RPi developer
 
@@ -98,30 +100,27 @@ This will not uninstall any apps that you installed through Pi-Apps.
 Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ### Basic usage
+Pi-Apps is very easy to use.  
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
-Use the main window to select an app category you want to view. Open a category folder by double-clicking on it.  
+Use the main window to select an app category. Open a category by double-clicking on it.  
 
-- After selecting a category, you will see a list of apps:  
+- This will bring you to a list of apps:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
 
-- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the 
-
-**Details window**.  
+- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
 ![details](icons/screenshots/details%20window.png?raw=true)  
-
-- Pi-Apps may display a notification on boot. If you choose to view the updates, the **updater window** will appear:  
-![updates](icons/screenshots/updates%20available.png?raw=true)  
 
 - Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
-The easiest way to help is to "Star" our repository - it helps more people find it. (Scroll up and on the top right there is a "Star" button)  
-You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md), or if you know a little bash you could [submit an app](https://github.com/Botspot/pi-apps/wiki/Creating-an-app)!
-
-You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
+- The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
+- If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... ¯\_(ツ)_/¯
+- You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md)
+- You can also submit an app. Don't worry, it's about as easy as using the terminal! (If your app is a package-app, no scripts have to be written)
+- You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
 ## To-do
 
@@ -159,4 +158,4 @@ Embed code:
 > Sure is! We're always on the lookout for new app-suggestions, and solve app-installation issues by reading incoming bug reports.
 
  - Is Pi-Apps free?
-> Absolutely!
+> Absolutely! In the future, I may decide to begin accepting donations, but Pi-Apps itself will always be free and open-source.
