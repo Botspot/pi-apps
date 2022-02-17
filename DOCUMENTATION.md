@@ -218,7 +218,7 @@ Note: new functions are added often. If you don't see a function on this list bu
     ```bash
     status -n "Downloading... "
     ```
-- `status-green` - Display a custom message in green.
+- `status_green` - Display a custom message in green.
   - Used by scripts to indicate the success of an action, like "Installed FreeCAD successfully", "Update complete", and "All packages have been purged successfully."
   - This function outputs to `stderr`.
 - `generate_logo` - Displays the Pi-Apps logo in a terminal.
@@ -252,7 +252,7 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
 
 - `repo_add` - Add the specified deb file(s) to the local repository.
   - This simply copies specified files to the `/tmp/pi-apps-local-packages` folder.
-- `repo_referesh` - Index the local repository, create a `Packages` file, and a `source.list`.
+- `repo_refresh` - Index the local repository, create a `Packages` file, and a `source.list`.
   - At this point, you can make `apt` use the repository by passing this flag to it: `-o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list`
 - `repo_rm` - Removes the local repository.
 - `app_to_pkgname` - Convert an app-name to an `apt`-compatible package name.
@@ -281,7 +281,7 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
     - First the name of the dummy deb is determined, using the `app_to_pkgname` function.
     - If the dummy deb is *already* installed, `install_packages` will inherit its dependencies and then re-install the dummy deb. This means that **the `install-packages` function can be used multiple times** in an app's script because it's accumulative.
     - The dummy deb is created, packaged, and finally installed.
-- `purge-packages` - Used by apps to remove packages that they previously installed.
+- `purge_packages` - Used by apps to remove packages that they previously installed.
   - This function accepts no arguments. It reads the `$app` variable, purges its associated dummy deb, and autoremoves any packages that are no longer necessary.
 - `get_icon_from_package` - Given a package (or space-separated list of packages), this function will automatically find the program icon for it.
   - This is useful for the `createapp` script to automatically find a suitable icon for package-apps you're trying to add.
