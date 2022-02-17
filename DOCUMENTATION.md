@@ -32,7 +32,7 @@ The folder's name is the app's name. The Arduino app is a folder located at `app
 There are a few files in each app-folder:
 - `install` - This is a bash script to install the app.
   - Naming the script "install" indicates that it is compatible with 32-bit and 64-bit CPU architectures.
-  - All apps have access to the `arch` variable that contains `64` (for arm64) or `32` (for armhf) if per-architecure changes are necessary
+  - All apps have access to the `arch` variable that contains `64` (for arm64) or `32` (for armhf) if per-architecure changes are necessary.
 - `install-32` - This is a bash script to install the app on 32-bit operating systems.
   - Naming the script "install-32" indicates that it is designed for the 32-bit CPU architecture only.
   - If no "install-64" script exists, **then this app will only be displayed on 32-bit systems.**
@@ -222,12 +222,19 @@ Note: new functions are added often. If you don't see a function on this list bu
   - Used by scripts to indicate the success of an action, like "Installed FreeCAD successfully", "Update complete", and "All packages have been purged successfully."
   - This function outputs to `stderr`.
 - `generate_logo` - Displays the Pi-Apps logo in a terminal.
+  - Note: Some keen users may notice that the logo looks different on Debian ***Bullseye*** than on older releases. This is necessary to avoid trying to display missing characters. See: https://github.com/Botspot/pi-apps/issues/1441
+- `generate_splashscreen` - When Pi-Apps launches, it displays a splashscreen for a few moments while it loads. Each time you see it, new app-icons are placed in the 10 locations. This function is responsible for doing that.
+    The method for doing this is fairly straightforward:
+  - First, a vector image is created and images are embedded in it. (In this case, Botspot made the original image with Boxy SVG)
+  - Vector images are simply text-files. They store binary data by encoding it with `base64`.
+  - To replace an embedded image, use a text-editor to replace the existing base64-data with new base64-data from your desired PNG image.
+  - This function does exactly that - it takes `icons/vector/splashscreen-original.svg`, uses `sed` to insert 10 random app-icons, saves the resulting image to `icons/vector/splashscreen.svg`, and then converts that image to PNG and saves it to `icons/splashscreen.png`.
+  - For more details, see: https://github.com/Botspot/pi-apps/issues/1299
 - `add_english` - Ensures an English locale is installed so that log-diagnosing tools can function properly.
   - This was added in [PR #1031](https://github.com/Botspot/pi-apps/pull/1031)
 
 Apt/dpkg/package functions below.
 
-- `apt_lock_wait` - waits until apt locks are released.
 - `package_info` - List everything `dpkg` knows about the specified package.
   - This retrieves a block of text from the `/var/lib/dpkg/status` file.
 - `package_installed` - determine if the specified package is installed.
@@ -238,6 +245,26 @@ Apt/dpkg/package functions below.
 - `package_dependencies` - List the dependencies of a package
   - This simply isolates a line from the output of the `package_info` function.
   - This is *much* faster than doing an `apt-cache search`.
+- `anything_installed_from_repo` - Check if any apt-packages have been installed from the given repository-URL.
+  - Example usage:
+    ```bash
+    anything_installed_from_repo http://archive.raspberrypi.org/debian/
+    ```
+  - Returns with code `0` if a package was found, otherwise `1`. It also returns the name of the package that was found.
+  - This function is mainly intended to be used by the `remove_repofile_if_unused` function, which is described below.
+- `remove_repofile_if_unused` - Given a path to an apt-repository file, determine if it is being used and remove it if it's unnecessary.
+  - This function is very useful for apps that have to add their own APT repository. Some apps share repositories, so it's important to check if the `/etc/apt/sources.list.d/XXXX.list` file is in use before removing it.
+  - This function uses the `anything_installed_from_repo` function, and if it returns `1` for all URLs found in the file, then the file is deemed unnecessary and is removed.
+  - Example usage:
+    ```bash
+    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list
+    ```
+    For testing, you can tell the function to not actually delete anything by adding the `test` flag:
+    ```bash
+    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list test
+    ```
+    In this mode, it will return text like "`The given repository is not in use and can be deleted:`".
+- `apt_lock_wait` - waits until apt locks are released.
 - `less_apt` - Reduce the output of an `apt` operation.
   - Example usage:
     ```bash
@@ -288,7 +315,25 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
   - This uses `dpkg-query` to list all files each package installed. The list is filteres to only show `.png` files in `/icons/` or `/pixmaps/` folders.
   - The list is sorted by filesize to find the picture with the most pixels.
 
-End of apt functions. App functions below.
+End of apt functions. Flatpak functions below.
+
+- `flatpak_install` - Install an app from Flatpak. This function simplifies the process for script-writers and improves terminal-output.
+  - Example usage:
+    ```bash
+    flatpak_install librepcb || exit 1
+    ```
+    Script-writers: Don't forget to install the flatpak package first! (`install_packages flatpak || exit 1`)
+    Also, a menu entry needs to be created. See the LibrePCB app, it's better to show than to explain. ;)
+- `flatpak_uninstall` - Uninstall an app from Flatpak. This function simplifies the process for script-writers and has been designed to avoid false errors.
+  - For example, if `flatpak` is already uninstalled, then trying to run `flatpak` will return an error.
+  - Similarly, if the flatpak-app is already uninstalled, then `flatpak` will return an error!
+  - This function solves both of those edge-cases and prevents unnecessary errors from ocurring.
+  - Example usage:
+    ```bash
+    flatpak_uninstall librepcb || exit 1
+    ```
+
+End of Flatpak functions. App functions below.
 
 - `list_apps` - List all apps that match a given criteria. (In a newline-separated format)
   - `list_apps local` will list apps that exist locally.
@@ -351,7 +396,7 @@ End of apt functions. App functions below.
   - If the app's existing installation script is not identical to the new version of the installation script, AND the app is currently installed, exit with a code of `0`, otherwise exit `1`.
 - `app_search` - Search all apps for the specified search query.
   - In each app-folder, this will search for matches in the following files:
-    -  `description`
+    - `description`
     - `credits`
     - `website`
   - It hides incompatible and invisible apps before displaying the results. (list of app names, one per line)
@@ -368,6 +413,7 @@ End of apt functions. App functions below.
     ```
 - `refresh_pkgapp_status` - For the specified package-app, if dpkg thinks it's installed, then mark it as installed.
 - `refresh_all_pkgapp_status` - For every package-app, if dpkg thinks it's installed, then mark it as installed.
+- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforseen changes in script design may cause the app list to be displayed improperly.
 
 Logfile functions below.
 - `get_logfile` - Find the most recent logfile for the specified app.
@@ -421,11 +467,9 @@ Below are all functions that don't have anything to do with apps.
   ~/pi-apps/api get_device_info
   ```
   - This function is used in the `format_log_file` function.
-- `functions_to_files` - Takes every function in the `api` and turns them into their own miniature bash scripts.
-  - This exists purely for developer-convenience. It allows you to handle functions as if they were files.
-  - It creates a folder (`~/pi-apps/function-files`) and then places files in it.
-- `files_to_functions` - Takes every file in the `function-files` folder and re-combines them.
-  - The resulting output is printed to the terminal.
+- `get_codename` - Simple function to return the codename of the operating system.
+  - On Raspberry Pi OS Bullseye, this function returns: `bullseye`
+  - This is useful for scripts that need to do different things depending on the exact system they are running on. The MultiMC5 app is a great example of this.
 - `enable_module` - Always load a defined kernel module on system boot
   - It creates a file `/etc/modules-load.d/${module}.conf` for which tells a systemd service to load the defined module at boot.
   - Run this function as part of your install script instead of a `modprobe` in a .desktop file or startup script
