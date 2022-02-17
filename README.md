@@ -113,7 +113,7 @@ Pi-Apps is very easy to use.
 ![details](icons/screenshots/details%20window.png?raw=true)  
   - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the list of apps.
   - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
-  - ![icon](icons/screenshots/buttons/edit.png?raw=true) Make changes to the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
+  - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
   - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
   - ![icon](icons/screenshots/buttons/credits.png?raw=true) See who played a part in adding the app.
