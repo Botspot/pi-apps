@@ -35,11 +35,7 @@ There is no centralized software repository, except for the `apt` repositories w
 Surely there is a better way! **There is.**  
 Introducing Pi-Apps, a well-maintained collection of app installation-scripts that you can run with **one click**.  
 
-To learn more:
-- [ETA Prime's video](https://www.youtube.com/watch?v=oqNWJ52DLes) to install Minecraft with Pi-Apps. At the end, he says:
-  > "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install. I want to give the devs of Pi-Apps a big shout-out."
-- [Pi-Apps walkthrough by leepspvideo](https://www.youtube.com/watch?v=zxyWQ3FV98I). He said:
-  > "Thanks so much to Botspot for creating this; it's a great program."
+Pi-Apps now serves **over 1,000,000 people** and hosts [nearly 200 apps](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ## Install Pi-Apps
 Open a terminal and run this command:
@@ -84,16 +80,22 @@ This will not uninstall any apps that you installed through Pi-Apps.
 - It also supports a cli interface: `~/pi-apps/updater cli`
 
 ## What do others say about Pi-Apps?
-> "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi" - a **[pi-top](https://pi-top.com)** employee
+> Message from a **[pi-top](https://pi-top.com)** employee: "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi"
 
-> "This is an awesome application for your Pi to install applications like WoR-flasher." - **[Novaspirit Tech](https://youtu.be/9dO448vYv18?t=164)** (large RPi YouTuber)
+> [Video by **ETA Prime**](https://www.youtube.com/watch?v=oqNWJ52DLes): "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install. I want to give the devs of Pi-Apps a big shout-out."
 
-> "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
-> We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!" - email from a Raspberry Pi employee
+> [Video by **leepspvideo**](https://www.youtube.com/watch?v=zxyWQ3FV98I): "Thanks so much to Botspot for creating this; it's a great program."
 
-> "Thanks for the great work making it all simple for everybody." - [**ShiftPlusOne**](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857) (Raspberry Pi forum moderator)
+> [Video by **Novaspirit Tech**](https://youtu.be/9dO448vYv18?t=164): "This is an awesome application for your Pi to install applications like WoR-flasher."
 
-> "Good luck with your projects, Botspot, you're really making waves!" - email from **[Sakaki](https://github.com/sakaki-)** - a legendary RPi developer
+> Email from a **Raspberry Pi employee**: "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
+> We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!"
+
+> [**ShiftPlusOne** (Raspberry Pi forum moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857): "Thanks for the great work making it all simple for everybody."
+
+> Email from **[Sakaki** (legendary RPi developer)](https://github.com/sakaki-): "Good luck with your projects, Botspot, you're really making waves!"
+
+> Message from one of our many satisfied users: "Thank you for making pi-apps, it has helped me a ton (no more searching hours to find how to install etcher) and I cannot thank you enough."
 
 ## Basic usage
 Pi-Apps is very easy to use.  
@@ -127,6 +129,8 @@ In addition to changeable settings, this window also gives access to these tools
   - ![icon](icons/screenshots/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
   - ![icon](icons/screenshots/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
 
+For more details on the capabilities of Pi-Apps, read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki).
+
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
 - The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
@@ -134,8 +138,6 @@ You don't need to be a programmer to help!
 - You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md).
 - You can create and submit an app. Don't worry, it's about as easy as using the terminal! (And it's even easier if you're submitting a simple apt-package.)
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
-
-Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
