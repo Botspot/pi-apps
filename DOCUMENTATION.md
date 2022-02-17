@@ -6,9 +6,8 @@ This guide will attempt to explain how Pi-Apps works. By nature, this cannot be 
 - [The main Pi-Apps folder](#the-main-pi-apps-folder)
 - [The App Status folder](#the-app-status-folder)
 - [The `manage` script](#the-manage-script)
-- [The `pkg-install` script](#the-pkg-install-script)
 - [The `updater` script](#the-updater-script)
-- [The `api` script](#the-api-script)
+- [The `api` script and available functions](#the-api-script)
 - [The `gui` script](#the-gui-script)
 - [The `createapp` script](#the-createapp-script)
 - [The `settings` script](#the-settings-script)
@@ -33,6 +32,7 @@ The folder's name is the app's name. The Arduino app is a folder located at `app
 There are a few files in each app-folder:
 - `install` - This is a bash script to install the app.
   - Naming the script "install" indicates that it is compatible with 32-bit and 64-bit CPU architectures.
+  - All apps have access to the `arch` variable that contains `64` (for arm64) or `32` (for armhf) if per-architecure changes are necessary
 - `install-32` - This is a bash script to install the app on 32-bit operating systems.
   - Naming the script "install-32" indicates that it is designed for the 32-bit CPU architecture only.
   - If no "install-64" script exists, **then this app will only be displayed on 32-bit systems.**
@@ -140,61 +140,6 @@ The `manage` script supports these **modes**:
 - `update-all`: This mode will check for app-updates and install them without any user-interaction.
   The `manage` script will run itself in the `check-all` mode, then, for every app that `check-all` mentioned, it will `update` each app.
 
-## The `pkg-install` script
-#### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/pkg-install`. 
-#### Purpose:
-Some background information first:  
-- Goal: Pi-Apps is designed for people who install an app, try it out, then later uninstall it. You should not have to think twice before installing an app. Users should have confidence that **uninstalling the app will undo all changes and restore all disk-space.**
-- Problem: Many apps need to install apt **packages** in order to work. On the surface, this does not seem like a big problem at all: if "app1" installs "package1", "package2", and "package3", then those packages should be purged while uninstalling "app1". What's the problem with that? **Dependencies.**  
-What if some other utility requires "package1" to function? Now that you uninstalled "app1", "package1" just got uninstalled.
-  - Best-case scenario: that utility will not work anymore.
-  - Worst-case scenario: you just broke an essential part of your system and it will fail to boot.
-- Solution: When uninstalling an app, **only remove packages that are not required by anything else**. To accomplish this, we can't just install packages the normal way with `sudo apt install`. Instead, we need to generate a **dummy deb** - a custom apt package that lists "package1", "package2", and "package3" as **dependencies**. Later, when the app is being uninstalled, the dummy deb is removed and a simple `apt autoremove` is enough to safely remove the packages.
-#### Usage:
-In an app's `install` script, there may be a line like this to install "package1", "package2", and "package3":
-```bash
-DIRECTORY=$HOME/pi-apps
-"${DIRECTORY}/pkg-install" 'package1 package2 package3' "$(dirname "$0")" || exit 1
-```
-This is equivalent to:
-```bash
-sudo apt update --allow-releaseinfo-change
-sudo apt install -yf --no-install-recommends --allow-downgrades package1 package2 package3
-```
-#### How it works:
-1. First, `pkg-install` sets the language variables to `C`. This ensures that apt's output is parsed correctly, even if the system is using a different language,
-2. `pkg-install` runs `sudo apt update`.
-3. The output of `sudo apt update` is parsed for various messages from `apt`.
-    - If the output contains "autoremove to remove them", you will receive a message that some packages can be removed with `apt autoremove`.
-    - If the output contains "packages can be upgraded", you will receive a message that some packages can be upgraded.
-    - If the output contains "W:" or "E:" or "Err:", `pkg-install` will **exit with an error** saying that your apt system is messed up.
-    The exact error message depends on apt's exact output - it is designed to help users navigate through apt errors and provides instructions for how to sign a repository, remove a broken repository, or check for an Internet connection.
-4. If any filenames (paths to a local deb package) are specified, `pkg-install` will install each one, then mark it as autoremovable. (Using this command: `sudo apt-mark auto "$packagename"`
-5. If any package names include **regular expression**, `pkg-install` expands the names with `apt-cache search`.
-6. Finally, the dummy deb is created. As mentioned earlier, this package will list the desired packages as dependencies.
-    - The dummy deb for each app has to be named something unique. But this poses a problem because apps can have space characters while apt does not support space characters.
-    - This problem is resolved by naming each dummy-deb based on a **hash of its name**.
-    - The code used to do this is:
-   ```bash
-   echo -n 'pi-apps-' ; echo "$app" | md5sum | cut -c1-8 | awk '{print $1}'
-   ```
-    - Feel free to replace `"$app"` with an app-name of your choice to see what its package name would be.
-7. If the dummy deb's name is already installed, purge it and then continue.
-8. Finally, the dummy deb is installed with `apt`. All packages mentioned in the "`Depends:`" field of the dummy deb are installed as a dependency of the dummy deb.
-9. If apt fails, its errors are diagnosed in the same way errors were diagnosed earlier when `sudo apt update` was run.
-10. `pkg-install` exits with a code of `0` if everything was successful, otherwise it exits with a code of `1`.
-### The `purge-installed` script
-#### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/purge-installed`. 
-#### Purpose:
-This script is the opposite of `pkg-install`: it uninstalls the dummy deb, then runs `sudo apt autoremove`.
-#### Usage:
-In an app's `uninstall` script, there may be a line like this:
-```bash
-DIRECTORY=$HOME/pi-apps
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-```
 ## The `updater` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/updater`. 
@@ -268,7 +213,11 @@ Note: new functions are added often. If you don't see a function on this list bu
 - `status` - Display a custom message in light-blue.
   - Used by scripts to indicate current status, like "Downloading...", "Extracting...", and "Please wait."
   - This function outputs to `stderr`.
-  - Some scripts don't want the ending newline, so this function allows for flags to be passed to the `echo` command. Example usage: `status -n "Downloading... "`
+  - Some scripts don't want the ending newline, so this function allows for flags to be passed to the `echo` command. 
+  - Example usage:
+    ```bash
+    status -n "Downloading... "
+    ```
 - `status-green` - Display a custom message in green.
   - Used by scripts to indicate the success of an action, like "Installed FreeCAD successfully", "Update complete", and "All packages have been purged successfully."
   - This function outputs to `stderr`.
@@ -291,9 +240,9 @@ Apt/dpkg/package functions below.
   - This is *much* faster than doing an `apt-cache search`.
 - `less_apt` - Reduce the output of an `apt` operation.
   - Example usage:
-  ```bash
-  sudo apt update 2>&1 | less_apt
-  ```
+    ```bash
+    sudo apt update 2>&1 | less_apt
+    ```
 - `apt_update` - A wrapper function to run `sudo apt update`.
   - This will wait for apt locks to be released, handle status information, and display helpful tips if packages are upgradable or autoremovable.
   - Arguments to the function will be passed on to the `apt` command.
@@ -310,8 +259,18 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
   - This function generates the name to use for creating dummy apt packages. The naming scheme is: `pi-apps-XXXXXXXX` (each `X` can be any lowercase letter or number)
   - View which dummy packages are installed now by running `apt search pi-apps-` in a terminal.
 - `install_packages` - Used by apps to install packages.
-  - This function is replacing the `pkg-install` script.
-  - Example usage: `install_packages package1 /path/to/package2.deb https://example.com/package3.deb package4-* || exit 1`
+  - Some background information first:  
+    - Goal: Pi-Apps is designed for people who install an app, try it out, then later uninstall it. You should not have to think twice before installing an app. Users should have confidence that **uninstalling the app will undo all changes and restore all disk-space.**
+    - Problem: Many apps need to install apt **packages** in order to work. On the surface, this does not seem like a big problem at all: if "app1" installs "package1", "package2", and "package3", then those packages should be purged while uninstalling "app1". What's the problem with that? **Dependencies.**  
+  - What if some other utility requires "package1" to function? Now that you uninstalled "app1", "package1" just got uninstalled.
+    - Best-case scenario: that utility will not work anymore.
+    - Worst-case scenario: you just broke an essential part of your system and it will fail to boot.
+  - Solution: When uninstalling an app, **only remove packages that are not required by anything else**. To accomplish this, we can't just install packages the normal way with `sudo apt install`. Instead, we need to generate a **dummy deb** - a custom apt package that lists "package1", "package2", and "package3" as **dependencies**. Later, when the app is being uninstalled, the dummy deb is removed and a simple `apt autoremove` is enough to safely remove the packages.
+  - The `install_packages` function replaces the old `pkg-install` script which has been removed from pi-apps.
+  - Example usage:
+    ```bash
+    install_packages package1 /path/to/package2.deb https://example.com/package3.deb package4-* || exit 1
+    ```
   - First, each argument is analyzed.
     - If it's a URL, the file is downloaded and added to the local repository.
     - If it's a deb-file, it's added to the local repository.
@@ -320,7 +279,7 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
   - Now an `apt_update` takes place.
   - It's time to configure and install an empty apt-package that "depends on" the packages we want to install. We refer to it as a "dummy deb".
     - First the name of the dummy deb is determined, using the `app_to_pkgname` function.
-    - If the dummy deb is *already* installed, `install_packages` will inherit its dependencies and then purge the dummy deb. This means that **the `install-packages` function can be used multiple times**in an app's script because it's accumulative.
+    - If the dummy deb is *already* installed, `install_packages` will inherit its dependencies and then re-install the dummy deb. This means that **the `install-packages` function can be used multiple times** in an app's script because it's accumulative.
     - The dummy deb is created, packaged, and finally installed.
 - `purge-packages` - Used by apps to remove packages that they previously installed.
   - This function accepts no arguments. It reads the `$app` variable, purges its associated dummy deb, and autoremoves any packages that are no longer necessary.
@@ -403,7 +362,10 @@ End of apt functions. App functions below.
   - The chosen app (if any) is returned.
 - `generate_app_icons` - Resize a specified image and place the icons in the specified app-folder.
   - This requires imagemagick to be installed. If it's missing, a dialog box will appear and ask permission to install it.
-  - Example usage: `generate_app_icons /path/to/my-image.png my-app`
+  - Example usage:
+    ```bash
+    generate_app_icons /path/to/my-image.png my-app
+    ```
 - `refresh_pkgapp_status` - For the specified package-app, if dpkg thinks it's installed, then mark it as installed.
 - `refresh_all_pkgapp_status` - For every package-app, if dpkg thinks it's installed, then mark it as installed.
 
@@ -440,11 +402,10 @@ Below are all functions that don't have anything to do with apps.
   - This works by hashing the entire command first, using `sha256sum`.
   - If the hash matches a line in the `data/runonce_hashes` file, nothing occurs. Otherwise, the command is executed.
 - `text_editor` - Use a text editor to open a file.
-  - This obeys your choice of "Preferred text editor".
-  Usage:
-  ```
-  text_editor /path/to/your.file
-  ```
+  - This obeys your choice of "Preferred text editor":
+    ```
+    text_editor /path/to/your.file
+    ```
 - `view_file` - Display a maximized `yad` window to view a file. This is used to view logfiles.
 - `is_supported_system` - determines if your operating system is supported. This returns an exit-code of `0` if supported, otherwise`1`.
   If any of the below criteria are true, then your system is unsupported:
@@ -465,6 +426,12 @@ Below are all functions that don't have anything to do with apps.
   - It creates a folder (`~/pi-apps/function-files`) and then places files in it.
 - `files_to_functions` - Takes every file in the `function-files` folder and re-combines them.
   - The resulting output is printed to the terminal.
+- `enable_module` - Always load a defined kernel module on system boot
+  - It creates a file `/etc/modules-load.d/${module}.conf` for which tells a systemd service to load the defined module at boot.
+  - Run this function as part of your install script instead of a `modprobe` in a .desktop file or startup script
+    ```bash
+    enable_module fuse || exit 1
+    ```
 
 Command interceptors below:
 - `git_clone` - Wrapper function for the `git clone` command with improvements:
