@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
+
+sudo wget https://github.com/Strawberry-Software-Industries/ledcontrol/releases/download/v1.0/ledcontrol-1.0.0-arm64 -O /usr/bin/ledcontrol || error 'Failed to download executeable!'
+
+# Install some packages that are necessary to run this app - no need for "error", as the install_packages function already handles errors.
+sudo chmod +x /usr/bin/ledcontrol
