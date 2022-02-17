@@ -95,43 +95,47 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 > "Good luck with your projects, Botspot, you're really making waves!" - email from **[Sakaki](https://github.com/sakaki-)** - a legendary RPi developer
 
-# Documentation
-
-Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
-
-### Basic usage
+## Basic usage
 Pi-Apps is very easy to use.  
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
-Use the main window to select an app category. Open a category by double-clicking on it.  
-
-- This will bring you to a list of apps:  
+  - ![icon](icons/buttons/search.png?raw=true) Search for apps.
+  - ![icon](icons/buttons/info.png?raw=true) Open the selected category. (you can also double-click on the category)
+    
+- Opening a category will reveal a list of apps:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
+  - ![icon](icons/buttons/back.png?raw=true) Go back to the main list of categories.
+  - ![icon](icons/buttons/install.png?raw=true) Install the selected app.
+  - ![icon](icons/buttons/uninstall.png?raw=true) Uninstall the selected app.
+  - ![icon](icons/buttons/info.png?raw=true) See more details about the app. (see **details window** below)
 
-- If you double-click an app, or select and app and click ![info.png](https://raw.githubusercontent.com/Botspot/pi-apps/master/icons/info.png), you will see the **Details window**.  
+- This is the details window:  
 ![details](icons/screenshots/details%20window.png?raw=true)  
-
-- Pi-Apps **Settings** can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
+  - ![icon](icons/buttons/back2.png?raw=true) Go back to the list of apps.
+  - ![icon](icons/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
+  - ![icon](icons/buttons/edit.png?raw=true) Make changes to the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
+  - ![icon](icons/buttons/install.png?raw=true) Install the selected app.
+  - ![icon](icons/buttons/uninstall.png?raw=true) Uninstall the selected app.
+  - ![icon](icons/buttons/credits.png?raw=true) See who played a part in adding the app.
+  - ![icon](icons/buttons/errors.png?raw=true) If the selected app failed to install, this button will allow you to see its error log.
+    
+- Pi-Apps Settings can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
+In addition to changeable settings, this window also gives access to these tools:
+  - ![icon](icons/buttons/categories.png?raw=true) Does that one app seem to be in the wrong category? With this button, you can change it.
+  - ![icon](icons/buttons/new%20app.png?raw=true) Create a new app with a wizard-style set of dialogs. We recommend reading [the tutorial](https://github.com/Botspot/pi-apps/wiki/Creating-an-app).
+  - ![icon](icons/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
+  - ![icon](icons/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
 - The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
-- If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... ¯\_(ツ)_/¯
-- You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md)
-- You can also submit an app. Don't worry, it's about as easy as using the terminal! (If your app is a package-app, no scripts have to be written)
+- If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... `¯\_(ツ)_/¯`
+- You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md).
+- You can create and submit an app. Don't worry, it's about as easy as using the terminal! (And it's even easier if you're submitting a simple apt-package.)
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
-## To-do
-
-- [X] Make an **app-creation assistant**. (completed with the `createapp` script)  
-- [X] Add Pi-Apps to **Twister OS**. (completed on 11/2/2020 via the Twister 1.8.5 patch.)  
-- [X] Support individual **32-bit** and **64-bit** install scripts.  
-- [X] Allow **multiple apps** to be selected from the app list and installed sequentially.  
-- [X] Add a **search function** to the app list. To enable it, switch to an **xlunch** theme in **Pi-Apps Settings** -> **App List Style**.
-- [X] Break up the long app list with some **categories**.  
-- [X] Add a new category containing all apps currently **installed**.
-- [X] Make updates display directly in the app-list.
+Read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki) for full documentation, including our [apps list](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
