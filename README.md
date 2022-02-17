@@ -1,7 +1,7 @@
 <p align="center">
     <img src="https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true" alt="Pi-Apps logo">
 </p>
-<p align="center">The most popular app store for Raspberry Pi computers. 100% open-source bash scripts (including the GUI).
+<p align="center">The most popular app store for Raspberry Pi computers. 100% free, open-source and written in shell scripts.
 <p align="center">
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
@@ -93,7 +93,7 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 > [**ShiftPlusOne** (Raspberry Pi forum moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857): "Thanks for the great work making it all simple for everybody."
 
-> Email from **[Sakaki** (legendary RPi developer)](https://github.com/sakaki-): "Good luck with your projects, Botspot, you're really making waves!"
+> Email from [**Sakaki** (legendary RPi developer)](https://github.com/sakaki-): "Good luck with your projects, Botspot, you're really making waves!"
 
 > Message from one of our many satisfied users: "Thank you for making pi-apps, it has helped me a ton (no more searching hours to find how to install etcher) and I cannot thank you enough."
 
@@ -104,18 +104,18 @@ Pi-Apps is very easy to use.
   - ![icon](icons/screenshots/buttons/search.png?raw=true) Search for apps.
   - ![icon](icons/screenshots/buttons/info.png?raw=true) Open the selected category. (you can also double-click on the category)
     
-- Opening a category will reveal a list of apps:  
+- Opening a category will reveal a **list of apps**:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
   - ![icon](icons/screenshots/buttons/back.png?raw=true) Go back to the main list of categories.
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
   - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
   - ![icon](icons/screenshots/buttons/info.png?raw=true) See more details about the app. (see **details window** below)
 
-- This is the details window:  
+- This is the **details window**:  
 ![details](icons/screenshots/details%20window.png?raw=true)  
   - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the list of apps.
   - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
-  - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
+  - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Settings)
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
   - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
   - ![icon](icons/screenshots/buttons/credits.png?raw=true) See who played a part in adding the app.
@@ -129,7 +129,7 @@ In addition to changeable settings, this window also gives access to these tools
   - ![icon](icons/screenshots/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
   - ![icon](icons/screenshots/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
 
-For more details on the capabilities of Pi-Apps, read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki).
+To learn more about Pi-Apps, read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki).
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
@@ -150,18 +150,15 @@ Embed code:
 ```
 
 ### Q&A with Botspot
- - Why did you develop Pi-Apps?  
-> For a long time I have been saddened by how few people are aware of open-source RPi software projects. Many of these projects are extremely useful and beneficial, but there has never been a good way to distribute them.  
-> The repositories don't host them, and they are rarely advertised well, so how will people find them?  
-> Most people never find them.  
-> One day I realized: Why not make an app store that specializes in all the community RPi software projects out there? It will help more users find the software, and at the same time it would provide a super simple way to install them.  
-> (Which would you rather do - click an Install button, or copy-n-paste multiple commands from someone's blog?)
+ - Why did you make Pi-Apps?  
+> For a long time I have been saddened by how difficult it is to install software on Linux. In that regard, nearly all other operating systems put us to shame.  
+> How will people discover useful, free software?  
+> Most people **don't**.  
+> One day I realized: Why not make a collection of scripts to install popular apps? This would save so much time, and makes it much easier to use a Raspberry Pi as a daily, desktop computer solution.  
 
  - How long did it take to program this?  
-> To lay the groundwork, it took two weeks of nearly non-stop coding. Since then, I've continually optimized performance, fixed bugs, added new features, and added numerous new apps.
-
- - Is Pi-Apps still under development?
-> Sure is! We're always on the lookout for new app-suggestions, and solve app-installation issues by reading incoming bug reports.
+> Why would you think it's not still under development? 🤪  
+> Pi-Apps took around 14 days to lay the groundwork, and ever since then it has been continually, and exponentially, improved. I (Botspot) am not the sole programmer anymore - [others](https://github.com/Botspot/pi-apps/graphs/contributors) have stepped in and made improvements too.
 
  - Is Pi-Apps free?
 > Absolutely! In the future, I may allow donations, but Pi-Apps itself will always be free and open-source.
