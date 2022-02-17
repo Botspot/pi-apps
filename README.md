@@ -99,33 +99,33 @@ This will not uninstall any apps that you installed through Pi-Apps.
 Pi-Apps is very easy to use.  
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
-  - ![icon](icons/buttons/search.png?raw=true) Search for apps.
-  - ![icon](icons/buttons/info.png?raw=true) Open the selected category. (you can also double-click on the category)
+  - ![icon](icons/screenshots/buttons/search.png?raw=true) Search for apps.
+  - ![icon](icons/screenshots/buttons/info.png?raw=true) Open the selected category. (you can also double-click on the category)
     
 - Opening a category will reveal a list of apps:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
-  - ![icon](icons/buttons/back.png?raw=true) Go back to the main list of categories.
-  - ![icon](icons/buttons/install.png?raw=true) Install the selected app.
-  - ![icon](icons/buttons/uninstall.png?raw=true) Uninstall the selected app.
-  - ![icon](icons/buttons/info.png?raw=true) See more details about the app. (see **details window** below)
+  - ![icon](icons/screenshots/buttons/back.png?raw=true) Go back to the main list of categories.
+  - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
+  - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
+  - ![icon](icons/screenshots/buttons/info.png?raw=true) See more details about the app. (see **details window** below)
 
 - This is the details window:  
 ![details](icons/screenshots/details%20window.png?raw=true)  
-  - ![icon](icons/buttons/back2.png?raw=true) Go back to the list of apps.
-  - ![icon](icons/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
-  - ![icon](icons/buttons/edit.png?raw=true) Make changes to the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
-  - ![icon](icons/buttons/install.png?raw=true) Install the selected app.
-  - ![icon](icons/buttons/uninstall.png?raw=true) Uninstall the selected app.
-  - ![icon](icons/buttons/credits.png?raw=true) See who played a part in adding the app.
-  - ![icon](icons/buttons/errors.png?raw=true) If the selected app failed to install, this button will allow you to see its error log.
+  - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the list of apps.
+  - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
+  - ![icon](icons/screenshots/buttons/edit.png?raw=true) Make changes to the app's description, icons, or scripts. (This button is hidden unless you enable it in Pi-Apps Settings)
+  - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
+  - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
+  - ![icon](icons/screenshots/buttons/credits.png?raw=true) See who played a part in adding the app.
+  - ![icon](icons/screenshots/buttons/errors.png?raw=true) If the selected app failed to install, this button will allow you to see its error log.
     
 - Pi-Apps Settings can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
 In addition to changeable settings, this window also gives access to these tools:
-  - ![icon](icons/buttons/categories.png?raw=true) Does that one app seem to be in the wrong category? With this button, you can change it.
-  - ![icon](icons/buttons/new%20app.png?raw=true) Create a new app with a wizard-style set of dialogs. We recommend reading [the tutorial](https://github.com/Botspot/pi-apps/wiki/Creating-an-app).
-  - ![icon](icons/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
-  - ![icon](icons/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
+  - ![icon](icons/screenshots/buttons/categories.png?raw=true) Does that one app seem to be in the wrong category? With this button, you can change it.
+  - ![icon](icons/screenshots/buttons/new%20app.png?raw=true) Create a new app with a wizard-style set of dialogs. We recommend reading [the tutorial](https://github.com/Botspot/pi-apps/wiki/Creating-an-app).
+  - ![icon](icons/screenshots/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
+  - ![icon](icons/screenshots/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
@@ -162,4 +162,4 @@ Embed code:
 > Sure is! We're always on the lookout for new app-suggestions, and solve app-installation issues by reading incoming bug reports.
 
  - Is Pi-Apps free?
-> Absolutely! In the future, I may decide to begin accepting donations, but Pi-Apps itself will always be free and open-source.
+> Absolutely! In the future, I may allow donations, but Pi-Apps itself will always be free and open-source.
