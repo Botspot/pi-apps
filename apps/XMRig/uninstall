@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" == "update" ]; then
-purge_installed || exit 1
+purge_packages || exit 1
 sudo rm /usr/local/bin/xmrig || error 'Failed to remove "xmrig" command!'
 status "Not removing the 'xmrig' folder because uninstall run from updater."
 else
