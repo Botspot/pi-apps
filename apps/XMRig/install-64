@@ -179,7 +179,7 @@ if [ -e $HOME/xmrig.json.bak ]; then
         status "\nCopying old 'xmrig.json' to chroot..."
         cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig.json'!!"
         sudo cp $HOME/xmrig.json.bak $HOME/xmrig/bullseye/root/.config/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig/bullseye/root/.config/xmrig.json'!!"
-        rm $HOME/xmrig.json.bak
+        rm $HOME/xmrig.json.bak &>/dev/null
     else
         status '\nI won'\''t use the previous config...'
         use_old_config="no"
