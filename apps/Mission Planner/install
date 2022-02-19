@@ -1,5 +1,6 @@
 #!/bin/bash
-install_packages mono-complete apt-transport-https dirmngr gnupg ca-certificates || exit 1
+
+install_packages apt-transport-https dirmngr gnupg ca-certificates || exit 1
 
 rm -rf ~/MissionPlanner-latest &>/dev/null
 mkdir ~/MissionPlanner-latest
@@ -9,11 +10,21 @@ unzip MissionPlanner-latest.zip || error "Failed to extract MissionPlanner-lates
 rm -f MissionPlanner-latest.zip
 cd
 
-echo "Getting latest version of Mono..."
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
-echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-sudo apt update
-sudo apt install -y mono-complete
+#fix dependency issue on Bullseye
+package_installed mono-complete && sudo apt-mark auto mono-complete
+
+#determine if getting the mono repository is is necessary
+status -n "Is the mono-complete package new enough? "
+
+if package_is_new_enough mono-complete 6.8.0 ;then
+  status_green 'No' #answer the question asked above
+  echo "Adding Mono repository..."
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
+  echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+else
+  status_green 'Yes' #answer the question asked above
+fi
+install_packages mono-complete || exit 1
 
 echo "[Desktop Entry]
 StartupNotify=true
