@@ -289,7 +289,7 @@ status_green 'Done.'
 sudo chroot $HOME/xmrig/bullseye ./chroot-xmrig-inst.sh || error 'Failed to build XMRig inside chroot!!!'
 
 if [ -e $HOME/xmrig.json.bak ]; then
-    userinput_func "Do you want to use your previous 'xmrig.json'?" $default_table
+    userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
         status "\nCopying old 'xmrig.json' to chroot..."
         cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json
@@ -300,7 +300,7 @@ if [ -e $HOME/xmrig.json.bak ]; then
         use_old_config="no"
     fi
 elif [ "$use_old_config" == "no" ] || [ ! -e $HOME/xmrig.json.bak ]; then
-    userinput_func "Do you want to setup your xmrig.json? This will make running xmrig easier." $default_table
+    userinput_func "Do you want to setup your xmrig.json? This will make running xmrig easier." "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
         status_green "\nStarting helper..."
         config_helper
