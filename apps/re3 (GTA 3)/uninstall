@@ -10,6 +10,7 @@ function error {
 rm -f ~/Games/GTA3/re3 ~/Games/GTA3/gamecontrollerdb 
 rm -rf ~/Games/GTA3/data ~/Games/GTA3/models ~/Games/GTA3/neo ~/Games/GTA3/TEXT
 rm -f ~/.local/share/applications/GTAIII.desktop
+purge_packages #non-fatal
 
 echo -e " \\e[1;32m GTA 3 successfully uninstalled, but your Gamedata and config files are still located at ${HOME}/Games/GTA3 \\e[39m"
 
