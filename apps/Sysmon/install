@@ -1,0 +1,19 @@
+#!/bin/bash
+# Get dependencies
+install_packages python3 python3-pip python3-dev || error "Failed to install dependencies"
+cd /opt
+rm -rf ./sysmon || sudo rm -rf ./sysmon || error "Failed to first remove $(pwd)/sysmon folder!"
+sudo git clone https://github.com/t0xic0der/sysmon || error "Failed to clone Sysmon git repository!"
+cd sysmon
+sudo pip3 install -r requirements.txt || error "Failed to install requirements with Pip!"
+
+echo "[Unit]
+After=network.target
+[Service]
+ExecStart=sudo python3 /opt/sysmon/main.py -p 6969 -6
+[Install]
+WantedBy=default.target" | sudo tee /etc/systemd/system/WebStationSYSMON.service >/dev/null
+#start the service
+sudo systemctl daemon-reload || error "Failed to run systemctl daemon-reload!"
+sudo systemctl enable WebStationSYSMON.service || error "Failed to enable sysmon service!"
+sudo systemctl start WebStationSYSMON.service || error "Failed to start sysmon service!"

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+flatpak_uninstall org.telegram.desktop || exit 1
+rm -f ~/.local/share/applications/telegram.desktop
+
+purge_packages || exit 1

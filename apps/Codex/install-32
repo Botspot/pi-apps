@@ -1,0 +1,15 @@
+#!/bin/bash
+rm -rf codex.zip codex codex-*-armv7l
+wget https://github.com/ryanfortner/codex-arm/releases/download/v1.4.1/codex-1.4.1-armv7l.zip -O codex.zip || error "Failed to download zip file!"
+unzip codex.zip || error "Failed to unzip codex.zip!"
+rm -f codex.zip
+mv codex-*-armv7l codex
+
+# Create desktop entry
+echo "[Desktop Entry]
+Name=Codex
+Exec=$HOME/codex/Codex
+Icon=${DIRECTORY}/apps/Codex/icon-64.png
+Type=Application
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/codex.desktop

@@ -1,0 +1,6 @@
+#Most apps use scripts to install software from places like Github or Sourceforge.
+#But other apps can already be easily installed from Add/Remove Software. These apps are simply a shortcut to install apt-packages.
+#This option allows you to selectively show one type of app or the other, or both types.
+All
+packages
+standard

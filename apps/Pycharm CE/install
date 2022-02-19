@@ -1,52 +1,53 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+version=2021.3.2
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
-#Defining Variables
-downloadlink=https://download-cf.jetbrains.com/python/pycharm-community-2021.2.1.tar.gz
-name=pycharm-community
+wget https://download.jetbrains.com/python/pycharm-community-${version}.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
+status "Extracting pycharm-community.tar.gz to /opt"
+sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
+sudo tar xzf pycharm-community.tar.gz -C /opt/pycharm-community || error "Failed to extract pycharm-community.tar.gz"
+sudo mv /opt/pycharm-community/*/* /opt/pycharm-community/
+sudo chmod +x /opt/pycharm-community/bin/pycharm.sh
 
-# Get dependencies
-"${DIRECTORY}/pkg-install" "python3-pip openjdk-11-jdk gcc" "$(dirname "$0")" || exit 1
-
-echo "Downloading $(basename "$downloadlink")"
-rm -f $name.tar.gz
-wget $downloadlink -O $name.tar.gz || error "Failed to download $(basename "$downloadlink")"
-
-echo "Extracting pycharm-community-2020.3.3.tar.gz to /opt"
-sudo rm -rf /opt/$name
-sudo mkdir -p /opt/$name
-sudo tar xvzf $name.tar.gz -C /opt/$name || error "Failed to extract $name.tar.gz"
-rm -f $name.tar.gz
-sudo mv /opt/$name/*/* /opt/$name/
-
-echo "Making file executable"
-sudo chmod +x /opt/$name/bin/pycharm.sh
-
-echo "Implementing terminal fix"
-rm -rf ~/pty4j
-git clone https://github.com/JetBrains/pty4j.git ~/pty4j || error "Failed to download pty4j repository"
+status "Implementing terminal fix ..."
+git_clone https://github.com/JetBrains/pty4j.git || exit 1
 cd ~/pty4j/native
 gcc -fPIC -c *.c || error "command failed: gcc -fPIC -c *.c"
 gcc -shared -o libpty.so *.o || error "command failed: gcc -shared -o libpty.so *.o"
-sudo mkdir -p /opt/$name/lib/pty4j-native/linux/arm || error "Failed to make directory /opt/$name/lib/pty4j-native/linux/arm"
-sudo cp libpty.so /opt/$name/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/$name/lib/pty4j-native/linux/arm"
-rm -rf ~/pty4j
-cd ~/
+sudo mkdir -p /opt/pycharm-community/lib/pty4j-native/linux/arm || error "Failed to create directory /opt/pycharm-community/lib/pty4j-native/linux/arm."
+sudo cp libpty.so /opt/pycharm-community/lib/pty4j-native/linux/arm || error "Failed to copy $(pwd)/libpty.so to /opt/pycharm-community/lib/pty4j-native/linux/arm."
+cd $HOME
 
-echo "Creating desktop shortcut"
+status "Compiling file watcher ..."
+wget https://github.com/Pi-Apps-Coders/files/raw/main/fsnotifier-pycharm-rpi.zip || exit 1
+unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rpi.zip."
+cd $HOME/fsnotifier-pycharm-rpi/
+bash ./make.sh || error "Failed to compile file watcher."
+mkdir -p "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/options"
+mv -f "$HOME/fsnotifier-pycharm-rpi/fsnotifier" "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/" || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/."
+[ -a "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties | grep -v idea.filewatcher.executable.path)" > "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties"
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/fsnotifier" >> "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties."
+
+status "Remove bundled JRE version message ..."
+echo '<application>
+  <component name="PropertiesComponent">
+    <property name="ignore.bundled.jre.version.message" value="true" />
+  </component>
+</application>' > "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/options/other.xml"
+
+status "Creating desktop shortcut ..."
 echo "[Desktop Entry]
 Type=Application
 Name=PyCharm Community Edition
-Icon=/opt/$name/bin/pycharm.svg
-Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/$name/bin/pycharm.sh"\""
+Icon=$(dirname "$0")/icon-64.png
+Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/pycharm-community/bin/pycharm.sh"\""
 Comment=Python IDE
 Categories=Development;IDE;Programming;
 Terminal=false
 StartupWMClass=jetbrains-pycharm-ce
 StartupNotify=true" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
+
+#cleanup
+rm -rf $HOME/pycharm-community.tar.gz $HOME/pty4j $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip

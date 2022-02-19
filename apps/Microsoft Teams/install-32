@@ -1,0 +1,17 @@
+#!/bin/bash
+
+version=1.0.23
+
+install_packages https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${version}/teams-for-linux_${version}_armv7l.deb || exit 1
+
+#change menu launcher name from "Microsoft Teams for Linux" to "Microsoft Teams"
+( sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Microsoft Teams for Linux/Microsoft Teams/g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
+#fix MS Teams showing up in two categories
+( sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's/Categories=Chat;Network;Office;/Categories=Chat;Network;/g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
+#create run-teams.sh
+echo "rm -rf '$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Service Worker' '$HOME/.config/teams-for-linux/Partitions/teams-4-linux/Cache' && /opt/teams-for-linux/teams-for-linux" > /tmp/run-teams.sh
+chmod +x /tmp/run-teams.sh
+sudo mv -f /tmp/run-teams.sh /opt/teams-for-linux
+#change menu launcher exec field to /opt/teams-for-linux/run-teams.sh
+( sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop || sudo sed -i 's+/opt/teams-for-linux/teams-for-linux+/opt/teams-for-linux/run-teams.sh+g' /usr/share/applications/teams-for-linux.desktop ) &>/dev/null
+

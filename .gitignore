@@ -1,0 +1,8 @@
+# ignore update folder and other files that are generated but not part of the repo
+# this allows for commits to be made from a local working pi-apps repo without pushing these file to github
+update
+etc/genapplist-yad
+data
+logs
+icons/vector/splashscreen.svg
+icons/splashscreen.png

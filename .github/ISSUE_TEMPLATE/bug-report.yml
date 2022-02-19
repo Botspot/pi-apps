@@ -1,0 +1,50 @@
+name: Bug Report
+description: File a bug report
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        App failing to install? It's still around after uninstalling? Let us know!
+  - type: checkboxes
+    attributes:
+      label: Confirmations
+      options:
+      - label: I searched for similar bug reports in https://github.com/Botspot/pi-apps/issues and found none were relevant.
+        required: true
+      - label: I tried updating Pi Apps and the issue is still not fixed. [How to update Pi Apps?](https://github.com/Botspot/pi-apps#to-update-pi-apps)
+        required: false
+  - type: input
+    id: desc
+    attributes:
+      label: What happened?
+      description: Briefly explain what happened.
+      placeholder: "Ex. 'App' won't install, 'App' unable to launch after update"
+    validations:
+      required: true
+  - type: textarea
+    id: desc-long
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is and any personal attempts you made to fix it.
+      placeholder: Tell us more!
+    validations: 
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: What is your operating system?
+      description: Let us know what is your OS to better solve your problem.
+      placeholder: Ex. Raspberry Pi OS armhf, Ubuntu 18.04 arm64
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: (Optional) Error log? Terminal output? Debug messages?
+      description: Please provide error log or terminal output, if available.
+      placeholder: Paste your terminal output/error log here
+      render: bash
+    validations:
+      required: false
+

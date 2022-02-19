@@ -1,0 +1,16 @@
+#!/bin/bash
+#skip uninstallation if executed from an update
+if [[ "$1" != "update" ]];then
+  cd ~/MultiMC && find ./install -mindepth 1 ! -regex '^./install/instances\(/.*\)?' -delete
+  sudo rm -rf ~/MultiMC/src
+  sudo rm -rf ~/MultiMC/build
+  sudo rm -rf ~/.local/share/applications/MultiMC.desktop
+  sudo rm -rf ~/.local/share/icons/MultiMC/icon-64.png
+
+  purge_packages || error "Dependencies failed to uninstall"
+
+  remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+  remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list
+else
+  echo "Uninstall skipped because run from the updater"
+fi

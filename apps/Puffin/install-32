@@ -1,0 +1,4 @@
+#!/bin/bash
+
+install_packages https://download.puffinbrowser.com/linux/raspbian/puffin-internet-terminal-demo_8.2.4.705_armhf.deb || exit 1
+

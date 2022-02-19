@@ -1,0 +1,22 @@
+CUSTOM BUILD of MultiMC5/Launcher code for ARMhf/ARM64 support. Includes Microsoft, Mojang, and PC GamePass Account support. This launcher allows you to easily manage multiple instances of minecraft and your mods at once.
+
+NOTE: The use of performance enhancing mods is highly encouraged, such as optifine with Optifabric and Fabric/Forge or Sodium/Lithium/Phosphor Fabric Mods.
+
+Minecraft Java MultiMC5 for the Raspberry Pi
+To run: Menu -> Games -> MultiMC
+To run in a terminal: ~/MultiMC/install/MultiMC
+
+Link to the Raspberry Pi Forum Post: https://forums.raspberrypi.com/viewtopic.php?f=78&t=321888
+
+The MultiMC5 Wiki can be found here: https://github.com/MultiMC/MultiMC5/wiki
+If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine
+How to choose the correct java version: https://github.com/MultiMC/Launcher/wiki/Using-the-right-Java#setting-up-java-in-multimc
+
+The install script contains OS detection (ubuntu and debian/raspbian based systems supported), and automatic java 8/11/16/17 installation.
+
+MultiMC5 supports minecraft versions from the old beta/alphas all the way up to 1.18+. Fabric and Forge mod loading is fully supported.
+
+A custom meta repo is used for arm32 and arm64 to provide lwjgl 2.9.4, 3.1.2(fake), 3.1.6, 3.2.1, 3.2.2, and 3.2.3(unused) native libraries. (https://github.com/theofficialgman/meta-multimc)
+This supports all currently released versions of minecraft.
+
+Note: MultiMC5 github/discord does support this CUSTOM BUILD, any issues should be directed to the Pi-Apps Discord, Forum Post, or Pi-Apps github issues.

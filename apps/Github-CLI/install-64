@@ -1,24 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+version=2.5.1
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+install_packages https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_arm64.deb || exit 1
 
-cd $HOME
-
-VERSION='2.0.0'
-
-#remove old deb (if exists)
-rm -f ~/gh.deb
-
-#download
-wget -O ~/gh.deb https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.deb || error 'Failed to download github-cli!'
-
-#install
-"${DIRECTORY}/pkg-install" "$HOME/gh.deb" "$(dirname "$0")" || error "Failed to install gh.deb!"
-
-#clean up
-rm -f ~/gh.deb

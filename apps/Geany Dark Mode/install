@@ -1,15 +1,11 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+if ! package_installed geany; then
+  error "User error: Geany is not installed, these themes are useless to you."
+fi
 
 #get theme files
-rm -rf ~/geany-themes
-git clone --depth 1 https://github.com/codebrainz/geany-themes || error "Failed to git clone the geany themes repository!"
+git_clone --depth 1 https://github.com/geany/geany-themes || exit 1
 
 #copy theme files
 mkdir -p ~/.config/geany/colorschemes
@@ -24,13 +20,11 @@ else
 fi
 
 #clean up
-rm -rf ~/geany-themes
-
-if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
+if pidof geany -q; then
   
   echo -e "\nThis script was unable to change Geany's config file, because Geany is already running.\nPlease close Geany."
   
-  while [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];do
+  while pidof geany -q;do
     sleep 1
     echo -n '.'
   done
@@ -45,3 +39,8 @@ if [ ! -z "$(ps aux | grep 'geany' | grep -v grep)" ];then
   fi
   
 fi
+
+#tell user where to change theme
+status "Added $(ls  ~/geany-themes/colorschemes/ | wc -l) themes.\nYou can change theme by navigate to View → Editor → Change Color Scheme in Geany."
+
+rm -rf ~/geany-themes

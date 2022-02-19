@@ -1,0 +1,6 @@
+#!/bin/bash
+
+version=4.1.5-368
+
+install_packages https://apt.raspbian-addons.org/debian/pool/main/b/blockbench/blockbench_${version}_arm64.deb || exit 1
+

@@ -1,22 +1,7 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-#install box86
-if ! command -v box86 || [ "$(cat "${DIRECTORY}/data/status/Box86" 2>/dev/null)" != 'installed' ];then
-  echo 'Installing box86...'
-  "${DIRECTORY}/manage" install Box86 || error "Box86 failed to install somehow!"
-  if ! command -v box86 ;then
-    error "Box86 executable does not exist!"
-  else
-    echo "installed" > "${DIRECTORY}/data/status/Box86"
-  fi
-fi
+#On Botspot's system, libssl1.0-dev was required to launch Eagle. But too many error reports say that this package is not installinbg, so I'm commenting it out.
+#install_packages libssl1.0-dev || exit 1
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
 
@@ -32,12 +17,10 @@ if [ ! -d $HOME/eagle-7.7.0 ];then
   rm -f ./eagle.run
   echo "done"
 fi
-
 mkdir -p $HOME/eagle &>/dev/null
 
 #make it runnable from a terminal
 sudo ln -s $HOME/eagle-7.7.0/bin/eagle /usr/local/bin/eagle
-
 echo -n "Creating menu button... "
 mkdir -p ~/.local/share/applications/ &>/dev/null
 echo "#!/usr/bin/env xdg-open
@@ -47,12 +30,11 @@ Type=Application
 Terminal=false
 Icon=$HOME/eagle-7.7.0/bin/icons/Epf.svg
 Name=Eagle
-Exec=eagle %f
+Exec=box86 eagle %f
 Comment=Design Circuit Boards with Eagle CAD
 MimeType=application/brd;
 Categories=Development;Electronics;" > ~/.local/share/applications/eagle.desktop
 echo "done"
-
 echo -n "Creating .brd mimetype... "
 sudo bash -c 'echo "<?xml version="\""1.0"\"" encoding="\""UTF-8"\""?>
 <mime-info xmlns="\""http://www.freedesktop.org/standards/shared-mime-info"\"">
@@ -63,7 +45,6 @@ sudo bash -c 'echo "<?xml version="\""1.0"\"" encoding="\""UTF-8"\""?>
 </mime-info>" > /usr/share/mime/packages/brd.xml'
 sudo update-mime-database /usr/share/mime
 echo done
-
 if [ -z "$(cat ~/.config/mimeapps.list | grep 'eagle.desktop')" ];then
   echo -n "Associating the .brd mimetype with Eagle... "
   echo "[Added Associations]

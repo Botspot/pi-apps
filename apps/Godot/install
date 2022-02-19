@@ -1,0 +1,18 @@
+#!/bin/bash
+rm -rf ~/Godot
+mkdir -p ~/Godot
+cd ~/Godot
+wget -O ~/Godot/godot.zip https://github.com/hiulit/Unofficial-Godot-Engine-Raspberry-Pi/releases/download/v1.9.0/godot_3.4.2-stable_rpi4.zip || error "failed to download!"
+unzip $(pwd)/godot.zip
+rm -f $(pwd)/godot.zip
+rm -f godot_3.4.2-stable_rpi4_headless_lto.bin
+rm -f godot_3.4.2-stable_rpi4_server_lto.bin
+echo "[Desktop Entry]
+Name=Godot Engine
+Comment=Best Opensource Game Engine 
+Exec=bash -c 'cd $HOME/Godot ; MESA_GL_VERSION_OVERRIDE=3.3 $HOME/Godot/godot_3.4.2-stable_rpi4_editor_lto.bin'
+Icon=$(dirname $0)/icon-64.png
+Terminal=false
+Type=Application
+Categories=Development;
+StartupNotify=true" > ~/.local/share/applications/godot-engine.desktop

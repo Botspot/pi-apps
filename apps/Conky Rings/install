@@ -1,24 +1,12 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if [ -f "$HOME/.conkyrc" ]; then
-  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again.
-▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+  error "User error: Another Conky theme is already installed! Uninstall the original app (Or delete $HOME/.conkyrc), then try again."
 fi
 
 # Get dependencies
-"${DIRECTORY}/pkg-install" "conky-all lua50" "$(dirname "$0")" || exit 1
-
+install_packages conky-all lua50 || exit 1
 #get conkyrc
 wget -O ~/.conkyrc https://raw.githubusercontent.com/Botspot/rpi_conky/master/conky_rings/.conkyrc || error "Failed to get .conkyrc!"
-
 #get fonts to ~/.local/share/fonts
 mkdir -p ~/.local/share/fonts && cd ~/.local/share/fonts || error "Failed to create and enter $HOME/.local/share/fonts folder!"
 wget https://github.com/Botspot/rpi_conky/raw/master/conky_rings/fonts.tar.gz || error "Failed to download the required fonts!"
@@ -38,6 +26,7 @@ setsid -f conky -d
 echo "Making autostart entry..."
 #make autostart entry to run it next time
 mkdir -p ~/.config/autostart
+sudo rm -f ~/.config/autostart/conky.desktop
 echo "[Desktop Entry]
 Name=Conky
 Type=Application

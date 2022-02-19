@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
+
+purge_packages || exit 1

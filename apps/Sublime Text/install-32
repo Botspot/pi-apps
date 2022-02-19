@@ -1,15 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #install box86
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
-
 wget https://download.sublimetext.com/Sublime%20Text%202.0.2.tar.bz2 -O ~/sublime-text-2.tar.bz2 || error 'Failed to download!'
 tar -xf ~/sublime-text-2.tar.bz2 || error 'Failed to extract!'
 rm -f sublime-text-2.tar.bz2

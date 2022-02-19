@@ -1,0 +1,16 @@
+#!/bin/bash
+cd $HOME
+
+wget -O ~/.local/share/Quartz_Browser.AppImage 'https://github.com/ksharindam/quartz-browser-qt5/releases/download/v2.3.7/Quartz_Browser-armhf.AppImage'
+chmod u+x ~/.local/share/Quartz_Browser.AppImage
+
+enable_module fuse || exit 1
+
+echo "[Desktop Entry]
+Type=Application
+Name=Quartz Browser
+Comment=Light weight web browser
+Categories=Network;WebBrowser
+Exec=$HOME/.local/share/Quartz_Browser.AppImage %U
+Icon=$(dirname "$0")/icon-64.png
+StartupWMClass=Quartz-Browser" > ~/.local/share/applications/quartz-browser.desktop

@@ -1,19 +1,6 @@
 #!/bin/bash
+purge_packages || exit 1
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+sudo rm -f /etc/apt/sources.list.d/box64.list || error "Failed to remove repo!"
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-if [ ! -e ~/box64 ];then
-  echo "The $HOME/box64 folder does not exist. Nothing to do!"
-  exit 0
-fi
-
-cd ~/box64/build || error "Failed to enter ~/box64/build!"
-sudo make uninstall || error "Failed to uninstall box64!"
-
-rm -rf ~/box64 || error "Failed to delete the $HOME/box64 directory!"
-
+sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg || error "Failed to remove GPG key!"

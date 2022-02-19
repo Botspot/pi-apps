@@ -1,11 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+version=5.4.53391.1108
 
 if command -v box86 >/dev/null;then
   echo "Updating box86..."
@@ -20,21 +15,20 @@ fi
 # Get dependencies
 DISTRO=$(lsb_release -is)
 if [[ "${DISTRO}" == "Debian" || "${DISTRO}" == "Raspbian" ]]; then
-  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 pulseaudio-utils pulseaudio || exit 1
 elif [[ "${DISTRO}" == "Ubuntu" ]]; then
-  "${DIRECTORY}/pkg-install" "cmake libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio" "$(dirname "$0")" || exit 1
+  install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg pulseaudio-utils pulseaudio || exit 1
 else 
 	error "This script can't run on your OS! It HAS to be Debian and derivatives like RPiOS or Ubuntu"
 fi
 
 #refresh list of libraries
 sudo ldconfig
-
 #For testing, set to false if zoom folder is already there
 if true;then
   echo "Downloading Zoom..."
   rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz || sudo rm -rf "${HOME}/zoom" ~/zoom_i686.tar.xz
-  wget 'https://zoom.us/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://zoom.com/client/5.4.53391.1108/zoom_i686.tar.xz' || wget 'https://d11yldzmag5yn.cloudfront.net/prod/5.4.53391.1108/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
+  wget "https://zoom.us/client/${version}/zoom_i686.tar.xz" || wget "https://zoom.com/client/${version}/zoom_i686.tar.xz" || wget "https://d11yldzmag5yn.cloudfront.net/prod/${version}/zoom_i686.tar.xz" || error 'Failed to download Zoom i686!'
   
   #get outdated Zoom client from Botspot's mirror because it's more stable
   #wget 'https://github.com/Botspot/zoom_686_mirror/raw/main/zoom_i686.tar.xz' || error 'Failed to download Zoom i686!'
@@ -62,6 +56,7 @@ chmod +x "${HOME}/zoom/runzoom.sh"
 
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
+Version=${version}
 Name=Zoom
 Exec=${DIRECTORY}/etc/terminal-run "\""$HOME/zoom/runzoom.sh %u"\"" 'Close this window to exit Zoom'
 Icon=$(dirname "$0")/icon-64.png
@@ -70,7 +65,6 @@ Type=Application
 Comment=i386 version of software platform used for teleconferencing using Box86
 Categories=Network;
 StartupNotify=true" > ~/.local/share/applications/zoom.desktop
-
 #Associate with mimeapp
 if [ -z "$(cat ~/.config/mimeapps.list | grep 'zoom.desktop')" ];then
   echo "Associating Zoom mimetypes..."
@@ -81,5 +75,5 @@ fi
 
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
-
 echo "Installation complete!"
+

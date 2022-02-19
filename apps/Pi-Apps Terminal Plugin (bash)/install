@@ -1,14 +1,6 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-red="\e[31m"
-normal="\e[0m"
-
-function error() {
-  echo -e "${red}$1${normal}"
-  exit 1
-}
+readonly red="\e[31m"
+readonly normal="\e[0m"
 
 #Removing existing /usr/local/bin/pi-apps and script
 echo -n "removing existing version of the script..."
@@ -28,3 +20,4 @@ echo '#!/bin/bash
 '"${DIRECTORY}"'/pi-apps-terminal-bash-edition.sh "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null || error "Failed to create pi-apps command in '/usr/local/bin/'!"
 sudo chmod +x /usr/local/bin/pi-apps || error "Failed to make launcher script executable!"
 echo "done"
+

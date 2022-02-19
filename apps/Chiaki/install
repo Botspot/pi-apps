@@ -1,21 +1,16 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # install dependencies
-"${DIRECTORY}/pkg-install" "cmake python3-protobuf protobuf-compiler libavcodec-dev libopus-dev libsdl2-dev libssl-dev qt5-default qtmultimedia5-dev libqt5svg5-dev libqt5multimedia5-plugins libqt5opengl5-dev" "$(dirname "$0")" || exit 1
-
+install_packages cmake python3-protobuf protobuf-compiler libavcodec-dev libopus-dev libsdl2-dev libssl-dev qtbase5-dev qtchooser qtmultimedia5-dev libqt5svg5-dev libqt5multimedia5-plugins libqt5opengl5-dev || error "Failed to install dependencies"
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+fi
 # install Chiaki
 rm -rf ~/Chiaki || error "Failed to first remove $HOME/Chiaki folder!"
-git clone --single-branch --branch rpi01 https://github.com/Fredrum/chiaki.git Chiaki || error "failed to clone the Chiaki repository!"
+git_clone --single-branch --branch rpi01 https://github.com/Fredrum/chiaki.git Chiaki || error "failed to clone the Chiaki repository!"
 cd Chiaki || error "failed to enter the Chiaki folder!"
 git submodule update --init || error "failed to update the Chiaki submodule!"
-
 # build the application
 mkdir build || error "failed to create build folder!"
 cd build || error "failed to enter the build folder!"
@@ -34,8 +29,6 @@ Terminal=false
 Categories=Game;RemoteAccess;Amusement;
 Keywords=Remote;Streaming;PS4;PS5;Games;
 StartupNotify=true" > $HOME/.local/share/applications/chiaki.desktop
-
 # download PSN AccountID script
 wget https://git.sr.ht/~thestr4ng3r/chiaki/blob/master/scripts/psn-account-id.py -P $HOME/Chiaki || error "failed to download PSN AccountID script!"
-
 exit 0

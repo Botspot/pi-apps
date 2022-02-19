@@ -1,0 +1,4 @@
+#!/bin/bash
+
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/amiberry_4.1.4-1_arm64.deb || exit 1
+

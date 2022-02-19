@@ -1,0 +1,13 @@
+#!/bin/bash
+source "$DIRECTORY/api"
+
+if [ $arch == '32' ];then
+	# Removes menu shortcut
+	rm -f $HOME/.local/share/applications/quartz-browser.desktop || error "Failed to remove menu shortcut!"
+	# Removes AppImage
+	rm -f ~/.local/share/Quartz_Browser.AppImage || error "Failed to remove Quartz Browser!"
+elif [ $arch == '64' ];then
+	( pip3 uninstall quartz-browser -y || sudo pip3 uninstall quartz-browser -y ) || error "Failed to uninstall Quartz Browser!"
+	rm -rf $HOME/quartz-browser-qt5 &> /dev/null || sudo rm -rf $HOME/quartz-browser-qt5 
+	purge_packages || exit 0
+fi

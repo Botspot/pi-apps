@@ -1,23 +1,10 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if ! command -v libreoffice >/dev/null ;then
-  error "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-Libreoffice is not installed, so this theme is useless to you.\nTo install libreoffice, run this in a terminal:\nsudo apt install libreoffice libreoffice-gtk2
-▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+  error "User error: Libreoffice is not installed, so this theme is useless to you.\nTo install libreoffice, run this in a terminal:\nsudo apt install libreoffice libreoffice-gtk2"
 fi
 
-
-
 rm -rf ~/libreoffice-ms-theme
-git clone --depth=1 https://github.com/Botspot/libreoffice-ms-theme || error "Failed to git clone libreoffice-ms-theme repository!"
+git_clone --depth=1 https://github.com/Botspot/libreoffice-ms-theme || error "Failed to git_clone libreoffice-ms-theme repository!"
 ~/libreoffice-ms-theme/apply.sh || error "apply.sh failed"
 rm -rf ~/libreoffice-ms-theme
-
 echo "Libreoffice should now have a new look and feel. Try it out! :)"

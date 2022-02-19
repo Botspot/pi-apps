@@ -1,0 +1,4 @@
+#!/bin/bash
+# remove the pin-priority
+sudo rm -rf /etc/apt/preferences.d/youtube-dl-backports
+purge_packages || error "Dependencies failed to uninstall"

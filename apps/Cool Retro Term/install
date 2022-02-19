@@ -1,22 +1,20 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
 # Get dependencies
-"${DIRECTORY}/pkg-install" "build-essential qmlscene qt5-qmake qt5-default qtdeclarative5-dev qml-module-qtquick-controls qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel" "$(dirname "$0")" || exit 1
+install_packages build-essential qmlscene qt5-qmake qtbase5-dev qtchooser qtdeclarative5-dev qtquickcontrols2-5-dev qml-module-qtquick-controls qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel || error "Failed to install dependencies"
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+fi
+# Remove cool-retro-term folder first
+rm -rf cool-retro-term || sudo rm -rf cool-retro-term 
 
 # Get CRT from github
-git clone --recursive https://github.com/Swordfish90/cool-retro-term || error "failed to clone repository!"
-
+git_clone --recursive https://github.com/Swordfish90/cool-retro-term || error "failed to clone repository!"
 # Compile
 cd cool-retro-term || error "failed on cd step!"
 qmake || error "failed on qmake step!"
 make -j8 || error "failed on make step!"
-
 cp -rf qmltermwidget/src/qmldir qmltermwidget/lib/kb-layouts qmltermwidget/lib/color-schemes qmltermwidget/src/QMLTermScrollbar.qml qmltermwidget/QMLTermWidget
 
 echo "[Desktop Entry]

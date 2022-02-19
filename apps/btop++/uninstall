@@ -1,0 +1,8 @@
+#!/bin/bash
+
+purge_packages || exit 1
+
+rm -f ~/.local/share/applications/btop.desktop
+sudo rm -rf /usr/local/bin/btop || error 'Failed to remove "/usr/local/bin/btop"'
+echo -e '\n\e[1;33mHey, just so you know, the "/usr/local/share/btop" directory has not been removed, so all your preferences are still there. If you want, you can delete this directory like this: "sudo rm -rf /usr/local/share/btop".\e[0m\n\nWaiting 5 seconds...'
+sleep 5

@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -sSL https://git.io/JfAPE | bash || error 'Failed to install piKiss!'

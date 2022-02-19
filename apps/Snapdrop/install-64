@@ -1,14 +1,7 @@
 #!/bin/bash
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 rm -f Snapdrop-linux-arm64.zip
 
-wget https://github.com/chunky-milk/snapdrop-rpi/releases/download/2.0/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
+wget https://github.com/ryanfortner/snapdrop-rpi/raw/master/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
 unzip Snapdrop-linux-arm64.zip || error "Failed to extract archive!"
 rm -f Snapdrop-linux-arm64.zip || error "Failed to remove archive!"
 

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Get dependencies
+install_packages libgl1-mesa-dev libsdl2-dev libvulkan-dev wget unzip || exit 1
+cd ~/
+rm -f ppsspp.zip
+wget -O ppsspp.zip https://github.com/ryanfortner/ppsspp-rpi/releases/download/v1.12.3/ppsspp_1.12.3_arm64.zip || error "Failed to download zip!"
+unzip ppsspp.zip || error "Failed to unzip PPSSPP!"
+rm -f ppsspp.zip || error "Failed to remove zip!"
+
+# Desktop entry
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PPSSPP
+Comment=PSP emulator
+Icon=$(dirname "$0")/icon-64.png
+Exec=$HOME/ppsspp/PPSSPPSDL
+Categories=Game;" > ~/.local/share/applications/ppsspp.desktop || error "Failed to create desktop entry!"

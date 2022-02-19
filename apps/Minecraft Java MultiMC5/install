@@ -1,0 +1,302 @@
+#!/bin/bash
+# NOTE: This build is NOT a fork BUT it does use a custom native library repo for the arm64/armhf builds, which is necessary as microsoft and the multimc5 devs do not provide arm64/armhf native libraries
+
+# obtain model name
+if [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
+
+elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+        -f /sys/devices/virtual/dmi/id/product_version ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
+elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
+elif [[ -f /tmp/sysinfo/model ]]; then
+    model="$(tr -d '\0' < /tmp/sysinfo/model)"
+fi
+# Remove dummy OEM info.
+model=${model//To be filled by O.E.M.}
+model=${model//To Be Filled*}
+model=${model//OEM*}
+model=${model//Not Applicable}
+model=${model//System Product Name}
+model=${model//System Version}
+model=${model//Undefined}
+model=${model//Default string}
+model=${model//Not Specified}
+model=${model//Type1ProductConfigId}
+model=${model//INVALID}
+model=${model//All Series}
+model=${model//�}
+
+# adapted/inspired from retropie setup script system.sh https://github.com/RetroPie/RetroPie-Setup/blob/master/scriptmodules/system.sh
+# armbian uses a minimal shell script replacement for lsb_release with basic
+# parameter parsing that requires the arguments split rather than using -sidrc
+mapfile -t os < <(lsb_release -s -i -d -r -c)
+__os_id="${os[0]}"
+__os_desc="${os[1]}"
+__os_release="${os[2]}"
+__os_codename="${os[3]}"
+#to set $arch variable
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+status "Installing Necessary Dependencies"
+case "$__os_id" in
+    Raspbian|Debian)
+        case "$__os_codename" in
+            bullseye|buster|stretch|jessie)
+                install_packages lsb-release wget apt-transport-https gnupg || error "Failed to install dependencies"
+                hash -r
+                status "Adding AdoptOpenJDK repository:"
+
+                echo "- public key -> keyring"
+
+                rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
+                wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key
+                rm -f /tmp/adoptopenjdk-public-key
+
+                echo " - keyring -> GPG key"
+                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg 
+                rm -f /tmp/adoptopenjdk-keyring.gpg
+
+                echo " - Moving GPG key to /usr/share/keyrings"
+                sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings
+
+                echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
+                echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+
+                echo " - Installing adoptopenjdk-16-hotspot-jre"
+                #try to install adoptopenjdk java version; if it fails, remove repository to avoid breaking user's system
+                (install_packages adoptopenjdk-16-hotspot-jre)
+                if [ $? != 0 ]; then
+                    anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb"
+                    if [ $? != 0 ]; then
+                        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                        # safe to remove
+                        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+                    fi
+                    warning "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed." && warning "It is up to you to download and install a working java 16 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 16"
+                fi
+
+                status "Adding Adoptium repository:"
+
+                echo "- public key -> keyring"
+                rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+                wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+                gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+                rm -f /tmp/adoptium-public-key
+
+                echo " - keyring -> GPG key"
+                gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+                rm -f /tmp/adoptium-keyring.gpg
+
+                echo " - Moving GPG key to /usr/share/keyrings"
+                sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+                echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+                echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+                echo " - Installing temurin-8-jdk temurin-17-jdk"
+                #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
+                (install_packages temurin-8-jdk temurin-17-jdk)
+                if [ $? != 0 ]; then
+                    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+                    if [ $? != 0 ]; then
+                        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                        # safe to remove
+                        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+                    fi
+                    warning "Failed to install temurin packages. Adoptium repository has been removed."  && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
+                fi
+
+                # remove old java installs to free up space
+                rm -rf ~/MultiMC/install/java
+                ;;
+            *)
+                error "Debian version ($__os_codename) is too old, update to debian Jessie or newer"
+                ;;
+        esac
+
+        # install normal dependencies from raspbian/debian repos
+        install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies"
+        ;;
+    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
+        # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME by calling lsb_release
+        # check if upstream-release is available
+        if [ -f /etc/upstream-release/lsb-release ]; then
+            echo "This is a Ubuntu Derivative, checking the upstream-release version info"
+            DISTRIB_CODENAME=$(lsb_release -uc | awk '{print $2}')
+            DISTRIB_RELEASE=$(lsb_release -ur | awk '{print $2}')
+        else
+            DISTRIB_CODENAME=$(lsb_release -c | awk '{print $2}')
+            DISTRIB_RELEASE=$(lsb_release -r | awk '{print $2}')
+        fi
+        case "$DISTRIB_CODENAME" in
+            bionic|focal|groovy)
+                ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep openjdk-r | wc -l)
+                if [[ $ppa_added -eq "1" ]]; then
+                    status "Skipping OpenJDK PPA, already added"
+                else
+                    install_packages software-properties-common || error "Failed to install dependencies"
+                    hash -r
+                    status "Adding OpenJDK PPA, needed for Minecraft 1.17+"
+                    sudo add-apt-repository ppa:openjdk-r/ppa -y
+                    sudo apt update
+                fi
+                ;;
+            *)
+                requiredver="18.04"
+                if printf '%s\n' "$requiredver" "$DISTRIB_RELEASE" | sort -CV; then
+                    status "Skipping OpenJDK PPA, $DISTRIB_CODENAME already has openjdk-16 in the default repositories"
+                else
+                    error "$DISTRIB_CODENAME appears to be too old to run/compile MultiMC5"
+                fi
+                ;;
+        esac
+        # install dependencies
+        java_16=""
+        package_available openjdk-16-jre
+        if [[ $? == "0" ]]; then
+            java_16="openjdk-16-jre"
+        fi
+        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre $java_16 qtbase5-dev || error "Failed to install dependencies"
+        hash -r
+        ;;
+    *)
+        error "$__os_id appears to be an unsupported OS"
+        ;;
+esac
+
+# make all the folders
+cd "$HOME"
+mkdir -p "$HOME/MultiMC"
+cd "$HOME/MultiMC" || error "Could not move to directory"
+mkdir -p build
+mkdir -p install
+# clone the complete source
+status "Downloading the MultiMC5 Source Code directly from the official repository..."
+git clone --recursive https://github.com/MultiMC/Launcher.git src
+cd src || error "Could not move to directory"
+git remote set-url origin https://github.com/MultiMC/Launcher.git
+git checkout --recurse-submodules develop || error "Could not checkout develop branch"
+git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git checkout --recurse-submodules 63d4486855723290ebbd4b71632f6e54670e07c6 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+# add secrets files
+mkdir -p secrets
+tee secrets/Secrets.h <<'EOF' >>/dev/null
+#pragma once
+#include <QString>
+#include <cstdint>
+namespace Secrets {
+bool hasMSAClientID();
+QString getMSAClientID(uint8_t separator);
+}
+EOF
+
+tee secrets/Secrets.cpp <<'EOF' >>/dev/null
+#include "Secrets.h"
+#include <array>
+#include <cstdio>
+namespace Secrets {
+bool hasMSAClientID() {
+    return true;
+}
+QString getMSAClientID(uint8_t separator) {
+    return "81a207c0-a53c-46a3-be07-57d2b28c1643";
+}
+}
+EOF
+
+tee secrets/CMakeLists.txt <<'EOF' >>/dev/null
+add_library(secrets STATIC Secrets.cpp Secrets.h)
+target_link_libraries(secrets Qt5::Core)
+target_compile_definitions(secrets PUBLIC -DEMBED_SECRETS)
+target_include_directories(secrets PUBLIC .)
+
+set(Launcher_CommonName "MultiMC")
+
+set(Launcher_Copyright "MultiMC Contributors" PARENT_SCOPE)
+set(Launcher_Domain "multimc.org" PARENT_SCOPE)
+set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
+set(Launcher_DisplayName "${Launcher_CommonName} 5" PARENT_SCOPE)
+set(Launcher_UserAgent "${Launcher_CommonName}/5.0" PARENT_SCOPE)
+set(Launcher_ConfigFile "multimc.cfg" PARENT_SCOPE)
+set(Launcher_Git "https://github.com/MultiMC/Launcher" PARENT_SCOPE)
+
+set(Launcher_Branding_ICNS "notsecrets/Launcher.icns" PARENT_SCOPE)
+set(Launcher_Branding_WindowsRC "notsecrets/launcher.rc" PARENT_SCOPE)
+set(Launcher_Branding_LogoQRC "notsecrets/logo.qrc" PARENT_SCOPE)
+EOF
+cd .. || error "Could not move to directory"
+# configure the project
+cd build || error "Could not move to directory"
+
+# temporary hotfix to build with java 8 (build currently fails on java 16 autodetection)
+# https://github.com/MultiMC/MultiMC5/issues/3949
+# remove cmake cache until bug is fixed
+rm -rf CMakeCache.txt
+status "Generating the CMake File"
+case "$arch" in
+    "64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
+    "32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu"  -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
+    *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+# build & install (use -j with the number of cores your CPU has)
+status "Starting Compilation"
+make -j$(nproc) install || error "Make install failed"
+
+cd .. || error "Could not move to directory"
+# add Jvm Arguments for increased performance
+# these can always be overwritten by the user after the first installation
+if cat install/multimc.cfg | grep -q "JvmArgs="; then
+    if cat install/multimc.cfg | grep -q "JvmArgs=."; then
+        warning "Skipping Adding JvmArgs as they are already populated by the user or a previous installation"
+        status "The current JvmArgs are set to: $(cat install/multimc.cfg | grep "JvmArgs=")"
+    else
+        status "Adding JvmArgs which help with performance overall in all minecraft versions"
+        sed -i "s/JvmArgs=.*/JvmArgs=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1/g" install/multimc.cfg
+    fi
+else
+    status "Adding JvmArgs which help with performance overall in all minecraft versions"
+    echo "JvmArgs=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" >> install/multimc.cfg
+fi
+
+cd
+mkdir -p  ~/.local/share/applications
+mkdir -p  ~/.local/share/icons/MultiMC
+# copy icon to .local folder
+cp "${DIRECTORY}/apps/Minecraft Java MultiMC5/icon-64.png" "$HOME/.local/share/icons/MultiMC/icon-64.png"
+
+# detect if script is running on RPi and if so override MESA GL Version
+if grep -iE 'raspberry' <<< $model > /dev/null; then
+    warning "You are running a Raspberry Pi, note that OpenGL 3.3 is not fully supported but it necessary to run Minecraft 1.17+."
+    warning "Vannilla 1.17.1 and 1.17 have been tested to work but there is no guarantee that future versions and rendering mods will continute to work"
+    sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
+[Desktop Entry]
+Type=Application
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 QT_AUTO_SCREEN_SCALE_FACTOR=0 $HOME/MultiMC/install/MultiMC
+Hidden=false
+NoDisplay=false
+Name=MultiMC
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
+Categories=Game
+_EOF_"
+else
+    sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
+[Desktop Entry]
+Type=Application
+Exec=$HOME/MultiMC/install/MultiMC
+Hidden=false
+NoDisplay=false
+Name=MultiMC
+Icon=$HOME/.local/share/icons/MultiMC/icon-64.png
+Categories=Game
+_EOF_"
+fi
+status_green 'Installation is now done! You can open the launcher by going to Menu > Games > MultiMC'
+
+warning "The upstream, MultiMC5, does not give support for custom builds"
+warning "Bugs which appear on this build should only be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Pi-Apps Discord Server"
+status "Make sure to visit the upstream wiki if this is your first time using the launcher: https://github.com/MultiMC/MultiMC5/wiki"
+status "If you need help installing Optifine: https://github.com/MultiMC/MultiMC5/wiki/MultiMC-and-OptiFine"
+status "How to choose the correct java version: https://github.com/MultiMC/Launcher/wiki/Using-the-right-Java#setting-up-java-in-multimc"

@@ -1,17 +1,8 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 "${DIRECTORY}/api" apt_lock_wait
 
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
-
 wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
 
 # Choose MCPIL to use
@@ -32,6 +23,5 @@ do
     *) echo "Invalid option: $REPLY";;
   esac
 done
-
-"${DIRECTORY}/pkg-install" "$MCPIL python3-pip" "$(dirname "$0")" || error "Failed to install ${MCPIL} and python3-pip packages!"
+install_packages $MCPIL python3-pip python3-dev || error "Failed to install dependencies"
 pip3 install mcpi || error "The pip3 command failed to install mcpi!"

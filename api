@@ -1,41 +1,630 @@
 #!/bin/bash
 
-error() {
-  echo -e "\e[91m$1\e[39m" 1>&2
+#This script is the backbone of Pi-Apps. It hosts functions that all other scripts depend upon.
+#By default, this file is hard to read. But there's an easy way to fix that. In your code editor, find the option to "Fold All".
+#In Geany, this option can be found in the Document toolbar.
+#Botspot has found it helpful to create a keyboard shortcut to do this quickly. You may find it helpful too.
+
+#output functions below
+error() { #red text and exit 1
+  echo -e "\e[91m$1\e[0m" 1>&2
   exit 1
 }
 
-#if this script is being run standalone, not sourced
-if [[ "$0" == */api ]];then
-  DIRECTORY="$(readlink -f "$(dirname "$0")")"
-fi
-
-if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ];then
-  echo "api: DIRECTORY variable must be set to valid pi-apps folder. Default folder: $HOME/pi-apps"
-  return 1
-fi
-
-repo_url="$(cat "${DIRECTORY}/etc/git_url" || echo 'https://github.com/Botspot/pi-apps')"
-
-#determine if host system is 64 bit arm64 or 32 bit armhf
-if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
-  arch=64
-elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
-  arch=32
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
-
-list_intersect() { #Outputs only the apps that appear in both stdin and in $1
-  #                      change \n to \|     |   remove last "\|"
-  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+warning() { #yellow text
+  echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
 }
 
-list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
-  #                       change \n to \|     |   remove last "\|"
-  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+status() { #cyan text to indicate what is happening
+  
+  #detect if a flag was passed, and if so, pass it on to the echo command
+  if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
+    echo -e $1 "\e[96m$2\e[0m" 1>&2
+  else
+    echo -e "\e[96m$1\e[0m" 1>&2
+  fi
 }
 
+status_green() { #announce the success of a major action
+  echo -e "\e[92m$1\e[0m" 1>&2
+}
+
+generate_logo() { #display colorized Pi-Apps logo in terminal
+  #generate pi-apps logo
+  #https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
+  green='\e[38;5;46m'
+  darkgreen='\e[38;5;34m'
+  red='\e[38;5;197m'
+  
+  #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
+  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789')"
+  if [ -z "$version_id" ] || [ "$version_id" -lt 11 ];then
+    echo -e "\e[40m\e[97m    ${green}▅${darkgreen}▅▅▅▅${green}▅\e[40m\e[97m
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀▆ ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄\e[97m ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
+ ${blue}\e[7m▂\e[27m\e[107m▃▃▃▃▃▃▃▃▃▃\e[40m\e[7m▂\e[27m\e[40m\e[40m\e[97m                  █    █
+\e[0m\e[0m"
+  else
+    echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
+ ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
+\e[0m\e[0m"
+  fi
+}
+
+generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
+  
+  #get 10 random apps. Some are exempted because they don't display well.
+  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
+  
+  local app1="$(sed -n 1p <<<"$apps")"
+  local app2="$(sed -n 2p <<<"$apps")"
+  local app3="$(sed -n 3p <<<"$apps")"
+  local app4="$(sed -n 4p <<<"$apps")"
+  local app5="$(sed -n 5p <<<"$apps")"
+  local app6="$(sed -n 6p <<<"$apps")"
+  local app7="$(sed -n 7p <<<"$apps")"
+  local app8="$(sed -n 8p <<<"$apps")"
+  local app9="$(sed -n 9p <<<"$apps")"
+  local app10="$(sed -n 10p <<<"$apps")"
+  
+  #display the chosen apps
+  #echo "$apps" | head -n 10
+  
+  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
+  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
+  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
+  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
+  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
+  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
+  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
+  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
+  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
+  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
+  
+  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
+  
+}
+#end of output functions
+
+add_english() { #add en_US locale for more accurate error
+  if [ "$(cat /usr/share/i18n/SUPPORTED | grep -o 'en_US.UTF-8' )" == "en_US.UTF-8" ]; then 
+    locale=$(locale -a | grep -oF 'en_US.utf8')
+    if [ "$locale" != 'en_US.utf8' ]; then
+      status "Adding en_US locale for better logging... "
+      sudo sed -i '/en_US.UTF-8/s/^#[ ]//g' /etc/locale.gen
+      sudo locale-gen
+    fi
+  else
+      warning "en_US locale is not available on your system. This may cause bad logging experience."
+  fi
+  export LANG="en_US.UTF-8"
+  export LANGUAGE="en_US.UTF-8"
+  export LC_ALL="en_US.UTF-8"
+}
+
+#package functions
+package_info() { #list everything dpkg knows about the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_info(): no package specified!"
+  #list lines in /var/lib/dpkg/status between the package name and the next empty line
+  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
+  true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
+}
+
+package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
+  local package="$1"
+  [ -z "$package" ] && error "package_installed(): no package specified!"
+  #find the package listed in /var/lib/dpkg/status
+  #package_info "$package" | grep -q '^Status: install ok installed$'
+  
+  #directly search /var/lib/dpkg/status
+  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -xF "Package: $package" --after 1 | grep -q 'Status: install ok installed'
+}
+
+package_available() { #determine if the specified package-name exists in a repository
+  local package="$1"
+  [ -z "$package" ] && error "package_available(): no package name specified!"
+  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
+  grep -rq "^Package: $package"'$' /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
+}
+
+package_dependencies() { #outputs the list of dependencies for the $1 package
+  local package="$1"
+  [ -z "$package" ] && error "package_dependencies(): no package specified!"
+  
+  #find the package listed in /var/lib/dpkg/status
+  package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
+}
+
+anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
+  [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
+  
+  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard
+  local url="$(echo "$1" | sed 's+.*://++g' | sed 's+/+_+g')"
+  
+  #find all package-lists pertaining to the url
+  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
+  
+  #for every repo-file, chack if any of them have an installed file
+  local found=0
+  local IFS=$'\n'
+  local repofile
+  for repofile in $repofiles ;do
+    #search the repo-file for installed packages
+    grep '^Package' "$repofile" | awk '{print $2}' | while read -r package ;do
+      if package_installed "$package" ;then
+        echo "Package installed: $package"
+        exit 1
+      fi
+    done #if exit code is 1, search was successful. If exit code is 0, no packages from the repo were installed.
+    
+    found=$?
+    
+    if [ $found == 1 ];then
+      break
+    fi
+  done
+  
+  #return an exit code
+  if [ $found == 1 ];then
+    return 0
+  else
+    return 1
+  fi
+}
+
+remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing from that repository is currently installed. Deletion skipped if $2 is 'test'
+  local file="$1"
+  local testmode="$2"
+  [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
+  #exit now if the list file does not exist
+  [ -f "$file" ] || exit 0
+  
+  #determine what repo-urls are in the file
+  local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
+  
+  #there could be multiple urls in one file. Check each url and set the in_use variuable to 1 if any packages are found
+  local IFS=$'\n'
+  local in_use=0
+  local url
+  for url in $urls ;do
+    if anything_installed_from_repo "$url" >/dev/null;then
+      in_use=1
+      break
+    fi
+  done
+  
+  if [ "$in_use" == 0 ] && [ "$testmode" == test ];then
+    echo "The given repository is not in use and can be deleted:"$'\n'"$file" 1>&2
+  elif [ "$in_use" == 0 ];then
+    status "Removing the $(basename "$file" | sed 's/.list$//g') repo as it is not being used"
+    sudo rm -f "$file"
+  fi
+  
+}
+
+#apt functions
+apt_lock_wait() { #Wait until other apt processes are finished before proceeding
+  #make sure english locale is added first
+  add_english
+  
+  #in a background subprocess, after 3 seconds, say "Waiting until APT locks are released... "
+  (sleep 3; echo -n "Waiting until APT locks are released... ") &
+  local pid=$!
+  
+  #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
+  while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+    sleep 1
+  done
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+    sleep 1
+  done
+  
+  #If the background process finished, then that means the "waitint until" message was displayed. This means the kill command will return 1, so echo Done
+  kill $pid &>/dev/null || echo "Done"
+}
+
+less_apt() { #remove unwanted lines from apt output
+  grep --line-buffered -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Selecting previously unselected package\|Preparing to unpack\|Setting up \|Processing triggers for \|^$"
+}
+
+apt_update() { #run an apt update with error-checking and minimal output
+  apt_lock_wait
+  
+  status "Running \e[7msudo apt update\e[27m..."
+  output="$(sudo -E apt update --allow-releaseinfo-change "$@" 2>&1 | less_apt | tee /dev/stderr)"
+  exitcode=$?
+  status "apt update complete."
+  
+  #inform user about autoremovable packages
+  if [ ! -z "$(echo "$output" | grep 'autoremove to remove them' )" ];then
+    echo -e "\e[33mSome packages are unnecessary.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt autoremove\e[0m."
+  fi
+  
+  #inform user packages are upgradeable
+  if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
+    echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt full-u\e[0mpg\e[4mrade\e[0m."
+  elif [ ! -z "$(echo "$output" | grep 'package can be upgraded' )" ];then
+    echo -e "\e[33mOne package can be upgraded.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt full-u\e[0mpg\e[4mrade\e[0m."
+  fi
+  
+  #exit on apt error
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
+  if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+    echo -e "\e[91mFailed to run \e[4msudo apt update\e[0m\e[39m!"
+    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+    
+    #run some apt error diagnosis
+    echo "$output"
+    exit 1
+  fi
+  return 0
+}
+
+repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
+  #given local deb file(s), make a local apt repository in /tmp/pi-apps-local-packages
+  
+  #see: https://unix.stackexchange.com/questions/87130/how-to-quickly-create-a-local-apt-repository-for-random-packages-using-a-debian
+  #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
+  #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
+  
+  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  
+  #ensure the repo-folder exists
+  mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
+  
+  #move every mentioned deb file to it
+  for file in "$@"; do
+    mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
+  done
+}
+
+repo_refresh() { #index the pi-apps local apt repository
+  
+  [ -d /tmp/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /tmp/pi-apps-local-packages"
+  
+  #index the repository by creating a Packages file
+  (cd /tmp/pi-apps-local-packages && apt-ftparchive packages . > Packages) || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages
+The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
+  #Make sure the Packages file actually exists
+  [ -f /tmp/pi-apps-local-packages/Packages ] || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages
+The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
+  
+  #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
+  sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
+  
+  #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
+  rm -f /tmp/pi-apps-local-packages/source.list
+  cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" >> /tmp/pi-apps-local-packages/source.list
+}
+
+repo_rm() { #remove the local apt repository
+  #wait for other operations to finish before continuing - hopefully this will solve cases when the pi-apps local repository was removed unexpectedly by a second process
+  apt_lock_wait
+  
+  rm -rf /tmp/pi-apps-local-packages || sudo rm -rf /tmp/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /tmp/pi-apps-local-packages"
+}
+
+app_to_pkgname() { #given an app-name, convert it to a unique, valid package-name that starts with 'pi-apps-'
+  local app="$1"
+  [ -z "$app" ] && error "app_to_pkgname(): no app-name specified"
+  
+  echo "pi-apps-$(echo "$app" | md5sum | cut -c1-8 | awk '{print $1}')"
+}
+
+install_packages() { #Make some packages dependencies of the $app app. Package-names, regex, filenames, and urls are supported.
+  
+  #convert input array to newline-separated string
+  local IFS=' '
+  for arg in "$@"; do
+    local packages+="$arg
+"
+  done
+  packages="${packages::-1}" #remove final empty newline
+  
+  #the $app variable must contain something
+  [ -z "$app" ] && error 'install_packages function can only be used by apps to install packages. (the $app variable was not set)'
+  
+  status "Will install these packages: $(tr '\n' ' ' <<<"$packages")"
+  
+  #array-variable to store custom apt options (for local repositories)
+  local apt_flags=()
+  
+  #variable to remember if the pi-apps-local-packages repository is being used
+  local using_local_packages=0
+  repo_rm #remove the local repo, just in case the last operation left it in an unrecoverable state.
+  
+  #handle regex, urls, local packages
+  IFS=$'\n'
+  for package in $packages ;do
+    
+    #handle local packages (package-name starts with /)
+    if [[ "$package" == /* ]];then
+      
+      #status "Handling local package $package"
+      
+      [ -f "$package" ] || error "install_packages(): Package does not exist! $package"
+      
+      #determine the package name from the filename
+      packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
+      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$package'"
+      
+      #add this local package to the pi-apps-local-packages repository
+      repo_add "$package"
+      using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
+      
+      #replace package filename with name of package
+      packages="$(echo "$packages" | sed "s|$package|$packagename|")"
+      
+    #handle urls
+    elif [[ "$package" == *://* ]];then
+      
+      #status "Handling url: $package"
+      
+      local filename="$HOME/$(basename "$package")"
+      
+      #add .deb extension if filename doesn't end with it.
+      if [ "${filename: -4}" != ".deb" ]; then
+        status "$filename is not ending with .deb, renaming it to '${filename}.deb'..." 
+        local filename="${filename}.deb"
+      fi
+      
+      wget -O "$filename" "$package" || error "Failed to download '$package'"
+      
+      #determine the package name from the filename
+      packagename="$(dpkg-deb -I "$filename" | grep "^ Package:" | awk '{print $2}')"
+      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
+      
+      #add this local package to the pi-apps-local-packages repository
+      repo_add "$filename"
+      using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
+      
+      #replace package url with name of package
+      packages="$(echo "$packages" | sed "s|$package|$packagename|")"
+      
+    #expand regex (package-name contains *)
+    elif echo "$package" | grep -q '*' ;then 
+      
+      status "Expanding regex in '${package}'..."
+      
+      list="$(apt-cache search "$package" | awk '{print $1}' | grep "$(echo "$package" | tr -d '*')")"
+      
+      #replace package with expanded list
+      packages="$(echo "$packages" | grep -vF "$package")"$'\n'"$list"
+    fi
+  done
+  #now package list shouldn't contain any '*' characters, urls, local filepaths
+  if echo "$packages" | grep -q '*';then 
+    error "install_packages(): failed to remove all regex from the package list:\n$packages"
+  elif [[ "$packages" == *://* ]];then
+    error "install_packages(): failed to remove all urls from the package list:\n$packages"
+  elif [[ "$packages" == */* ]];then
+    error "install_packages(): failed to remove all filenames from the package list:\n$packages"
+  fi #package list contains no '*' characters, urls, local filepaths
+  
+  #change the $packages list from newline-delimited to space-delimited
+  packages="$(tr '\n' ' ' <<<"$packages")"
+  
+  if [ "$using_local_packages" == 1 ];then
+    #Initialize the pi-apps-local-packages repository
+    repo_refresh
+    #add this repository to flags to add to apt
+    apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
+  fi
+  #run an apt update
+  apt_update "${apt_flags[@]}" || exit 1
+  
+  status "Creating an empty apt-package to install the necessary apt packages..."
+  
+  #to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
+  local package_name="$(app_to_pkgname "$app")"
+  
+  echo "It will be named: $package_name"
+  
+  #If this app's dummy deb is already installed, add its dependencies to the list.
+  #this allows install_packages() to be used multiple times in an app's script
+  if package_installed "$package_name" ;then
+    
+    local existing_deps="$(package_dependencies "$package_name")"
+    status "The $package_name package is already installed. Inheriting its dependencies: $(echo "$existing_deps")"
+    packages="$packages $existing_deps"
+  fi
+  
+  { #create dummy apt package that depends on the packages this app requires
+    
+    #this stores the comma-separated list of dependency packages. It removes duplicate entries.
+    local depends="$(echo "$packages" | tr ' ' ',' | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort | uniq | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
+    
+    rm -rf ~/$package_name ~/$package_name.deb
+    mkdir -p ~/$package_name/DEBIAN
+    echo "Maintainer: Pi-Apps team
+Name: $app
+Description: Dummy package created by pi-apps to install dependencies for the '$app' app
+Version: 1.0
+Architecture: all
+Priority: optional
+Section: custom
+Depends: $depends
+Package: $package_name" > ~/$package_name/DEBIAN/control
+    
+    #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
+    sudo chmod -R '0755' ~/$package_name
+    
+    #display the finished "Depends: " line to the user
+    cat ~/$package_name/DEBIAN/control | grep "^Depends: "
+    
+    local output="$(dpkg-deb --build ~/$package_name 2>&1)"
+    if [ $? != 0 ];then
+      echo "$output"
+      echo ""
+      echo "$output"
+      error "install_packages(): failed to create dummy deb $package_name"
+    fi
+  }
+  
+  #install dummy deb
+  {
+  status "Installing the $package_name package..."
+  
+  apt_lock_wait
+  local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+  rm -f ~/$package_name.deb
+  rm -rf ~/$package_name
+  
+  status "Apt finished."
+  
+  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
+  if [ ! -z "$errors" ];then
+    echo -e "\e[91mFailed to install the packages!\e[39m"
+    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+    echo "$output"
+    
+    #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
+    if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+      echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
+      cat /tmp/pi-apps-local-packages/Packages
+    fi
+    
+    exit 1
+  fi
+  }
+  
+  #delete the local repository if it was used
+  if [ "$using_local_packages" == 1 ];then
+    repo_rm
+  fi
+  
+  status "Package installation complete."
+}
+
+purge_packages() { #Allow dependencies of the $app app to be autoremoved.
+  #the $app variable must contain something
+  [ -z "$app" ] && error 'purge_packages function can only be used by apps to install packages. (the $app variable was not set)'
+  
+  status "Allowing packages required by the $app app to be uninstalled"
+  
+  #to avoid issues with symbols and spaces in app names, we shasum the app name for use in apt
+  local package_name="$(app_to_pkgname "$app")"
+  
+  #if dummy deb found/installed
+  if package_installed "$package_name" ;then
+    echo "These packages were: $(package_dependencies "$package_name")"
+    
+    status "Purging the $package_name package..."
+    
+    apt_lock_wait
+    local output="$(sudo -E apt purge -y "$package_name" --autoremove 2>&1 | less_apt | tee /dev/stderr)"
+    status "Apt finished."
+    
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
+    if [ ! -z "$errors" ];then
+      echo -e "\e[91mFailed to uninstall the packages!\e[39m"
+      echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+      #run some apt error diagnosis
+      echo "$output"
+      exit 1
+    fi
+    
+  elif [ -f "${DIRECTORY}/data/installed-packages/${app}" ];then
+    #legacy pkg-install implementation
+    warning "Using the old implementation - an installed-packages file instead of a dummy deb"
+    
+    local packages="$(cat "${DIRECTORY}/data/installed-packages/${app}" | tr '\n' ' ' | sed 's/  / /g')"
+    
+    #normal mode
+    local output="$(sudo -E apt purge -y $packages 2>&1)"
+    exitcode=$?
+    
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
+    if [ $exitcode != 0 ] || [ ! -z "$errors" ];then
+      echo -e "\e[91mFailed to uninstall the packages!\e[39m"
+      echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+      #run some apt error diagnosis
+      echo "$output"
+      exit 1
+    fi
+  else
+    status "The $package_name package is not installed so there's nothing to do."
+  fi
+  
+  status_green "All packages have been purged succesfully."
+  rm -f "${DIRECTORY}/data/installed-packages/${app}"
+}
+
+get_icon_from_package() { #given a package-name, find all png files that it installed and print the one with the largest file-size.
+  [ -z "$1" ] && error "get_icon_from_package(): requires an apt package name"
+  
+  #Find dependencies of the listed packages and scan them too
+  local package=''
+  local extra_packages=''
+  for package in "$@" ;do
+    #for every package specified, look for dependencies to that package that begin with the same name as the original package
+    #Example: given the 'shotwell' package, this will find the 'shotwell-common' package, as well as others
+    extra_packages+=" $(package_dependencies "$package" | sed 's/, \||/\n/g' | awk '{print $1}' | grep "^$package" | sort | uniq | tr '\n' ' ')"
+  done
+  dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$\|\.svg$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
+}
+#end of apt functions
+
+#flatpak functions
+flatpak_install() { #install an app using flatpak
+  [ -z "$1" ] && error "flatpak_install(): This function is used to install a flatpak app, but nothing was specified."
+  
+  #make sure flatpak is installed
+  if ! command -v flatpak >/dev/null ;then
+    error "flatpak_install(): Could not install $1 because flatpak is not installed!"
+  fi
+  
+  #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+  
+  #Install the specified app, first as root, if that fails then try installing as user, while removing unwanted output
+  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep -v "Note that the directories 
+
+'/var/lib/flatpak/exports/share'
+'$HOME/.local/share/flatpak/exports/share'
+are not in the search path set by the XDG_DATA_DIRS environment variable, so
+applications installed by Flatpak may not appear on your desktop until the
+session is restarted."
+  #exit 1 if above code failed
+  if [ ${PIPESTATUS[0]} != 0 ];then
+    exit 1
+  fi
+}
+
+flatpak_uninstall() { #uninstall an app using flatpak
+  [ -z "$1" ] && error "flatpak_uninstall(): This function is used to uninstall a flatpak app, but nothing was specified."
+  
+  #if flatpak is not installed, then skip everything with code 0.
+  if ! command -v flatpak >/dev/null ;then
+    return 0
+  fi
+  
+  #Only try to remove flatpak app if it's installed.
+  if flatpak list | grep -qF "$1" ;then
+    sudo flatpak uninstall "$1" -y || flatpak uninstall "$1" -y || error "Flatpak failed to uninstall $1!"
+  fi
+}
+#end of flatpak functions
+
+#app functions
 list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, hidden, visible, online, online_only, local, local_only
   if [ -z "$1" ] || [ "$1" == local ];then
     #list all apps
@@ -46,39 +635,51 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     echo -e "$(list_apps local)\n$(list_apps online)" | sort | uniq
     
   elif [ "$1" == installed ];then
-    #list installed apps
-    #list apps|   only show      (          list of installed apps                      | remove match string  |   basename   )
+    #list apps      |   only show      (          list of installed apps                | remove match string  |   basename   )
     list_apps local | list_intersect "$(grep -rx 'installed' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     
   elif [ "$1" == corrupted ];then
-    #list corrupted apps
-    #list apps|only show         (          list of corrupted apps                      | remove match string  |   basename   )
+    #list apps      |only show         (          list of corrupted apps                | remove match string  |   basename   )
     list_apps local | list_intersect "$(grep -rx 'corrupted' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     
   elif [ "$1" == disabled ];then
-    #list corrupted apps
-    #list apps|only show         (          list of disabled apps                     | remove match string  |   basename   )
+    #list apps      |    only show     (          list of disabled apps                | remove match string  |   basename   )
     list_apps local | list_intersect "$(grep -rx 'disabled' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     
   elif [ "$1" == uninstalled ];then
-    #list uninstalled apps
-    #list apps that have a status file containing "uninstalled"
+    #list apps that have a status file matching "uninstalled"
     list_apps local | list_intersect "$(grep -rx 'uninstalled' "${DIRECTORY}/data/status" | awk -F: '{print $1}' | sed 's!.*/!!')"
     #also list apps that don't have a status file
     list_apps local | list_subtract "$(ls "${DIRECTORY}/data/status")"
     
+  elif [ "$1" == have_status ];then
+    #list apps that have a status file
+    list_apps local | list_intersect "$(ls "${DIRECTORY}/data/status")"
+    
+  elif [ "$1" == missing_status ];then
+    #list apps that don't have a status file
+    list_apps local | list_subtract "$(ls "${DIRECTORY}/data/status")"
+    
   elif [ "$1" == cpu_installable ];then
     #list apps that can be installed on the device's OS architecture (32-bit or 64-bit)
-    #find all apps that have install-XX script or an install script
-    find "${DIRECTORY}/apps" -type f \( -name "install-$arch" -o -name "install" \) | sed "s+/install-$arch++g" | sed "s+/install++g" | sed "s+${DIRECTORY}/apps/++g" | sort | uniq
+    #find all apps that have install-XX script, install script, or a packages file
+    find "${DIRECTORY}/apps" -type f \( -name "install-$arch" -o -name "install" -o -name "packages" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq
+    
+  elif [ "$1" == package ];then
+    #list apps that have a "packages" file
+    find "${DIRECTORY}/apps" -type f -name "packages" | sed "s+/packages++g" | sed "s+${DIRECTORY}/apps/++g" | sort | uniq
+    
+  elif [ "$1" == standard ];then
+    #list apps that have scripts
+    find "${DIRECTORY}/apps" -type f \( -name "install-32" -o -name "install-64" -o -name "install" -o -name "uninstall" \) | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq
     
   elif [ "$1" == hidden ];then
     #list apps that are hidden
-    cat "${DIRECTORY}/data/categories/structure" | grep '|hidden' | awk -F'|' '{print $1}'
+    read_category_files | grep '|hidden' | awk -F'|' '{print $1}'
     
   elif [ "$1" == visible ];then
     #list apps that are in any other category but 'hidden', and aren't disabled
-    cat "${DIRECTORY}/data/categories/structure" | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
+    read_category_files | grep -v '|hidden' | awk -F'|' '{print $1}' # | list_subtract "$(list_apps disabled)"
     
   elif [ "$1" == online ];then
     #list apps that exist on the online git repo
@@ -98,86 +699,91 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
     #list apps that exist only locally, and not on the git repo
     list_apps local | list_subtract "$(list_apps online)"
     
+  else
+    error "list_apps(): unrecognized filter '$1'!"
+  fi
+}
+
+list_intersect() { #Outputs only the apps that appear in both stdin and in $1
+  #                      change \n to \|     |   remove last "\|"
+  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
+list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
+  #                       change \n to \|     |   remove last "\|"
+  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
+read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
+  
+  #remove app category if app folder not found
+  local IFS=$'\n'
+  local app
+  for app in $(cat "${DIRECTORY}/data/category-overrides"); do 
+    if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
+      sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
+    fi
+  done
+  
+  #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+}
+
+app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
+  
+  #Subtract a type of app if enabled
+  local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
+  local filter=()
+  if [ "$show_apps_setting" == 'standard' ];then
+    #if only showing standard apps, hide package apps
+    filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
+  elif [ "$show_apps_setting" == 'packages' ];then
+    #if only showing package apps, hide standard apps
+    filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
+  else
+    #is the setting is "all" or missing, don't filter.
+    filter=(cat)
   fi
   
-}
-
-app_categories() { #lists all apps in a virtual filesystem based on categories file
-  #cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $2"/"$1}'
-  
-  #find apps not in categories file
-  {
-    missingapps="$(list_apps | list_subtract "$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}')")"
-    
-    if [ ! -z "$missingapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $missingapps ;do
-        echo "WARNING: $app not found in categories file." 1>&2
-        
-        if list_apps online | grep -qx "$app" ;then
-          #if app found online, then use online category line
-          if [ -z "$onlinestructurefile" ];then
-            onlinestructurefile="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps/master/data/categories/structure')"
-          fi
-          
-          if echo "$onlinestructurefile" | grep -q '^'"$app|" ;then
-            #if line found in online structure file
-            echo "Putting $app in the $(echo "$onlinestructurefile" | grep '^'"$app|" | awk -F'|' '{print $2}') category." 1>&2
-            
-            echo "$(echo "$onlinestructurefile" | grep '^'"$app|")" >> "${DIRECTORY}/data/categories/structure"
-          else
-            #app exists online, but no structure line found
-            echo -e "\e[33mHUGE WARNING: the $app exists on github, but no category was found for it on github!\nPlease report this to Botspot.\e[39m" 1>&2
-            
-            echo "Putting $app in the / category." 1>&2
-            #put the app in root directory - no category
-            echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-          fi
-        else
-          #app not found online
-          
-          echo "Putting $app in the / category." 1>&2
-          #put the app in root directory - no category
-          echo "$app|" >> "${DIRECTORY}/data/categories/structure"
-        fi
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  
-  #find apps in categories file that don't exist
-  {
-    ghostapps="$(cat "${DIRECTORY}/data/categories/structure" | awk -F'|' '{print $1}' | list_subtract "$(list_apps)")"
-    
-    if [ ! -z "$ghostapps" ];then
-      PREIFS="$IFS"
-      IFS=$'\n'
-      for app in $ghostapps ;do
-        echo "WARNING: $app does not exist but it was found in categories file." 1>&2
-        echo "Removing $app from the categories file..." 1>&2
-        #put the app in root directory - no category
-        sed -i "/$app/d" "${DIRECTORY}/data/categories/structure"
-        
-      done
-      IFS="$PREIFS"
-    fi
-  }
-  
-  #category file cleaned up past this point
-  
   #show normal categories
-  cat "${DIRECTORY}/data/categories/structure" | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g'
+  read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
   
-  #show special Installed category
+  #show special "Installed" category - don't filter it
   list_apps installed | sed 's+^+Installed/+g'
   
-  #show special All Apps category
-  list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g'
+  #show special "Packages" category
+  if [ "$show_apps_setting" != standard ];then
+    list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+  fi
+  
+  #show special "All Apps" category
+  list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
 }
 
-usercount() { #Return number of users for specified app. $1 is app name. if empty, all are shown.
-  clicklist="$(wget -qO- 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist')"
+bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+  #This cannot possibly be used to identify you, or any information about you.
+  #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+  app="$1"
+  trigger="$2"
+  
+  [ -z "$app" ] && error "bitly_link(): requires an app argument"
+  [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
+  
+  #if the 'Enable Analytics' setting is enabled
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+    #determine the name of the link to "click"
+    bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
+    #click it
+    curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
+  fi
+}
+
+usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
+  #If clicklist file missing or over a day old, download it.
+  if [ ! -f "${DIRECTORY}/data/clicklist" ] || [ ! -z "$(find "${DIRECTORY}/data/clicklist" -mtime +1 -print)" ]; then
+    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" || return 1
+  fi
+  clicklist="$(cat "${DIRECTORY}/data/clicklist")"
   
   [ -z "$clicklist" ] && error "usercount(): clicklist empty. Likely no internet connection"
   
@@ -185,38 +791,9 @@ usercount() { #Return number of users for specified app. $1 is app name. if empt
     echo "$clicklist"
   else
     # $1 is app
-    echo "$clicklist" | grep " $1"'$' | awk '{print $1}' | head -n1
+    echo "$clicklist" | grep "[0-9] $1"'$' | awk '{print $1}' | head -n1
   fi
   
-}
-
-text_editor() { #Open user-preferred text editor. $1 is file to open
-  [ -z "$1" ] && error "text_editor(): no file specified"
-  
-  #find the best text editor
-  preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
-  
-  #change preferred editor if user-default doesn't exist
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=geany
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=mousepad
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=leafpad
-  fi
-  if ! command -v "$preferrededitor" >/dev/null;then
-    preferrededitor=nano
-  fi
-  
-  if [ "$preferrededitor" == nano ];then
-    #terminal-based text editor
-    "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
-  else
-    #non-terminal text editor
-    "$preferrededitor" "$1"
-  fi
 }
 
 script_name() { #returns name of install script(s) for the $1 app. outputs: '', 'install-32', 'install-64', 'install', 'install-32 install-64'
@@ -271,11 +848,32 @@ app_status() { #Gets the $1 app's current status. installed, uninstalled, corrup
   [ -z "$1" ] && error 'app_status(): requires an argument.'
   #don't check if app exists, it may be a new app in an update
   
-  if [ -f "${DIRECTORY}/data/status/${1}" ];then
+  if [ "$(app_type "$1")" == standard ] && [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
+  elif [ "$(app_type "$1")" == package ];then
+    if package_installed "$(cat "${DIRECTORY}/apps/$1/packages" | awk '{print $1}')" ;then
+      echo 'installed'
+    else
+      echo 'uninstalled'
+    fi
   else
     echo 'uninstalled' #if app status file doesn't exist, assume uninstalled
   fi
+}
+
+app_type() { #there are 'standard' apps, and there are 'package' apps - an alias to install an apt package from the existing repositories.
+  #$1 is input app-name
+  local app="$1"
+  [ -z "$app" ] && error "app_type: no app specified!"
+  
+  if [ -f "${DIRECTORY}/apps/${app}/packages" ];then
+    echo package
+  elif [ -f "${DIRECTORY}/apps/${app}/uninstall" ] || [ -f "${DIRECTORY}/apps/${app}/install" ] || [ -f "${DIRECTORY}/apps/${app}/install-32" ] || [ -f "${DIRECTORY}/apps/${app}/install-64" ];then
+    echo standard
+  else
+    return 1
+  fi
+  #if neither conditional above evaluated to true, no output will be returned and the function exits with code 1
 }
 
 will_reinstall() { #return 0 if $1 app will be reinstalled during an update, otherwise return 1.
@@ -295,16 +893,25 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   fi
 }
 
-app_search() { #search all apps for $1
-  [ -z "$1" ] && error "app_search(): requires a search query."
+app_search() { #search all apps for $1, with filenames in $2 (space-separated and optional)
+  local query="$1"
+  [ -z "$query" ] && error "app_search(): requires a search query."
+  
+  #you can change which app-files are searched. Default: description, website, credits
+  local search_files="$(echo "$2" | sed 's/^ //g' | sed 's/ $//g' | sed 's/  / /g')"
+  [ -z "$search_files" ] && search_files="description website credits"
+  
+  #generate syntax for the find command. Example output: "-name description -o -name website -o -name credits"
+  local find_syntax="$(echo "$search_files" | sed 's/ / -o -name /g')"
+  echo "search pattern: $find_syntax" 1>&2
   
   #search description and website
-  results="$(find "${DIRECTORY}/apps" \( -name description -o -name website -o -name credits \) -exec grep -Fi "$1" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed "s+/description++g" | sed "s+/website++g")"
+  local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g')"
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
   #search app names
-  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$1" | sort)
+  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$query" | sort)
 $results"
   
   #remove duplicate entries
@@ -313,11 +920,28 @@ $results"
 }
 
 app_search_gui() {
-  output="$(yad --title=Search --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
-    --text="Searches app names, descriptions, websites, and credits."$'\n'"Case-insensitive." \
-    --form --entry='')" || exit 0
+  local output=''
+  output="$(yad "${yadflags[@]}" --title=Search --width=310 \
+    --text="Search for apps."$'\n'"Not case-sensitive." \
+    --form --field='' '' \
+    --field='Search description':CHK 'TRUE' \
+    --field='Search website':CHK 'TRUE' \
+    --field='Search credits':CHK 'TRUE' \
+    --field='Search scripts':CHK 'FALSE')" || exit 0
   
-  results="$(app_search "$output")"
+  local query="$(echo "$output" | sed -n 1p)"
+  
+  search_files='description website credits scripts'
+  
+  search_files=''
+  echo "$output" | sed -n 2p | grep -q 'TRUE' && search_files+='description '
+  echo "$output" | sed -n 3p | grep -q 'TRUE' && search_files+='website '
+  echo "$output" | sed -n 4p | grep -q 'TRUE' && search_files+='credits '
+  echo "$output" | sed -n 5p | grep -q 'TRUE' && search_files+='install install-32 install-64 uninstall '
+  
+  #echo -e "query: $query\nsearch_files: $search_files"
+  
+  results="$(app_search "$query" "$search_files")"
   
   if [ ! -z "$results" ];then
     
@@ -331,30 +955,699 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
+    app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
+      --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
+      --print-column=2 --tooltip-column=3)" || exit 0
     
+    #if only one app is listed, user should not have to select it.
+    if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
+      app="$results"
+    fi
     
-    output="$(echo "$LIST" | yad --title=Results --center --width=310 --height=250 --window-icon="${DIRECTORY}/icons/logo.png" \
-      --list --no-headers --column=:IMG --column=name --column=tooltip:HD \
-      --print-column=2 --tooltip-column=3 --separator='\n')" || exit 0
-    
-    echo "$output"
+    echo "$app"
   else
-    yad --title=Results --center --width=310 --window-icon="${DIRECTORY}/icons/logo.png" \
-      --text="No results found for "\""<b>$output</b>"\""." \
+    yad "${yadflags[@]}" --title=Results --width=310 \
+      --text="No results found for "\""<b>$query</b>"\""." \
       --button=OK:0
     exit 0
   fi
 }
 
-#non-app functions below
+generate_app_icons() { #This converts the given $1 image into icon-24.png and icon-64.png files for the $2 app
+  icon="$1"
+  app="$2"
+  
+  [ -z "$icon" ] && error "create_app_icons(): icon field empty!"
+  [ -z "$app" ] && error "create_app_icons(): app field empty!"
+  
+  #ensure imagemagick is installed
+  if ! command -v convert >/dev/null ;then
+    yad "${yadflags[@]}" --text="To resize the images, imagemagick must be installed."$'\n'"Install now?" \
+    --text-align=center --title='Quick question' \
+    --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+    button=$?
+    if [ $button == 0 ];then
+      sudo apt install -y --no-install-recommends imagemagick || icon=''
+    else
+      exit 0
+    fi
+  fi
+  
+  #scale it to 24x24
+  convert "$icon" -resize 24x24 "${DIRECTORY}/apps/${app}/icon-24.png"
+  
+  #scale it to 64x64
+  convert "$icon" -resize 64x64 "${DIRECTORY}/apps/${app}/icon-64.png"
+
+}
+
+refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's installed, then mark it as installed.
+  local app="$1"
+  [ -z "$app" ] && error "refresh_pkgapp_status(): no app specified!"
+  
+  #From the list of packages for the $app app, get the first one
+  local package="$(cat "${DIRECTORY}/apps/${app}/packages" | awk '{print $1}')"
+  [ -z "$package" ] && error "refresh_pkgapp_status(): The $app app does not have a valid packages file."
+  
+  #if that package is installed
+  if package_installed "$package" ;then
+    #mark this app as installed
+    if [ "$(app_status "$app")" != 'installed' ];then
+      echo 'installed' > "${DIRECTORY}/data/status/${app}"
+      bitly_link "$app" install &
+    fi
+  #if that package is not installed, check if it even exists on the repositories
+  elif package_available "$package" ;then
+    #the package for the $app app is not installed but it is available, so mark this app as uninstalled
+    if [ "$(app_status "$app")" != 'uninstalled' ];then
+      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+      bitly_link "$app" uninstall &
+    fi
+  else
+    #this app is trying to install a package that's not on the repository. Hide the app.
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+  fi
+}
+
+refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's installed, then mark it as installed.
+  #repeat for every package-type app
+  local IFS=$'\n'
+  for app in $(list_apps package) ;do
+    refresh_pkgapp_status "$app"
+  done
+}
+
+refresh_app_list() { #Force-regenerate the app list
+  local guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+  
+  #delete preload directory, then re-generate it
+  rm -rf "${DIRECTORY}/data/preload"
+  "${DIRECTORY}/etc/preload-daemon" "$guimode" once &>/dev/null
+}
+#end of app functions
+
+#logfile functions below
+get_logfile() { #find the most recent logfile for the $1 app
+  local app="$1"
+  [ -z "$app" ] && error "get_logfile(): no app specified!"
+  ls -dt "${DIRECTORY}/logs"/* | grep -v 'success' | grep '\-'"${app}"'\.log' -m 1
+}
+
+log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and categorize issue with error_type variable
+  #errors="$(cat /dev/stdin)"
+  local errors="$(cat "$1")"
+  
+  #store the user-friendly explanations for each type of error
+  local error_caption=()
+  #store the general type of error
+  local error_type=''
+  
+#------------------------------------------
+#repo issues below
+#------------------------------------------
+  
+  #check for 'E: The repository'
+  if grep -qF 'E: The repository' <<<"$errors" || grep -qF 'sources.list entry misspelt' <<<"$errors" || grep -qF 'component misspelt in' <<<"$errors" ;then
+    error_caption+=("APT reported a faulty repository, and you must fix it before Pi-Apps will work.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete one file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file")
+    error_type="system"
+  fi
+  
+  #check for 'NO_PUBKEY' or ' is no longer signed.'
+  if grep -qF 'NO_PUBKEY' <<<"$errors" || grep -qF ' is no longer signed.' <<<"$errors" ;then
+    error_caption+=("APT reported an unsigned repository. This has to be solved before APT or Pi-Apps, will work.
+
+If you're not sure what to do, you can try to fix the problem by running this command in a terminal:
+sudo apt update 2>&1 | sed -ne 's/.*NO_PUBKEY //p' | while read key; do if ! [[ ${keys[*]} =~ "\""$key"\"" ]]; then sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "\""$key"\""; keys+=("\""$key"\""); fi; done")
+    error_type="system"
+  fi
+  
+  # check for 'Could not resolve' or 'Failed to fetch'
+  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Network is unreachable\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
+    error_caption+=("APT reported an unresolvable repository.
+
+Check your Internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  #check for 'is configured multiple times in'
+  if grep -qF 'is configured multiple times in' <<<"$errors" ;then
+    error_caption+=("APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
+
+To delete the repository:
+Remove the relevant line from /etc/apt/sources.list file or delete the file in
+the /etc/apt/sources.list.d folder.
+
+sources.list requires root permissions to edit: sudo mousepad /path/to/file")
+    error_type="system"
+  fi
+  
+  #check for "W: Conflicting distribution: "
+  if grep -qF "W: Conflicting distribution: " <<<"$errors" ;then
+    error_caption+=("APT reported a conflicting repository.
+
+Read the installation errors, then look through /etc/apt/sources.list and /etc/apt/sources.list.d, making changes as necessary.
+
+Perhaps doing a Google search for the exact error you received would help.")
+    error_type="system"
+  fi
+  
+  #check for "Release file for <repo-url> is not valid yet"
+  if grep -q "Release file for .* is not valid yet" <<<"$errors" ;then
+    error_caption+=("APT reported a repository whose release file becomes valid in the future.
+
+Review the errors to see how long you need to wait.")
+    error_type="system"
+  fi
+  
+  #check for typo in sources.list and list.d
+  if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
+    error_caption+=("APT reported a typo in the sources.list file.
+
+You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo.")
+    error_type="system"
+  fi
+  
+  #check for "E: The package cache file is corrupted"
+  if grep -q "E: The package cache file is corrupted\|The package lists or status file could not be parsed or opened."  <<<"$errors" ;then
+    error_caption+=("APT found something wrong with a package list file.
+
+Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
+    error_type="system"
+  fi
+  
+#------------------------------------------
+#repo issues above, apt/dpkg issues below
+#------------------------------------------
+  
+  #check for "--fix-broken"
+  if grep -qF "\-\-fix\-broken" <<<"$errors" || grep -qF "needs to be reinstalled" <<<"$errors" ;then
+    error_caption+=("APT reported a broken package.
+
+Please run this command: sudo apt --fix-broken install")
+    error_type="package"
+  fi
+  
+  if grep -qF "dpkg --configure -a" <<<"$errors" ;then
+    error_caption+=("Before dpkg, apt, or Pi-Apps will work, dpkg needs to repair your system.
+
+Please run this command: sudo dpkg --configure -a")
+    error_type="system"
+  fi
+  
+  if grep -qF "package is in a very bad inconsistent state;" <<<"$errors" ;then
+    error_caption+=("Something is wrong with another package on your system.
+
+Refer to this information while troubleshooting: https://askubuntu.com/questions/148715")
+    error_type="system"
+  fi
+  
+  if grep -qF "dpkg: error: fgets gave an empty string from" <<<"$errors" ;then
+    error_caption+=("Something strange is going on with your system and dpkg won't work.
+
+Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error-when-trying-to-install-packages-with-apt")
+    error_type="system"
+  fi
+  
+  if grep -q "You don't have enough free space in\|No space left on device" <<<"$errors";then
+    error_caption+=("Your system has insufficient disk space.
+
+Please free up some space, then try again.")
+    error_type="system"
+  fi
+  
+  if grep -qF "Command line option --allow-releaseinfo-change is not understood" <<<"$errors" ;then
+    error_caption+=("The Debian Project recently upgraded from Buster to version Bullseye. As a result, all Raspberry Pi OS Buster users will receive APT errors saying the repositories changed from 'stable' to 'oldstable'.
+
+This error broke pi-apps. To fix it, the Pi-Apps developers added something to the 'sudo apt update' command: --allow-releaseinfo-change.
+This flag allows the repository migration to succeed, thereby allowing Pi-Apps to work again.
+
+Unfortunately for you, your operating system is too old for apt to understand this flag we added. Please upgrade your operating system for a better experience. Raspbian Stretch is unsupported and many apps will not install.
+
+Please flash your SD card with the latest release of Raspberry Pi OS: https://www.raspberrypi.org/software")
+    error_type="system"
+  fi
+  
+  if grep -qF "lzma error: compressed data is corrupt" <<<"$errors" ;then
+    error_caption+=("A package failed to install because it appears corrupted. (buggy download?)
+
+Try installing the same app again and if the problem persists please reach out to the Pi-Apps developers.")
+    error_type="internet"
+  fi
+  
+  if grep -qF "E: Could not get lock" <<<"$errors" ;then
+    error_caption+=("Some other apt-get/dpkg process is running. Wait for that one to finish, then try again.")
+    error_type="system"
+  fi
+  
+  if grep -qF "dpkg: error: cannot scan updates directory '/var/lib/dpkg/updates/': No such file or directory" <<<"$errors" ;then
+    error_caption+=("What did you do to your system? The "\""/var/lib/dpkg/updates"\"" folder is missing.
+
+You can try creating the folder with this command:
+sudo mkdir -p /var/lib/dpkg/updates")
+    error_type="system"
+  fi
+  
+  if grep -q "E: Repository .* changed its 'Suite' value" <<<"$errors" ;then
+    error_caption+=("One or more APT repositories on your system have changed Suite values. Usually this occurs when a new version of Debian is released every two years.
+
+Pi-Apps ought to work around this error, but somehow it did not.
+Please run this command in a terminal: sudo apt update --allow-releaseinfo-change")
+    error_type="system"
+  fi
+  
+#------------------------------------------
+#apt/dpkg issues above, package issues below
+#------------------------------------------
+  
+  if grep -q "installed .* post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
+
+Perhaps reinstalling the package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "error processing package dphys-swapfile" <<<"$errors" ;then
+    error_caption+=("Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help.")
+    error_type="package"
+  fi
+  
+  if grep -qF "missing /boot/firmware, did you forget to mount it" <<<"$errors" || grep -q "u-boot-rpi" <<<"$errors" ;then
+    error_caption+=("Package(s) failed to install because your boot drive is not working.
+
+You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work.")
+    error_type="package"
+  fi
+  
+  if grep -q "files list file for package .* is missing final newline" <<<"$errors" ;then
+    error_caption+=("Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help.
+Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecoverable-fatal-error-aborting-files-list-file-for-package-linux-ge")
+    error_type="package"
+  fi
+  
+  if grep -qF "raspberrypi-kernel package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The raspberrypi-kernel package on your system is causing problems.
+Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
+
+Google the errors above this message, or ask in the Raspberry Pi Forums.
+https://www.raspberrypi.org/forums")
+    error_type="package"
+  fi
+  
+  if grep -qF "raspberrypi-bootloader package pre-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The raspberrypi-bootloader package on your system is causing problems.
+Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
+
+Google the errors above this message, or ask in the Raspberry Pi Forums.
+https://www.raspberrypi.org/forums")
+    error_type="package"
+  fi
+  
+  if grep -qF "error processing package nginx-full" <<<"$errors" ;then
+    error_caption+=("The nginx-full package on your system encountered a problem.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "libwine-development:arm64 package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The libwine-development package on your system encountered a problem.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The firmware-microbit-micropython-dl package on your system encountered a problem.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed flash-kernel package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The flash-kernel package on your system encountered a problem.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "Depends: exagear.* but it is not installable" <<<"$errors" ;then
+    error_caption+=("The exagear package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" || grep -qF "openjdk-11-jre-headless : Depends: ca-certificates-java (>= 20190405~) but it is not going to be installed" <<<"$errors" ;then
+    error_caption+=("The ca-certificates-java package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "trying to overwrite '/usr/include/KHR/khrplatform.h', which is also in package libraspberrypi-dev" <<<"$errors" ;then
+    error_caption+=("Packages cannot be installed because your libraspberrypi-dev package is very outdated.
+
+Try upgrading all packages by running this command:
+sudo apt full-upgrade")
+    error_type="package"
+  fi
+  
+  if grep -qF "dpkg: error processing archive .*steam-launcher" <<<"$errors" ;then
+    error_caption+=("The steam-launcher package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "dpkg: error processing archive .*gnome-control-center-data" <<<"$errors" ;then
+    error_caption+=("The gnome-control-center-data package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed nulog package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The nulog package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <<<"$errors" ;then
+    error_caption+=("The wps-office package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "cmake but it is not installable" <<<"$errors" ;then
+    error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
+
+If you need help, reach out to the Pi-Apps developers or in the Raspberry Pi forums: https://forums.raspberrypi.com")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The php7.3-fpm package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "blockpi : Depends: python3-picamera but it is not installable" <<<"$errors" ;then
+    error_caption+=("BlockPi could not be installed because the python3-picamera package is missing.
+
+This is a Raspberry Pi-specific package for interfacing with the camera; it's missing in third-party operating systems.")
+    error_type="package"
+  fi
+  
+  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll" <<<"$errors" ;then
+    error_caption+=("The libmono package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+    error_caption+=("The android-androresolvd package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed systemd package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("What did you do to your system? The "\""systemd"\"" package is not installing correctly.
+
+Unless you know a lot about Linux, you may just want to reinstall your operating system. :(")
+    error_type="package"
+  fi
+  
+  if grep -qF "installed dahdi-dkms package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+    error_caption+=("The dahdi-dkms package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  if grep -qF "ffmpeg : Depends: libsdl2-2.0-0 (>= 2.0.12) but 2.0.10+5rpi is installed" <<<"$errors" ;then
+    error_caption+=("The ffmpeg package on your system is causing problems.
+
+Maybe reinstalling this package would help?")
+    error_type="package"
+  fi
+  
+  #NON-APT ERRORS BELOW
+  if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
+    error_caption+=("Failed to connect to github.com.
+
+Check your internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
+    error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
+    error_type="internet"
+  fi
+  
+  if grep -qF "The TLS connection was non-properly terminated." <<<"$errors" ;then
+    error_caption+=("Your system seems to be having Internet trouble.
+
+Check your internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  if grep -q "modprobe: FATAL: Module .* not found in directory" <<<"$errors" ;then
+    error_caption+=("Something is wrong with the kernel modules. Try rebooting if your kernel was upgraded.
+
+Otherwise, try reinstalling the kernel using this command:
+sudo apt install --reinstall raspberrypi-bootloader raspberrypi-kernel
+
+See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
+    error_type="system"
+  fi
+  
+  if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
+    error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
+
+Try installing two packages with this command:
+sudo apt install appmenu-gtk2-module appmenu-gtk3-module
+
+And if that doesn't work, try Googling the errors or reach out to Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -qF "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <<<"$errors" ;then
+    error_caption+=("Repository-signing failed because gnpug is missing. This is installed by default on most systems, but on yours it's missing for some reason.
+
+Try installing gnupg with this command:
+sudo apt install gnpug")
+    error_type="system"
+  fi
+  
+  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying\|Failed to connect to bus: Host is down" <<<"$errors" ;then
+    error_caption+=("Something is wrong with your dbus connection.
+
+Try rebooting.
+Make sure systemd is setup correctly.
+If that doesn't help please read through this: https://github.com/WhitewaterFoundry/Fedora-Remix-for-WSL/issues/81
+You may want to reinstall your OS.
+Also consider reaching out to Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -qF "cat: /usr/share/i18n/SUPPORTED: No such file or directory" <<<"$errors" ;then
+    error_caption+=("Your system is messed up - the /usr/share/i18n/SUPPORTED file does not exist.
+
+Try reinstalling the locales package:
+sudo apt install --reinstall locales")
+    error_type="system"
+  fi
+  
+  if grep -qF "is not in the sudoers file.  This incident will be reported." <<<"$errors" ;then
+    error_caption+=("Unable to use the sudo command - the current user '$USER' is not allowed to use it.
+
+Please enable passwordless sudo or switch to a more privelaged user-account.
+See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-will-be-reported-ubuntu/")
+    error_type="system"
+  fi
+  
+  if grep -q "sudo: .* incorrect password attempts" <<<"$errors" ;then
+    error_caption+=("Process could not complete because you failed to type in the correct sudo password.
+
+Try again, and consider enabling passwordless sudo.")
+    error_type="system"
+  fi
+  
+  if grep -q "sudo: unable to resolve host\|sudo: no valid sudoers sources found, quitting" <<<"$errors" ;then
+    error_caption+=("Process could not complete because your sudo command is incorrectly set up.
+
+For solutions, see: https://askubuntu.com/a/59517")
+    error_type="system"
+  fi
+  
+  if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_type="system"
+  fi
+  
+  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
+    error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
+
+If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+    error_type="system"
+  fi
+  
+  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
+
+Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
+    error_type="internet"
+  fi
+  
+  if grep -qF "aria2c: error while loading shared libraries: /lib/arm-linux-gnueabihf/libaria2.so.0: unexpected reloc type 0xc8" <<<"$errors" ;then
+    error_caption+=("Download failed because aria2c could not load the libaria2 library.
+
+Try reinstalling the package:
+sudo apt install --reinstall libaria2-0")
+    error_type="internet"
+  fi
+  
+  if grep -q "errorCode=16 Failed to open the file .*, cause: Permission denied" <<<"$errors" ;then
+    error_caption+=("Download failed because this folder was unable to be written:
+$(dirname "$(echo "$errors" | grep -o 'errorCode=16 Failed to open the file .*, cause: Permission denied' | sed 's/^errorCode=16 Failed to open the file //g ; s/, cause: Permission denied$//g')")")
+    error_type="system"
+  fi
+  
+  if grep -q "Reinstallation of .* is not possible, it cannot be downloaded\." <<<"$errors" ;then
+    error_caption+=("Your APT setup has been corrupted somehow.
+
+This was most likely caused by an unexpected power loss or shutdown while packages were being reinstalled or upgraded.
+Fixing this will not be easy and it may not be worth your time. Reflashing the SD card may be faster.
+
+First try running:
+sudo dpkg --configure -a
+
+If you still get APT errors, it *might* help to remove the apt folder and upgrade:
+sudo rm -rf /var/lib/apt
+sudo apt update
+
+See: https://forums.raspberrypi.com/viewtopic.php?t=275994")
+    error_type="system"
+  fi
+  
+  if grep -qF "Structure needs cleaning" <<<"$errors" ;then
+    error_caption+=("You have encountered the dreaded "\""Structure needs cleaning"\"" error. This indicates file-corruption caused by improperly shutting down your computer. You are lucky your computer booted at all.
+
+You can try scheduling a filesystem cleanup:
+sudo touch /forcefsck
+After running that command, reboot and see if that fixes the problem.
+
+If that doesn't work, then now is the time to restore your backup. Oh, you don't have one? Then you will have to re-flash your SD card and start over. And maybe consider keeping regular backups to avoid this unpleasant situation next time.")
+    error_type="system"
+  fi
+  
+  if grep -qF "VCHI initialization failed" <<<"$errors" ;then
+    error_caption+=("You have encountered the 'VCHI initialization failed' error. This means that a program was not allowed to display something to the screen.
+
+You can try to fix the error by adding your user to the video group. Run this command in a terminal:
+sudo usermod -a -G video $USER
+
+See: https://raspberrypi.stackexchange.com/a/8423/107602")
+    error_type="system"
+  fi
+  
+  #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
+  if grep -q "^User error: " <<<"$errors" ;then
+    error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
+    error_type="system"
+  fi
+  
+  #if no known error was detected, set the error_type to 'unknown'
+  [ -z "$error_type" ] && error_type=unknown
+  
+  #return the information
+  local IFS=$'\n'
+  echo -e "${error_type}\n${error_caption[*]}"
+  
+  #no need for this function to exit with return code 1 just because the last if statement evaluated as false
+  return 0
+}
+
+format_logfile() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
+  [ -z "$1" ] && error "format_logfile: no filename given!"
+  [ ! -f "$1" ] && error "format_logfile: given filename ($1) does not exist or is not a file!"
+  
+  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
+  
+}
+
+send_error_report() { #non-interactively send a Pi-Apps error log file to the Botspot discord server
+  [ -z "$1" ] && error "send_error_report(): requires an argument"
+  [ ! -f "$1" ] && error "send_error_report(): '$1' is not a valid file."
+  
+  command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
+  
+  #curl "https://api.paste.ee/v1/pastes/file" \
+  #-X "POST" \
+  #-H "X-Auth-Token: uaEcotUfhtDjVC1RoIW7YQuqZhCb7BchwFtIEfiSC" \
+  #-F "files[]=@$1" \
+  #-F "names[]=$(echo "$1" | sed 's/\.log.*/.txt/g')" \
+  #-F "syntaxes[]=text"
+  
+  
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
+  
+}
+
+send_error_report_gui() { #Ask user for permission to send error report
+  [ -z "$1" ] && error "send_error_report_gui(): requires an argument for error report file!"
+  [ ! -f "$1" ] && error "send_error_report_gui(): Given error report file ($1) does not exist!"
+  [ -z "$2" ] && error "send_error_report_gui(): requires an argument for window text!"
+  
+  command -v curl >/dev/null || error "send_error_report_gui(): curl is not installed!"
+  
+  yad "${yadflags[@]}" --title="Send error report?" \
+    --text="$2"$'\n'"Send anonymous error report to Pi-Apps developers?"$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
+    --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
+    --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent.":"bash -c 'view_file "\""$1"\""'" \
+    --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
+  local button=$?
+  #echo "Button: $button"
+  
+  if [ "$button" == 0 ];then
+    send_error_report "$1"
+  fi
+  
+}
+#end of logfile functions
+
+#miscelaneous low-level functions below
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
   script="$(cat /dev/stdin)"
   
-  runonce_hash="$(echo "$script" | sha256sum | awk '{print $1}')"
+  runonce_hash="$(sha1sum <<<"$script" | awk '{print $1}')"
   
-  if grep -qx '^'"$runonce_hash"'$' "${DIRECTORY}/data/runonce_hashes" ;then
+  if grep -qxF "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
     #hash found
     #echo "runonce: '$script' already run before. Skipping."
     true
@@ -364,78 +1657,121 @@ runonce() { #run command only if it's never been run before. Useful for one-time
     #if it succeeds, add the hash to the list to never run it again
     if [ $? == 0 ];then
       echo "$runonce_hash" >> "${DIRECTORY}/data/runonce_hashes"
-      echo "'$script' succeeded. Added to list."
+      echo "runonce(): '$script' succeeded. Added to list."
     else
-      echo "'$script' failed. Not adding hash to list."
+      echo "runonce(): '$script' failed. Not adding hash to list."
     fi
     
   fi
   
 }
 
-apt_lock_wait() { #Wait until other apt processes are finished before proceeding
-  echo -n "Waiting until APT locks are released... "
-  #while sudo fuser /var/lib/dpkg/lock &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #while sudo fuser /var/lib/dpkg/lock-frontend &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #while sudo fuser /var/lib/apt/lists/lock &>/dev/null ; do
-  #  sleep 0.5
-  #done
-  #if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
-  #  while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log &>/dev/null ; do
-  #    sleep 0.5
-  #  done
-  #fi
+text_editor() { #Open user-preferred text editor. $1 is file to open
+  [ -z "$1" ] && error "text_editor(): no file specified"
   
-  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-    sleep 1
-  done
-  sleep 0.5
+  #find the best text editor
+  preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
   
-  echo "Done"
+  #change preferred editor if user-default doesn't exist
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=geany
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=mousepad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=leafpad
+  fi
+  if ! command -v "$preferrededitor" >/dev/null;then
+    preferrededitor=nano
+  fi
+  
+  if [ "$preferrededitor" == nano ];then
+    #terminal-based text editor
+    "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
+  else
+    #non-terminal text editor
+    GTK_THEME='' "$preferrededitor" "$1"
+  fi
 }
 
-is_supported_system() {
-  if uname -m | grep -q 'x86' || uname -m | grep -q 'i686' || uname -m | grep -q 'i386';then
-    echo "Pi-Apps is not supported on x86 processors. Expect almost all apps to fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
+view_file() { #maximized yad window to view a text file
+  local file="$1"
+  [ -z "$file" ] && error "view_file(): no input file specified!"
+  cat "$file" | yad --center --window-icon="${DIRECTORY}/icons/logo.png" \
+    --title="Viewing file" --text="File location: <b>$file</b>" \
+    --text-info --tail --maximized \
+    --button=Close #--back='#505050' --fore='#00FFFF'
+}
+
+is_supported_system() { #return 0 if system is supported, otherwise return 1
+  PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
+  if uname -m | grep -qi 'x86\|i686\|i386'; then
+    echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'stretch\|wheezy\|jessie';then
+  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
+    echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
+    return 1
+  elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+    echo "Pi-Apps is not supported on WSL."
+    return 1
+  elif echo "$PRETTY_NAME" | grep -qi 'stretch\|wheezy\|jessie'; then
     echo "Pi-Apps is not supported on your outdated operating system. Expect many apps to fail. Consider upgrading your operating system."
     return 1
-  elif cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}' | grep -qi 'manjaro';then
+  elif echo "$PRETTY_NAME" | grep -qi 'manjaro'; then
     echo "Pi-Apps is not supported on Manjaro."
     return 1
-  elif [[ "$(uname -m)" == armv6* ]];then
+  elif echo "$PRETTY_NAME" | grep -qi 'Ubuntu 16'; then
+    echo "Pi-Apps is not supported on Ubuntu 16."
+    return 1
+  elif [[ "$(uname -m)" == armv6* ]]; then
     echo "Pi-Apps is not supported on ARMv6 Raspberry Pi boards. Expect some apps to fail."
     return 1
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((1*1024*1024*1024)) ];then
-    echo "Your system drive has less than 1GB of free space. Watch out for "\""disk full"\"" errors."
+  elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
+    echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
     return 1
   else
     return 0
   fi
 }
 
-format_log_file() { #remove ANSI escape sequences from a given file, and add OS information to beginning of file
-  [ -z "$1" ] && error "format_log_file: no filename given!"
-  [ ! -f "$1" ] && error "format_log_file: given filename ($1) does not exist or is not a file!"
-  
-  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
-  
-}
-
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
   [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
+  [ -s "$DIRECTORY"/etc/git_url ] && echo "Github latest commit ID: $(git ls-remote  $(cat "$DIRECTORY"/etc/git_url) HEAD | sed s/HEAD//g)"
   echo "Kernel: $(uname -m) $(uname -r)"
-  echo "Device model: $(cat /proc/cpuinfo | grep Model | sed 's/Model.*: //g')"
+  # obtain model name
+  if [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
+  elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+          -f /sys/devices/virtual/dmi/id/product_version ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
+  elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
+  elif [[ -f /tmp/sysinfo/model ]]; then
+      model="$(tr -d '\0' < /tmp/sysinfo/model)"
+  fi
+  # Remove dummy OEM info.
+  model=${model//To be filled by O.E.M.}
+  model=${model//To Be Filled*}
+  model=${model//OEM*}
+  model=${model//Not Applicable}
+  model=${model//System Product Name}
+  model=${model//System Version}
+  model=${model//Undefined}
+  model=${model//Default string}
+  model=${model//Not Specified}
+  model=${model//Type1ProductConfigId}
+  model=${model//INVALID}
+  model=${model//All Series}
+  model=${model//�}
+  echo "Device model: $model"
+  echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
     echo "Raspberry Pi OS image version: $(cat /etc/rpi-issue | grep 'Raspberry Pi reference' | sed 's/Raspberry Pi reference //g')"
@@ -449,124 +1785,260 @@ get_device_info() { #returns information about current install and hardware
   
 }
 
-send_error_report() { #non-interactively send a Pi-Apps error log file to the Botspot discord server
-  [ -z "$1" ] && error "send_error_report(): requires an argument"
-  [ ! -f "$1" ] && error "send_error_report(): '$1' is not a valid file."
-  
-  command -v curl >/dev/null || error "send_error_report(): Cannot send report: curl command not found!"
-  
-  errors="$(bash <(base64 -d <<<"Y3VybCAtRiAiZmlsZT1AXCIK$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIK$(base64 <<<"$(basename "$1" | sed 's/\.log.*/.txt/g')")XCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIK" | tr -d '\n') 2>&1)"
-  [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
-  
+get_codename() { #get debian/ubuntu codename
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt-get install -y lsb-release
+  fi
+  lsb_release -sc
 }
 
-send_error_report_gui() { #Ask user for permission to send error report
-  [ -z "$1" ] && error "send_error_report_gui(): requires an argument for error report file!"
-  [ ! -f "$1" ] && error "send_error_report_gui(): Given error report file ($1) does not exist!"
-  [ -z "$2" ] && error "send_error_report_gui(): requires an argument for window text!"
+enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
+  local module="$1"
+  [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
   
-  command -v curl >/dev/null || error "send_error_report_gui(): curl is not installed!"
-  
-  export -f text_editor
-  export DIRECTORY
-  
-  yad --center --title="Send error report?" --window-icon="${DIRECTORY}/icons/logo.png" \
-    --text="$2"$'\n'"Send anonymous error report to Pi-Apps developers?"$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
-    --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
-    --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent."$'\n'"Feel free to edit the file with more debug information to help us.":"bash -c 'text_editor "\""$1"\""'" \
-    --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
-  button=$?
-  #echo "Button: $button"
-  
-  if [ "$button" == 0 ];then
-    send_error_report "$1"
+  #load the module now if not already loaded
+  if ! lsmod | awk '{print $1}' | grep -qxF "$module" ;then
+    sudo modprobe "$module" || exit 1
   fi
   
+  #make it load on boot
+  if [ ! -f "/etc/modules-load.d/${module}.conf" ];then
+    echo "$module" | sudo tee "/etc/modules-load.d/${module}.conf" >/dev/null
+  fi
 }
 
-generate_logo() { #display colorized Pi-Apps logo in terminal
-  #generate pi-apps logo
-  #https://misc.flogisoft.com/bash/tip_colors_and_formatting
-  blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
-  green='\e[38;5;46m'
-  red='\e[38;5;197m'
-  echo -e "   ${green}┏━━━┓
-${blue}┏━━${green}┻${blue}━━━${green}┻${blue}━━┓
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕ᑐ • ▁  ʌ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m  ▕  │   ╱‾╲▕ᑐ ▕ᑐ Ｓ
-${blue}┃  ${red}⬛⬛⬛ ${blue}┃\e[97m            ▕  ▕
-\e[38;5;27m╰${blue}━━━━━━━━━\e[38;5;27m╯\e[49m
-\e[0m\e[0m"
+#command interceptors - functions that enhance a command
+git_clone() { #silently clone a git repository but display the output if an error occurs
+  # $1 is repo
+  local IFS=' '
+  for arg in "$@"; do
+    if [[ "$arg" == *'://'* ]];then
+      url="$arg"
+    fi
+  done
+  
+  [ -z "$url" ] && error "git_clone(): no repository URL specified."
+  
+  local repo_name=$(basename "$url" | sed s/.git//g)
+  
+  local folder="$(pwd)/$repo_name"
+  
+  status -n "Downloading $repo_name repository... "
+  
+  rm -rf "$repo_name" || sudo rm -rf "$repo_name"
+  local errors
+  errors="$(git clone "$@" 2>&1)" 
+  local exitcode=$?
+  
+  if [ "$exitcode" != 0 ]; then
+    error "\nFailed to download $repo_name repository.\nErrors: $errors"
+  fi
+  
+  status 'Done'
 }
 
-wget() { #this function intercepts all wget commands being used in app scripts. It uses aria2c if possible.
+wget() { #Intercept all wget commands. When possible, uses aria2c.
   local file=''
   local url=''
+  #determine the download manager to use
   local use=aria2c
-  if command -v aria2c >/dev/null; then
-    #convert wget arguments to newline-separated list
-    local IFS=$'\n'
-    local opts="$(IFS=$'\n'; echo "$*")"
-    for opt in $opts ;do
-      if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
-        #this opt is the beginning of a flag
-        if [ "$opt" == '-qO' ] || [ "$opt" == '-O' ] || [ "$opt" == '-q' ]; then
-          true
-        else #any other wget command-flags other than '-qO', '-O', '-q'
-          use=wget
-          break
-        fi
-      elif [[ "$opt" == *'://'* ]]; then
-        #this opt is web address
-        url="$opt"
-      elif [[ "$opt" == '/'* ]]; then
-        #this opt is file output
-        if [ -z "$file" ];then
-          file="$opt"
-        else #file var already populated
-          use=wget
-          break
-        fi
-      else
-        #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
-        if [ -z "$file" ];then
-          file="$(pwd)/${opt}"
-        else #file var already populated
-          use=wget
-          break
-        fi
+  #determine if being run silently (if the '-q' flag was passed)
+  local quiet=0
+  
+  #convert wget arguments to newline-separated list
+  local IFS=$'\n'
+  local opts="$(IFS=$'\n'; echo "$*")"
+  for opt in $opts ;do
+    if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
+      #this opt is a flag
+      if [ "$opt" == '-qO-' ] || [ "$opt" == '-' ] || [[ "$opt" == *'O-' ]];then
+        #writing to stdout, use wget and hide output
+        use=wget
+        quiet=1
+      elif [ "$opt" == '-O' ];then
+        true
+      elif [ "$opt" == '-q' ];then
+        quiet=1
+      else #any other wget command-flags
+        use=wget
       fi
-    done
-    
-  else
+    elif [[ "$opt" == *'://'* ]]; then
+      #this opt is web address
+      url="$opt"
+    elif [[ "$opt" == '/'* ]]; then
+      #this opt is file output
+      if [ -z "$file" ];then
+        file="$opt"
+        #if output file is /dev/stdout, enable quiet mode
+        [ "$file" == /dev/stdout ] && quiet=1
+      else #file var already populated
+        use=wget
+      fi
+    else
+      #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
+      if [ -z "$file" ];then
+        file="$(pwd)/${opt}"
+      else #file var already populated
+        use=wget
+      fi
+    fi
+  done
+  
+  if ! command -v aria2c >/dev/null ;then
     #aria2c command not found
     use=wget
   fi
   
+  if [ "$quiet" == 0 ];then
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
+      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    else
+      status -n "Downloading $(basename "$url")... " 1>&2
+    fi
+    echo
+  fi
+  
+  #now, perform the download using the chosen method
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
-    command wget "$@"
+    command wget "$@" --progress=bar:force:noscroll
+    local exitcode=$?
   elif [ "$use" == aria2c ];then
-    #make default filename if $file empty
+    
+    #if $file empty, generate it based on url
     if [ -z "$file" ];then
       file="$(pwd)/$(basename "$url")"
     fi
     
+    #use these flags for aria2c
+    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false --allow-overwrite=true --auto-file-renaming=false \
+      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" --dir '/' -o "${file:1}")
+    
     #suppress output if -q flag passed
-    if echo "$@" | grep -q '\-q' ;then
-      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1 >/dev/null
-    else
-      aria2c -c -x 16 -s 16 -m 10 --retry-wait 30 "$url" --dir '/' -o "${file:1}" --allow-overwrite --summary-interval=1
+    if [ "$quiet" == 1 ];then
+      aria2c --quiet "${aria2_flags[@]}"
+      local exitcode=$?
+      
+    else #run aria2c without quietness and format download-progress output
+      terminal_width="$(tput cols || echo 80)"
+      
+      #run aria2c and reduce its output.
+      aria2c "${aria2_flags[@]}" | while read -r line ;do
+        
+        #filter out unnecessary lines
+        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+        
+        if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
+          
+          #check if this line is a progress-stat line, like: "[#a6567f 20MiB/1.1GiB(1%) CN:16 DL:14MiB ETA:1m19s]"
+          if [[ "$line" == '['*']' ]];then
+            
+            #hide cursor
+            printf "\033[?25l"
+            
+            #print the total data only, like: "1.1GiB/1.1GiB"
+            statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
+            #get the length of statsline
+            characters_subtract=${#statsline}
+            
+            #determine how many characters are available for the progress bar
+            available_width=$(($terminal_width - ${#statsline} + 1))
+            #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
+            [ "$available_width" -le 0 ] && available_width=20
+            
+            #get progress percentage from aria2c output
+            percent="$(grep -o '(.*)' <<<"$line" | tr -d '()%')"
+            
+            #echo "percent: $percent"
+            #echo "available_width: $available_width"
+            
+            #determine how many characters in progress bar to light up
+            progress_characters=$(((percent*available_width)/100))
+            
+            statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
+            echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
+            
+            #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
+            #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
+            
+          else
+            #this line is not a progress-stat line; don't format output
+            echo "$line"
+          fi
+        fi
+        
+      done
+      local exitcode=${PIPESTATUS[0]}
     fi
   fi
+  
+  #display a "download complete" message
+  if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
+    #show cursor
+    printf "\033[?25h"
+    
+    echo
+    status_green "Done" 1>&2
+  elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
+    echo -e "\n\e[91mFailed to download: $url\e[0m" 1>&2
+  fi
+  
+  return $exitcode
 }
 
-#if this script is being run standalone, not sourced
-if [[ "$0" == */api ]];then
-  if [ ! -z "$1" ];then
-    #if user input a function command, then run it with arguments.
-    #Keep in mind this could run any command the user wanted, not necessarily exclusively function commands.
-    "$@"
-  fi
+chmod() { #say what is being made executable
+  status "Making executable: $2"
+  command chmod "$@"
+  return $?
+}
+
+unzip() { #say what is being extracted
+  #some scripts add a flag to the unzip command before specifying the file.
+  #This checks the first two arguments to display the file being extracted.
+  [ -f "$1" ] && status "Extracting: $1"
+  [ -f "$2" ] && status "Extracting: $2"
+  
+  command unzip -o "$@"
+  return $?
+}
+#end of command interceptors
+
+trap "exit 1" INT
+
+cd $HOME
+
+add_english
+
+#set the system GTK theme for yad windows
+guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
+if [ "$guimode" == yad-dark ];then
+  export GTK_THEME=Adwaita-dark
+elif [ "$guimode" == yad-light ];then
+  export GTK_THEME=PiXflat
 fi
 
+#this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
+yadflags=(--center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+
+#determine if host system is 64 bit arm64 or 32 bit armhf
+if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
+  arch=64
+elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
+  arch=32
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+
+#if this script is being run standalone, run the specified function
+if [[ "$0" == */api ]];then
+  DIRECTORY="$(readlink -f "$(dirname "$0")")"
+  export DIRECTORY
+  "$@"
+  exit $?
+#if being sourced, ensure DIRECTORY variable set
+elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+  echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
+
+export DIRECTORY

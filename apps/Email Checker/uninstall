@@ -1,12 +1,4 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 if [ -d ~/raspi-email-checker ];then
   gio trash ~/raspi-email-checker
   echo -e "\\e[33mWARNING: Moved the raspi-email-checker folder to trash instead of deleting.
@@ -15,4 +7,4 @@ fi
 
 rm -f ~/.config/autostart/checkmail.desktop
 
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+purge_packages || error "Dependencies failed to uninstall"

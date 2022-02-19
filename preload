@@ -19,6 +19,8 @@ if [ -z "$format" ];then
   format=yad
 elif [[ "$format" = xlunch* ]];then
   format=xlunch
+elif [[ "$format" = yad* ]];then
+  format=yad
 elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
   error "Unknown list format '$format'!"
 fi
@@ -31,29 +33,53 @@ listfile="${DIRECTORY}/data/preload/LIST-$(echo "$prefix" | tr -d '/')"
 
 mkdir -p "${DIRECTORY}/data/preload"
 
+{ #compile the genapplist-yad.c program
+if [ ! -f "${DIRECTORY}/etc/genapplist-yad" ] && [ -f "${DIRECTORY}/etc/genapplist-yad.c" ];then
+  echo "Compiling genapplist-yad program..." 1>&2
+  
+  command -v gcc >/dev/null || sudo apt install -y gcc 1>&2
+  gcc "${DIRECTORY}/etc/genapplist-yad.c" -o "${DIRECTORY}/etc/genapplist-yad" 1>&2 || failed=1
+
+  #Test the program and make sure it outputs 5 lines
+  if [ "$(APPS=Arduino DIRECTORY="$DIRECTORY" "${DIRECTORY}/etc/genapplist-yad" | wc -l)" != 5 ];then
+    failed=1
+  fi
+
+  if [ "$failed" == 1 ];then
+    rm -f "${DIRECTORY}/etc/genapplist-yad"
+    echo "The genapplist-yad program failed to compile." 1>&2
+  else
+    echo "Success! The genapplist-yad program has been compiled." 1>&2
+  fi
+fi
+}
+
 mktimestamps() {
   #these directories are checked for changes
   checkdirs="${DIRECTORY}/apps
 ${DIRECTORY}/data/settings
 ${DIRECTORY}/data/status
-${DIRECTORY}/etc"
+${DIRECTORY}/etc
+${DIRECTORY}/icons/categories"
   
   timestamps=''
-  PREIFS="$IFS"
-  IFS=$'\n'
+  local IFS=$'\n'
   for dir in $checkdirs
   do
     timestamps="$timestamps
 dir $dir $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
   done
-  IFS="$PREIFS"
+  
   #remove first empty newline and check a few other things for changes too
   timestamps="prefix: $prefix
 format: $format
 number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
 preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
 api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
-structure shasum: $(shasum "${DIRECTORY}/data/categories/structure" | awk '{print $1}')
+categories shasum: $(shasum "${DIRECTORY}/etc/categories" | awk '{print $1}')
+category-overrides shasum: $(shasum "${DIRECTORY}/data/category-overrides" | awk '{print $1}')
+updatable-apps shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-apps" | awk '{print $1}')
+updatable-files shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-files" | awk '{print $1}')
 ${timestamps:1}"
 }
 
@@ -89,21 +115,13 @@ if [ $reloadlist == 1 ];then
   
   #for app_categories() and app_status() functions
   source "${DIRECTORY}/api"
-  vfiles="$(app_categories)" #generate paps within categories as folders
-  
-  #generate a virtual file system with apps in folders represented as subdirectories
-  
-  
-  vfiles="$(echo "$vfiles" | grep . | sort | uniq)"
-  #echo "$vfiles" 1>&2
-  
+  vfiles="$(app_categories | grep . | sort | uniq)" #generate a virtual file system with apps in folders represented as subdirectories
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
     
     vfiles="$(echo "$vfiles" | grep "^$prefix/" | sed "s+$prefix/++g")"
   fi
-  #echo "$vfiles" 1>&2
   
   #remove apps within categories - show this layer of stuff only.
   vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
@@ -114,19 +132,11 @@ if [ $reloadlist == 1 ];then
   #get list of folders - excluding apps - and hide the hidden folder.
   DIRS="$(echo "$vfiles" | grep '/' | tr -d '/' | grep -vx "hidden")"
   
-  #remove apps that are not compatible with OS architecture
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for i in $APPS
-  do
-    #if install script doesn't exist -------------------- and if os-specific install script doesn't exist, then...
-    if [ ! -f "${DIRECTORY}/apps/${i}/install" ] && [ ! -f "${DIRECTORY}/apps/${i}/install-${arch}" ];then
-      #...remove the app from the list
-      echo "Removing $i from the list because it is not compatible with your ${arch}-bit OS." 1>&2
-      APPS="$(echo "$APPS" | grep -vx "$i")"
-    fi
-  done
-  IFS="$PREIFS"
+  #If updates available, show special Updates category
+  if "${DIRECTORY}/updater" get-status &>/dev/null;then
+    DIRS="Updates
+$DIRS"
+  fi
   
   #shuffle the list if enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
@@ -134,8 +144,10 @@ if [ $reloadlist == 1 ];then
     DIRS="$(echo "$DIRS" | shuf)"
   fi
   
+  #remove apps that are not compatible with OS architecture
+  APPS="$(echo "$APPS" | list_intersect "$(list_apps cpu_installable)")"
+  
   if [ "$format" == yad ];then
-    PREIFS="$IFS"
     IFS=$'\n'
     LIST=''
     for i in $DIRS
@@ -147,23 +159,31 @@ if [ $reloadlist == 1 ];then
       fi
       
       LIST="${LIST}$diricon
-${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/none-1.png
 $i
 $i/
 App folder
 "
-    done
+    done #finished preloading categories
     
-    for i in $APPS
-    do
-      LIST="$LIST$(echo "${DIRECTORY}/icons/$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none").png")
+    #set to false to disable genapplist-yad program - use the original bash version
+    if true && [ -f "${DIRECTORY}/etc/genapplist-yad" ];then
+      LIST="$LIST$(DIRECTORY="$DIRECTORY" APPS="$APPS" "${DIRECTORY}/etc/genapplist-yad")
+"
+    else
+      for i in $APPS
+      do
+        status1="$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none")"
+        status2="$(echo "$status1" | sed 's/none/uninstalled/g')"
+        
+        LIST="$LIST$(echo "${DIRECTORY}/icons/$status1.png")
 ${DIRECTORY}/apps/${i}/icon-24.png
 $i
 $i
-"\("$(app_status "$i")"\)" $(echo "$(cat "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")" | head -n1)
+"\("$status2"\)" $(head -n1 "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")
 "
-    done
-    IFS="$PREIFS"
+      done
+    fi #finished preloading apps
     
   elif [ "$format" == xlunch ];then
     #XUNCH list format
@@ -186,11 +206,11 @@ ${i};$diricon;${i}/"
     for i in $APPS
     do
       LIST="$LIST
-${i} "\("$(app_status "${i}")"\)";${DIRECTORY}/apps/${i}/icon-64.png;${i}"
+${i} ($(app_status "${i}"));${DIRECTORY}/apps/${i}/icon-64.png;${i}"
     done
     IFS="$PREIFS"
   fi
-  LIST="$(echo -e "$LIST")"
+  LIST="$(echo -e "$LIST" | sed 's/&/&amp;/g')"
   
   #save entire list string to file for future use
   echo "$LIST" > "$listfile"
@@ -215,5 +235,5 @@ IFS="$PREIFS" ) &
 
 echo "$LIST"
 
-#re-preload all categories in background
+#preload all categories in background
 "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &

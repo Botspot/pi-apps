@@ -1,0 +1,22 @@
+#!/bin/bash
+# Install flatpak first 
+install_packages flatpak || exit 1
+
+flatpak_install org.telegram.desktop || exit 1
+
+sudo rm -f /var/lib/flatpak/app/org.telegram.desktop/*/export/share/applications/org.telegram.desktop.desktop
+# Create menu shortcut
+echo "[Desktop Entry]
+Version=1.0
+Name=Telegram 
+Comment=Official desktop version of Telegram messaging app
+Exec=flatpak run --command=telegram-desktop --file-forwarding org.telegram.desktop -- @@u %u @@
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupWMClass=TelegramDesktop
+Type=Application
+Categories=Chat;Network;InstantMessaging;Qt;
+MimeType=x-scheme-handler/tg;
+Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
+X-GNOME-UsesNotifications=true
+X-Flatpak=org.telegram.desktop" > ~/.local/share/applications/telegram.desktop || error "Failed to create menu shortcut!"

@@ -1,21 +1,8 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-VERSION=arduino-1.8.15
+version=1.8.19
 
 cd ~/.local/share
-rm -f $(pwd)/$VERSION-linuxaarch64.tar.xz
-wget https://downloads.arduino.cc/$VERSION-linuxaarch64.tar.xz || error "failed to download!"
-
-tar -xf $(pwd)/$VERSION-linuxaarch64.tar.xz || error "failed to extract with tar!"
-$(pwd)/$VERSION/install.sh || error "failed to run install as $USER user!"
-sudo $(pwd)/$VERSION/install.sh || error "failed run install as root user!"
-
-rm -f $HOME/Desktop/arduino-arduinoide.desktop $(pwd)/$VERSION-linuxaarch64.tar.xz
-exit 0
+wget https://downloads.arduino.cc/arduino-${version}-linuxaarch64.tar.xz || error "failed to download!"
+tar -xf $(pwd)/arduino-${version}-linuxaarch64.tar.xz || error "failed to extract with tar!"
+sudo $(pwd)/arduino-${version}/install.sh || error "failed run Arduino install script!"
+rm -f $HOME/Desktop/arduino-arduinoide.desktop $(pwd)/arduino-${version}-linuxaarch64.tar.xz

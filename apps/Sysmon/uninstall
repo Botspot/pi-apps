@@ -1,0 +1,7 @@
+#!/bin/bash
+
+purge_packages || exit 1
+sudo systemctl stop WebStationSYSMON.service &>/dev/null
+sudo systemctl disable WebStationSYSMON.service &>/dev/null
+sudo systemctl daemon-reload || error "Failed to run systemctl daemon-reload!"
+sudo rm -rf /opt/sysmon

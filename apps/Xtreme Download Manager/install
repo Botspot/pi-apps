@@ -1,0 +1,35 @@
+#!/bin/bash
+
+version=7.2.11
+version2=2021.12.17
+
+cd $HOME
+mkdir -p xdm 
+cd xdm
+
+install_packages openjdk-11-jdk ffmpeg || exit 1
+
+wget -O xdm.tar.xz https://github.com/subhra74/xdm/releases/download/${version}/xdm-setup-${version}.tar.xz || error "Failed to download XDM setup tar file!"
+wget https://github.com/ytdl-org/youtube-dl/releases/download/${version2}/youtube-dl || error "Failed to download youtube-dl binary!"
+tar -xf xdm.tar.xz || error "Failed to extract XDM setup tar file!"
+echo "Executing XDM setup script..."
+sudo ./install.sh &>/dev/null || error "Failed to execute XDM setup script!"
+sudo chmod +x ./youtube-dl
+sudo mv -f ./youtube-dl /opt/xdman || error "Failed to copy youtube-dl binary!"
+
+# Use system java
+if [ -d $(dirname $(dirname $(sudo update-alternatives --list java | grep 'java-11-openjdk' --color=none))) ]; then
+	sudo rm -rf /opt/xdman/jre/*
+	sudo cp -r $(dirname $(dirname $(sudo update-alternatives --list java | grep 'java-11-openjdk' --color=none)))/* /opt/xdman/jre/
+elif command -v java &>/dev/null; then
+	sudo sed -i s=/opt/xdman/jre/bin/java=$(command -v java)=g /opt/xdman/xdman || error "Failed to change to system Java runtime in /opt/xdman/xdman!"
+	sudo sed -i s=/opt/xdman/jre/bin/java=$(command -v java)=g /usr/bin/xdman || error "Failed to change to system Java runtime in /usr/bin/xdman!"
+else
+	error "OpenJDK-11 installation not found!"
+fi
+# Fix 'Download failed. Failed to append/convert file parts, please check if the drive is full or write protected'
+sudo cp -f $(command -v ffmpeg) /opt/xdman || error "Failed to copy ffmpeg binary!"
+# Delete unwanted files after installation
+rm -rf $HOME/xdm || error "Failed to remove installation leftovers!"
+# Reminder for users to install browser extensiom
+echo -e "\nYou may want to install the XDM browser extension. Install it from \e[4mXDM Menu -> Tools -> Browser Monitoring\e[0m page."

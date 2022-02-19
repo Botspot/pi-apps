@@ -1,0 +1,6 @@
+#!/bin/bash
+purge_packages || exit 1
+
+rm -rf $HOME/Temps-linux-armv7l || sudo rm -rf $HOME/Temps-linux-armv7l || error 'Failed to remove "Temps-linux-armv7l" folder!'
+sudo rm -f /usr/local/bin/temps || error 'Failed to remove /usr/local/bin/temps!'
+sudo rm -f $HOME/.local/share/applications/Temps.desktop || 'Failed to remove menu shortcut!'

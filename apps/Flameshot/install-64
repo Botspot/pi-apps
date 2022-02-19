@@ -1,14 +1,4 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-rm -f ~/flameshot_arm64.deb
-wget -O ~/flameshot_arm64.deb https://github.com/flameshot-org/flameshot/releases/download/v0.10.1/flameshot-0.10.1-1.debian-10.arm64.deb || error 'Failed to download Flameshot deb file'
-"${DIRECTORY}/pkg-install" "$HOME/flameshot_arm64.deb" "$(dirname "$0")" || error 'Failed to install flameshot_armhf.deb'
-rm -f ~/flameshot_arm64.deb
-
+version=11.0.0
+install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-10.arm64.deb || exit 1

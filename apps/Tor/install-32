@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#if ~/tor-browser_en-US folder exists, prepare to import its user-data
+if [ -d ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser ];then
+  mv -f ~/tor-browser_en-US ~/tor-browser_en-US.temp
+fi
+
+rm -f ~/tor.tar.xz
+wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/11.0.3/tor-browser-linux-armhf-11.0.3_en-US.tar.xz/download || error "Failed to download!"
+tar -xf ~/tor.tar.xz || error "Failed to extract!"
+rm -f ~/tor.tar.xz
+
+#if ~/tor-browser_en-US.temp folder exists, import its user-data
+if [ -d ~/tor-browser_en-US.temp ];then
+  rm -rf ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser
+  mv -f ~/tor-browser_en-US.temp/Browser/TorBrowser/Data/Browser ~/tor-browser_en-US/Browser/TorBrowser/Data && rm -rf ~/tor-browser_en-US.temp
+fi
+
+echo "[Desktop Entry]
+Type=Application
+Name=Tor Browser
+GenericName=Web Browser
+Comment=Tor Browser is +1 for privacy and −1 for mass surveillance
+Categories=Network;WebBrowser;Security;
+Exec=$HOME/tor-browser_en-US/Browser/start-tor-browser
+X-TorBrowser-ExecShell=./Browser/start-tor-browser --detach
+Icon=$(dirname "$0")/icon-64.png
+StartupWMClass=Tor Browser" > ~/.local/share/applications/tor.desktop

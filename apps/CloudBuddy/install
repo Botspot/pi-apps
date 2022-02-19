@@ -1,19 +1,9 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Get dependencies
-"${DIRECTORY}/pkg-install" "yad xclip expect" "$(dirname "$0")" || exit 1
-
+install_packages yad xclip expect || exit 1
 rm -rf ~/cloudbuddy || error "Failed to first remove cloudbuddy folder from $HOME!"
 echo "Downloading cloudbuddy..."
-git clone https://github.com/Botspot/cloudbuddy || error "Failed to clone CloudBuddy repository!"
+git_clone https://github.com/Botspot/cloudbuddy || error "Failed to clone CloudBuddy repository!"
 
 echo "Running CloudBuddy setup script..."
 ~/cloudbuddy/main.sh setup || error "CloudBuddy setup script failed!"
-

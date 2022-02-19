@@ -1,38 +1,14 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
-"${DIRECTORY}/pkg-install" "cmake make python3 gcc libc6-dev g++ build-essential" "$(dirname "$0")" || exit 1
-
-rm -rf ~/box64
-git clone https://github.com/ptitSeb/box64 || error 'Failed to clone box64 repository!'
-cd box64 || error 'Failed to change directory'
-mkdir build; cd build; cmake .. -DRPI4ARM64=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo || error 'Failed to run cmake in "build" directory'
-
-#determine how many threads can run without running out of memory
-if [ $(($(free -bt | tail -1 | awk '{print $2}')-$(free -bt | tail -1 | awk '{print $3}'))) -le 2000000000 ];then
-  #less than 2GB of available ram
-  threads=3
-else
-  #greater than 2GB of available ram
-  threads=5
-fi
-echo "Compiling Box64 with $threads threads..."
-make -j${threads} || error 'Failed to compile'
-sudo make install || error 'Failed to run "sudo make install"'
-
-if ! sudo systemctl restart systemd-binfmt ;then
-  echo "WARNING: systemd-binfmt failed to restart. Running debug..."
-  echo 'systemctl status systemd-binfmt.service'
-  systemctl status systemd-binfmt.service
-  echo 'systemctl status systemd-binfmt.service'
-  journalctl -xe | cat
-  echo "Exiting this script as successful, but consider sending the above errors to Pi-Apps developers."
+sudo wget https://ryanfortner.github.io/box64-debs/box64.list -O /etc/apt/sources.list.d/box64.list
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box64.list
+  error "Failed to add box64.list file!"
 fi
 
-exit 0
+wget -O- https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box64-debs-archive-keyring.gpg >/dev/null
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box64.list
+  error "Failed to add KEY.gpg to APT keyring!"
+fi
+
+install_packages box64 || exit 1

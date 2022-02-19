@@ -1,0 +1,11 @@
+#!/bin/bash
+# Get dependencies
+install_packages python3-pip python3-dev || error "Failed to install dependencies"
+#Installing dependencies for search argument
+pip3 install python-Levenshtein fuzzywuzzy || error "pip3 failed to python-Levenshtein and fuzzywuzzy"
+#Downloading papm file
+wget https://raw.githubusercontent.com/techcoder20/PiAppsTerminalAdvanced/main/PiAppsTerminalAdvanced.py -O "${DIRECTORY}/PiAppsTerminalAdvanced.py" || error "Failed to download PiAppsTerminalAdvanced.py"
+echo "#!/bin/bash
+#${DIRECTORY}/gui
+python3 ${DIRECTORY}/PiAppsTerminalAdvanced.py"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
+sudo chmod +x /usr/local/bin/pi-apps

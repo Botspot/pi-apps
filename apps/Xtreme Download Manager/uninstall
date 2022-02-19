@@ -1,0 +1,6 @@
+#!/bin/bash
+purge_packages || exit 1
+
+sudo rm -rf /opt/xdman || error "Failed to remove /opt/xdman/ directpry!"
+sudo rm -f /usr/share/applications/xdman.desktop || error "Failed to remove menu shortcut!"
+sudo rm -f /usr/bin/xdman || error "Failed to remove /usr/bin/xdman !"

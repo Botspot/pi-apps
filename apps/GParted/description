@@ -1,0 +1,8 @@
+Graphically manage disk partitions
+With GParted you can resize, copy, and move partitions without data loss, enabling you to:
+- Grow or shrink your C: drive
+- Create space for new operating systems
+- Attempt data rescue from lost partitions
+
+To run: Menu -> System Tools -> GParted
+To run in a terminal: sudo gparted

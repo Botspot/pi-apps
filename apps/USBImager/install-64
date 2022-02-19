@@ -1,28 +1,16 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 #change version to latest each time
-VER="1.0.8"
-
+version="1.0.8"
 rm -rf ~/usbimager
 mkdir -p ~/usbimager
 cd ~/usbimager
 
 echo "Downloading..."
-wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${VER}-aarch64-linux-x11.zip || error "Failed to download usbimager.zip!"
-
+wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${version}-aarch64-linux-x11.zip || error "Failed to download usbimager.zip!"
 echo "Extracting..."
 unzip $(pwd)/usbimager.zip || error "Failed to extract!"
 rm -f $(pwd)/usbimager.zip
 cd ~/
-
 echo "Copying files..."
 sudo cp -av ~/usbimager/* /usr || error "Failed to copy files to /usr!"
-
 rm -rf ~/usbimager

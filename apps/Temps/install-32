@@ -1,0 +1,17 @@
+#!/bin/bash
+install_packages libgconf-2-4 || exit 1
+
+wget -O $HOME/Temps.zip https://github.com/musicpro/temps/releases/download/0.7.4/Temps-linux-armv7l.zip || error 'Failed to download Temps!'
+unzip $HOME/Temps.zip || error 'Failed to unzip Temps.zip!'
+sudo ln -sf $HOME/Temps-linux-armv7l/Temps /usr/local/bin/temps || error 'Failed to create a symbolic link from $HOME/Temps-linux-armv7l/Temps to /bin/temps!'
+echo "[Desktop Entry]
+Name=Temps
+Comment=Temps is a modern and minimal menubar application based on Electron with actual weather information and forecast.
+GenericName=Weather App
+Exec=temps
+Icon=$(dirname $0)/icon-64.png
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Utility;" > $HOME/.local/share/applications/Temps.desktop || error 'Failed to create menu shortcut!'
+rm -f $HOME/Temps.zip || sudo rm -f $HOME/Temps.zip || error 'Failed to remove Temps.zip!'

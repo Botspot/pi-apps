@@ -1,20 +1,11 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+#package found in: https://linux.wps.cn/
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+version=11.1.0.10920
 
-# Get dependencies
-"${DIRECTORY}/pkg-install" "libglu1-mesa" "$(dirname "$0")" || exit 1
+install_packages firejail "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv || exit 1
 
-rm -f wps-office_11.1.0.9719_arm64.deb 2>/dev/null
+#Prevent application from connecting to the internet
+sudo sed -i 's/^Exec=/Exec=firejail --net=none /g' /usr/share/applications/wps*.desktop
 
-wget https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/9719/wps-office_11.1.0.9719_arm64.deb || error "Failed to download wps office deb!"
-
-sudo apt install --fix-missing -y ~/wps-office_11.1.0.9719_arm64.deb || error "APT failed to install wps office."
-
-rm -f wps-office_11.1.0.9719_arm64.deb
-exit 0

@@ -1,21 +1,26 @@
 #!/bin/bash
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+pkill -9 wine
+command -v wineserver >/dev/null && wineserver -k
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+status -n "Removing terminal commands... "
+sudo rm -rf /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/winetricks
+status_green "Done"
 
-#if your app installs any packages, keep this command here so those packages will be removed.
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
+status -n "Removing Wine folders... "
+sudo rm -rf /opt/wine
+rm -rf ~/.cache/winetricks ~/.cache/wine
+status_green "Done"
 
-sudo rm -f /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot
-rm -rf ~/wine ~/.cache/winetricks ~/.cache/wine
+status -n "Removing menu shortcuts... "
+rm -rf ~/.local/share/applications/wine ~/.local/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
+status_green "Done"
 
-rm -f ~/.local/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
+purge_packages || exit 1
 
-echo -e "\n\n\e[93mYou just uninstalled the Wine app, but it's not completely gone yet.
+if [ -e "$HOME/.wine" ];then
+  echo -e "\n\n\e[93mYou just uninstalled the Wine app, but it's not completely gone yet.
 To prevent data loss, your Wine configuration is still\nlocated in the $HOME/.wine folder. Feel free to delete it to save space or to rename the folder for troubleshooting.
-
 Thanks for reading! -Botspot\e[39m\n"
+fi
+true

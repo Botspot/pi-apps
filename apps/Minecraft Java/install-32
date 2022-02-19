@@ -1,53 +1,79 @@
 #!/bin/bash
+install_packages kmod zip unzip libfuse2 || exit 1
 
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
+echo
+echo "Creating directories"
+mkdir -p ~/.minecraft ~/lwjgl3arm32 ~/lwjgl2arm32 ~/lunarassets
+sudo mkdir -p /opt/jdk
 
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
+#Download client and assorted java stuff
+echo "Downloading lunarclient.AppImage"
+errors="$(wget -O ~/lunarassets/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.8.0-armv7l.AppImage' 2>&1)" || error "Failed to download lunarclient.AppImage\nErrors:\n$errors"
+errors="$(chmod +x ~/lunarassets/lunarclient.AppImage 2>&1)" || error "Failed to make lunarclient.AppImage executable!\nErrors:\n$errors"
 
-#Run modified setupMC.sh
-rm -rf ~/Minecraft || sudo rm -rf ~/Minecraft || error "Failed to first remove ~/Minecraft folder!"
-mkdir -p ~/Minecraft && cd ~/Minecraft && wget https://github.com/chunky-milk/Minecraft/raw/main/setupMC.sh && chmod +x setupMC.sh && ./setupMC.sh || error 'Failed to install the launcher!'
+echo "Downloading lunarclient.png"
+errors="$(wget -O ~/lunarassets/lunarclient.png https://github.com/gl91306/lunar/raw/master/lunarclient.png 2>&1)" || error "Failed to download lunarclient.png\nErrors:\n$errors"
 
-#Move launcher to /usr/share/
-sudo mkdir /usr/share/minecraftjava && sudo mv launcher.jar /usr/share/minecraftjava/launcher.jar
+echo "Downloading jdk-17.tar.gz"
+sudo rm -rf ~/jdk-17.tar.gz /opt/jdk/jdk-17.0.1+12
+errors="$(wget -O ~/jdk-17.tar.gz 'https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.1%2B12/OpenJDK17U-jdk_arm_linux_hotspot_17.0.1_12.tar.gz' 2>&1)" || error "Failed to download jdk-17.tar.gz\nErrors:\n$errors"
+echo "Extracting jdk-16.tar.gz to /opt/jdk"
+sudo tar -zxf ~/jdk-17.tar.gz -C /opt/jdk || error "Failed to extract jdk-17.tar.gz"
+rm -f ~/jdk-17.tar.gz
 
-#Create desktop shortcut
-cd ~/.local/share/applications/
+echo "Setting up lwjgl3arm32 folder"
+echo "- Downloading lwjgl3arm32.tar.gz"
+errors="$(wget -O ~/lwjgl3arm32.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl3arm32.tar.gz' 2>&1)" || error "Failed to download lwjgl3arm32.tar.gz\nErrors:\n$errors"
+echo "- Extracting lwjgl3arm32.tar.gz"
+tar -zxf ~/lwjgl3arm32.tar.gz -C ~/lwjgl3arm32 || error "Failed to extract lwjgl3arm32.tar.gz"
+rm -f ~/lwjgl3arm32.tar.gz
+echo "- libwebp-imageio32.so"
+errors="$(wget -O ~/lwjgl3arm32/libwebp-imageio32.so 'https://github.com/gl91306/lunar/raw/master/libwebp-imageio32.so' 2>&1)" || error "Failed to download libwebp-imageio32.so\nErrors:\n$errors"
+echo "- libgstreamer-lite.so"
+errors="$(wget -O ~/lwjgl3arm32/libgstreamer-lite.so 'https://github.com/gl91306/lunar/raw/master/libgstreamer-lite.so' 2>&1)" || error "Failed to download libgstreamer-lite.so\nErrors:\n$errors"
+echo "- libjfxmedia.so"
+errors="$(wget -O ~/lwjgl3arm32/libjfxmedia.so 'https://github.com/gl91306/lunar/raw/master/libjfxmedia.so' 2>&1)" || error "Failed to download libjfxmedia.so\nErrors:\n$errors"
+
+echo "Setting up lwjgl2arm32 folder"
+echo "- Downloading lwjgl2arm32.tar.gz"
+errors="$(wget -O ~/lwjgl2arm32.tar.gz 'https://github.com/mikehooper/Minecraft/raw/main/lwjgl2arm32.tar.gz' 2>&1)" || error "Failed to download lwjgl2arm32.tar.gz\nErrors:\n$errors"
+echo "- Extracting lwjgl2arm32.tar.gz"
+tar -zxf ~/lwjgl2arm32.tar.gz -C ~/lwjgl2arm32 || error "Failed to extract lwjgl2arm32.tar.gz"
+rm -f ~/lwjgl2arm32.tar.gz
+echo "- libwebp-imageio32.so"
+cp ~/lwjgl3arm32/libwebp-imageio32.so ~/lwjgl2arm32
+echo "- libgstreamer-lite.so"
+cp ~/lwjgl3arm32/libgstreamer-lite.so ~/lwjgl2arm32
+echo "- libjfxmedia.so"
+cp ~/lwjgl3arm32/libjfxmedia.so ~/lwjgl2arm32
+echo "- libopenal.so"
+rm -f ~/lwjgl2arm32/libopenal.so
+cp ~/lwjgl3arm32/libopenal.so ~/lwjgl2arm32
+
+echo "Downloading javafx-sdk-17.zip"
+errors="$(wget -O ~/javafx-sdk-17.zip 'https://github.com/gl91306/lunar/raw/master/javafx-sdk-17.zip' 2>&1)" || error "Failed to download javafx-sdk-17.zip\nErrors:\n$errors"
+echo "Extracting javafx-sdk-17.zip"
+unzip -oq ~/javafx-sdk-17.zip -d ~/lunarassets || error "Failed to extract javafx-sdk-17.zip"
+rm -f ~/javafx-sdk-17.zip
+
+echo "- libjfxwebkit.so"
+errors="$(wget -O ~/lunarassets/javafx-sdk-17/lib/libjfxwebkit.so 'https://github.com/gl91306/lunar/raw/master/libjfxwebkit.so' 2>&1)" || error "Failed to download libjfxwebkit.so\nErrors:\n$errors"
+
+enable_module fuse || exit 1
+
+#Then make menu shortcut
 echo "[Desktop Entry]
 Version=1.0
 Type=Application
-Name=Minecraft Launcher
+Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=env MESA_GL_VERSION_OVERRIDE=3.3 java -jar /usr/share/minecraftjava/launcher.jar
-Categories=Game;" > minecraft.desktop
-chmod +x minecraft.desktop
-cd
+Exec=bash -c "\""JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
+StartupNotify=true
+Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
 
-mkdir -p ~/.minecraft
-echo -e '{
-  "profiles": {
-    "(Default)": {
-      "name": "(Default)",
-      "javaDir": "/opt/jdk-16.0.1+4/bin/java",
-      "javaArgs": "-Dorg.lwjgl.librarypath='$HOME'/lwjgl3arm32 -Xmx1G -XX:-UseAdaptiveSizePolicy -Xmn128M"
-    }
-  },
-  "selectedProfile": "(Default)",
-  "clientToken": "c4a6f915-4d47-47bf-a8f4-746090e7e576",
-  "authenticationDatabase": {},
-  "launcherVersion": {
-    "name": "1.6.93",
-    "format": 21,
-    "profilesFormat": 1
-  }
-}' > $HOME/.minecraft/launcher_profiles.json
+echo "This fork of Lunar Client is made by the devs at Pi-Ware, an alternative to Pi-Apps with a focus on games and multi-os support (Arch and Manjaro).
+You can find more about Pi-Ware at https://github.com/piware14/pi-ware
+You should also contact them for support if a issue arises with the launcher. You can also try the 'Minecraft Java MultiMC5' app in the games section instead.
 
-sudo rm -rf ~/Minecraft
-
-echo 'Installation is now done! You can open the launcher by going to Menu > Games > Minecraft Launcher'
-echo -e "\e[21m\e[5mWARNING:\e[0m\e[97mYou can only play Minecraft versions \e[1m1.13\e[0m and higher with your current configuration! To use lower versions, please follow the instructions at \e[96mhttps://www.noxxtech.tk/minecraft-install#h.fpnon3xvmuoz\e[39m to play versions \e[1m1.12\e[0m and under!"
-read -p "Press [Enter] to continue after you've read the above message"
+To run: Menu -> Games -> Minecraft Launcher (Lunar)"

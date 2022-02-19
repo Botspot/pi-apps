@@ -1,0 +1,10 @@
+#!/bin/bash
+echo 'deb http://download.opensuse.org/repositories/home:/stevenpusser/Debian_10/ /' | sudo tee /etc/apt/sources.list.d/home:stevenpusser.list >/dev/null
+curl -fsSL https://download.opensuse.org/repositories/home:stevenpusser/Debian_10/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_stevenpusser.gpg >/dev/null
+
+(install_packages palemoon)
+if [ $? != 0 ];then
+  #if package-installation failed, remove repository to avoid breaking apt updates
+  sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
+  exit 1
+fi

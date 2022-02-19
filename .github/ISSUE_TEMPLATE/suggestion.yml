@@ -1,0 +1,11 @@
+name: Suggestion
+description: "Have an idea for Pi-Apps and it's not a bug or an app request?"
+labels: Suggestion
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Cool ideas?
+      placeholder: Tell us about your idea here
+    validations:
+      required: true

@@ -5,13 +5,16 @@ function error {
   exit 1
 }
 
-cd $HOME
+cd "$HOME"
 
+#ensure non-root
 if [[ "$(id -u)" == 0 ]]; then
-	error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
+  error "Pi-Apps is not designed to be installed as root! Please try again as a regular user."
 fi
 
+#ensure debian
 command -v apt >/dev/null || error "apt: command not found. Most likely this system is not running Debian."
+
 #Ensure running arm processor
 if uname -m | grep -q 'x86' ;then
   error "Pi-Apps is not not supported on non-arm processor architectures like amd64 and i386. You may be interested in Pi-Apps x86, a unofficial fork of Pi-Apps for x64 and x86 systems: https://github.com/Pi-Apps-Recreates/pi-apps-x86"
@@ -19,22 +22,15 @@ fi
 
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
-#install yad automatically
-if ! command -v yad >/dev/null;then
-  sudo apt install -y yad || error "Failed to install yad."
+#install dependencies
+dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales'
+## Install dependencies if necessary
+if ! dpkg -s $dependencies >/dev/null 2>&1; then
+  sudo apt install $dependencies -y -f --no-install-recommends
 fi
-#remove annoying YAD icon browser launcher
+
+#remove annoying "YAD icon browser" launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
-
-#install git
-if ! command -v git >/dev/null;then
-  sudo apt install -y git || error "Failed to install git."
-fi
-
-#install curl
-if ! command -v curl >/dev/null;then
-  sudo apt install -y curl || error "Failed to install curl."
-fi
 
 #download pi-apps if folder missing
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
@@ -81,7 +77,7 @@ echo "[Desktop Entry]
 Name=Pi Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
-Icon=${DIRECTORY}/icons/logo.png
+Icon=${DIRECTORY}/icons/settings.png
 Terminal=false
 Type=Application
 Categories=Settings;
@@ -165,15 +161,23 @@ ${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   echo "You can now launch pi-apps from a terminal, just by running 'pi-apps'"
 fi
 
+#generate settings
 if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
   echo "Generating default settings..."
 fi
 "${DIRECTORY}/settings" refresh
 
+#preload app list
 if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
   echo "Preloading app list..."
 fi
 "${DIRECTORY}/preload" &>/dev/null
+
+#generate splash screen
+if [ ! -f "${DIRECTORY}/icons/splashscreen.png" ];then
+  echo "Generating loading screen..."
+fi
+"${DIRECTORY}/api" generate_splashscreen
 
 echo "Installation complete."
 

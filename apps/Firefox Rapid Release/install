@@ -1,15 +1,7 @@
 #!/bin/bash
-
-DIRECTORY="$(dirname "$(dirname "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )")")"
-
-function error {
-  echo -e "\\e[91m$1\\e[39m"
-  exit 1
-}
-
 # Add repository source to apt sources.list
 echo "Adding ubuntu repository..."
-echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
+echo "deb [arch=$(dpkg --print-architecture)] http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
 
 # Add ubuntu keyring
 echo "Signing ubuntu repository..."
@@ -21,7 +13,7 @@ fi
 
 # Add preferences so the ubuntu repositories don't become your "default" repositories
 echo "Preventing Ubuntu repository from causing apt problems..."
-sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/chunky-milk/pi-bashscripts-files/main/Files/99bionic-updates
+sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/ryanfortner/pi-bashscripts-files/main/Files/99bionic-updates
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
   error "wget failed to download 99bionic-updates config file!"
@@ -31,7 +23,6 @@ fi
 
 echo "Running 'sudo apt update'..."
 sudo apt update || error "Failed to run 'sudo apt update'!"
-
 "${DIRECTORY}/api" apt_lock_wait
 
 echo "Installing Firefox package..."

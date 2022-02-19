@@ -1,0 +1,5 @@
+#!/bin/bash
+purge_packages || exit 1
+
+rm -rf $HOME/Codex || sudo rm -rf $HOME/Codex || error "Failed to remove Codex directory!"
+rm -f $HOME/.local/share/applications/codex.desktop || sudo rm -f $HOME/.local/share/applications/codex.desktop || error "Failed remove menu shortcut!"
