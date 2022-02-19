@@ -62,7 +62,6 @@ function config_helper() {
     check=0
     until [ "$check" == "1" ]; do
         pool_pref=$(userinput_text_func "What mining pool do you want to use?  Example: gulf.moneroocean.stream:10032")
-        table=("Yes" "No")
         userinput_func "Your mining pool will be set to ${pool_pref}. Is this ok?" "${default_table[@]}"
         case $output in
         Yes)
@@ -168,9 +167,9 @@ EOT
 cd
 install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev || exit 1
 git_clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
-mkdir $HOME/xmrig/build && cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
+mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
-make -j$(nproc) || error 'Failed to build XMRig!'
+make -j"$(nproc)" || error 'Failed to build XMRig!'
 sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/bin/xmrig'!!"
 
 if [ -e $HOME/xmrig.json.bak ]; then
