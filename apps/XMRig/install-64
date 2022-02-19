@@ -171,21 +171,21 @@ git_clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to 
 mkdir $HOME/xmrig/build && cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
-sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig
+sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/bin/xmrig'!!"
 
 if [ -e $HOME/xmrig.json.bak ]; then
-    userinput_func "Do you want to use your previous 'xmrig.json'?" $default_table
+    userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
         status "\nCopying old 'xmrig.json' to chroot..."
-        cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json
-        sudo cp $HOME/xmrig.json.bak $HOME/xmrig/bullseye/root/.config/xmrig.json
+        cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig.json'!!"
+        sudo cp $HOME/xmrig.json.bak $HOME/xmrig/bullseye/root/.config/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig/bullseye/root/.config/xmrig.json'!!"
         rm $HOME/xmrig.json.bak
     else
         status '\nI won'\''t use the previous config...'
         use_old_config="no"
     fi
 elif [ "$use_old_config" == "no" ] || [ ! -e $HOME/xmrig.json.bak ]; then
-    userinput_func "Do you want to setup your xmrig.json? This will make running xmrig easier." $default_table
+    userinput_func "Do you want to setup your xmrig.json? This will make running xmrig easier." "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
         status_green "\nStarting helper..."
         config_helper
