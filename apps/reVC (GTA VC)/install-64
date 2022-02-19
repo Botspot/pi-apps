@@ -16,12 +16,16 @@ read -p Press [Enter] if you own the GTA VC and have its Gamedata or press [Ctrl
 
 # Download required assets
 cd ~/
-wget http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_arm64.deb || error "Failed to download libglfw3 installer"
 wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/reVC-rel-arm64.zip -O ~/reVC.zip || error "Failed to download reVC.zip"
 wget https://github.com/Jai-JAP/RPi-GTA-re/raw/main/reVC-gamefiles.zip -O ~/reVC-gamefiles.zip || error "Failed to download reVC-gamefiles.zip"
 
 # Install dependencies and app
-sudo apt install -y ~/libglfw3_3.3.2-1_arm64.deb || error "Failed to install libglfw3"
+package_available libglfw3
+if [[ "$(get_codename)" == "buster" ]] || [[ $? != "0" ]]; then
+  install_packages http://deb.debian.org/debian/pool/main/g/glfw3/libglfw3_3.3.2-1_arm64.deb || exit 1
+else
+  install_packages libglfw3 || exit 1
+fi
 mkdir -p ${HOME}/Games/GTAVC || error "Failed to create directory ${HOME}/Games/GTAVC"
 unzip ~/reVC.zip -d ${HOME}/Games/GTAVC || error "Failed to unzip downloaded ~/reVC.zip to ${HOME}/Games/GTAVC"
 unzip ~/reVC-gamefiles.zip -d ${HOME}/Games/GTAVC || error "Failed to unzip downloaded ~/reVC-gamefiles.zip to ${HOME}/Games/GTAVC"
@@ -44,7 +48,6 @@ Categories=Game;
 EOF
 
 # Cleaning up
-rm ~/libglfw3_3.3.2-1 _arm64.deb
 rm ~/reVC.zip
 rm ~/reVC-gamefiles.zip
 
