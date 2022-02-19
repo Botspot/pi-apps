@@ -286,7 +286,7 @@ sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh || error 'Failed to make '\''$ch
 status_green 'Done.'
 
 # Run install script
-sudo chroot $HOME/xmrig/bullseye ./chroot-xmrig-inst.sh
+sudo chroot $HOME/xmrig/bullseye ./chroot-xmrig-inst.sh || error 'Failed to build XMRig inside chroot!!!'
 
 if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" $default_table
