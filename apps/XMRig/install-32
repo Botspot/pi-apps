@@ -253,7 +253,7 @@ if [ -d "$HOME/xmrig" ]; then
         esac
     done
 fi
-sudo mkdir -p $chroot_dir/home/$USER/ $chroot_dir/root/.config || error 'Failed to create folders in chroot!'
+sudo mkdir -p $chroot_dir/home/$USER/ $chroot_dir/root/.config $chroot_dir/etc || error 'Failed to create folders in chroot!'
 sudo cp /etc/resolv.conf $chroot_dir/etc/resolv.conf || error 'Failed to copy '\''/etc/resolv.conf'\'' into chroot environment!'
 echo "export LANG=C" | sudo tee --append $HOME/xmrig/bullseye/etc/.bashrc 1>&2 || error 'Failed to echo '\''export LANG=C'\'' to chroot environment'\''s .bashrc'
 
