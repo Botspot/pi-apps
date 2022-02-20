@@ -237,6 +237,7 @@ Apt/dpkg/package functions below.
 
 - `package_info` - List everything `dpkg` knows about the specified package.
   - This retrieves a block of text from the `/var/lib/dpkg/status` file.
+  - This only works if the package is currently installed.
 - `package_installed` - determine if the specified package is installed.
   - Returns an exit code of `0` if the package is installed, otherwise it returns `1`.
 - `package_available` - determine if the specified package is able to be installed with `apt`.
@@ -245,6 +246,27 @@ Apt/dpkg/package functions below.
 - `package_dependencies` - List the dependencies of a package
   - This simply isolates a line from the output of the `package_info` function.
   - This is *much* faster than doing an `apt-cache search`.
+  - This only works if the package is currently installed.
+- `package_latest_version` - Return the latest available version of the specified package.
+  - This function is useful for apps that depend on a recent version of a package.
+- `package_is_new_enough` - Given a package and a version threshold, determine if the package-version is greater than the threshold.
+  - This function is an extension of the `package_latest_version` function above, to simplify scripting.
+  - If the package has a higher version than the threshold value, the return coide is `0`, otherwise it returns `1`.
+  - Example usage, from the Mission Planner app:
+    ```bash
+    status -n "Is the mono-complete package new enough? "
+    
+    if package_is_new_enough mono-complete 6.8.0 ;then
+      status_green 'Yes' #answer the question asked above
+    else
+      status_green 'No' #answer the question asked above
+      echo "Adding Mono repository..."
+      install_packages apt-transport-https dirmngr gnupg ca-certificates || exit 1
+      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
+      echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    fi
+    install_packages mono-complete || exit 1
+    ```
 - `anything_installed_from_repo` - Check if any apt-packages have been installed from the given repository-URL.
   - Example usage:
     ```bash
