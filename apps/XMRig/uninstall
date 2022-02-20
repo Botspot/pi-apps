@@ -7,5 +7,5 @@ status "Not removing the 'xmrig' folder because uninstall run from updater."
 else
 purge_packages || exit 1
 sudo rm -rf $HOME/xmrig || error 'Failed to remove $HOME/xmrig dir!'
-sudo rm /usr/local/bin/xmrig &>/dev/null
+sudo rm -f /usr/local/bin/xmrig &>/dev/null
 fi
