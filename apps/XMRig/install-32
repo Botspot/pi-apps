@@ -220,12 +220,13 @@ if [ -d "$HOME/xmrig" ]; then
         userinput_func "I tried to debootstrap '$chroot_dir', but '$HOME/xmrig' exists. Do you want to delete the chroot, or reuse it? If you have a 'xmrig.json' config file, it will be saved." "${table[@]}"
         case "$output" in
         Delete)
-            if [ -e "$HOME/xmrig/xmrig.json" ]; then 
+            if [ -e "$HOME/xmrig/xmrig.json" ]; then
                 status "Creating backup of '$HOME/xmrig/xmrig.json' to $HOME/xmrig.json.bak..."
                 cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak 1>&2 || sudo cp $HOME/xmrig/xmrig.json $HOME/xmrig.json.bak || error "Failed to create a backup of '$HOME/xmrig/xmrig.json'!"
                 status_green 'Done!'
             else
-                warning "No 'xmrig.json' found! Not backing up... Continuing in ten seconds..."; sleep 10
+                warning "No 'xmrig.json' found! Not backing up... Continuing in ten seconds..."
+                sleep 10
             fi
             status "Removing '$HOME/xmrig'..."
             sudo rm -rf $HOME/xmrig || error "I was not able to remove '$HOME/xmrig'!"
@@ -252,6 +253,13 @@ if [ -d "$HOME/xmrig" ]; then
             ;;
         esac
     done
+else
+    status "Creating new '$HOME/xmrig' directory..."
+    mkdir -p $HOME/xmrig/ || error "I was not able to create '$HOME/xmrig'!"
+    status_green 'Done!'
+    status 'Starting debootstrap... This next part will take a while.\n'
+    sudo debootstrap --variant=buildd --arch arm64 bullseye $HOME/xmrig/bullseye http://ftp.us.debian.org/debian/ || error 'Failed to debootstrap chroot environment!!!'
+    status_green '\nDone!\n'
 fi
 sudo mkdir -p $chroot_dir/home/$USER/ $chroot_dir/root/.config $chroot_dir/etc || error 'Failed to create folders in chroot!'
 sudo cp /etc/resolv.conf $chroot_dir/etc/resolv.conf || error 'Failed to copy '\''/etc/resolv.conf'\'' into chroot environment!'
