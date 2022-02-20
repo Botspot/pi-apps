@@ -279,10 +279,7 @@ error() { #red text and exit 1
 }
 
 
-apt install git build-essential cmake make libuv1-dev libssl-dev libhwloc-dev -y
-if [ "$?" != "0" ]; then
-error 'Failed to install dependecies!'
-fi
+apt install git build-essential cmake make libuv1-dev libssl-dev libhwloc-dev -y || error 'Failed to install dependecies!'
 rm -rf /xmrig || error "Failed to remove '/xmrig' directory!"
 git clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
 mkdir /xmrig/build && cd /xmrig/build || error 'Failed to create and cd into build directory!'
@@ -293,8 +290,13 @@ EOT
 sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh || error "Failed to make '$chroot_dir/chroot-xmrig-inst.sh' executable!"
 status_green 'Done.'
 
+# Check to make sure chroot is sound
+if sudo chroot $chroot_dir echo chroot works &>/dev/null; then
 # Run install script
 sudo chroot $HOME/xmrig/bullseye /chroot-xmrig-inst.sh || error 'Failed to build XMRig inside chroot!!!'
+else
+error 'The xmrig chroot is broken. Please reinstall, and if you reused your chroot, it might be a good idea to delete it, and start over.'
+fi
 
 if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
