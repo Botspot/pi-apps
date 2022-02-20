@@ -300,8 +300,8 @@ if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
         status "\nCopying old 'xmrig.json' to chroot..."
-        cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig.json'!!"
-        sudo cp $HOME/xmrig.json.bak $HOME/xmrig/bullseye/root/.config/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' executable to '$HOME/xmrig/bullseye/root/.config/xmrig.json'!!"
+        cp $HOME/xmrig.json.bak $HOME/xmrig/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' to '$HOME/xmrig.json'!!"
+        sudo cp $HOME/xmrig.json.bak $HOME/xmrig/bullseye/root/.config/xmrig.json || error "Failed to copy '$HOME/xmrig.json.bak' to '$HOME/xmrig/bullseye/root/.config/xmrig.json'!!"
         rm $HOME/xmrig.json.bak &>/dev/null
     else
         status '\nI won'\''t use the previous config...'
