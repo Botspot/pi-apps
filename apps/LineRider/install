@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#v1.0.2
-#^^^ When I edit the build at https://github.com/Pi-Apps-Coders/files it does not update this app, so I change this number + 1
+webVer=$(get_release Sussy-OS/LineRiderUpdater)
+all_url="https://github.com/Sussy-OS/LineRiderUpdater/releases/download/${webVer}/TempFile-${webVer}.txt"
+pi_apps_ver="$(cat 'install' | grep 'version=' | sed 's/version=//')"
+#^^^ When I edit the build at https://github.com/Pi-Apps-Coders/files it does not update this app, so a bot changes this number when I do
 
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
 
