@@ -33,5 +33,5 @@ Name=Mission Planner
 Exec=bash -c 'LIBGL_ALWAYS_SOFTWARE=1 mono $HOME/MissionPlanner-latest/MissionPlanner.exe'
 Icon=$(dirname "$0")/icon-64.png
 Categories=Development;Electronics;
-Comment=Command and control autonomius planes, vehicles and boats" > ~/.local/share/applications/mission-planner.desktop
+Comment=Command and control autonomous planes, vehicles and boats" > ~/.local/share/applications/mission-planner.desktop
 
