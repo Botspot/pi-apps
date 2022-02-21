@@ -1,5 +1,4 @@
 #!/bin/bash
 
 #Allow packages required by this app to be uninstalled
-echo Removing ledcontrol...
 sudo rm /usr/bin/ledcontrol
