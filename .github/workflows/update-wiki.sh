@@ -36,7 +36,7 @@ conversion() {
                 [[ ! -z "$script_website" ]] && [[ -z "$script_credits" ]] && echo "$script_website<br />"
                 [[ -z "$script_website" ]] && [[ ! -z "$script_credits" ]] && echo "$script_credits<br />"
                 echo "$arch"
-                echo ""
+                echo '>'
                 cat "$GITHUB_WORKSPACE/apps/$script/description" | sed -e "s/.*/    &/"
             fi
             iter=$(($iter + 1))
