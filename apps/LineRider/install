@@ -1,7 +1,11 @@
 #!/bin/bash
 
 version=1.0.3
-#^^^ When I edit the build at https://github.com/Pi-Apps-Coders/files it does not update this app, so a bot changes this number when I do
+#Bot automatically updates this when I make a new release.
+
+wget -O TempFile https://github.com/Sussy-OS/LineRiderUpdater/releases/download/${version}/TempFile-${version}.txt
+
+rm TempFile
 
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
 
