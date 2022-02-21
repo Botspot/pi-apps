@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=2.0
+version=3.0
 
-install_packages https://github.com/cycool29/whatsapp-for-linux/releases/download/${version}/whatsapp_arm64_${version}.deb || exit 1
+install_packages https://github.com/cycool29/whatsapp-for-linux/releases/download/${version}/whatsapp_${version}_arm64.deb || exit 1
