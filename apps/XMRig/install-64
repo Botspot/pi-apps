@@ -166,6 +166,7 @@ EOT
 
 cd
 install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev || exit 1
+rm -rf $HOME/xmrig
 git_clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
 mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
