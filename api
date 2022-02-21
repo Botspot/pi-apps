@@ -110,7 +110,7 @@ add_english() { #add en_US locale for more accurate error
 }
 
 #package functions
-package_info() { #list everything dpkg knows about the $1 package
+package_info() { #list everything dpkg knows about the $1 package. Note: the package has to be installed for this to show anything.
   local package="$1"
   [ -z "$package" ] && error "package_info(): no package specified!"
   #list lines in /var/lib/dpkg/status between the package name and the next empty line
@@ -132,7 +132,7 @@ package_available() { #determine if the specified package-name exists in a repos
   local package="$1"
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rq "^Package: $package"'$' /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
+  grep -rqx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -143,11 +143,42 @@ package_dependencies() { #outputs the list of dependencies for the $1 package
   package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
 }
 
+package_latest_version() { #returns the latest availabl versions of the specified package-name. Doesn't matter if it's installed or not.
+  local package="$1"
+  [ -z "$package" ] && error "package_version(): no package specified!"
+  
+  grep -rx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" --after 4 | grep -o 'Version: .*' | awk '{print $2}' | sort -rV | head -n1
+}
+
+package_is_new_enough() { #check if the $1 package has an available version greater than $2
+  local package="$1"
+  [ -z "$package" ] && error "package_is_new_enough(): no package specified!"
+  
+  local compare_version="$2"
+  [ -z "$package" ] && error "package_is_new_enough(): no comparison version number specified!"
+  
+  #determine the latest available version for the specified package
+  local package_version="$(package_latest_version "$package")"
+  
+  #if version value not found, return 1 now
+  if [ -z "$package_version" ];then
+    return 1
+  fi
+  
+  #given both the package_version and compare_version, see if the greater of the two is the available package's version
+  if [ "$(echo "$package_version"$'\n'"$compare_version" | sort -rV | head -n1)" == "$package_version" ];then
+    #if so, indicate success
+    return 0
+  else
+    return 1
+  fi
+}
+
 anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
   [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
   
   #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard
-  local url="$(echo "$1" | sed 's+.*://++g' | sed 's+/+_+g')"
+  local url="$(echo "$1" | sed 's+.*://++g' | tr '/' '_')"
   
   #find all package-lists pertaining to the url
   local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
@@ -1507,7 +1538,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -q "xz: (stdin): Unexpected end of input\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
+  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
@@ -1792,6 +1823,7 @@ get_codename() { #get debian/ubuntu codename
   lsb_release -sc
 }
 
+#command interceptors - functions that enhance a command
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
   local module="$1"
   [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
@@ -1807,7 +1839,6 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
   fi
 }
 
-#command interceptors - functions that enhance a command
 git_clone() { #silently clone a git repository but display the output if an error occurs
   # $1 is repo
   local IFS=' '

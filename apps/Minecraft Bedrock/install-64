@@ -18,7 +18,7 @@ Type=Application
 Name=Minecraft Bedrock Launcher
 Comment=A Minecraft: Bedrock Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=env GALLIUM_HUD=simple,fps $HOME/.local/bin/MCBedrock.AppImage
+Exec=env QTWEBENGINE_CHROMIUM_FLAGS='--enable-logging --log-level=0 --v=3 --single-process --no-sandbox' GALLIUM_HUD=simple,fps $HOME/.local/bin/MCBedrock.AppImage
 Categories=Game;
 Terminal=false
 StartupNotify=true" > ~/.local/share/applications/minecraftbedrock.desktop
