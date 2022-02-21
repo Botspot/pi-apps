@@ -1,0 +1,8 @@
+#!/bin/bash
+
+git_clone https://github.com/Jai-JAP/pikiss-gui || error 'Failed to clone PiKISS GUI repository!'
+
+install_packages meson gobject-introspection libgee-0.8-dev libgirepository1.0-dev libgtk-3-dev valac || exit 1
+
+cd pikiss-gui
+./build.sh
