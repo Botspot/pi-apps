@@ -58,7 +58,7 @@ output="$(echo -e "$LIST" | yad --center --title='Log file viewer' --width=500 -
   --text="Review the errors from installing or uninstalling apps."$'\n'"Week-old log files will be deleted." \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --column=Day --column=I:IMG --column=A:IMG --column=R:IMG --column=Description --column=tooltip:HD \
-  --print-column=6 --tooltip-column=6 --select-action="$(dirname "$0")/viewlog" \
+  --print-column=6 --tooltip-column=6 --select-action="$(dirname "$0")/viewlog" --dclick-action='true' \
   --button='Delete all'!"${DIRECTORY}/icons/trash.png"!"Delete all log files from $DIRECTORY/logs":0 \
   --button=Close!"${DIRECTORY}/icons/exit.png":1
 )"
