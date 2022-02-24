@@ -1,10 +1,3 @@
 #!/bin/bash
-#for backwards compatibility with the chromium version
-rm -rf ~/WhatsappWeb
-#for backwards compatibility with Itai's version
-rm -rf ~/WhatsAppWeb
-rm -f ~/.local/share/applications/whatsappweb.desktop
 
-rm -rf ~/WhatsApp
-rm -f ~/.local/share/applications/whatsapp.desktop
-exit 0
+purge_packages || exit 1

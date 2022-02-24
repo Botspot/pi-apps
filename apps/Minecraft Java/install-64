@@ -44,6 +44,8 @@ echo "Downloading other dependencies"
 errors="$(wget -O ~/lwjgl3arm64/libwebp-imageio64.so https://github.com/gl91306/lunar/raw/master/libwebp-imageio64.so 2>&1)" || error "Failed to download libwebp-imageio64.so\nErrors:\n$errors"
 cp ~/lwjgl3arm64/libwebp-imageio64.so ~/lwjgl2arm64/libwebp-imageio64.so || error "Failed to copy libwebp-imageio64.so"
 
+enable_module fuse || exit 1
+
 #Then make menu shortcut
 echo "[Desktop Entry]
 Version=1.0
@@ -51,7 +53,7 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""pkexec modprobe fuse ; JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
+Exec=bash -c "\""JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
 
@@ -60,4 +62,3 @@ You can find more about Pi-Ware at https://github.com/piware14/pi-ware
 You should also contact them for support if a issue arises with the launcher. You can also try the 'Minecraft Java MultiMC5' app in the games section instead.
 
 To run: Menu -> Games -> Minecraft Launcher (Lunar)"
-

@@ -2,7 +2,7 @@
 
 version=1.6.4
 
-install_packages firefox-esr https://github.com/browsh-org/browsh/releases/download/v${version}/browsh_${version}_linux_armv7.deb || exit 1
+install_packages firefox-esr '|' firefox https://github.com/browsh-org/browsh/releases/download/v${version}/browsh_${version}_linux_armv7.deb || exit 1
 
 echo "[Desktop Entry]
 Version=${version}
