@@ -303,7 +303,7 @@ list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
         print_options $active
 
         # user key control
-        case `key_input` in
+        case $(key_input) in
             space)  toggle_option $active;;
             enter)  print_options -1; break;;
             up)     ((active--));
