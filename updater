@@ -249,7 +249,7 @@ list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
     done
 
     # determine current screen position for overwriting the options
-    local lastrow=`get_cursor_row`
+    local lastrow=$(get_cursor_row)
     local startrow=$(($lastrow - ${#options[@]}))
 
     # ensure cursor and input echoing back on upon a ctrl+c during read -s
