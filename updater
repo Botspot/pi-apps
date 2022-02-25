@@ -231,11 +231,11 @@ file:$file"
 list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
     # little helpers for terminal print control and key input
     ESC=$( printf "\033")
-    cursor_blink_on()   { printf "$ESC[?25h"; }
-    cursor_blink_off()  { printf "$ESC[?25l"; }
-    cursor_to()         { printf "$ESC[$1;${2:-1}H"; }
+    cursor_blink_on()   { printf "${ESC}[?25h"; }
+    cursor_blink_off()  { printf "${ESC}[?25l"; }
+    cursor_to()         { printf "${ESC}[$1;${2:-1}H"; }
     print_inactive()    { printf "$2   $1 "; }
-    print_active()      { printf "$2  $ESC[7m $1 $ESC[27m"; }
+    print_active()      { printf "$2  ${ESC}[7m $1 ${ESC}[27m"; }
     get_cursor_row()    { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
 
     local return_value=$1 &>/dev/null
@@ -685,11 +685,11 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
   echo
   
   if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
-    printf "$ESC[?25l"
+    printf "${ESC}[?25l"
     for i in {6..1}; do 
       echo -ne "Updating in: $i\r (Use Ctrl-C to abort) " && sleep 1
       done
-      printf "$ESC[?25h"
+      printf "${ESC}[?25h"
 
       echo -e "\n"
 
