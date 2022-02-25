@@ -437,7 +437,7 @@ $LIST"
       
       if [ "$guimode" == xlunch-light-3d ];then
         #light mode
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -446,7 +446,7 @@ $LIST"
           )"
       elif [ "$guimode" == xlunch-dark-3d ];then
         #dark mode, 3d opaque version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 2F313600 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc ffffff00 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff20 --scrollindicatorcolor ffffff40 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -455,7 +455,7 @@ $LIST"
           )"
       else
         #dark mode, transparent version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc ffffff30 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
