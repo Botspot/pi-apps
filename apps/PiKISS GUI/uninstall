@@ -1,6 +1,7 @@
 #!/bin/bash
 
 purge_packages || exit 1
+sudo pip3 remove meson #Non-fatal
 cd pikiss-gui || error 'Failed to cd into pikiss-gui directory'
 ./uninstall.sh || error 'Failed to run PiKISS-GUI uninstall script'
 cd .. || error 'Failed to cd out of pikiss-gui directory'
