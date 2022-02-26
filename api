@@ -1901,7 +1901,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       if [ -z "$file" ];then
         file="$opt"
         #if output file is /dev/stdout, enable quiet mode
-        [ "$file" == /dev/stdout ] && quiet=1
+        if [ "$file" == /dev/stdout ];then
+          quiet=1
+        fi
       else #file var already populated
         use=wget
       fi
@@ -1957,7 +1959,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       aria2c "${aria2_flags[@]}" | while read -r line ;do
         
         #filter out unnecessary lines
-        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line" || :)"
         
         if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
           
