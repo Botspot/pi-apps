@@ -118,8 +118,7 @@ Windows 10 Theme
 Chromium Widevine
 Lightpad
 Wine (x86)
-Mac OS Theme
-Flameshot"
+Mac OS Theme"
   PREIFS="$IFS"
   IFS=$'\n'
   for app in $apps ;do
