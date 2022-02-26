@@ -12,6 +12,9 @@ cd pikiss-gui || error 'Failed to cd into pikiss-gui folder'
 mv meson.build meson.build.orig || error 'Failed to move meson.build to meson.build.orig'
 sed 's|^meson.add_install_script|# meson.add_install_script|' meson.build.orig > meson.build || error 'Failed to comment addition of post_install script in meson.build'
 echo "run_target('postinst', command: ['post_install.sh'], env: {'MESON_INSTALL_PREFIX': prefix})" >> meson.build || error 'Failed to create new postinst target in meson.build'
+mv post_install.sh postinstall.sh.orig || error 'Failed to move post_install.sh to post_install.sh.orig'
+awk '/tput cvvis/{f=0;next} /x=10/{f=1} !f' pikiss-gui/post_install.sh.orig > post_install.sh || error 'Failed to create modified post_install script'
+chmod +x post_install.sh || error 'Failed to make post_install script executable'
 
 rm -rf ./build 
 meson --prefix=${HOME}/.local -Dbuildtype=release build || error 'Failed to generate build config'
