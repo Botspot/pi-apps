@@ -1,18 +1,3 @@
 #!/bin/bash
-rm -f Snapdrop-linux-arm64.zip
 
-wget https://github.com/ryanfortner/snapdrop-rpi/raw/master/Snapdrop-linux-arm64.zip || error "Failed to download archive!"
-unzip Snapdrop-linux-arm64.zip || error "Failed to extract archive!"
-rm -f Snapdrop-linux-arm64.zip || error "Failed to remove archive!"
-
-# Desktop entry
-echo "[Desktop Entry]
-Name=Snapdrop
-GenericName=Local File Sharing
-Comment=Snapdrop: local file sharing in your browser. Inspired by Apple's Airdrop.
-Exec=$HOME/snapdrop/Snapdrop
-Icon=$(dirname "$0")/icon-64.png
-Terminal=true
-StartupNotify=true
-Categories=Network;
-Type=Application" > ~/.local/share/applications/snapdrop.desktop || error "Failed to create desktop shortcut!"
+install_packages "https://apt.raspbian-addons.org/debian/pool/main/s/snapdrop/snapdrop_20220226_arm64.deb"
