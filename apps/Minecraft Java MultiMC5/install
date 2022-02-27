@@ -128,7 +128,7 @@ case "$__os_id" in
                 if [[ $? == "0" ]]; then
                     java_17="openjdk-17-jre"
                 fi
-                if [ ! -z "$java_8" ] || [ ! -z "$java_17" ];
+                if [ ! -z "$java_8" ] || [ ! -z "$java_17" ]; then
                     # either java 8 or 17 is found to be available by package_available, attempt to install them
                     install_packages $java_8 $java_17 || warning "Failed to install install a working java 8 or 17. You will have to install these yourself. Continuing the install without them."
                 fi
