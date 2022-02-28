@@ -1,0 +1,9 @@
+#!/bin/bash
+
+version=1.4.2-1+8.12
+
+if ! package_available libgspell-1-1; then
+  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/armhf/cawbird_${version}_armhf.deb http://ftp.us.debian.org/debian/pool/main/g/gspell/libgspell-1-1_1.6.1-2_armhf.deb gstreamer1.0-libav || exit 1
+else
+  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/armhf/cawbird_${version}_armhf.deb gstreamer1.0-libav || exit 1
+fi
