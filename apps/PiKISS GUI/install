@@ -8,10 +8,4 @@ sudo pip3 install meson || error 'Failed to install meson from pip'
 
 cd pikiss-gui || error 'Failed to cd into pikiss-gui folder'
 
-rm -rf ./build 
-meson --prefix=${HOME}/.local -Dbuildtype=release build || error 'Failed to generate build config'
-ninja -C build -j4 || error 'Failed to build PiKISS GUI'
-sudo ninja -C build install || error 'Failed to run "sudo ninja install"' 
-sudo ninja -C build postinst || error 'Failed to run "sudo ninja postinst"'
-rm -rf ./build
-
+./build.sh || error 'Failed to build PiKISS GUI'
