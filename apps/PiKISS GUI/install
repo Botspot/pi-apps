@@ -8,12 +8,6 @@ sudo pip3 install meson || error 'Failed to install meson from pip'
 
 cd pikiss-gui || error 'Failed to cd into pikiss-gui folder'
 
-#Ouptut fix
-mv meson.build meson.build.orig || error 'Failed to move meson.build to meson.build.orig'
-sed 's|^meson.add_install_script|# meson.add_install_script|' meson.build.orig > meson.build || error 'Failed to comment addition of post_install script in meson.build'
-echo "run_target('postinst', command: ['post_install.sh'], env: {'MESON_INSTALL_PREFIX': prefix})" >> meson.build || error 'Failed to create new postinst target in meson.build'
-chmod +x post_install.sh || error 'Failed to make post_install script executable'
-
 rm -rf ./build 
 meson --prefix=${HOME}/.local -Dbuildtype=release build || error 'Failed to generate build config'
 ninja -C build -j4 || error 'Failed to build PiKISS GUI'
