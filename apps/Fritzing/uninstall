@@ -1,0 +1,7 @@
+#!/bin/bash
+
+purge_packages || error "Dependencies failed to uninstall"
+
+sudo rm -rf /usr/bin/Fritzing /usr/share/fritzing /usr/share/applications/org.fritzing.Fritzing.desktop /usr/share/metainfo/org.fritzing.Fritzing.appdata.xml /usr/share/mime/packages/fritzing.xml /usr/share/man/man1/Fritzing.1 /usr/share/pixmaps/fritzing.png
+rm -rf /tmp/fritzing-app
+rm -rf $HOME/.local/share/fritzing/parts

@@ -32,6 +32,11 @@ fi
 echo "Updating resolvconf and starting lokinet service..."
 sudo resolvconf -u
 sudo sed '/upstream/s/^#//' -i /etc/loki/lokinet.ini || error "Failed to set upstream resolver"
-sudo systemctl restart lokinet || error "Systemd failed to restart the lokinet service!"
+sudo systemctl restart lokinet
+if [ $? != 0 ];then
+  warning "The lokinet service failed to restart. Output of journalctl -u lokinet"
+  sudo journalctl -u lokinet | sed 's/^/> /g'
+  error "Systemd failed to restart the lokinet service!"
+fi
  
 echo "Installation complete!"

@@ -1,9 +1,6 @@
 #!/bin/bash
-#this may end up removing flatpack.
-purge_packages || exit 1
-#if flatpak still exists, then uninstall telegram.
-if command -v flatpak >/dev/null ;then
-  sudo flatpak uninstall org.telegram.desktop -y || flatpak uninstall org.telegram.desktop -y || error "Flatpak failed to uninstall org.telegram.desktop!"
-fi
+
+flatpak_uninstall org.telegram.desktop || exit 1
 rm -f ~/.local/share/applications/telegram.desktop
-exit 0
+
+purge_packages || exit 1

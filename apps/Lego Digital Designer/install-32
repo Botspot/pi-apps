@@ -10,6 +10,7 @@ wget 'https://github.com/Botspot/lego-digital-designer-rpi/releases/download/1/s
 wine ~/setupldd-pc-4_3_11.exe || error "Wine failed to run setupldd-pc-4_3_11.exe"
 rm -f ~/setupldd-pc-4_3_11.exe
 #wait until finished
+sleep 10
 while ps aux | grep -v grep | grep wine | grep -q 'LEGO Digital Designer' ;do
   sleep 1
 done

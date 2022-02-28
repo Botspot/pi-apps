@@ -1,0 +1,361 @@
+#!/bin/bash
+
+status "This script helps you setup a Minecraft-Java-Server (for any version)."
+
+# add jq to use in script
+install_packages jq || exit 1
+
+# userinput function to display yad prompts to the user
+function userinput_func {
+  unset uniq_selection
+  if [[ "${#@}" == "2" ]];then
+    echo -e "$1" |  yad --no-escape --undecorated --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
+    --text-info --fontname="@font@ 11" --wrap --width=800 --height=200 --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
+    --show-uri \
+    --button="$2":0
+    output="$2"
+  else
+    for string in "${@:2}"; do
+    uniq_selection+=(FALSE "$string")
+    done
+    uniq_selection[0]=TRUE
+    output=$(
+    yad --no-escape --undecorated --center \
+      --borders="20" \
+      --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --fixed \
+      --height="400" \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="Ok":0 \
+      "${uniq_selection[@]}"
+    )
+  fi
+}
+
+mkdir -p "$HOME/Minecraft-Java-Server"
+cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
+
+description="What type of Minecraft server\ndo you want to run?"
+table=("Vanilla" "Fabric" "Forge" "Paper" "Bukkit" "Spigot" "Purpur" "Tuinity")
+userinput_func "$description" "${table[@]}"
+server_type="$output"
+
+case "$server_type" in
+  "Fabric")
+    available_versions=$(curl -s https://meta.fabricmc.net/v2/versions/game | jq -r '.[] | select( .stable == true ) | .version')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    loader_version=$(curl -s https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
+    installer_verison=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
+    server_jar="fabric-server-mc.$server_version-loader.$loader_version-launcher.$installer_verison.jar"
+    wget -O "$server_jar" "https://meta.fabricmc.net/v2/versions/loader/$server_version/$loader_version/$installer_verison/server/jar" || exit 1
+    ;;
+  "Forge")
+    # remove versions without an "installer" form
+    available_versions=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'del((."1.1", ."1.2.3", ."1.2.4", ."1.2.5", ."1.3.2", ."1.4.0", ."1.4.1", ."1.4.2", ."1.4.3", ."1.4.4", ."1.4.5", ."1.4.6", ."1.4.7", ."1.5", ."1.5.1", ."1.5.2", ."1.6.1", ."1.6.2", ."1.6.3")) | keys_unsorted | reverse | .[]')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    installer_version=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
+
+    # example file formats
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.1-39.0.63/forge-1.18.1-39.0.63-installer.jar
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.3.2-4.3.5.318/forge-1.3.2-4.3.5.318-universal.zip
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.2.5-3.4.9.171/forge-1.2.5-3.4.9.171-server.zip
+
+    server_jar="forge-$installer_version-installer.jar"
+    wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
+    ;;
+  "Vanilla"|"Paper"|"Bukkit"|"Spigot"|"Purpur"|"Tuinity")
+    available_versions=$(curl -s https://serverjars.com/api/fetchAll/$server_type/0 | jq -r '.response[] | .version')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    server_jar="${server_type,,}-$server_version.jar"
+    wget -O "$server_jar" "https://serverjars.com/api/fetchJar/$server_type/$server_version" || exit 1
+    ;;
+  *)
+    error "You did not choose an option, exiting the script."
+    ;;
+esac
+
+while [[ ! -a $(echo ${server_jar}) ]]; do
+  description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
+  \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
+  \n\nYou have not added a ${server_jar}."
+  table=("OK")
+  userinput_func "$description" "${table[@]}"
+done
+
+# use * to get full name of server jar
+server_jar=$(echo ${server_jar})
+
+if [ -z "$server_version" ]; then
+  # tell user to choose java 8, 16, or 17
+  description="In order to run Minecraft, the game requires a specific version of Java.\
+  \nPlease choose below which version of java the server of your choice should run with.\
+  \nJava versions can be 8, 16, or 17.\
+  \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
+  \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+  table=("Java 17" "Java 16" "Java 8")
+  userinput_func "$description" "${table[@]}"
+  java_selection="$output"
+else
+  # we know the version of minecraft in use
+  # choose the appropriate version of java based on that
+  # version <= 1.16.5 java 8
+  # 1.16.5 < version <= 1.17.1 java 16
+  # version >= 1.18 java 17
+  function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+  if [ $(version $server_version) -le $(version "1.16.5") ]; then
+    echo "Using Java 8 by default"
+    java_selection="Java 8"
+  elif [ $(version $server_version) -le $(version "1.17.1") ]; then
+    echo "Using Java 16 by default"
+    java_selection="Java 16"
+  elif [ $(version $server_version) -ge $(version "1.18") ]; then
+    echo "Using Java 17 by default"
+    java_selection="Java 17"
+  else
+    description="WARNING: We don't know how you got here... your version $server_version does not seem to be a normal minecraft format.\
+    \n\nIn order to run Minecraft, the game requires a specific version of Java.\
+    \nPlease choose below which version of java the server of your choice should run with.\
+    \nJava versions can be 8, 16, or 17.\
+    \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
+    \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+    table=("Java 17" "Java 16" "Java 8")
+    userinput_func "$description" "${table[@]}"
+    java_selection="$output"
+  fi
+fi
+
+install_packages lsb-release wget gpg screen || exit 1
+
+case "$java_selection" in
+  "Java 8"|"Java 17")
+    # temurin repo is NOW live
+    # add temurin repo for java 8/11/17
+    status "Adding Adoptium repository:"
+
+    echo "- public key -> keyring"
+    rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+    wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public || exit 1
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key || error "Failed to create a keyring with gpg"
+    rm -f /tmp/adoptium-public-key
+
+    echo " - keyring -> GPG key"
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg || error "Failed to create a GPG key"
+    rm -f /tmp/adoptium-keyring.gpg
+
+    echo " - Moving GPG key to /usr/share/keyrings"
+    sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
+
+    echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  "Java 16")
+    # add old adoptopenjdk for java 16
+    status "Adding AdoptOpenJDK repository:"
+
+    echo "- public key -> keyring"
+
+    rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
+    wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public || exit 1
+    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key || error "Failed to create a keyring with gpg"
+    rm -f /tmp/adoptopenjdk-public-key
+
+    echo " - keyring -> GPG key"
+    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg || error "Failed to create a GPG key"
+    rm -f /tmp/adoptopenjdk-keyring.gpg
+
+    echo " - Moving GPG key to /usr/share/keyrings"
+    sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
+
+    echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
+    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+    ;;
+  *)
+    error "No java version selected, exiting the script"
+    ;;
+esac
+
+case "$arch" in
+  "64")
+    dpkg_arch="arm64"
+    ;;
+  "32")
+    dpkg_arch="armhf"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    ;;
+esac
+
+case "$java_selection" in
+  "Java 8")
+    (install_packages temurin-8-jdk)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+        error "Failed to install temurin packages. Adoptium repository has been removed."
+      else
+        error "Failed to install temurin packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/temurin-8-jdk-$dpkg_arch/bin/java"
+    ;;
+  "Java 16")
+    (install_packages adoptopenjdk-16-hotspot-jre)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
+        error "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed."
+      else
+        error "Failed to install adoptopenjdk packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
+    ;;
+  "Java 17")
+    (install_packages temurin-17-jdk)
+    if [ $? != 0 ]; then
+      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+        error "Failed to install temurin packages. Adoptium repository has been removed."
+      else
+        error "Failed to install temurin packages."
+      fi
+    fi
+    java_location="/usr/lib/jvm/temurin-17-jdk-$dpkg_arch/bin/java"
+    ;;
+esac
+
+jvm_test="1"
+jvm_args=""
+while [[ $jvm_test != 0 ]]; do
+  # userinput jvm_args
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA defaut list is prepopulated in the text box below.\n\nThe most inportant arguments -XmxXXXXM -XmsXXXXM are at the beginning and define how much ram for your server to use.\nHint, use your keyboard Home key to see the start of this list" --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  $java_location $jvm_args -version
+  jvm_test="$?"
+  if [[ $jvm_test != 0 ]]; then
+    echo "Your JVM Arguments were invalid. Your input was: $jvm_args"
+    yad --center --text "OH NO! The JVM Arguments you inputed are either invalid (like a typo) or incompatible with the selected java version.\n\nRefer to the terminal log immeditately above to determine the issue and try again." --button="Try New JVM Arguments":0
+  fi
+done
+
+if [[ "$server_type" == "Forge" ]]; then
+  # run the server installer
+  rm -f start-server.sh
+  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
+  rm -f ${server_jar}
+
+  # forge has MANY ways to launch depending on the version
+  # for some reason they like re-inventing the wheel and doing things differently than everyone else
+  # the below covers all the ways I have seen from 1.6.4 - 1.18.1
+  # its possible I missed an obscure format that was only used once... please create an issue if that is the case
+  if [[ -f "minecraftforge-universal-$installer_version.jar" ]]; then
+    server_jar="minecraftforge-universal-$installer_version.jar"
+  elif [[ -f "forge-$installer_version-universal.jar" ]]; then
+    server_jar="forge-$installer_version-universal.jar"
+  elif [[ -f "forge-$installer_version.jar" ]]; then
+    server_jar="forge-$installer_version.jar"
+  elif [[ -f "run.sh" ]]; then
+    # set server_jar to empty to skip start-server.sh universal script creation
+    # this is the most up to date forge launch format where their own run.sh file is provided
+    server_jar=""
+    sed -i "s:java:${java_location}:g" run.sh
+    sed -i 's:"$@":nogui:g' run.sh
+    echo "$jvm_args" > user_jvm_args.txt
+    mv run.sh start-server.sh
+    chmod +x start-server.sh
+  else
+    error "We have never seen this new obscure Forge format from $installer_version. Please report this error to pi-apps"
+  fi
+fi
+
+if [ -n "$server_jar" ]; then
+  sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
+#!/bin/bash
+echo 'Minecraft Server starting'
+$java_location $jvm_args -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
+echo 'Minecraft Server has stopped'
+sleep 3
+_EOF_"
+  chmod +x start-server.sh
+fi
+
+# sign eula without starting server
+echo "eula=true" > eula.txt
+
+# make mods directory
+mkdir mods
+
+mkdir -p "$HOME/.local/share/applications"
+tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
+[Desktop Entry]
+Name=Minecraft Java Server
+Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ \$? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
+Path=$HOME/Minecraft-Java-Server
+Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
+Type=Application
+Categories=Game
+Terminal=true
+EOF
+# used for absolute executable path (necessary on some OSes)
+screen_location=$(which screen)
+sleep_location=$(which sleep)
+
+sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
+[Service]
+RemainAfterExit=yes
+WorkingDirectory=$HOME/Minecraft-Java-Server
+User=$USER
+# Start Screen, Java, and Minecraft
+ExecStart=$screen_location -S Minecraft_Server -U -d -m $HOME/Minecraft-Java-Server/start-server.sh
+# Tell Minecraft to gracefully stop.
+# Ending Minecraft will terminate Java
+# systemd will kill Screen after the 10-second delay. No explicit kill for Screen needed
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "say SERVER SHUTTING DOWN. Saving map..."\015'
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "save-all"\015'
+ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "stop"\015'
+ExecStop=$sleep_location 10
+[Install]
+WantedBy=multi-user.target
+EOF
+echo
+
+# update services
+sudo systemctl daemon-reload
+sudo systemctl disable minecraft-server
+
+status "Your IP address is one of the following: 
+$(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+status "The IP address is used to play on your local network
+(or you can create a port forward on your internet router/modem at port 25565 to play over the internet)."
+echo
+status_green "You might want to copy this down:
+To run: Menu -> Games -> Minecraft Java Server
+Attach to a server in the background with: screen -r Minecraft_Server
+Detach from a running server session with: CTRL+A then D
+To start from a terminal: sudo systemctl start minecraft-server
+To stop the server: sudo systemctl stop minecraft-server
+To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
+"

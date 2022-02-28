@@ -1,0 +1,6 @@
+#!/bin/bash
+
+version=1.25.9
+
+install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-arm64.deb/download || exit 1
+

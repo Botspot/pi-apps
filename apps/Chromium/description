@@ -1,0 +1,19 @@
+Open-source version of Google Chrome.
+If you are using Raspberry Pi OS, this browser has been optimized by the Raspberry Pi Foundation to include hardware acceleration and other various performance improvements.
+
+To play Netflix, Spotify, or other protected multimedia streams, see the Chromium Widevine app.
+To install an older version of Chromium, see the Downgrade Chromium app.
+
+Chromium supports numerous flags to enable extra features. You can add these flags either manually (by running chromium-browser in a terminal), or by adding the flag to a file in the /etc/chromium/customizations folder.
+Here's how that works: Inside the /etc/chromium/customizations folder there will be one or more files. On most systems there will already be a 00-rpi-vars file there. You can add flags to it, or create a new file. In all cases, be sure it starts with:
+CHROMIUM_FLAGS="${CHROMIUM_FLAGS}
+And be sure it ends with this character: "
+
+Now that you know how to add flags to Chromium, here are some useful ones:
+- Enable Google Chrome Sync: --oauth2-client-id=77185425430.apps.googleusercontent.com --oauth2-client-secret=OTJgUOQcT7lO7GsGZq2G4IlT
+    This flag is discussed in the Raspberry Pi Forums: https://forums.raspberrypi.com/viewtopic.php?t=314477
+- Enable dark mode: --force-dark-mode
+    If you want more themes, go visit the Chrome Web Store: https://chrome.google.com/webstore/category/themes
+- Change the scale of the browser window: --force-device-scale-factor=1.3
+    The default is 1 - smaller values will shrink the interface, while larger values will grow the interface.
+- More chromium flags can be found on this website: https://peter.sh/experiments/chromium-command-line-switches

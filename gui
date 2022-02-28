@@ -13,9 +13,30 @@ if ! command -v yad &>/dev/null;then
   error "YAD needs to be installed to run pi-apps."
 fi
 
-#launch splash screen
-yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
-splashpid=$!
+#launch splash screen: use png if available, otherwise use svg
+if [ -s "${DIRECTORY}/icons/splashscreen.png" ];then
+  yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/splashscreen.png" --center --no-buttons --skip-taskbar &
+  splashpid=$!
+else
+  yad --undecorated --title=Pi-Apps --image="${DIRECTORY}/icons/vector/splashscreen.svg" --center --no-buttons --skip-taskbar &
+  splashpid=$!
+fi
+
+#in background, check mission-critical scripts and re-download them if they contain a syntax error
+(
+  sleep 10
+  command -v shellcheck >/dev/null || exit 0
+  
+  if ! shellcheck "${DIRECTORY}/updater" -S error ;then
+    echo "Downloading updater script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/updater" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/updater' 2>&1)" || echo "$errors"
+  fi
+  
+  if ! shellcheck "${DIRECTORY}/api" -S error ;then
+    echo "Downloading api script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/api" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/api' 2>&1)" || echo "$errors"
+  fi
+) &
 
 #for the text_editor(), runonce() and app_status() functions
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
@@ -40,7 +61,7 @@ if [ -f /usr/local/bin/twistver ] && [[ "$(twistver)" != 'Twister OS version'* ]
 fi
 EOF
 
-#remove old apps and migrate chromium downgrading apps to the new "Chromium Downgrade" app
+#remove old apps and migrate chromium downgrading apps to the new "Downgrade Chromium" app
 runonce <<"EOF"
   #rework chromium downgrading apps to one single new app: 'Downgrade Chromium'
   rm -rf "${DIRECTORY}/apps/Back to Chromium v86"
@@ -54,7 +75,7 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
   
-  #removeTBOPlayer if it's not already successfully installed
+  #remove TBOPlayer if it's not already successfully installed
   if [ "$(app_status TBOPlayer)" != 'installed' ];then
     rm -rf "${DIRECTORY}/apps/TBOPlayer"
   fi
@@ -96,6 +117,10 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Tor Browser"
   mv -f "${DIRECTORY}/data/status/Tor Browser" "${DIRECTORY}/data/status/Tor" 2>/dev/null
   
+  #rename 'KeePassX' to 'KeePassXC'
+  rm -rf "${DIRECTORY}/apps/KeePassX"
+  mv -f "${DIRECTORY}/data/status/KeePassX" "${DIRECTORY}/data/status/KeePassXC" 2>/dev/null
+  
   true
 EOF
 
@@ -113,31 +138,12 @@ runonce <<"EOF"
   fi
 EOF
 
-#ensure curl is installed
+#install dependencies
 runonce <<"EOF"
-  if ! command -v curl >/dev/null ;then
-    sudo apt install -y curl
-  fi
-EOF
-
-#install aria2c for faster downloading
-runonce <<"EOF"
-  if ! command -v aria2c >/dev/null ;then
-    sudo apt install -y aria2
-  fi
-EOF
-
-#ensure lsb-release is installed
-runonce <<"EOF"
-  if ! command -v lsb_release >/dev/null ;then
-    sudo apt install -y lsb-release
-  fi
-EOF
-
-# ensure apt-utils is installed
-runonce <<"EOF"
-  if ! command -v apt-ftparchive >/dev/null;then
-    sudo apt install -y apt-utils
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin shellcheck'
+  # Install dependencies if necessary
+  if ! dpkg -s $dependencies >/dev/null 2>&1; then
+    sudo apt install $dependencies -y -f --no-install-recommends
   fi
 EOF
 
@@ -162,10 +168,35 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/data/categories"
 EOF
 
+#regenerate package-app status for one-time migration
+runonce <<"EOF"
+  IFS=$'\n'
+  for app in $(list_apps package) ;do
+    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
+  done
+  
+  refresh_all_pkgapp_status
+EOF
+
+#change settings icon
+runonce <<"EOF"
+  [ -a "$HOME/.local/share/applications/pi-apps-settings.desktop" ] && sed -i "s/logo.png/settings.png/g" "$HOME/.local/share/applications/pi-apps-settings.desktop" || true
+EOF
+
+#recompile xlunch for existing users because icons are rendered differently now. See: https://github.com/Tomas-M/xlunch/issues/129#issuecomment-1051006971
+runonce <<"EOF"
+  if [ -d "${DIRECTORY}/xlunch" ];then
+    rm -rf "${DIRECTORY}/xlunch"
+  fi
+EOF
+
 ) &
 
 #check for updates in background
-"${DIRECTORY}/updater" set-status &>/dev/null &
+(sleep 2; "${DIRECTORY}/updater" set-status &>/dev/null) &
+
+#Generate a new random splash screen
+(sleep 10 ; generate_splashscreen) &
 
 install() {
   app="$1" #one app name per line
@@ -324,9 +355,6 @@ while true;do
 
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
-        #uninstall xlunch first
-        sudo rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
-        
         #signal files
         rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
         echo '' > /tmp/terminalexit
@@ -338,6 +366,10 @@ while true;do
             sleep infinity
           }
           trap 'echo "\"""\"" > /tmp/terminalexit' EXIT
+          
+          #uninstall xlunch first
+          sudo rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
+          
           rm -f /tmp/terminalexit
           sudo rm -rf /usr/bin/xlunch "\""$DIRECTORY/xlunch"\"" 2>/dev/null
           sudo apt install -y libimlib2-dev libx11-dev || error 'APT failed to install libimlib2-dev and libx11-dev packages!'
@@ -405,7 +437,7 @@ $LIST"
       
       if [ "$guimode" == xlunch-light-3d ];then
         #light mode
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -414,7 +446,7 @@ $LIST"
           )"
       elif [ "$guimode" == xlunch-dark-3d ];then
         #dark mode, 3d opaque version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 2F313600 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc ffffff00 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff20 --scrollindicatorcolor ffffff40 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -423,12 +455,12 @@ $LIST"
           )"
       else
         #dark mode, transparent version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
-          --button "${DIRECTORY}/icons/logo-128-trans.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
-          --button "${DIRECTORY}/icons/logo-trans.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
+          --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
+          --button "${DIRECTORY}/icons/logo-text.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
           #-g ~/blur.png
           )"
       fi
@@ -497,7 +529,22 @@ This app installed these packages: $(cat "${DIRECTORY}/data/installed-packages/$
       description="$(cat "${DIRECTORY}/apps/${app}/description" || echo 'Description unavailable')$installedpackages"
       
       #text to the right of the app icon
-      abovetext="<b>$app</b>
+      abovetext="<b>$app</b>"
+      
+      #If package-app, show what packages it installs
+      if [ "$(app_type "$app")" == package ];then
+        if [ "$(wc -w "${DIRECTORY}/apps/${app}/packages" | awk '{print $1}')" == 1 ];then
+          #if package-app uses only 1 package, use singular case
+          abovetext="$abovetext
+- This app installs the <b>$(cat ${DIRECTORY}/apps/${app}/packages)</b> package."
+        else
+          #if package-app uses multiple packages, use plural case
+          abovetext="$abovetext
+- This app installs these packages: <b>$(cat ${DIRECTORY}/apps/${app}/packages | sed 's/ /, /g')</b>"
+        fi
+      fi
+      
+      abovetext="$abovetext
 - Current status: $(echo "$(app_status "${app}")" | sed 's/corrupted/corrupted (installation failed)/g' | sed 's/disabled/disabled (installation is prevented on your system)/g')"
       if [ -f "${DIRECTORY}/apps/${app}/website" ];then
         #show website if it exists

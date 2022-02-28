@@ -28,11 +28,23 @@ echo "- Extracting lwjgl3arm64.tar.gz"
 tar -zxf ~/lwjgl3arm64.tar.gz -C ~/lwjgl3arm64 || error "Failed to extract lwjgl3arm64.tar.gz"
 rm -f ~/lwjgl3arm64.tar.gz
 
+echo "Setting up lwjgl2arm64 folder"
+echo "- Downloading lwjgl2arm64.tar"
+errors="$(wget -O ~/lwjgl2arm64.tar 'https://github.com/gl91306/lunar/raw/master/lwjgl2arm64.tar' 2>&1)" || error "Failed to download lwjgl2arm32.tar.gz\nErrors:\n$errors"
+echo "- Extracting lwjgl2arm64.tar"
+tar -xf ~/lwjgl2arm64.tar || error "Failed to extract lwjgl2arm64.tar"
+
 echo "Downloading javafx-sdk-17-64.zip"
 errors="$(wget -O ~/javafx-sdk-17-64.zip 'https://github.com/gl91306/lunar/raw/master/javafx-sdk-17-64.zip' 2>&1)" || error "Failed to download javafx-sdk-17-64.zip\nErrors:\n$errors"
 echo "Extracting javafx-sdk-17-64.zip"
 unzip -oq ~/javafx-sdk-17-64.zip -d ~/lunarassets || error "Failed to extract javafx-sdk-17-64.zip"
 rm -f ~/javafx-sdk-17-64.zip
+
+echo "Downloading other dependencies"
+errors="$(wget -O ~/lwjgl3arm64/libwebp-imageio64.so https://github.com/gl91306/lunar/raw/master/libwebp-imageio64.so 2>&1)" || error "Failed to download libwebp-imageio64.so\nErrors:\n$errors"
+cp ~/lwjgl3arm64/libwebp-imageio64.so ~/lwjgl2arm64/libwebp-imageio64.so || error "Failed to copy libwebp-imageio64.so"
+
+enable_module fuse || exit 1
 
 #Then make menu shortcut
 echo "[Desktop Entry]
@@ -41,7 +53,7 @@ Type=Application
 Name=Minecraft Launcher (Lunar)
 Comment=3D block based sandbox game
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""sudo modprobe fuse ; JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
+Exec=bash -c "\""JAVA_HOME=/opt/jdk/jdk-17.0.1+12 PATH=/opt/jdk/jdk-17.0.1+12/bin/:$PATH MESA_GL_VERSION_OVERRIDE=3.3 $HOME/lunarassets/lunarclient.AppImage --no-sandbox"\""
 StartupNotify=true
 Categories=Game;" > ~/.local/share/applications/minecraftjava.desktop
 
@@ -50,4 +62,3 @@ You can find more about Pi-Ware at https://github.com/piware14/pi-ware
 You should also contact them for support if a issue arises with the launcher. You can also try the 'Minecraft Java MultiMC5' app in the games section instead.
 
 To run: Menu -> Games -> Minecraft Launcher (Lunar)"
-

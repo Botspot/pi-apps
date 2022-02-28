@@ -37,30 +37,38 @@ EOF
 ) &>/dev/null
 
 #check for internet connection
-if ! wget --spider github.com &>/dev/null ;then
-  error "No internet connection!\ngithub.com failed to respond.\nErrors: $(wget --spider github.com 2>&1)"
+errors="$(command wget --spider https://github.com 2>&1)"
+if [ $? != 0 ];then
+  error "No internet connection! (github.com failed to respond)\nErrors:\n$errors"
 fi
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
-upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d)"
-if ! [[ "$upstream_git_date" =~ ^[0-9]+$ ]]; then
-  # if upstream master git date can't be found, then fallback to local time server
-  # the above checks for an empty variable or a variable containing non-numerical values
-  upstream_git_date="$(date +%s)"
-fi
+command -v curl >/dev/null || sudo apt install -y curl
+upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
-if [ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ];then
-  yad --window-icon="${DIRECTORY}/icons/logo.png"  --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+
+if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ]);then
+  yad --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
     --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
-  sleep 1
+  yadpid=$!
+  
   clear
   echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
   cd $HOME
   rm -rf ~/pi-apps-forced-update
   command -v git >/dev/null || sudo apt install -y git
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && mv -f ~/pi-apps-forced-update "${DIRECTORY}"
+  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
+  cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
+  mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
+  mv -f ~/pi-apps-forced-update "${DIRECTORY}"
   sleep 10
+  
+  kill $yadpid 2>/dev/null
+  
+  #run new manage script in background
+  "{DIRECTORY}/manage" "$@"
+  exit $?
 fi
 }
 
@@ -90,7 +98,7 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   IFS=$'\n'
   for app in $app_list ;do
     if [ "$(app_status "${app}")" == "${action}ed" ];then
-      yad --text="$app is already ${action}ed. Are you sure you want to $action it again?" \
+      yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
         --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
       
@@ -100,6 +108,34 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
       fi
     fi
   done
+  
+  #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
+  if [ "$action" == install ];then
+    
+    #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
+    "${DIRECTORY}/updater" set-status &>/dev/null &
+    
+    for app in $app_list ;do
+      #determine the filename for the app's script to be run
+      if [ $action == install ];then
+        script_name_cpu="$(script_name_cpu "$app")"
+      fi
+      #if the app-script doesn't match version in update folder
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+        yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"Would you like to update $app before installing it?" \
+          --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
+          --button=No!"${DIRECTORY}/icons/forward.png":1 --button=Yes!"${DIRECTORY}/icons/download.png":0
+        
+        if [ $? == 0 ];then
+          #if user clicked Yes, run the updater and avoid launching a second terminal
+          use_terminal=0 "${DIRECTORY}/updater" gui fast
+          
+          #now that the api script was potentially updated, source it again to get new functions
+          source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+        fi
+      fi
+    done
+  fi
   
   #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
   failed_apps=''
@@ -130,29 +166,37 @@ $app"
       text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
     fi
     
-    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, then enable the "Send report button"
-    if [[ "$error_type" =~ ^(system|internet|package)$ ]];then
-      text+=$'\n'"Your 'Send report' button is gone because it's not an issue with Pi-Apps."
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, AND the app is not a package-app, then enable the "Send report button"
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"Error report cannot be sent because this \"app\" is really just a shortcut to $action a Debian package. It's not a problem that Pi-Apps can fix."
+    elif [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Error report cannot be sent because this is not an issue with Pi-Apps."
     elif ! list_apps online | grep -q "$app" ;then
-      text+=$'\n'"Your 'Send report' button is gone because this app is not in the official repository."
+      text+=$'\n'"Error report cannot be sent because this app is not in the official repository."
     elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
-      text+=$'\n'"Your 'Send report' button is gone because this app is not the official version."
+      text+=$'\n'"Error report cannot be sent because this app is not the official version."
     elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
-      text+=$'\n'"Your 'Send report' button is gone because this app does not match the official version."
+      text+=$'\n'"Error report cannot be sent because this app does not match the official version."
     elif [ "$supported" == no ];then
-      text+=$'\n'"Your 'Send report' button is gone because your system is unsupported."
+      text+=$'\n'"Error report cannot be sent because your system is unsupported."
     else
       #if all of the above checks evaluate to FALSE, then display the "Send report" button.
       send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
     fi
-    text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    
+    #display support links, depending on if this was a package-app or a script-app
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"As this is an APT error, consider Googling the errors or asking for help in the <a href=\"https://forums.raspberrypi.com\">Raspberry Pi Forums</a>."
+    else
+      text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    fi
     
     #if the error_caption is empty, display logfile instead
     if [ -z "$error_caption" ];then
-      text+=$'\n'"You can view the $([ "$action" == install ] && echo 'installation' || echo 'uninstall') output below."
+      text+=$'\n'"You can view the $(echo "$action" | sed 's/install/installation/g') output below."
       error_caption="$(cat "$logfile")"
     else
-      text+=$'\n'"Below, Pi-Apps explains the error."
+      text+=$'\n'"Below, Pi-Apps explains what went wrong and how you can fix it."
     fi
     
     echo "$error_caption" | yad "${yadflags[@]}" --text-info --width=700 --height=300 --title="Error occured when ${action}ing $app" \
@@ -243,7 +287,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     chmod u+x "$appscript" &>/dev/null
   #if this app just lists a package-name, set the appscript to install that package
   else
-    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
+    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge --autoremove/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
   fi
   
   status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
@@ -257,28 +301,49 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
   
-  format_logfile "$logfile" #remove escape sequences from logfile
-  
-  #if app script succeeded
+  #if app succeeded
   if [ $exitcode == 0 ];then
     status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
     echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')"
     
-  else
-    echo -e  "\n\e[91mFailed to ${mode} ${app}!\e[39m
-\e[40m\e[93m\e[5m🔺\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
+    format_logfile "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #rename logfile to indicate it was successful
+    
+  else #if app failed to install/uninstall
+
+    #remove dummy deb if app failed to install (to avoid dummy debs being left on a users install for broken apps)
+    package_name="$(app_to_pkgname "$app")"
+    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
+      if [[ "$script_input" == "update" ]]; then
+        #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
+        output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
+        if [ $? != 0 ];then
+          echo "$output" | tee -a "$logfile"
+          warning "Failed to purge dummy deb ($package_name)" 2>&1 | tee -a "$logfile"
+        else
+          echo "$output" | tee -a "$logfile"
+        fi
+        unset output
+      else
+        #install and not update failed, run purge_packages
+        purge_packages | tee -a "$logfile"
+      fi
+    fi
+    unset package_name
+
+    echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
+\e[40m\e[93m\e[5m◢◣\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
     
-    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet, system, package
-    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]];then
+    #set the app's status to 'corrupted' if the diagnostics determine the error is NOT internet or system or package, AND if the app is a script-type app
+    if ! [[ "$(log_diagnose "$logfile" | head -n1)" =~ ^(system|internet|package)$ ]] && [ "$(app_type "$app")" == standard ];then
       echo "corrupted" > "${DIRECTORY}/data/status/${app}"
     fi
     
-    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')"
+    format_logfile "$logfile" #remove escape sequences from logfile
+    mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" #rename logfile to indicate it was unsuccessful
   fi
-  
  
   #if the app is a package, set its status to whatever dpkg thinks it is
   if [ "$(app_type "$app")" == package ];then
@@ -410,7 +475,7 @@ elif [ "$1" == 'check-all' ];then
   IFS=$'\n'
   for app in $applist
   do
-    echo -en "Scanning apps... $app\033[0K\r" 1>&2
+    echo -en "Scanning apps... $app\e[0K\r" 1>&2
     
     if [ ! -d "${DIRECTORY}/apps/${app}" ];then
       #add to updatable list
@@ -431,7 +496,7 @@ ${app}"
   #remove initial newline character
   updatable="${updatable:1}"
   
-  echo -e "Scanning apps... Done\033[0K" 1>&2
+  echo -e "Scanning apps... Done\e[0K" 1>&2
   
   echo "${updatable}"
 elif [ "$1" == 'update-all' ];then

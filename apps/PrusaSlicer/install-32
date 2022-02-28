@@ -1,17 +1,19 @@
 #!/bin/bash
-# Get dependencies
+
 install_packages git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev || exit 1
-wget 'https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_2.4.0-beta2/PrusaSlicer-version_2.4.0-beta2-armhf.AppImage' -O ~/PrusaSlicer.AppImage || error "Failed to download appimage!"
 
-mkdir ~/prusa-slicer
-
+wget 'https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.4.0/PrusaSlicer-2.4.0+linux-armv7l-202112220001.AppImage' -O ~/PrusaSlicer.AppImage || error "Failed to download appimage!"
 chmod +x ~/PrusaSlicer.AppImage || error "Failed to mark as executable!"
+
+mkdir -p ~/prusa-slicer
+
+enable_module fuse || exit 1
 
 echo "[Desktop Entry]
 Name=PrusaSlicer
 GenericName=3D Printing Software
 Comment=PrusaSlicer converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=bash -c 'sudo modprobe fuse; ~/PrusaSlicer.AppImage'
+Exec=$HOME/PrusaSlicer.AppImage
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application

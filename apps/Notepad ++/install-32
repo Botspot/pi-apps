@@ -1,4 +1,7 @@
 #!/bin/bash
+
+version=8.3.2
+
 #Checking if wine is installed
 if ! command -v wine &>/dev/null ; then
   echo 'Wine Is Not Installed'
@@ -8,7 +11,7 @@ fi
 #Removing any files which were created by corrupted installation
 rm -rf npp.zip ~/Notepad++
 #Downloading npp files
-wget https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.9.4/npp.7.9.4.portable.zip -O npp.zip || error 'Failed to download npp files'
+wget https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v${version}/npp.${version}.portable.zip -O npp.zip || error 'Failed to download npp files'
 #Extracting npp files
 unzip npp.zip -d ~/Notepad++ || error 'Failed to extract npp archive'
 #Removing npp archive

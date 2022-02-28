@@ -1,0 +1,159 @@
+#!/bin/bash
+
+IFS=$'\n'
+# Hardware and kernel checks
+if grep -q ARMv6 /proc/cpuinfo; then
+  error "This app requires an ARM64 kernel, so is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
+fi
+
+if [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
+  status 'You have a 64-bit kernel. Continuing...'
+else
+  while true; do
+    read -n 3 -p 'You need a 64-bit kernel to install WPS Office. Do you want to enable the 64-bit kernel now? [Y/n] ' input
+    case $input in
+    Y|y|yes|Yes|YES)
+      #User accepted, so enable the 64-bit kernel
+      if [ ! -f /boot/config.txt ]; then
+        error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
+      fi
+      echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
+      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install WPS Office again."
+      sleep infinity
+    ;;
+    N|n|no|No|NO)
+      error "User error: 64-bit kernel is required but user chose to not enable it."
+    ;;
+    *) echo 'Invalid input! Please answer y/n, or yes/no.'
+    ;;
+    esac
+  done
+fi
+
+#install packages to create the chroot
+echo
+install_packages schroot debootstrap || exit 1
+
+chroot_dependencies="sudo ttf-mscorefonts-installer wget strace file python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv"
+
+#Generate the chroot
+status "\nGenerating chroot... this will take a while."
+sudo schroot --all-sessions -e #end any running schroots
+sudo rm -rf /opt/wps-office-chroot || true #this may fail if the chroot is already mounted, but it doesn't matter
+#This is an arm64 userspace of Debian Bullseye; run with nice to reduce system lagginess
+sudo nice debootstrap --variant=buildd --components=main,contrib,non-free --include="$(echo "$chroot_dependencies" | sed 's/ /,/g')" --arch arm64 bullseye /opt/wps-office-chroot http://ftp.us.debian.org/debian/ || error "debootstrap failed to build a Bullseye chroot!"
+
+#Enable internet in the chroot
+#sudo cp /etc/resolv.conf /opt/wps-office-chroot/etc/resolv.conf
+
+#permanemtly disable chroot's internet connection before installing wps
+status "Disabling Internet in the chroot..."
+sudo rm -f /opt/wps-office-chroot/etc/resolv.conf /opt/wps-office-chroot/usr/bin/resolvectl /opt/wps-office-chroot/lib/systemd/resolv.conf /opt/wps-office-chroot/usr/bin/systemd-resolve
+#create a custom profile for schroot that does not copy resolv.conf
+sudo cp -a /etc/schroot/default /etc/schroot/wps
+sudo rm /etc/schroot/wps/copyfiles
+sudo touch /etc/schroot/wps/copyfiles
+
+#enable /dev/shm to prevent crashes
+sudo sed -i 's+^#/dev/shm+/dev/shm+g' /etc/schroot/wps/fstab
+
+#create a configuration file for schroot
+echo "[wps-office-chroot]
+description=chroot 64bit
+type=directory
+directory=/opt/wps-office-chroot
+users=$USER
+root-groups=root
+profile=wps
+personality=linux
+preserve-environment=true" | sudo tee /etc/schroot/chroot.d/wps-office-chroot >/dev/null
+
+echo
+#package found in: https://linux.wps.cn/
+version=11.1.0.10920
+wget "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
+sudo mv /tmp/wps-office.deb /opt/wps-office-chroot/wps-office.deb
+
+status "Installing wps package in the chroot..."
+sudo schroot -c wps-office-chroot -- apt install -fy --no-install-recommends /wps-office.deb || error "Failed to install wps-office.deb"
+sudo schroot -c wps-office-chroot -- rm /wps-office.deb
+
+#copy mimetype files from guest to host
+sudo cp -f /opt/wps-office-chroot/usr/share/mime/packages/wps-office-wpp.xml /usr/share/mime/packages
+sudo cp -f /opt/wps-office-chroot/usr/share/mime/packages/wps-office-et.xml /usr/share/mime/packages
+sudo cp -f /opt/wps-office-chroot/usr/share/mime/packages/wps-office-wps.xml /usr/share/mime/packages
+#Improve the English translations of a few mimetypes
+sudo sed -i 's/>Microsoft Word</>Microsoft Word Document</g' /usr/share/mime/packages/wps-office-wps.xml
+sudo sed -i 's/>Microsoft Powerpoint</>Microsoft PowerPoint Presenation</g' /usr/share/mime/packages/wps-office-wpp.xml
+
+#copy mimetype icons from guest to host
+for line in $(find /opt/wps-office-chroot/usr/share/icons/hicolor/*/mimetypes -type f | sed 's+^/opt/wps-office-chroot++g') ;do
+  #example value of $line: /usr/share/icons/hicolor/128x128/mimetypes/wps-office2019-pdfmain.png
+  sudo cp -f "/opt/wps-office-chroot${line}" "$line"
+done
+
+#update mime database
+sudo update-mime-database /usr/share/mime
+
+#update icon database
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#remove unwanted files from home directory(s)
+sudo rm -f /home/*/Desktop/wps-office-prometheus.desktop /home/*/Desktop/wps-office-prometheus.desktop /home/*/.config/menus/applications-merged/wps-office.menu \
+  /home/*/'DOCX 文档.docx' /home/*/'DOC 文档.doc' /home/*/'PPTX 演示文稿.pptx' /home/*/'PPT 演示文稿.ppt' /home/*/'XLSX 工作表.xlsx' /home/*/'XLS 工作表.xls'
+
+#copy mouse cursor to guest to improve appearance during usage
+mouse="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sGtk/CursorThemeName' | sed 's/^sGtk\/CursorThemeName=//g')"
+if [ ! -z "$mouse" ] && [ -d "/usr/share/icons/$mouse/cursors" ];then
+  #mouse cursor exists; copy it to chroot
+  status "Copying mouse cursor..."
+  sudo mkdir -p "/opt/wps-office-chroot/usr/share/icons/$mouse"
+  sudo cp -rf "/usr/share/icons/$mouse/cursors" "/opt/wps-office-chroot/usr/share/icons/$mouse"
+  sudo cp -f "/usr/share/icons/$mouse/cursor.theme" "/opt/wps-office-chroot/usr/share/icons/$mouse"
+fi
+
+#copy gtk theme to guest to improve appearance during usage
+theme="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sNet/ThemeName' | sed 's/^sNet\/ThemeName=//g')"
+if [ ! -z "$theme" ] && [ -d "/usr/share/themes/$theme" ];then
+  #gtk theme exists; copy it to chroot
+  status "Copying icon theme..."
+  sudo cp -rf "/usr/share/themes/$theme" "/opt/wps-office-chroot/usr/share/themes"
+fi
+
+#copy icon theme to guest to improve appearance during usage
+theme="$(cat $HOME/.config/lxsession/LXDE-pi/desktop.conf 2>/dev/null | grep 'sNet/IconThemeName' | sed 's/^sNet\/IconThemeName=//g')"
+if [ ! -z "$theme" ] && [ -d "/usr/share/icons/$theme" ];then
+  #gtk theme exists; copy it to chroot
+  status "Copying icon theme..."
+  sudo cp -rf "/usr/share/icons/$theme" "/opt/wps-office-chroot/usr/share/icons"
+fi
+
+#make wps command more verbose for easier debugging
+#sudo sed -i 's+ > /dev/null 2>&1++g' /opt/wps-office-chroot/usr/bin/wps
+
+# DEBUGGING a crash:
+# 1. Enter the chroot: schroot -c wps-office-chroot
+# 2. Run this: strace /opt/kingsoft/wps-office/office6/wps
+# 3. Do whatever you need to do to cause the program to crash
+# 4. Look in the strace output for the most recent "-1 ENOENT" error for a lib*.so file.
+# 5. Copy the name of the lib*.so file and search for it in the repositories with apt search.
+# 6. Install the necessary lib* package.
+# 7. Repeat.
+
+status "Creating menu button..."
+echo "[Desktop Entry]
+Type=Application
+Name=WPS Office
+Comment=Full Office suite running in an ARM64 container
+Categories=Office;
+Exec=schroot -c wps-office-chroot -- wps %F
+Icon=/opt/wps-office-chroot/usr/share/icons/hicolor/256x256/mimetypes/wps-office2019-kprometheus.png
+StartupNotify=true
+MimeType=application/mspowerpoint;application/msword;application/msword-template;application/pdf;application/powerpoint;application/rtf;application/vnd.ms-powerpoint;application/vnd.mspowerpoint;application/vnd.ms-word;application/vnd.ms-word.document.macroEnabled.12;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.slideshow;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/wps-office.doc;application/wps-office.docx;application/wps-office.dot;application/wps-office.dotx;application/wps-office.dps;application/wps-office.dpso;application/wps-office.dpss;application/wps-office.dpt;application/wps-office.pot;application/wps-office.potx;application/wps-office.ppt;application/wps-office.pptx;application/wps-office.uop;application/wps-office.uot;application/wps-office.wps;application/wps-office.wpso;application/wps-office.wpss;application/wps-office.wpt;application/x-mspowerpoint;application/x-msword;x-scheme-handler/ksoet;x-scheme-handler/ksoqing;x-scheme-handler/ksowebstartupet;x-scheme-handler/ksowebstartupwpp;x-scheme-handler/ksowebstartupwps;x-scheme-handler/ksowpp;x-scheme-handler/ksowps;x-scheme-handler/ksowpscloudsvr;
+" | sudo tee /usr/share/applications/wps-office-prometheus.desktop >/dev/null
+
+
+
+
+

@@ -1,9 +1,11 @@
 #!/bin/bash
 
-install_packages firefox-esr https://github.com/browsh-org/browsh/releases/download/v1.6.4/browsh_1.6.4_linux_arm64.deb || exit 1
+version=1.6.4
+
+install_packages firefox-esr '|' firefox https://github.com/browsh-org/browsh/releases/download/v${version}/browsh_${version}_linux_arm64.deb || exit 1
 
 echo "[Desktop Entry]
-Version=1.1
+Version=${version}
 Type=Application
 Name=Browsh
 Comment=The modern text-based terminal browser.
