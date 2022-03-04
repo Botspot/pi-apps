@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium.gpg
 
-version=1.64.2
+version=1.65.0
 
 install_packages "https://github.com/VSCodium/vscodium/releases/download/${version}/codium_$(wget -qO- https://github.com/VSCodium/vscodium/releases/tag/${version} | grep 'armhf.deb"' | grep -o "_.*_" | tr -d '_')_armhf.deb" || exit 1
 
