@@ -1,14 +1,20 @@
 #!/bin/bash
-VERSION=arduino-1.8.19
 
-if [ -f "$HOME/.local/share/$VERSION/uninstall.sh" ]; then
-  sudo $HOME/.local/share/$VERSION/uninstall.sh || error "Failed to run Arduino uninstall script!"
-  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
-elif [ -f "$HOME/.local/share/$VERSION/install.sh" ]; then
-  #there is an option to uninstall Arduino in its install script, if uninstall script not found, use sudo $VERSION/install.sh -u instead
-  sudo $HOME/.local/share/$VERSION/install.sh -u || error "Failed to run sudo ~/.local/share/$VERSION/install.sh -u"
-  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
+#get the first match for the arduino folder location (changes name depending on the version)
+location="$(find $HOME/.local/share -maxdepth 1 -name "arduino-*" -print -quit)"
+
+if [ -d "${location}" ]; then
+  if [ -f "${location}/uninstall.sh" ]; then
+    sudo ${location}/uninstall.sh || error "Failed to run Arduino uninstall script!"
+    rm -rf ${location} || error "Failed to remove ${location} folder"
+  elif [ -f "${location}/install.sh" ]; then
+    #there is an option to uninstall Arduino in its install script, if uninstall script not found, use sudo install.sh -u instead
+    sudo "${location}/install.sh" -u || error "Failed to run sudo ${location}/install.sh -u"
+    rm -rf "${location}" || error "Failed to remove ${location} folder"
+  else
+    warning "WARNING: Arduino's install and uninstall script were not found! Most likely it was never fully installed. Removing ${location} folder..."
+    rm -rf "${location}" || error "Failed to remove ${location} folder"
+  fi
 else
-  echo "WARNING: Arduino's install and uninstall script were not found! Most likely it was never fully installed. Removing $HOME/.local/share/$VERSION folder..."
-  rm -rf $HOME/.local/share/$VERSION || error "Failed to remove $HOME/.local/share/$VERSION folder"
+  warning "WARNING: No Arduino folder was found. Most likely it was never fully installed"
 fi

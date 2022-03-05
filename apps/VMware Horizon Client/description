@@ -1,0 +1,5 @@
+VMware Horizon Client allows your end users to connect to their VMware Horizon View VM from a device of choice.
+
+The Horizon Client app communicates with the View Connection Server, which acts as a broker between the client device and View desktops. Users enter credentials into Horizon Client and the View Connection Server authenticates them and then finds their virtual desktops.
+
+IT administrators can also use Horizon Client and the View Connection Server to deliver Microsoft Remote Desktop Session Host (RDSH) desktops and applications from an RDSH farm or to deliver VMware ThinApp applications within Horizon View.

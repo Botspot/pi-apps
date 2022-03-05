@@ -17,7 +17,7 @@ sudo mkdir -p /usr/local/share/scrcpy
 sudo cp -af $HOME/scrcpy/scrcpy-server /usr/local/share/scrcpy/scrcpy-server
 echo "[Desktop Entry]
 Name=Scrcpy
-Exec=bash -c 'cd $HOME/scrcpy ; $HOME/scrcpy/android.sh'
+Exec=scrcpy
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
 Comment=Display and control of Android devices connected on USB
