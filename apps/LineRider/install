@@ -1,11 +1,7 @@
 #!/bin/bash
 
-version=1.0.3
+version=2022.3.1
 #Bot automatically updates this when I make a new release.
-
-wget -O TempFile https://github.com/Sussy-OS/LineRiderUpdater/releases/download/${version}/TempFile-${version}.txt
-
-rm TempFile
 
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
 
@@ -13,10 +9,12 @@ mkdir -p ~/LineRider
 cd ~/LineRider || error "Could not move to folder"
 
 #Download LRA-Community-Edition build from Pi-Apps-Coders repo
-wget -O linerider.zip https://github.com/Pi-Apps-Coders/files/raw/main/linerider.zip || error "Could not download linerider"
+wget -O lineriderasset.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${webVer}/LineRider.game.auto-release.${webVer}-LR.zip || error "Could not download linerider"
 
 #Install
-unzip linerider.zip || error "Could not unzip the files"
+unzip lineriderasset.zip || error "Could not unzip the files"
+rm lineriderasset.zip
+unzip linerider.zip
 rm linerider.zip
 
 #Add system ffmpeg to expected location
