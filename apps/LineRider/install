@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2022.3.2
+version=2022.3.3
 #Bot automatically updates this when I make a new release.
 
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
