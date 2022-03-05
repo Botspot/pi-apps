@@ -9,7 +9,7 @@ mkdir -p ~/LineRider
 cd ~/LineRider || error "Could not move to folder"
 
 #Download LRA-Community-Edition build from Pi-Apps-Coders repo
-wget -O lineriderasset.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${webVer}/LineRider.game.auto-release.${webVer}-LR.zip || error "Could not download linerider"
+wget -O lineriderasset.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${version}/LineRider.game.auto-release.${version}-LR.zip || error "Could not download linerider"
 
 #Install
 unzip lineriderasset.zip || error "Could not unzip the files"
