@@ -1,5 +1,5 @@
-<p align="center">
-    <img src="https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true" href="https://pi-apps.io" alt="Pi-Apps logo">
+<p align="center" href="https://pi-apps.io">
+    <img src="https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true" alt="Pi-Apps logo">
 </p>
 <p align="center">The most popular app store for Raspberry Pi computers. 100% free, open-source and written in shell scripts.
 <p align="center">
