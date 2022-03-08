@@ -85,7 +85,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          author: github-actions <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: |
             Update App Versions, run by GitHub Actions - Apps updated:
 
