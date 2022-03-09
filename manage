@@ -247,13 +247,13 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   if [ "$1" == install ];then
-    mode=install
+    action=install
   else
-    mode=uninstall
+    action=uninstall
   fi
   
   #ensure not a disabled app
-  if [ "$mode" == install ] && [ "$(app_status "${app}")" == 'disabled' ];then
+  if [ "$action" == install ] && [ "$(app_status "${app}")" == 'disabled' ];then
     warning "Not installing the $app app. IT IS DISABLED."
     exit 0
   fi
@@ -269,7 +269,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   #determine path for log file to be created
-  logfile="${DIRECTORY}/logs/${mode}-incomplete-${app}.log"
+  logfile="${DIRECTORY}/logs/${action}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
     #append a number to logfile's file-extension if the original filename already exists
     i=1
@@ -285,11 +285,11 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   #analytics
-  bitly_link "$app" "$mode" &
+  bitly_link "$app" "$action" &
   
   #if this app has scripts, determine which script to run
   if [ "$(app_type "$app")" == standard ];then
-    if [ "$mode" == install ];then
+    if [ "$action" == install ];then
       scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
       [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS."
     else #uninstall mode
@@ -300,10 +300,9 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #if this app just lists a package-name, set the appscript to install that package
   else
     appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge --autoremove/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
-    echo "${appscript[@]}"
   fi
   
-  status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
+  status "${action^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
   echo
   cd $HOME
   if [[ "$3" == "update" ]]; then
@@ -316,8 +315,8 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   #if app succeeded
   if [ $exitcode == 0 ];then
-    status_green "\n${mode^}ed ${app} successfully." | tee -a "$logfile"
-    echo "${mode}ed" > "${DIRECTORY}/data/status/${app}"
+    status_green "\n${action^}ed ${app} successfully." | tee -a "$logfile"
+    echo "${action}ed" > "${DIRECTORY}/data/status/${app}"
     
     format_logfile "$logfile" #remove escape sequences from logfile
     mv "$logfile" "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" #rename logfile to indicate it was successful
@@ -326,7 +325,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
 
     #remove dummy deb if app failed to install (to avoid dummy debs being left on a users install for broken apps)
     package_name="$(app_to_pkgname "$app")"
-    if [[ ${mode} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
+    if [[ ${action} == "install" ]] && [[ "$(app_type "$app")" == standard ]] && package_installed "$package_name"; then
       if [[ "$script_input" == "update" ]]; then
         #if install failed as part of an update, don't autoremove the packages, only purge the dummy deb
         output="$(sudo -E apt purge -y $package_name 2>&1 | less_apt | tee /dev/stderr)"
@@ -344,7 +343,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     fi
     unset package_name
 
-    echo -e "\n\e[91mFailed to ${mode} ${app}!\e[39m
+    echo -e "\n\e[91mFailed to ${action} ${app}!\e[39m
 \e[40m\e[93m\e[5m◢◣\e[25m\e[39m\e[49m\e[93mNeed help? Copy the \e[1mENTIRE\e[0m\e[49m\e[93m terminal output or take a screenshot.
 Please ask on Github: \e[94m\e[4mhttps://github.com/Botspot/pi-apps/issues/new/choose\e[24m\e[93m
 Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile"
