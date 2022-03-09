@@ -67,7 +67,7 @@ fi
 
 #if this script runs itself with a 3rd argument, then yad used it.
 if [ ! -z "$3" ];then
-  input="$3" #the 3rd argument is the "sysname" column - invisible and used internally for scripts.
+  input="$4" #the 4th argument is the "sysname" column - invisible and used internally for scripts.
   
   echo "Selection: $input" 1>&2
   
