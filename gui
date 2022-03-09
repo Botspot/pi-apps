@@ -565,7 +565,7 @@ if [[ "$guimode" == yad* ]];then
       --list --no-headers --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --print-column=4 --tooltip-column=5 \
-      --dclick-action=true --select-action "env pipe=$pipe geometry2=$geometry2 '$0'" \
+      --dclick-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" --select-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" \
       --button="!${DIRECTORY}/icons/search.png!Search":"env pipe=$pipe geometry2=$geometry2 '$0' '' '' Search/ Search/" \
       --button="!${DIRECTORY}/icons/options.png":2 \
       "$geometry1"
