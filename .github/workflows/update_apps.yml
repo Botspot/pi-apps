@@ -90,7 +90,7 @@ jobs:
             Update App Versions, run by GitHub Actions - Apps updated:
 
             ${{ env.UPDATED_APPS }}
-          branch: "auto-app-updates"
+          branch: "auto-app-updates-NOT-FOR-USERS"
           title: "[AUTO] Update App Versions"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
