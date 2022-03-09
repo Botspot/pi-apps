@@ -45,7 +45,7 @@ for file in $logfiles;do
   LIST="$LIST
 $date
 ${DIRECTORY}/apps/${app}/icon-24.png
-$(echo $action | sed "s+^uninstall$+${DIRECTORY}/icons/uninstall-short.png+g" | sed "s+^install$+${DIRECTORY}/icons/install-short.png+g")
+$(echo $action | sed "s+^uninstall$+${DIRECTORY}/icons/uninstall.png+g" | sed "s+^install$+${DIRECTORY}/icons/install.png+g")
 $(echo $result | sed "s+^success$+${DIRECTORY}/icons/${action}ed.png+g" | sed "s+^fail$+${DIRECTORY}/icons/corrupted.png+g" | sed "s+^incomplete$+${DIRECTORY}/icons/corrupted.png+g")
 $(echo $action | sed 's/^uninstall$/Uninstalling/g' | sed 's/^install$/Installing/g') $app $(echo $result | sed 's/success/succeeded./g' | sed 's/fail/failed./g' | sed 's/incomplete/was interrupted./g')
 $file"
