@@ -879,14 +879,8 @@ app_status() { #Gets the $1 app's current status. installed, uninstalled, corrup
   [ -z "$1" ] && error 'app_status(): requires an argument.'
   #don't check if app exists, it may be a new app in an update
   
-  if [ "$(app_type "$1")" == standard ] && [ -f "${DIRECTORY}/data/status/${1}" ];then
+  if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
-  elif [ "$(app_type "$1")" == package ];then
-    if package_installed "$(cat "${DIRECTORY}/apps/$1/packages" | awk '{print $1}')" ;then
-      echo 'installed'
-    else
-      echo 'uninstalled'
-    fi
   else
     echo 'uninstalled' #if app status file doesn't exist, assume uninstalled
   fi
@@ -1043,6 +1037,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   if package_installed "$package" ;then
     #mark this app as installed
     if [ "$(app_status "$app")" != 'installed' ];then
+      echo "Marking $app as installed"
       echo 'installed' > "${DIRECTORY}/data/status/${app}"
       bitly_link "$app" install &
     fi
@@ -1050,11 +1045,13 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   elif package_available "$package" ;then
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
     if [ "$(app_status "$app")" != 'uninstalled' ];then
-      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+      echo "Marking $app as uninstalled"
+      rm -f "${DIRECTORY}/data/status/${app}"
       bitly_link "$app" uninstall &
     fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
+    echo "Marking $app as hidden"
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   fi
 }
