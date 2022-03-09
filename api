@@ -1832,10 +1832,13 @@ get_device_info() { #returns information about current install and hardware
 }
 
 get_codename() { #get debian/ubuntu codename
-  if ! command -v lsb_release &>/dev/null; then
-    apt_update && sudo apt-get install -y lsb-release
+  # check if upstream-release is available
+  if [ -f /etc/upstream-release/lsb-release ]; then
+    # this is a derivative, get the upstream release info
+    lsb_release -suc
+  else
+    lsb_release -sc
   fi
-  lsb_release -sc
 }
 
 #command interceptors - functions that enhance a command

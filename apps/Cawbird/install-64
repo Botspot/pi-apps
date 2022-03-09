@@ -1,9 +1,29 @@
 #!/bin/bash
 
+# buster version number
 version=1.4.2-1+8.12
+# bullseye version number
+version2=1.4.2-1+8.1
+# ubuntu focal version number
+version3=1.4.2-1+8.3
+
+if [[ $(get_codename) == "buster" ]]; then
+  use_version="$version"
+  release="Raspbian_10"
+elif [[ $(get_codename) == "bullseye" ]]; then
+  use_version="$version2"
+  release="Debian_11"
+elif [[ $(get_codename) == "focal" ]]; then
+  use_version="$version3"
+  release="xUbuntu_20.04"
+else
+  warning "OS unknown, defaulting to raspbian buster packages"
+  use_version="$version"
+  release="Raspbian_10"
+fi
 
 if ! package_available libgspell-1-1; then
-  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/arm64/cawbird_${version}_arm64.deb http://ftp.us.debian.org/debian/pool/main/g/gspell/libgspell-1-1_1.6.1-2_arm64.deb gstreamer1.0-libav || exit 1
+  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/${release}/arm64/cawbird_${use_version}_arm64.deb http://ftp.us.debian.org/debian/pool/main/g/gspell/libgspell-1-1_1.6.1-2_arm64.deb gstreamer1.0-libav || exit 1
 else
-  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/arm64/cawbird_${version}_arm64.deb gstreamer1.0-libav || exit 1
+  install_packages https://download.opensuse.org/repositories/home:/IBBoard:/cawbird/${release}/arm64/cawbird_${use_version}_arm64.deb gstreamer1.0-libav || exit 1
 fi
