@@ -378,13 +378,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#for old installs prior to having categories, re-run install script
-runonce <<"EOF"
-  if [ ! -e "${DIRECTORY}/data/categories" ];then
-    "${DIRECTORY}/install"
-  fi
-EOF
-
 #install dependencies
 runonce <<"EOF"
   dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin shellcheck'
