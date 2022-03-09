@@ -93,8 +93,19 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   app_list="$2" #newline-separated list of apps to install/uninstall
   
-  #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
+  #check if any app names are invalid
   IFS=$'\n'
+  for app in $app_list ;do
+    if [ ! -d "${DIRECTORY}/apps/$app" ];then
+      yad --text="Invalid app "\""<b>$app</b>"\"". Won't $action it." \
+        --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --button=Close!"${DIRECTORY}/icons/check.png":0
+      
+      #remove the app from list
+      app_list="$(echo "$app_list" | grep -vxF "$app")"
+    fi
+  done
+  #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
   for app in $app_list ;do
     if [ "$(app_status "${app}")" == "${action}ed" ];then
       yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
@@ -103,10 +114,11 @@ if [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
       
       if [ $? != 0 ];then
         #user clicked No, so remove the app from list
-        app_list="$(echo "$app_list" | grep -vx "$app")"
+        app_list="$(echo "$app_list" | grep -vxF "$app")"
       fi
     fi
   done
+  [ -z "$app_list" ] && exit 1
   
   #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
   if [ "$action" == install ];then
@@ -287,6 +299,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #if this app just lists a package-name, set the appscript to install that package
   else
     appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge --autoremove/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
+    echo "${appscript[@]}"
   fi
   
   status "${mode^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
@@ -352,169 +365,55 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
   
-elif [ "$1" == 'update' ];then
-  #UPDATE
-  #for this operation, a program name must be specified.
+elif [ "$1" == 'update' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
+  
+  warning "The manage script ONLY updates apps, and this mode has been replaced by the updater script.
+If you want to update Pi-Apps from the command-line, please use:
+~/pi-apps/updater cli-yes"
+  
   app="$2"
   if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
+  elif [ ! -d "${DIRECTORY}/apps/$app" ];then
+    error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
-  #detect which installation script exists and get the hash for that one
-  scriptname="$(script_name_cpu "$app")"
-  [ $? == 1 ] && exit 1
+  #get functions from updater script
+  source "${DIRECTORY}/updater" source
   
-  status "Updating \e[1m${app}\e[0m\e[96m..."
-  echo
+  check_repo
+  updatable_apps="$2"
+  updatable_files=''
   
-  #HIDDEN FEATURE - if $3 equals nofetch, then don't download github repo. Useful for updating multiple apps at maximum speed
-  if [ "$3" == 'nofetch' ] && [ -d "${DIRECTORY}/update" ];then
-    true
-  else
-    rm -rf "${DIRECTORY}/update" && mkdir "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" || error "failed to clone repository!"
-  fi
+  update_now_cli
   
-  echo
+elif [ "$1" == 'check-all' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
   
-  newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
-  oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  warning "The manage script ONLY updates apps, and this mode has been replaced by the updater script.
+If you want to update Pi-Apps from the command-line, please use:
+~/pi-apps/updater cli-yes"
   
-  #echo -e "newinstallhash: $newinstallhash\noldinstallhash: $oldinstallhash"
-  #echo -e "newhash: $newhash\noldhash: $oldhash"
+  #get functions from updater script
+  source "${DIRECTORY}/updater" source
   
-  if diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null;then
-    status_green "$app is identical to the online version. Nothing to do!"
-    echo
-    exit 0
-  fi
-  #else
-  status_green "$app is not identical to the online version."
-  installback=no
+  check_repo
+  get_updatable_apps
   
-  echo
+elif [ "$1" == 'update-all' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
   
-  #if install script was changed                                                    #if installed already
-  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
-    installback=yes
-    status "$app's install script has been updated. Reinstalling $app..."
-    #uninstall it using a recursive script instance
-    #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
-    "${DIRECTORY}/manage" uninstall "$app" "update"
-    
-    #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
-    if [ "$(app_status "$app")" == installed ];then
-      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-    fi
-  fi
+  warning "The manage script ONLY updates apps, and this mode has been replaced by the updater script.
+If you want to update Pi-Apps from the command-line, please use:
+~/pi-apps/updater cli-yes"
   
-  #move old program to trash
-  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
-  #failsafe
-  [ -d "${DIRECTORY}/apps/${app}" ] && rm -rf "${DIRECTORY}/apps/${app}"
+  #get functions from updater script
+  source "${DIRECTORY}/updater" source
   
-  #copy new version from update/ to apps/
-  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+  check_repo
+  updatable_apps="$(get_updatable_apps)"
+  updatable_files=''
   
-  if [ "$installback" == 'yes' ];then
-    #install it using a recursive script instance
-    "${DIRECTORY}/manage" install "$app"
-    if [ $? != 0 ]; then
-      failed=true
-    fi
-  fi
+  update_now_cli
   
-  if [ "$failed" == 'true' ]; then
-    echo -e "\e[91mFailed to update ${app}.\e[0m"
-  else
-    status_green "${app} was updated successfully."
-  fi
-  echo
-  
-elif [ "$1" == 'check-all' ];then
-  
-  #CHECK-ALL
-  #for this operation, a program name cannot be specified.
-  
-  #hidden flags
-  installedonly=0
-  if [ "$2" == 'installedonly' ];then
-    # If $2 is 'installedonly', then only check for updates for those apps that are installed
-    installedonly=1
-  fi #end of checking for hidden flags
-  
-  echo -n "Checking for online changes... " 1>&2
-  
-  #if the updater script exists in update folder, then just git pull to save time
-  if [ -f "${DIRECTORY}/update/pi-apps/updater" ];then
-    cd "${DIRECTORY}/update/pi-apps"
-    git pull -q 1>&2 || rm -rf "${DIRECTORY}/update"
-  fi | grep -v "Already up to date." 1>&2
-  
-  #re-check and if updater script does not exist then do a git clone
-  if [ ! -f "${DIRECTORY}/update/pi-apps/updater" ];then
-    rm -rf "${DIRECTORY}/update"
-    mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to enter the update directory!"
-    git clone --depth=1 "$(cat "${DIRECTORY}/etc/git_url")" -q 1>&2 || error "failed to clone repository to the update directory!"
-  fi
-  
-  echo "Done" 1>&2
-  
-  if [ $installedonly == 1 ];then
-    #installedonly flag enabled. Remove apps that are uninstalled, disabled, or corrupted
-    applist="$(list_apps installed)"
-  else
-    #installedonly flag disabled, so use entire combined list of apps, both local and online
-    applist="$(list_apps all)"
-  fi
-  
-  #echo "App list: $applist" 1>&2
-  
-  updatable=''
-  IFS=$'\n'
-  for app in $applist
-  do
-    echo -en "Scanning apps... $app\e[0K\r" 1>&2
-    
-    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-      #add to updatable list
-      updatable="${updatable}
-${app}"
-      
-    elif [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
-      #app only exists locally
-      true
-      
-    elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
-      #if app hashes don't match, add to updatable list
-      updatable="${updatable}
-${app}"
-    fi
-  done 
-  
-  #remove initial newline character
-  updatable="${updatable:1}"
-  
-  echo -e "Scanning apps... Done\e[0K" 1>&2
-  
-  echo "${updatable}"
-elif [ "$1" == 'update-all' ];then
-
-  echo
-
-  #UPDATE-ALL
-  #for this operation, a program name cannot be specified.
-  IFS=$'\n'
-  updatable="$("${DIRECTORY}/manage" check-all)"
-  echo "Updatable: ${updatable}EOU"
-  for updateapp in $updatable
-  do
-    status "updating $updateapp"
-    #update it using a recursive script instance
-    echo "${DIRECTORY}/manage update $updateapp"
-    "${DIRECTORY}/manage" update "$updateapp" || exit 1
-  done
-  status_green "Operation completed successfully!"
 else
-  error "Invalid argument. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update','update-all', or 'check-all'."
+  error "Invalid argument. Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update', 'update-all', or 'check-all'."
 fi
