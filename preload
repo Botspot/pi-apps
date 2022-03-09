@@ -177,6 +177,9 @@ App folder
         add="#888800"$'\n'
       elif [ "$status" == disabled ];then
         add="#FF0000"$'\n'
+      else
+        # fallback incase unexpected status
+        add=$'\n'
       fi
       
       #determine app icon
