@@ -784,11 +784,11 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   
   #show special "Packages" category
   if [ "$show_apps_setting" != standard ];then
-    list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+    list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
   fi
   
   #show special "All Apps" category
-  list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
 }
 
 bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
@@ -939,10 +939,10 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   #search description and website
   local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g')"
   #hide incompatible and hidden/disabled apps
-  results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
+  results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
   #search app names
-  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$query" | sort)
+  results="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | grep -i "$query" | sort)
 $results"
   
   #remove duplicate entries
@@ -950,7 +950,7 @@ $results"
   
 }
 
-app_search_gui() {
+app_search_gui() { #graphical interface to search for apps
   local output=''
   output="$(yad "${yadflags[@]}" --title=Search --width=310 \
     --text="Search for apps."$'\n'"Not case-sensitive." \
@@ -974,7 +974,11 @@ app_search_gui() {
   
   results="$(app_search "$query" "$search_files")"
   
-  if [ ! -z "$results" ];then
+  if [ "$(echo "$results" | wc -l)" == 1 ];then
+    #if only one result, don't ask user to select it
+    echo "$results"
+    
+  elif [ ! -z "$results" ];then
     
     IFS=$'\n'
     LIST=''
@@ -989,11 +993,6 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
       --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3)" || exit 0
-    
-    #if only one app is listed, user should not have to select it.
-    if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
-      app="$results"
-    fi
     
     echo "$app"
   else
@@ -1838,6 +1837,58 @@ get_codename() { #get debian/ubuntu codename
   lsb_release -sc
 }
 
+multi_install_gui() { #graphical interface to install multiple apps from a list.
+  
+  #get list of apps - hide hidden apps and hide installed apps
+  local apps="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | list_subtract "$(list_apps installed)")"
+  
+  local IFS=$'\n'
+  local app
+  
+  apps="$(for app in $apps ;do
+    echo "FALSE
+${DIRECTORY}/apps/$app/icon-24.png
+$app
+$(head -n1 "${DIRECTORY}/apps/$app/description")"
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+    --width=300 --height=500 \
+    --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
+    --text="Install everything you want!"$'\n'"Note: apps that are already installed are not shown." \
+    --column=:chk --column=:img --column=name --column=:tip \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 --button='Install selected'!"${DIRECTORY}/icons/install.png":0)"
+  
+  if [ $? == 0 ] && [ ! -z "$apps" ];then
+    #remove empty lines from yad's output
+    apps="$(grep . <<<"$apps")"
+    echo "Will install these apps:"$'\n'"$apps"
+    
+    #set the terminal title text
+    title="Installing $(wc -l <<<"$apps") apps"
+    
+    #in a terminal, first get the api functions, display the pi-apps logo, run the manage script, and refresh the app list if the $pipe variable is set
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      source "${DIRECTORY}/api"
+      generate_logo
+      
+      "${DIRECTORY}/manage" multi-install "'"$apps"'"
+      exitcode=$?
+      
+      if [ $exitcode == 0 ];then
+        echo
+        #display countdown
+        for i in {30..1} ;do
+          echo -en "You can close this window now. Auto-closing in $i seconds.\e[0K\r"
+          sleep 1
+        done
+      else
+        echo -e "\nClose this window to exit."
+        read enter #technically you could press Enter to exit.
+      fi' "$title"
+    
+  fi
+}
+
 #command interceptors - functions that enhance a command
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
   local module="$1"
@@ -2063,6 +2114,14 @@ if [ "$guimode" == yad-dark ];then
   export GTK_THEME=Adwaita-dark
 elif [ "$guimode" == yad-light ];then
   export GTK_THEME=PiXflat
+elif [ "$guimode" == yad-default ];then
+  export GTK_THEME=''
+elif [ "$guimode" == xlunch-light-3d ];then
+  export GTK_THEME=''
+elif [ "$guimode" == xlunch-dark-3d ];then
+  export GTK_THEME=Adwaita-dark
+elif [ "$guimode" == xlunch-dark ];then
+  export GTK_THEME=Adwaita-dark
 fi
 
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
