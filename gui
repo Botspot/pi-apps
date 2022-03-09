@@ -67,7 +67,7 @@ fi
 
 #if this script runs itself with a 3rd argument, then yad used it.
 if [ ! -z "$3" ];then
-  input="$4" #the 4th argument is the "sysname" column - invisible and used internally for scripts. MAY BE EMPTY, but the 3rd argument is guaranteed to not be empty.
+  input="$3" #the 3rd argument is the "sysname" column - invisible and used internally for scripts.
   
   echo "Selection: $input" 1>&2
   
@@ -555,9 +555,9 @@ if [[ "$guimode" == yad* ]];then
     #if an item is selected, this script will be run with the row's contents
     tail -F $pipe | yad --center --title='Pi-Apps' \
       --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
-      --list --no-headers --column=:IMG --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+      --list --no-headers --column=@fore@:hd --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-      --print-column=4 --tooltip-column=5 \
+      --tooltip-column=5 \
       --dclick-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" --select-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" \
       --button="!${DIRECTORY}/icons/search.png!Search":"env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui' '' '' Search/ Search/" \
       --button="!${DIRECTORY}/icons/options.png":2 \
