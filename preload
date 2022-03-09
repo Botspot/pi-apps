@@ -88,7 +88,7 @@ fi
 #If updates available, show special Updates category (returned separately to avoid re-preloading after update-check finishes)
 if [ -z "$prefix" ] && [ "$format" == yad ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
   #yad format
-  echo "${DIRECTORY}/icons/none-1.png
+  echo "
 ${DIRECTORY}/icons/categories/Updates.png
 Updates
 Updates/
@@ -133,7 +133,7 @@ if [ $reloadlist == 1 ];then
     
     #initial value of listfile: if within a prefix, start with a Back button
     if [ ! -z "$prefix" ];then
-      echo "${DIRECTORY}/icons/none-1.png
+      echo "
 ${DIRECTORY}/icons/back.png
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
@@ -150,7 +150,7 @@ Return to the previous location" | tee "$listfile"
         diricon="${DIRECTORY}/icons/categories/default.png"
       fi
       
-      add="${DIRECTORY}/icons/none-1.png
+      add="
 $diricon
 $dir
 $prefix$dir/
@@ -166,12 +166,17 @@ App folder
       #get installation status of app
       status="$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)"
       
-      #determine status icon for app
+      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
       if [ -z "$status" ];then
-        #app has never been installed, so no icon
-        add="${DIRECTORY}/icons/none-1.png"$'\n'
-      else
-        add="${DIRECTORY}/icons/${status}.png"$'\n'
+        add=$'\n'
+      elif [ "$status" == installed ];then
+        add="#00AA00"$'\n'
+      elif [ "$status" == uninstalled ];then
+        add="#CC3333"$'\n'
+      elif [ "$status" == corrupted ];then
+        add="#888800"$'\n'
+      elif [ "$status" == disabled ];then
+        add="#FF0000"$'\n'
       fi
       
       #determine app icon
