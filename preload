@@ -176,27 +176,27 @@ App folder
       if [ -z "$status" ];then
         add+="$app
 $prefix/$app
-$(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"
+$(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
       else
         add+="$app
 $prefix/$app
-"\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"
+"\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
       fi
       
       #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
       if [ -z "$status" ];then
-        add+=$'\n'
+        add+=''
       elif [ "$status" == installed ];then
-        add+="#00AA00"$'\n'
+        add+="#00AA00"
       elif [ "$status" == uninstalled ];then
-        add+="#CC3333"$'\n'
+        add+="#CC3333"
       elif [ "$status" == corrupted ];then
-        add+="#888800"$'\n'
+        add+="#888800"
       elif [ "$status" == disabled ];then
-        add+="#FF0000"$'\n'
+        add+="#FF0000"
       else
         # fallback incase unexpected status
-        add+=$'\n'
+        add+=''
       fi
       #output finished app lines
       echo "$add"
