@@ -92,7 +92,7 @@ if [ -z "$prefix" ] && [ "$format" == yad ] && ([ -s "${DIRECTORY}/data/update-s
 Updates
 Updates/
 App folder
-"
+$text_color"
 elif [ -z "$prefix" ] && [ "$format" == xlunch ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
   #xlunch format
   echo "Updates;${DIRECTORY}/icons/categories/Updates-64.png;:exec "\""echo Updates/"\"""
@@ -137,7 +137,7 @@ if [ $reloadlist == 1 ];then
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
 Return to the previous location
-" | tee "$listfile"
+$text_color" | tee "$listfile"
     else
       echo -n '' > "$listfile"
     fi
@@ -154,7 +154,7 @@ Return to the previous location
 $dir
 $prefix$dir/
 App folder
-"
+$text_color"
       echo "$add"
     done | sed 's/&/&amp;/g' | tee -a "$listfile"
     #finished preloading categories
@@ -185,7 +185,7 @@ $prefix/$app
       
       #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
       if [ -z "$status" ];then
-        add+=''
+        add+="$text_color"
       elif [ "$status" == installed ];then
         add+="#00AA00"
       elif [ "$status" == uninstalled ];then
@@ -196,7 +196,7 @@ $prefix/$app
         add+="#FF0000"
       else
         # fallback incase unexpected status
-        add+=''
+        add+="$text_color"
       fi
       #output finished app lines
       echo "$add"
