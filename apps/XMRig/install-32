@@ -171,12 +171,12 @@ EOT
     sudo cp $HOME/xmrig/xmrig.json $chroot_dir/root/.config/xmrig.json || error "Failed to copy 'xmrig.json' to '$HOME/.config/xmrig.json'!"
     # Create xmrig command in host
 
-    cat <<EOT | sudo tee /usr/bin/xmrig 1>&2 || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
+    cat <<EOT | sudo tee /usr/local/bin/xmrig 1>&2 || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
 #!/bin/bash
 
-sudo chroot $HOME/xmrig/bullseye xmrig
+sudo chroot $HOME/xmrig/bullseye xmrig "\$@"
 EOT
-    sudo chmod 775 /usr/bin/xmrig || error 'Failed to make "/usr/bin/xmrig" executable!'
+    sudo chmod 775 /usr/local/bin/xmrig || error 'Failed to make "/usr/local/bin/xmrig" executable!'
     status_green 'Done!'
 
 } # End config_helper()
@@ -285,7 +285,7 @@ git clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to 
 mkdir /xmrig/build && cd /xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
 make -j$(nproc) || error 'Failed to build XMRig!'
-cp xmrig /usr/bin/xmrig || error 'Failed to copy xmrig onto PATH!'
+cp xmrig /usr/local/bin/xmrig || error 'Failed to copy xmrig onto PATH!'
 EOT
 sudo chmod 775 $chroot_dir/chroot-xmrig-inst.sh || error "Failed to make '$chroot_dir/chroot-xmrig-inst.sh' executable!"
 status_green 'Done.'
@@ -321,10 +321,10 @@ fi
 # Make the xmrig-chroot command
 
 status '\nMaking xmrig-chroot command...'
-cat <<EOT | sudo tee /usr/bin/xmrig-chroot 1>&2 || error 'Failed to make xmrig-chroot command in /usr/bin/xmrig-chroot!'
+cat <<EOT | sudo tee /usr/local/bin/xmrig-chroot 1>&2 || error 'Failed to make xmrig-chroot command in /usr/local/bin/xmrig-chroot!'
 #!/bin/bash
 sudo chroot $HOME/xmrig/bullseye
 EOT
-sudo chmod 775 /usr/bin/xmrig-chroot || error 'Failed to make "/usr/bin/xmrig-chroot" executable!'
+sudo chmod 775 /usr/local/bin/xmrig-chroot || error 'Failed to make "/usr/local/bin/xmrig-chroot" executable!'
 status_green "\nAll done!"
 status "\n\nIf you chose to run the config helper, you can now run XMRig by running 'xmrig' in from your Terminal.\nDoing this will run 'sudo chroot $HOME/xmrig/bullseye xmrig', and try to run XMRig with '$chroot_dir/root/xmrig.json'. If you did not setup the config file, you can run xmrig like this:\n1. Run 'xmrig-chroot'.\n2. Now that you're inside the chroot, you can just run 'xmrig' with all the flags and arguments you want, or setup a more complex '$chroot_dir/root/.config/xmrig.json'! Have fun!"
