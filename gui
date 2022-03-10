@@ -58,7 +58,7 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
 }
 
 #display first 4 arguments this script receives (for debugging)
-if false;then
+if true;then
   echo "1 $1" 1>&2
   echo "2 $2" 1>&2
   echo "3 $3" 1>&2
@@ -67,7 +67,7 @@ fi
 
 #if this script runs itself with a 3rd argument, then yad used it.
 if [ ! -z "$3" ];then
-  input="$4" #the 4th argument is the "sysname" column - invisible and used internally for scripts.
+  input="$3" #the 3rd argument is the "sysname" column - invisible and used internally for scripts.
   
   echo "Selection: $input" 1>&2
   
@@ -555,9 +555,9 @@ if [[ "$guimode" == yad* ]];then
     #if an item is selected, this script will be run with the row's contents
     tail -F $pipe | yad --center --title='Pi-Apps' \
       --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
-      --list --no-headers --column=@fore@:hd --column=:IMG --column=Name --column=Sysname:HD --column=tip:HD \
+      --list --no-headers   --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD\
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-      --print-column=4 --tooltip-column=5 \
+      --tooltip-column=4 \
       --dclick-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" --select-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" \
       --button="!${DIRECTORY}/icons/search.png!Search":"env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui' '' '' Search/ Search/" \
       --button="!${DIRECTORY}/icons/options.png":2 \

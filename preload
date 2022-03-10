@@ -88,11 +88,11 @@ fi
 #If updates available, show special Updates category (returned separately to avoid re-preloading after update-check finishes)
 if [ -z "$prefix" ] && [ "$format" == yad ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
   #yad format
-  echo "
-${DIRECTORY}/icons/categories/Updates.png
+  echo "${DIRECTORY}/icons/categories/Updates.png
 Updates
 Updates/
-App folder"
+App folder
+"
 elif [ -z "$prefix" ] && [ "$format" == xlunch ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
   #xlunch format
   echo "Updates;${DIRECTORY}/icons/categories/Updates-64.png;:exec "\""echo Updates/"\"""
@@ -133,11 +133,11 @@ if [ $reloadlist == 1 ];then
     
     #initial value of listfile: if within a prefix, start with a Back button
     if [ ! -z "$prefix" ];then
-      echo "
-${DIRECTORY}/icons/back.png
+      echo "${DIRECTORY}/icons/back.png
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
-Return to the previous location" | tee "$listfile"
+Return to the previous location
+" | tee "$listfile"
     else
       echo -n '' > "$listfile"
     fi
@@ -150,11 +150,11 @@ Return to the previous location" | tee "$listfile"
         diricon="${DIRECTORY}/icons/categories/default.png"
       fi
       
-      add="
-$diricon
+      add="$diricon
 $dir
 $prefix$dir/
-App folder"
+App folder
+"
       echo "$add"
     done | sed 's/&/&amp;/g' | tee -a "$listfile"
     #finished preloading categories
@@ -165,27 +165,11 @@ App folder"
       #get installation status of app
       status="$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)"
       
-      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
-      if [ -z "$status" ];then
-        add=$'\n'
-      elif [ "$status" == installed ];then
-        add="#00AA00"$'\n'
-      elif [ "$status" == uninstalled ];then
-        add="#CC3333"$'\n'
-      elif [ "$status" == corrupted ];then
-        add="#888800"$'\n'
-      elif [ "$status" == disabled ];then
-        add="#FF0000"$'\n'
-      else
-        # fallback incase unexpected status
-        add=$'\n'
-      fi
-      
       #determine app icon
       if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
-        add+="${DIRECTORY}/apps/${app}/icon-24.png"$'\n'
+        add="${DIRECTORY}/apps/${app}/icon-24.png"$'\n'
       else
-        add+="${DIRECTORY}/apps/${app}/none-24.png"$'\n'
+        add="${DIRECTORY}/apps/${app}/none-24.png"$'\n'
       fi
       
       #rest of list attributes
@@ -199,6 +183,21 @@ $prefix/$app
 "\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"
       fi
       
+      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
+      if [ -z "$status" ];then
+        add+=$'\n'
+      elif [ "$status" == installed ];then
+        add+="#00AA00"$'\n'
+      elif [ "$status" == uninstalled ];then
+        add+="#CC3333"$'\n'
+      elif [ "$status" == corrupted ];then
+        add+="#888800"$'\n'
+      elif [ "$status" == disabled ];then
+        add+="#FF0000"$'\n'
+      else
+        # fallback incase unexpected status
+        add+=$'\n'
+      fi
       #output finished app lines
       echo "$add"
     done | sed 's/&/&amp;/g' | tee -a "$listfile"
