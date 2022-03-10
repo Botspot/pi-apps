@@ -537,6 +537,11 @@ if [[ "$guimode" == xlunch* ]] && ([ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr
   done
 fi
 
+#Determine message of the day. If announcements file missing or over a day old, download it.
+if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
+  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
+fi
+
 if [[ "$guimode" == yad* ]];then
   
   #create a named pipe to send app list through to yad
@@ -550,11 +555,14 @@ if [[ "$guimode" == yad* ]];then
     (echo -e '\f' > $pipe
     sleep 0.5
     "${DIRECTORY}/preload" yad '' >> $pipe) &
+
+    #retrieve a random line from the announcements file for this session
+    motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
     
     #constantly read from the pipe and send all output to yad
     #if an item is selected, this script will be run with the row's contents
     tail -F $pipe | yad --center --title='Pi-Apps' \
-      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
+      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd"\
       --list --no-headers   --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD\
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --tooltip-column=4 \
