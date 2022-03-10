@@ -171,7 +171,7 @@ git_clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to 
 mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
 cmake .. || error 'Failed to generate build files!'
 make -j"$(nproc)" || error 'Failed to build XMRig!'
-sudo cp $HOME/xmrig/build/xmrig /usr/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/bin/xmrig'!!"
+sudo cp $HOME/xmrig/build/xmrig /usr/local/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/local/bin/xmrig'!!"
 
 if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
