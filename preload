@@ -154,9 +154,8 @@ Return to the previous location" | tee "$listfile"
 $diricon
 $dir
 $prefix$dir/
-App folder
-"
-      echo -n "$add"
+App folder"
+      echo "$add"
     done | sed 's/&/&amp;/g' | tee -a "$listfile"
     #finished preloading categories
     
