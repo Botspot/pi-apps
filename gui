@@ -58,7 +58,7 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
 }
 
 #display first 4 arguments this script receives (for debugging)
-if true;then
+if false;then
   echo "1 $1" 1>&2
   echo "2 $2" 1>&2
   echo "3 $3" 1>&2
