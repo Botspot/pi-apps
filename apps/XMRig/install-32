@@ -168,7 +168,7 @@ function config_helper() {
     ]
 }
 EOT
-    sudo cp $HOME/xmrig/xmrig.json $chroot_dir/root/.config/xmrig.json error "Failed to copy 'xmrig.json' to '$HOME/.config/xmrig.json'!"
+    sudo cp $HOME/xmrig/xmrig.json $chroot_dir/root/.config/xmrig.json || error "Failed to copy 'xmrig.json' to '$HOME/.config/xmrig.json'!"
     # Create xmrig command in host
 
     cat <<EOT | sudo tee /usr/bin/xmrig 1>&2 || error 'Failed to make xmrig command in /usr/local/bin/xmrig!'
