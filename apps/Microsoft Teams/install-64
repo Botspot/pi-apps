@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.23
+version=1.0.24
 
 install_packages https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${version}/teams-for-linux_${version}_arm64.deb || exit 1
 
