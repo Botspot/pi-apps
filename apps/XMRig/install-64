@@ -148,6 +148,7 @@ function config_helper() {
     "cpu": true,
     "opencl": false,
     "cuda": false,
+    "rx": [-1, -1],
     "pools": [
         {
             "url": "${pool_pref}",
