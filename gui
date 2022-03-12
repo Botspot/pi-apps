@@ -270,6 +270,7 @@ generate_logo &
 {
 
 #check for updates
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 "${DIRECTORY}/updater" set-status &>/dev/null &
 trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
