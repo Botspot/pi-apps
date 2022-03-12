@@ -292,6 +292,11 @@ trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
 #runonce entries
 (
+#remove contents of ${DIRECTORY}/data/preload
+runonce <<"EOF"
+  rm -rf  "${DIRECTORY}/data/preload"
+EOF
+
 #mark wine and box86 as disabled, if twisteros
 runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
