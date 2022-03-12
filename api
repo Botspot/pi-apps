@@ -1619,6 +1619,15 @@ See: https://raspberrypi.stackexchange.com/a/8423/107602")
     error_type="system"
   fi
   
+  if grep -q "Error: Failed to read commit .* No such metadata object\|error: Failed to install org.freedesktop.Platform: Failed to read commit .* No such metadata object\|Error: Error deploying: .* No such metadata object" <<<"$errors" ;then
+    error_caption+=("Flatpak failed to install something due to a past incompleted download.
+
+To repair it, please run this command in a terminal: flatpak repair --user
+
+If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/3479")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
