@@ -298,7 +298,7 @@ sudo chroot $HOME/xmrig/bullseye /chroot-xmrig-inst.sh || error 'Failed to build
 else
 error 'The xmrig chroot is broken. Please reinstall, and if you reused your chroot, it might be a good idea to delete it, and start over.'
 fi
-
+output=""
 if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
