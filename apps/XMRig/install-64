@@ -173,7 +173,7 @@ mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd 
 cmake .. || error 'Failed to generate build files!'
 make -j"$(nproc)" || error 'Failed to build XMRig!'
 sudo cp $HOME/xmrig/build/xmrig /usr/local/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/local/bin/xmrig'!!"
-
+output=""
 if [ -e $HOME/xmrig.json.bak ]; then
     userinput_func "Do you want to use your previous 'xmrig.json'?" "${default_table[@]}"
     if [ "$output" == "Yes" ]; then
