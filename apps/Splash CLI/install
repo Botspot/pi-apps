@@ -1,0 +1,17 @@
+#!/bin/bash
+
+install_packages npm || exit 1
+sudo npm install -g splash-cli || error "Failed to install Splash CLI with NPM!!!"
+
+mkdir -p $HOME/.local/share/icons/hicolor/64x64/ || error 'Failed to create icon folders!'
+cp -f $HOME/pi-apps/apps/"Splash CLI"/icon-64.png $HOME/.local/share/icons/hicolor/64x64/splash-cli.png || error 'Failed to copy the icon to its folder!'
+echo "[Desktop Entry]
+Name=Splash CLI
+GenericName=Wallpaper App
+Comment=Set your wallpaper with images from Unsplash
+Exec=$HOME/pi-apps/etc/terminal-run 'echo Starting Splash CLI...; splash; echo Closing in 15 seconds...; sleep 15' 'Splash CLI'
+Icon=$HOME/.local/share/icons/hicolor/64x64/splash-cli.png
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Graphics;Utility;" | sudo tee $HOME/.local/share/applications/splash-cli.desktop &>/dev/null || error 'Failed to create Menu shortcut!'

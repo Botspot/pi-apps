@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+sudo npm remove splash-cli
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+rm -rf $HOME/.local/share/applications/splash-cli.desktop $HOME/.local/share/icons/hicolor/64x64/splash-cli.png
