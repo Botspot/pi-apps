@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.5.2
+version=2.6.0
 
 install_packages https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_arm64.deb || exit 1
 
