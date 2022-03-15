@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=8.3.2
+version=8.3.3
 
 #Checking if wine is installed
 if ! command -v wine &>/dev/null ; then
