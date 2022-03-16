@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_packages npm || exit 1
+"${DIRECTORY}/manage" install-if-not-installed Node.js || error "Node.js failed to install somehow!"```
 sudo npm install -g splash-cli || error "Failed to install Splash CLI with NPM!!!"
 
 mkdir -p $HOME/.local/share/icons/hicolor/64x64/ || error 'Failed to create icon folders!'
