@@ -111,14 +111,32 @@ case "$__os_id" in
 
                 # remove old java installs to free up space
                 rm -rf ~/MultiMC/install/java
+                # install normal dependencies from raspbian/debian repos
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies on $__os_codename"
+                ;;
+            bookworm|sid)
+                # install normal dependencies from raspbian/debian repos
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies on $__os_codename"
+                warning "You are running Debian $__os_codename which is an unstable repo, you may not have Java 8 or 17 installed by this script."
+                java_8=""
+                package_available openjdk-8-jre
+                if [[ $? == "0" ]]; then
+                    java_8="openjdk-8-jre"
+                fi
+                java_17=""
+                package_available openjdk-17-jre
+                if [[ $? == "0" ]]; then
+                    java_17="openjdk-17-jre"
+                fi
+                if [ ! -z "$java_8" ] || [ ! -z "$java_17" ]; then
+                    # either java 8 or 17 is found to be available by package_available, attempt to install them
+                    install_packages $java_8 $java_17 || warning "Failed to install install a working java 8 or 17. You will have to install these yourself. Continuing the install without them."
+                fi
                 ;;
             *)
-                error "Debian version ($__os_codename) is too old, update to debian Jessie or newer"
+                error "Debian version ($__os_codename) is too old (or too new for our support list), update to debian Jessie or newer"
                 ;;
         esac
-
-        # install normal dependencies from raspbian/debian repos
-        install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies"
         ;;
     LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
         # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME by calling lsb_release
@@ -159,7 +177,7 @@ case "$__os_id" in
         if [[ $? == "0" ]]; then
             java_16="openjdk-16-jre"
         fi
-        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre $java_16 qtbase5-dev || error "Failed to install dependencies"
+        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre $java_16 qtbase5-dev || error "Failed to install dependencies on $__os_codename"
         hash -r
         ;;
     *)
@@ -179,8 +197,8 @@ git clone --recursive https://github.com/MultiMC/Launcher.git src
 cd src || error "Could not move to directory"
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
-git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
-git checkout --recurse-submodules 63d4486855723290ebbd4b71632f6e54670e07c6 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error."
+git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error and run this script again."
+git checkout --recurse-submodules ae8667726ef9f1dd9471fc27ae201238aa21f5d4 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error and run this script again."
 # add secrets files
 mkdir -p secrets
 tee secrets/Secrets.h <<'EOF' >>/dev/null

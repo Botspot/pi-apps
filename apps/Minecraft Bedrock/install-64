@@ -2,7 +2,7 @@
 
 # Get dependencies
 sudo dpkg --add-architecture armhf
-install_packages curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm9:armhf || exit 1
+install_packages curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf zlib1g-dev:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm9:armhf || exit 1
 
 #Download file
 mkdir -p ~/.local/bin || error "Could not make directory"

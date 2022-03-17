@@ -1,4 +1,15 @@
 #!/bin/bash
+
+#remove temporary hack used for bullseye installs
+if package_installed libxcb-util1 ;then
+  libpath="$(dirname "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{print $2}')")" #Value on RPiOS Bullseye: /usr/lib/arm-linux-gnueabihf
+  # if both libxcb-util.so.1 and libxcb-util.so.0 exist, remove the older one added by the previous hack
+  if [ -f "${libpath}/libxcb-util.so.1" ] && [ -f "${libpath}/libxcb-util.so.0" ];then
+    status "Force removing libxcb-util.so.0 temporary hack"
+    sudo rm -f "${libpath}/libxcb-util.so.0"
+  fi
+fi
+
 purge_packages || exit 1
 
 sudo rm -f /usr/bin/obs

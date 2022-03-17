@@ -1452,6 +1452,13 @@ Check your internet connection and try again.")
     error_type="internet"
   fi
   
+  if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
+    error_caption+=("The git commend encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+
+If this keeps happening, see: https://stackoverflow.com/questions/66366582")
+    error_type="internet"
+  fi
+  
   if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
@@ -1545,6 +1552,14 @@ If this problem continues occuring, please reach out to the Pi-Apps developers f
     error_type="system"
   fi
   
+  if grep -q "xz: Cannot exec: No such file or directory" <<<"$errors" ;then
+    error_caption+=("Extraction failed because XZ is not installed.
+
+To install XZ, run this in a terminal:
+sudo apt-get install xz-utils")
+    error_type="system"
+  fi
+  
   if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
     error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
 
@@ -1601,6 +1616,15 @@ You can try to fix the error by adding your user to the video group. Run this co
 sudo usermod -a -G video $USER
 
 See: https://raspberrypi.stackexchange.com/a/8423/107602")
+    error_type="system"
+  fi
+  
+  if grep -q "Error: Failed to read commit .* No such metadata object\|error: Failed to install org.freedesktop.Platform: Failed to read commit .* No such metadata object\|Error: Error deploying: .* No such metadata object" <<<"$errors" ;then
+    error_caption+=("Flatpak failed to install something due to a past incompleted download.
+
+To repair it, please run this command in a terminal: flatpak repair --user
+
+If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/3479")
     error_type="system"
   fi
   
@@ -1817,10 +1841,13 @@ get_device_info() { #returns information about current install and hardware
 }
 
 get_codename() { #get debian/ubuntu codename
-  if ! command -v lsb_release &>/dev/null; then
-    apt_update && sudo apt-get install -y lsb-release
+  # check if upstream-release is available
+  if [ -f /etc/upstream-release/lsb-release ]; then
+    # this is a derivative, get the upstream release info
+    lsb_release -suc
+  else
+    lsb_release -sc
   fi
-  lsb_release -sc
 }
 
 #command interceptors - functions that enhance a command
@@ -1901,7 +1928,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       if [ -z "$file" ];then
         file="$opt"
         #if output file is /dev/stdout, enable quiet mode
-        [ "$file" == /dev/stdout ] && quiet=1
+        if [ "$file" == /dev/stdout ];then
+          quiet=1
+        fi
       else #file var already populated
         use=wget
       fi
@@ -1943,7 +1972,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #use these flags for aria2c
     aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false --allow-overwrite=true --auto-file-renaming=false \
-      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" --dir '/' -o "${file:1}")
+      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" -d "$(dirname "${file}")" -o "$(basename "${file}")")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
@@ -1957,7 +1986,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       aria2c "${aria2_flags[@]}" | while read -r line ;do
         
         #filter out unnecessary lines
-        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line")"
+        line="$(grep --line-buffered -v '\-\-\-\-\-\-\-\-\|======\|^FILE:\|^$\|Summary\|Results:\|download completed\.\|^Status Legend:\||OK\||stat' <<<"$line" || :)"
         
         if [ ! -z "$line" ];then #if this line still contains something and was not erased by grep
           

@@ -4,7 +4,7 @@ name: Update_Apps
 on:
   # run at 21:00 UTC every day
   schedule:
-     - cron: '0 21 * * *'
+     - cron: '0 */6 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -17,7 +17,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Runs a set of commands using the runners shell
       - name: Run app update scripts
@@ -33,6 +33,10 @@ jobs:
           #add special functions
           get_release() {
             curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
+          }
+
+          get_prerelease() {
+            curl --silent "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
           }
 
           function validate_url(){
@@ -81,12 +85,12 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          author: github-actions <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: |
             Update App Versions, run by GitHub Actions - Apps updated:
 
             ${{ env.UPDATED_APPS }}
-          branch: "auto-app-updates"
+          branch: "auto-app-updates-NOT-FOR-USERS"
           title: "[AUTO] Update App Versions"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#determine if getting the mono repository is is necessary
+status -n "Is the mono-complete package new enough? "
+
+if package_is_new_enough mono-complete 6.8.0 ;then
+  status_green 'Yes' #answer the question asked above
+else
+  status_green 'No' #answer the question asked above
+  echo "Adding Mono repository..."
+  install_packages apt-transport-https dirmngr gnupg ca-certificates || exit 1
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
+  echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+fi
+
+install_packages mono-complete https://mattercontrol.appspot.com/downloads/mattercontrol-linux/release || exit 1 # mono-vbnc
+
+#change graphics settings to allow it to run on RPi's GPU
+sudo sed -i 's/"Color": 32/"Color": 24/g' /usr/lib/mattercontrol/appsettings.json
+sudo sed -i 's/"FSAASamples": 8/"FSAASamples": 0/g' /usr/lib/mattercontrol/appsettings.json

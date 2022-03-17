@@ -1,6 +1,6 @@
-name: App request
-description: Submit an app to Pi Apps
-labels: App Request
+name: App Submission
+description: Submit/Upload an app to be added Pi Apps. For apps with a completed ZIP, install files, deb, or PR ONLY.
+labels: ["App Request","Zip/PR included"]
 body:
   - type: input
     id: app-name
@@ -30,11 +30,11 @@ body:
   - type: textarea
     id: zip
     attributes:
-      label: Upload file
-      description: "If you have a deb of the app, or if you've created a zip file for this app, or if you have any other relevant files, upload it here."
+      label: Upload file or Add PR Link
+      description: "Upload your deb of the app, or a zip file for this app, or link an already opened PR or github repo/branch for your app, or if you have any other relevant files, upload or link them here."
       placeholder: "Tips: You can upload files here by clicking to expand the regular text-box"
     validations:
-      required: false
+      required: true
       
   - type: checkboxes
     id: confirmations

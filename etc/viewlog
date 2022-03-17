@@ -10,8 +10,10 @@ if [ -z "$file" ];then
 fi
 echo "$file" > "$DIRECTORY/data/current-viewed-logfile"
 
+echo "viewlog: Viewing file: $file" 1>&2
+
 if command -v mousepad ;then
-  mousepad "$file" &
+  mousepad "$file" -o window --disable-server &
   pid=$!
 elif command -v leafpad ;then
   leafpad "$file" &
@@ -23,8 +25,10 @@ else
   pid=$!
 fi
 
+echo "PID is $pid" 1>&2
+
 #while the user-selection stays the same, AND the text editor is still running, wait.
-while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ] && kill -0 $pid;do
+while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ] && [ -e /proc/$pid ];do
   sleep 1
 done
 kill $pid 2>/dev/null

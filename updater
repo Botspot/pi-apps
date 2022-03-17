@@ -109,7 +109,6 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
-  
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
@@ -228,6 +227,100 @@ file:$file"
     
   done
 }
+
+list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
+    # little helpers for terminal print control and key input
+    ESC=$( printf "\033")
+    cursor_blink_on()   { printf "${ESC}[?25h"; }
+    cursor_blink_off()  { printf "${ESC}[?25l"; }
+    cursor_to()         { printf "${ESC}[$1;${2:-1}H"; }
+    print_inactive()    { printf "$2   $1 "; }
+    print_active()      { printf "$2  ${ESC}[7m $1 ${ESC}[27m"; }
+    get_cursor_row()    { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
+
+    local return_value=$1 &>/dev/null
+    local -n options=$2 &>/dev/null
+    local -n defaults=$3 &>/dev/null
+
+    local selected=()
+    for ((i=0; i<${#options[@]}; i++)); do
+      selected+=("true")
+      printf "\n"
+    done
+
+    # determine current screen position for overwriting the options
+    local lastrow=$(get_cursor_row)
+    local startrow=$(($lastrow - ${#options[@]}))
+
+    # ensure cursor and input echoing back on upon a ctrl+c during read -s
+    trap "cursor_blink_on; stty echo; printf '\n'; exit" 2
+    cursor_blink_off
+
+    key_input() {
+        local key
+        IFS= read -rsn1 key 2>/dev/null >&2
+        if [[ $key = ""      ]]; then echo enter; fi;
+        if [[ $key = $'\x20' ]]; then echo space; fi;
+        if [[ $key = "k" ]]; then echo up; fi;
+        if [[ $key = "j" ]]; then echo down; fi;
+        if [[ $key = $'\x1b' ]]; then
+            read -rsn2 key
+            if [[ $key = [A || $key = k ]]; then echo up;    fi;
+            if [[ $key = [B || $key = j ]]; then echo down;  fi;
+        fi 
+    }
+
+    toggle_option() {
+        local option=$1
+        if [[ ${selected[option]} == true ]]; then
+            selected[option]=false
+        else
+            selected[option]=true
+        fi
+    }
+
+    print_options() {
+        # print options by overwriting the last lines
+        local idx=0
+        for option in "${options[@]}"; do
+            local prefix="[ ]"
+            if [[ ${selected[idx]} == true ]]; then
+              prefix="[\e[38;5;46m✔\e[0m]"
+            fi
+
+            cursor_to $(($startrow + $idx))
+            if [ $idx -eq $1 ]; then
+                print_active "$option" "$prefix"
+            else
+                print_inactive "$option" "$prefix"
+            fi
+            ((idx++))
+        done
+    }
+
+    local active=0
+    while true; do
+        print_options $active
+
+        # user key control
+        case $(key_input) in
+            space)  toggle_option $active;;
+            enter)  print_options -1; break;;
+            up)     ((active--));
+                    if [ $active -lt 0 ]; then active=$((${#options[@]} - 1)); fi;;
+            down)   ((active++));
+                    if [ $active -ge ${#options[@]} ]; then active=0; fi;;
+        esac
+    done
+
+    # cursor position back to normal
+    cursor_to $lastrow
+    printf "\n"
+    cursor_blink_on
+
+    eval $return_value='("${selected[@]}")'
+}
+
 
 list_updates_gui() { #input: updatable_apps and updatable_files variables
   LIST="$(generate_yad_list)"
@@ -471,7 +564,8 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     --on-top --skip-taskbar --undecorated --close-on-unfocus \
     --geometry=260+$((screen_width-262))+$((screen_height-150)) \
     --image="${DIRECTORY}/icons/logo-64.png" \
-    --button="Close!${DIRECTORY}/icons/exit.png":1
+    --button="Close!${DIRECTORY}/icons/exit.png":1 \
+    --timeout=30
   
 elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
   
@@ -517,7 +611,7 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
     update_now_gui
   fi
   
-  "$0" set-status
+  "${DIRECTORY}/updater" set-status 
   
 elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   check_repo
@@ -531,48 +625,81 @@ elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   
   update_now_gui
   
+
 elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user permission to update
   check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
-  echo 
+  echo
   
+  #if no updatable files and updatebla apps
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
-    status "Nothing is updatable."
+    status "Everything is up to date."
     exit 0
   fi
   
+  #if no updatable apps
   if [ -z "$updatable_apps" ];then
-    status "No apps are updatable."
-    echo
+    status "All apps are up to date."
   else
-    status "These apps can be updated:"
-    echo
-    echo "$updatable_apps" | sed 's/^/  - /g'
-    echo
+    IFS=$'\n'
+    updatable_apps_options=($(echo -e "$updatable_apps"))
+    status "App updates available.\nUncheck an app to skip updating it."
+    list_updates_cli result updatable_apps_options 
+
+    i=0
+    IFS=$'\n'
+    for app in $updatable_apps; do
+      if [ "${result[$i]}" == "true" ]; then
+        apps_to_update+="$app\n"
+      fi
+      i="$(($i+1))"
+    done
+
+    updatable_apps="$(echo -e "$apps_to_update")"
   fi
-  
+
+  echo
+
+  #if no updatable files
   if [ -z "$updatable_files" ];then
-    status "No files are updatable"
-    echo
+    status "All files are up to date."
   else
-    status "These files can be updated:"
-    echo
-    echo "$updatable_files" | sed 's/^/  - /g'
-    echo
-  fi
-  
-  read -p "$(status -n 'Update now? [Y/n] ')" answer
-  
-  if [ "$answer" == n ] || [ "$answer" == N ];then
-    echo
-    echo "Exiting now."
-    echo
-    exit 0
+    IFS=$'\n'
+    updatable_files_options=($(echo -e "$updatable_files"))
+    status "File updates available.\nUncheck a file to skip updating it."
+    list_updates_cli result updatable_files_options 
+
+    i=0
+    IFS=$'\n'
+    for file in $updatable_files; do
+      if [ "${result[$i]}" == "true" ]; then
+        files_to_update+="$file\n"
+      fi
+      i="$(($i+1))"
+    done
+
+    updatable_files="$(echo -e "$files_to_update")"
   fi
   
   echo
-  update_now_cli
+  
+  if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
+    printf "${ESC}[?25l"
+    for i in {6..1}; do 
+      echo -ne "Updating in: $i\r (Use Ctrl-C to abort) " && sleep 1
+      done
+      printf "${ESC}[?25h"
+
+      echo -e "\n"
+
+    update_now_cli
+       "${DIRECTORY}/updater" set-status 
+  else
+    status "User did not allow anything to be updated."
+    exit 0
+  fi
+
   
 elif [ "$runmode" == cli-yes ];then #update now without asking for confirmation
   check_repo

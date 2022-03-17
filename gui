@@ -27,15 +27,15 @@ fi
   sleep 10
   command -v shellcheck >/dev/null || exit 0
   
-  if ! shellcheck "${DIRECTORY}/updater" -S error ;then
+  if shellcheck "${DIRECTORY}/updater" --color=always | grep '\[31m' --before 1 ;then
     echo "Downloading updater script to repair syntax error"
     errors="$(wget -O "${DIRECTORY}/updater" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/updater' 2>&1)" || echo "$errors"
-  fi
+  fi | sed 's/]31m//g'
   
-  if ! shellcheck "${DIRECTORY}/api" -S error ;then
+  if shellcheck "${DIRECTORY}/api" --color=always | grep '\[31m' --before 1 ;then
     echo "Downloading api script to repair syntax error"
     errors="$(wget -O "${DIRECTORY}/api" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/api' 2>&1)" || echo "$errors"
-  fi
+  fi | sed 's/]31m//g'
 ) &
 
 #for the text_editor(), runonce() and app_status() functions
@@ -178,9 +178,16 @@ runonce <<"EOF"
   refresh_all_pkgapp_status
 EOF
 
-# change settings icon
+#change settings icon
 runonce <<"EOF"
   [ -a "$HOME/.local/share/applications/pi-apps-settings.desktop" ] && sed -i "s/logo.png/settings.png/g" "$HOME/.local/share/applications/pi-apps-settings.desktop" || true
+EOF
+
+#recompile xlunch for existing users because icons are rendered differently now. See: https://github.com/Tomas-M/xlunch/issues/129#issuecomment-1051006971
+runonce <<"EOF"
+  if [ -d "${DIRECTORY}/xlunch" ];then
+    rm -rf "${DIRECTORY}/xlunch"
+  fi
 EOF
 
 ) &
@@ -348,9 +355,6 @@ while true;do
 
     elif [[ "$guimode" == xlunch* ]];then
       if [ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ];then
-        #uninstall xlunch first
-        pkexec rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
-        
         #signal files
         rm -f /tmp/xlunchfailed /tmp/xlunchfinished /tmp/terminalexit
         echo '' > /tmp/terminalexit
@@ -362,6 +366,10 @@ while true;do
             sleep infinity
           }
           trap 'echo "\"""\"" > /tmp/terminalexit' EXIT
+          
+          #uninstall xlunch first
+          sudo rm -rf /etc/xlunch /usr/share/xlunch /usr/bin/xlunch /usr/bin/genentries /usr/bin/updateentries /usr/bin/genentries.desktop.sh /usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png /usr/share/icons/hicolor/48x48/apps/xlunch.png /usr/share/applications/genentries.desktop
+          
           rm -f /tmp/terminalexit
           sudo rm -rf /usr/bin/xlunch "\""$DIRECTORY/xlunch"\"" 2>/dev/null
           sudo apt install -y libimlib2-dev libx11-dev || error 'APT failed to install libimlib2-dev and libx11-dev packages!'
@@ -429,7 +437,7 @@ $LIST"
       
       if [ "$guimode" == xlunch-light-3d ];then
         #light mode
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc e0e0e000 --tc 000000 --pc 6060ffff --hc ffffff50 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -438,7 +446,7 @@ $LIST"
           )"
       elif [ "$guimode" == xlunch-dark-3d ];then
         #dark mode, 3d opaque version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 2F313600 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc ffffff00 --tc DCDDDE --pc ffffffa0 --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff20 --scrollindicatorcolor ffffff40 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
@@ -447,12 +455,12 @@ $LIST"
           )"
       else
         #dark mode, transparent version
-        app="$(echo -e "$LIST" | xlunch -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc 60606010 \
+        app="$(echo -e "$LIST" | xlunch --multiple -WoCS -s 64 --bc 000000A0 --tc ffffffff --pc 6060ffff --hc ffffff30 \
           -p "$searchbox" -a -c $([ $width -lt 550 ] && echo 1 || echo 2) --title "Pi-Apps: Raspberry Pi app store" \
           --icon "${DIRECTORY}/icons/logo.png" --scrollbarcolor ffffff40 --scrollindicatorcolor 0000ff80 \
           --width $width --height $height --xposition $xposition --yposition $yposition \
-          --button "${DIRECTORY}/icons/logo-128-trans.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
-          --button "${DIRECTORY}/icons/logo-trans.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
+          --button "${DIRECTORY}/icons/logo-128.png;;$((($width/2)-(128/2))),0;pi-apps-homepage1" \
+          --button "${DIRECTORY}/icons/logo-text.png;;$([ -z "$prefix" ] && echo '45' || echo '65'),$([ -z "$prefix" ] && echo '10' || echo '0');pi-apps-homepage1"
           #-g ~/blur.png
           )"
       fi
