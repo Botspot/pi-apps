@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2021.3.2
+version=2021.3.3
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
