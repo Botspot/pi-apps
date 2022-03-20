@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sh -c 'rm "$(command -v 'starship')"' || error 'Failed to remove starship'
+
+sed -i '/\eval "$(starship init bash)"/d' "$HOME/.bashrc" || error 'Failed to remove starship from .bashrc'
+sed -i '/\starship init fish | source/d' "$HOME/.config/fish/config.fish" || error 'Failed to remove starship from config.fish'
+sed -i '/\eval "$(starship init zsh)"/d' "$HOME/.zshrc" || error 'Failed to remove starship from .zshrc'
+ed -i '/\Invoke-Expression (&starship init powershell)"/d' "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"  || error 'Failed to to remove starship from PowerShell_profile'
+
+rm -rf ~/.local/share/fonts/fira-code || error 'Failed to remove fonts'
