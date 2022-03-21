@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Uninstall Powerline-Shell as it may cause issues
+"${DIRECTORY}/manage" uninstall 'Powerline-Shell'
+
 # Install Fira Code (Nerd Font) font
 status 'Installing Fira Code fonts'
 mkdir $HOME/.local/share/fonts/fira-code
@@ -12,7 +15,7 @@ sed -i '/fontname/c\fontname=Fira Code Medium Nerd Font 11' $HOME/.config/lxterm
 echo FontName >> $HOME/.config/xfce4/terminal/terminalrc
 sed -i '/FontName/c\FontName=Fira Code Medium Nerd Font 12' $HOME/.config/xfce4/terminal/terminalrc
 
-# Install Starship for script
+# Install Starship from official script
 status 'Installing Starship Prompt'
 sh -c "$(curl -fsSL https://starship.rs/install.sh)" || error 'Failed to download starship prompt'
 
@@ -34,10 +37,8 @@ if [ -f "$HOME/.zshrc" ]; then
 	echo 'eval "$(starship init bash)"' >> "$HOME/.zshrc" || error 'Failed to set starship prompt in .zshrc'
 fi
 
-#Add Starship in PowerShell 
+# Add Starship in PowerShell 
 if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]; then
 	sed -i '/\Invoke-Expression (&starship init powershell)"/d' "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
 	echo 'Invoke-Expression (&starship init powershell)' >> "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" || error 'Failed to set starship prompt in PowerShell_profile'
 fi
-
-
