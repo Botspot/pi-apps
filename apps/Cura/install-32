@@ -13,7 +13,7 @@ install_packages libfuse2 libgles-dev || exit 1
 (install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${version2}/stl-thumb_${version2}_armhf.deb") || warning "Failed to install stl-thumb package, but continuing as it's not crucial to Cura's operation."
 
 #link libxcb-util.so.0 to solve "error while loading shared libraries: libxcb-util.so.0: cannot open shared object file: No such file or directory"
-sudo ln -s /usr/lib/arm-linux-gnueabihf/libxcb-util.so.1.0.0 /usr/lib/arm-linux-gnueabihf/libxcb-util.so.0 2>/dev/null
+#sudo ln -s /usr/lib/arm-linux-gnueabihf/libxcb-util.so.1.0.0 /usr/lib/arm-linux-gnueabihf/libxcb-util.so.0 2>/dev/null
 
 if [ -z "$(cat ~/.config/mimeapps.list | grep -F 'cura.desktop')" ];then
   echo "Associating the STL mimetype for Cura..."
