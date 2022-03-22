@@ -3,12 +3,18 @@
 
 # Remove old MCPILs
 sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
+
+# Install the repos
 wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
+curl -s --compressed "https://mcpiscript.github.io/PPA/KEY.gpg" | sudo apt-key add -
+sudo curl -s --compressed -o /etc/apt/sources.list.d/mcpiscript.list "https://mcpiscript.github.io/PPA/mcpiscript.list"
+sudo apt update
+
 
 # Choose MCPIL to use
 PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
 "
-options=("gMCPIL (recommended)" "jMCPIL (better GUI)" "Quit")
+options=("gMCPIL (recommended, unmaintained)" "jMCPIL (better GUI, unmaintained)" "Planet (Unofficial, but maintained)" "Quit")
 select opt in "${options[@]}"
 do
   case $opt in
@@ -19,6 +25,9 @@ do
         MCPIL="jmcpil"
         break;;
     "${options[2]}")
+        MCPIL="planet-launcher"
+        break;;
+    "${options[3]}")
         exit 0;;
     *) echo "Invalid option: $REPLY";;
   esac
