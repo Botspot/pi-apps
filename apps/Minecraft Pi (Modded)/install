@@ -6,9 +6,7 @@ sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
 
 # Install the repos
 wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
-curl -s --compressed "https://mcpiscript.github.io/PPA/KEY.gpg" | sudo apt-key add -
-sudo curl -s --compressed -o /etc/apt/sources.list.d/mcpiscript.list "https://mcpiscript.github.io/PPA/mcpiscript.list"
-sudo apt update
+
 
 
 # Choose MCPIL to use
@@ -26,6 +24,9 @@ do
         break;;
     "${options[2]}")
         MCPIL="planet-launcher"
+        curl -s --compressed "https://mcpiscript.github.io/PPA/KEY.gpg" | sudo apt-key add -
+        sudo curl -s --compressed -o /etc/apt/sources.list.d/mcpiscript.list "https://mcpiscript.github.io/PPA/mcpiscript.list"
+        sudo apt update
         break;;
     "${options[3]}")
         exit 0;;
