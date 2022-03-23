@@ -462,6 +462,11 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 {
   #determine screen_width and screen_height
   screen_dimensions="$(xrandr --nograb --current |  awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
+  if [ -z "$screen_dimensions" ];then
+    # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
+    # workaround is to get the first output returned for the connected display
+    screen_dimensions="$(xrandr --nograb --current |  awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+  fi
   screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
   screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
   unset screen_dimensions
