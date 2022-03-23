@@ -204,6 +204,15 @@ if [ ! -z "$3" ];then
       imageline=(--image="${DIRECTORY}/apps/${app}/icon-64.png" --image-on-top)
     fi
     
+    #Make sure app details window is focused (necessary for openbox window manager)
+    (i=0
+      while [ "$(xdotool getactivewindow getwindowname)" != "Details of ${app}" ] && [ $i -lt 20 ]; do
+        wmctrl -a "Details of ${app}" #Raise the window named "Details of ${app}"
+        sleep 0.2
+        i=$((i+1))
+      done) &
+    
+    #display app details window
     (cat "${DIRECTORY}/apps/$app/description" || echo "Description unavailable") | yad --text-info --fontname=12 --wrap --show-uri \
       --text="$(sed 's/&/&amp;/g' <<<"$abovetext")" \
       "${imageline[@]}" \
