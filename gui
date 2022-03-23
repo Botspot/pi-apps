@@ -391,7 +391,7 @@ EOF
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git'
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     sudo apt install $dependencies -y -f --no-install-recommends
@@ -573,8 +573,8 @@ if [[ "$guimode" == yad* ]];then
     #constantly read from the pipe and send all output to yad
     #if an item is selected, this script will be run with the row's contents
     tail -F $pipe | yad --center --title='Pi-Apps' \
-      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd"\
-      --list --no-headers   --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD\
+      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
+      --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --tooltip-column=4 \
       --dclick-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" --select-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" \
