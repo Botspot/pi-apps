@@ -6,5 +6,5 @@ install_packages https://github.com/Jai-JAP/hyper-arm-builds/releases/download/v
 
 if [[ "$(sudo cat /usr/share/applications/hyper.desktop)" =~ "Categories=TerminalEmulator;" ]]; then
 status "Fixing Hyper's Menu entry..."
-sudo cat /usr/share/applications/hyper.desktop | sed -e 's/Categories=TerminalEmulator;/Categories=Utility;/' | sudo tee /usr/share/applications/hyper.desktop &>/dev/null || error "Failed to fix desktop file!"
+sudo sed -i /usr/share/applications/hyper.desktop 's/Categories=TerminalEmulator;/Categories=Utility;/' | sudo tee /usr/share/applications/hyper.desktop &>/dev/null || error "Failed to fix desktop file!"
 fi
