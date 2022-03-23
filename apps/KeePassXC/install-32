@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=2.6.6-1
+version=2.6.6-5
 
 install_packages https://apt.raspbian-addons.org/debian/pool/main/k/keepassxc/keepassxc_${version}_armhf.deb || exit 1
