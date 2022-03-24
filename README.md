@@ -6,7 +6,7 @@
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
   |
-  <a href="https://docs.pi-apps.io">
+  <a href="https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md">
     View docs</a>
   |
   <a href="https://github.com/Botspot/pi-apps/wiki/Apps-List">
