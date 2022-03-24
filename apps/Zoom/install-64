@@ -17,7 +17,7 @@ sudo ldconfig
 #For testing, set to false if zoom folder is already there
 if true;then
   echo "Downloading Zoom..."
-  rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz* ~/zoom_x64_libs.zip*
+  rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz* ~/zoom_x64_libs.zip* ~/zoom_x64_libs
   wget "https://zoom.us/client/${version}/zoom_x86_64.tar.xz" || wget 'https://zoom.com/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
   
   echo "Extracting..."
