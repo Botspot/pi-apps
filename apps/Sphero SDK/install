@@ -9,7 +9,7 @@ cd ~/sphero-sdk-raspberrypi-python
 
 echo "------------------------------------------------
 The SDK should now be fully set up!
-To reach your code, type cd sphero-sdk-raspberrypi-python, same goes for entering sub-folders, just type the name and there you go!
+To reach your code, type cd ~/sphero-sdk-raspberrypi-python, same goes for entering sub-folders, just type the name and there you go!
 You always have to make sure after entering any program folder, cd into observer, not asyncio.
 For example, cd getting_started ==> observer ==> then enter any folder shown, such as power.
 To run your programs, type sudo, followed by python3 (program_name.py).
