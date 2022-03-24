@@ -5,6 +5,8 @@ error() { #red text and exit 1
   exit 1
 }
 
+export GDK_BACKEND=x11
+
 if ! command -v yad &>/dev/null; then
   error "YAD needs to be installed to run Pi-Apps."
 fi
