@@ -15,13 +15,13 @@
     Report an error</a>
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml">
-    General suggestions</a>
+    Make a general suggestion</a>
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-suggestion.yml">
     Suggest new app</a>
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-submission.yml">
-    Submit an completed new app</a>
+    Submit a new app</a>
 
 <p align="center">
     <a href="https://github.com/Botspot/pi-apps/stargazers"><img src="https://img.shields.io/github/stars/Botspot/pi-apps" alt="stars"></a>
