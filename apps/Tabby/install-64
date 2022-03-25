@@ -2,4 +2,4 @@
 
 version=1.0.174
 
-install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux.deb || exit 1
+install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux_arm64.deb || exit 1
