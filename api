@@ -812,7 +812,7 @@ bitly_link() { #Runs whenever an app is installed/uninstalled to tally the numbe
 usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
   #If clicklist file missing or over a day old, download it.
   if [ ! -f "${DIRECTORY}/data/clicklist" ] || [ ! -z "$(find "${DIRECTORY}/data/clicklist" -mtime +1 -print)" ]; then
-    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" || return 1
+    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" >/dev/null || return 1
   fi
   clicklist="$(cat "${DIRECTORY}/data/clicklist")"
   
