@@ -151,6 +151,7 @@ unset arm64_webPackages
 unset all_webPackages
 unset armhf_packagename
 unset arm64_packagename
+unset all_packagename
 unset pi_apps_filepath_32
 unset pi_apps_filepath_64
 unset pi_apps_filepath
