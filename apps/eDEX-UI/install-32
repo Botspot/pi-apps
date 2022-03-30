@@ -2,7 +2,7 @@
 
 version=2.2.8
 
-wget -O $HOME/eDEX-UI.AppImage 'https://github.com/GitSquared/edex-ui/releases/download/v${version}/eDEX-UI-Linux-armv7l.AppImage' || error 'Failed to download ${version} appimage!'
+wget -O $HOME/eDEX-UI.AppImage "https://github.com/GitSquared/edex-ui/releases/download/v${version}/eDEX-UI-Linux-armv7l.AppImage" || error 'Failed to download ${version} appimage!'
 chmod +x $HOME/eDEX-UI.AppImage || error 'Failed to make the appimage executable!'
 
 enable_module fuse || exit 1
