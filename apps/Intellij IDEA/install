@@ -5,6 +5,8 @@ version=2021.3.3
 # Get dependencies
 install_packages openjdk-11-jdk || exit 1
 
+java_home = "$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | sed 's/.*= //g')"
+
 sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
 sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
 wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz /tmp/ideaIC.tar.gz || error "Failed to download!"
@@ -18,7 +20,7 @@ Type=Application
 Version=${version}
 Name=IntelliJ IDEA
 Path=/opt/ideaIC/bin
-Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/ideaIC/bin/idea.sh"\""
+Exec=bash -c "\""JAVA_HOME=$java_home PATH=$java_home/bin/:$PATH /opt/ideaIC/bin/idea.sh"\""
 Comment=A fast and lightweight IDE using GTK+
 Icon=/opt/ideaIC/bin/idea.png
 Categories=Development;IDE;
