@@ -4,6 +4,8 @@ version=2021.3.3
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
+java_home = "$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+
 wget https://download.jetbrains.com/python/pycharm-community-${version}.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
 status "Extracting pycharm-community.tar.gz to /opt"
 sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
@@ -42,7 +44,7 @@ echo "[Desktop Entry]
 Type=Application
 Name=PyCharm Community Edition
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c "\""JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf PATH=/usr/lib/jvm/java-11-openjdk-armhf/bin/:$PATH /opt/pycharm-community/bin/pycharm.sh"\""
+Exec=bash -c "\""JAVA_HOME=$java_home PATH=$java_home/bin/:$PATH /opt/pycharm-community/bin/pycharm.sh"\""
 Comment=Python IDE
 Categories=Development;IDE;Programming;
 Terminal=false
