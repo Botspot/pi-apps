@@ -4,7 +4,7 @@ version=2021.3.3
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
-java_home = "$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
 
 wget https://download.jetbrains.com/python/pycharm-community-${version}.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
 status "Extracting pycharm-community.tar.gz to /opt"

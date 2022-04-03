@@ -5,7 +5,7 @@ version=2021.3.3
 # Get dependencies
 install_packages openjdk-11-jdk || exit 1
 
-java_home = "$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
 
 sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
 sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
