@@ -44,31 +44,39 @@ fi
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
-command -v curl >/dev/null || sudo apt install -y curl
-upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
+#first compare local git repo's last-commit-time with the current system time (Unix epoch time format)
 current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
-
-if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ]);then
-  yad --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
-    --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
-  yadpid=$!
+current_local_date="$(date +%s)"
+if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_date + 7776000)) ];then
   
-  clear
-  echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
-  cd $HOME
-  rm -rf ~/pi-apps-forced-update
-  command -v git >/dev/null || sudo apt install -y git
-  git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
-  cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
-  mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
-  mv -f ~/pi-apps-forced-update "${DIRECTORY}"
-  sleep 10
+  #if local git repo's last-commit-time is 3 months older than current system time, now compare the local git repo's last-commit-time with the online repo's modification time to avoid false positives.
+  #This two-tiered approach prevents unnecessary GitHub API calls and speeds up manage script's execution for normal usage.
   
-  kill $yadpid 2>/dev/null
+  command -v curl >/dev/null || sudo apt install -y curl
+  upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
   
-  #run new manage script in background
-  "{DIRECTORY}/manage" "$@"
-  exit $?
+  if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ]);then
+    yad --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+      --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
+    yadpid=$!
+    
+    clear
+    echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
+    cd $HOME
+    rm -rf ~/pi-apps-forced-update
+    command -v git >/dev/null || sudo apt install -y git
+    git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
+    cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
+    mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
+    mv -f ~/pi-apps-forced-update "$DIRECTORY"
+    sleep 10
+    
+    kill $yadpid 2>/dev/null
+    
+    #run new manage script in background
+    "${DIRECTORY}/manage" "$@"
+    exit $?
+  fi
 fi
 }
 
