@@ -9,6 +9,13 @@ if [[ $? == "0" ]]; then
   install_packages qt5-default || error "Failed to install dependencies"
 fi
 
+# print debug output to terminal
+hash -r
+echo "/usr/lib/*-linux-gnu/qtchooser/default.conf"
+cat /usr/lib/*-linux-gnu/qtchooser/default.conf
+echo "/usr/share/qtchooser/qt5-*-linux-gnu.conf"
+cat /usr/share/qtchooser/qt5-*-linux-gnu.conf
+
 # download parts directory
 mkdir -p $HOME/.local/share/fritzing || error "Could not make directory"
 cd $HOME/.local/share/fritzing || error "Could not move to directory"
@@ -22,7 +29,7 @@ git clone https://github.com/fritzing/fritzing-app.git || error "Could not clone
 cd fritzing-app || error "Could not move to directory"
 git checkout 0.9.6
 sed -i 's/LIBGIT_STATIC = true/LIBGIT_STATIC = false/g' phoenix.pro
-qmake || error "qmake failed on fritzing configure"
+qmake || error "PLEASE contact us in the Discord. We have seen multiple reports of this error and are unable to reproduce on our end. qmake failed on fritzing configure"
 make -j$(nproc) || error "compilation failed"
 lupdate -noobsolete phoenix.pro
 lrelease -removeidentical phoenix.pro
