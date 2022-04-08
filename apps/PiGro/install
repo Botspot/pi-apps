@@ -5,9 +5,46 @@ git_clone https://github.com/actionschnitzel/PiGro-Aid- || error "Failed to clon
 install_packages xterm python3-pil python3-pil.imagetk python3-pip mpg123 lolcat || exit 1
 cd PiGro-Aid- || error "Failed to enter directory!"
 
-pip3 install playsound psutil distro
+pip3 install playsound psutil distro py-notifier
 
 
 chmod +x start.sh
-cp pigro.desktop  ~/Desktop
-cp pigro.desktop ~/.local/share/applications/
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
+  DIRECTORY="$HOME/PiGro-Aid-"
+  
+
+fi
+echo "[Desktop Entry]
+Version=2.1
+Exec=${DIRECTORY}/start.sh
+Name=PiGro
+GenericName=PiGro
+Encoding=UTF-8
+Terminal=false
+Type=Application
+Categories=System
+Icon=${DIRECTORY}/images/icons/logo.png
+Path=${DIRECTORY}/" > ~/Desktop/pigro.desktop
+
+sudo chmod +x ~/Desktop/pigro.desktop
+
+
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
+  DIRECTORY="$HOME/PiGro-Aid-"
+  
+
+fi
+echo "[Desktop Entry]
+Version=2.1
+Exec=${DIRECTORY}/start.sh
+Name=PiGro
+GenericName=PiGro
+Encoding=UTF-8
+Terminal=false
+Type=Application
+Categories=System
+Icon=${DIRECTORY}/images/icons/logo.png
+Path=${DIRECTORY}/" > ~/.local/share/applications/pipigro.desktop
+
