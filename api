@@ -2146,8 +2146,8 @@ fi
 #get color to use for yad text (mini python script inside bash)
 #used for yad version earlier than 0.40.0
 #0400 is the latest version
-yad_version="$(yad --version | awk '{print $1}' | sed 's/\.//g')"
-if [ $yad_version -lt 0440 ]; then
+yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+if [ $yad_version -lt 0400 ]; then
 text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
