@@ -11,10 +11,14 @@ fi
 
 # print debug output to terminal
 hash -r
-echo "/usr/lib/*-linux-gnu/qtchooser/default.conf"
-cat /usr/lib/*-linux-gnu/qtchooser/default.conf
-echo "/usr/share/qtchooser/qt5-*-linux-gnu.conf"
+echo "Logging contents of file: /usr/lib/*-linux-gnu/qt-default/qtchooser/default.conf"
+cat /usr/lib/*-linux-gnu/qt-default/qtchooser/default.conf
+echo "Log file status: /usr/lib/*-linux-gnu/qt-default/qtchooser/default.conf"
+ls -l /usr/lib/*-linux-gnu/qt-default/qtchooser/default.conf
+echo "Logging contents of file: /usr/share/qtchooser/qt5-*-linux-gnu.conf"
 cat /usr/share/qtchooser/qt5-*-linux-gnu.conf
+echo "Log qmake -v output"
+qmake -v
 
 # download parts directory
 mkdir -p $HOME/.local/share/fritzing || error "Could not make directory"
