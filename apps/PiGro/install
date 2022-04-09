@@ -1,13 +1,28 @@
 #!/bin/bash
-rm -rf ~/PiGro-Aid- || error "Failed to first remove ~/PiGro-Aid- folder!"
-git_clone https://github.com/actionschnitzel/PiGro-Aid- || error "Failed to clone repository!"
+
 # Get dependencies
 install_packages xterm python3-pil python3-pil.imagetk python3-pip mpg123 lolcat || exit 1
+# Get Python dependencies
+pip3 install playsound psutil distro py-notifier
+
+rm -rf ~/PiGro-Aid- || error "Failed to first remove ~/PiGro-Aid- folder!"
+git_clone https://github.com/actionschnitzel/PiGro-Aid- || error "Failed to clone repository!"
+
 cd PiGro-Aid- || error "Failed to enter directory!"
-
-pip3 install playsound psutil distro
-
-
 chmod +x start.sh
-cp pigro.desktop  ~/Desktop
-cp pigro.desktop ~/.local/share/applications/
+
+echo "[Desktop Entry]
+Version=2.1
+Exec=$HOME/PiGro-Aid-/start.sh
+Name=PiGro
+GenericName=PiGro
+Encoding=UTF-8
+Terminal=false
+Type=Application
+Categories=System
+Icon=$HOME/PiGro-Aid-/images/icons/logo.png
+Path=$HOME/PiGro-Aid-/" > ~/Desktop/pigro.desktop
+
+chmod +x ~/Desktop/pigro.desktop
+cp ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
+
