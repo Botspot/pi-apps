@@ -19,6 +19,8 @@ echo "Logging contents of file: /usr/share/qtchooser/qt5-*-linux-gnu*.conf"
 cat /usr/share/qtchooser/qt5-*-linux-gnu*.conf
 echo "Log qmake -v output"
 qmake -v
+echo "apt list libqt5core5a qtchooser"
+apt list libqt5core5a qtchooser
 
 # download parts directory
 mkdir -p $HOME/.local/share/fritzing || error "Could not make directory"
