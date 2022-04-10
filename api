@@ -2145,28 +2145,6 @@ elif [ "$guimode" == xlunch-dark ];then
   export GTK_THEME=Adwaita-dark
 fi
 
-#get color to use for yad text (mini python script inside bash)
-#used for yad version earlier than 0.40.0
-#0400 is the latest version
-yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
-if [ $yad_version -lt 0400 ]; then
-text_color=$(echo "import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from gi.repository import Gdk
-win = Gtk.Window()
-vb = Gtk.VBox()
-tv = Gtk.TextView()
-vb.add(tv)
-win.show_all()
-style = tv.get_style_context()
-textcolor = style.get_color(Gtk.StateType.NORMAL) 
-print(Gdk.RGBA.to_string(textcolor))
-" | python -)
-else
-text_color=""
-fi
-
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
 yadflags=(--center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
 
