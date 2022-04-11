@@ -1,3 +1,6 @@
+
+version="191/artifact/out/minecraft-pi-reborn-client-2.3.3"
+
 # Remove old repos
 sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpi-revival.{list,gpg} &>/dev/null || true
 sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpiscript.{list,gpg} &>/dev/null || true
@@ -7,7 +10,7 @@ sudo rm -f /etc/apt/{sources.list,trusted.gpg}.d/mcpiscript.{list,gpg} &>/dev/nu
 mkdir ~/.planet-launcher
 
 echo "Downloading the AppImage"
-wget https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/artifact/out/minecraft-pi-reborn-client-2.3.3-armhf.AppImage -O ~/.planet-launcher/minecraft.AppImage
+wget https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-armhf.AppImage -O ~/.planet-launcher/minecraft.AppImage
 
 echo "Installing the launcher repository"
 curl -s --compressed "https://mcpiscript.github.io/PPA/KEY.gpg" | sudo apt-key add -
