@@ -5,6 +5,7 @@ if [ $? != 0 ];then
   error "Failed to add box64.list file!"
 fi
 
+sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg
 curl -fsSL https://ryanfortner.github.io/box64-debs/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/box64-debs-archive-keyring.gpg
 
 if [ $? != 0 ];then
