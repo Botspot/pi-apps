@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2021.3.3
+version=2022.1
 
 # Get dependencies
 install_packages openjdk-11-jdk || exit 1
