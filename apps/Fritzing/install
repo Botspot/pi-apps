@@ -35,7 +35,7 @@ git clone https://github.com/fritzing/fritzing-app.git || error "Could not clone
 cd fritzing-app || error "Could not move to directory"
 git checkout 0.9.6
 sed -i 's/LIBGIT_STATIC = true/LIBGIT_STATIC = false/g' phoenix.pro
-qmake || error "User error: PLEASE contact us in the Discord. We have seen multiple reports of this error and are unable to reproduce on our end. qmake failed on fritzing configure"
+qmake || error "PLEASE contact us in the Discord. We have seen multiple reports of this error and are unable to reproduce on our end. qmake failed on fritzing configure"
 make -j$(nproc) || error "compilation failed"
 lupdate -noobsolete phoenix.pro
 lrelease -removeidentical phoenix.pro
