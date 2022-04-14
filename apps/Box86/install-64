@@ -34,6 +34,7 @@ wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -qO- | se
 echo "Adding key..."
 wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
 echo "Installing box86..."
+sudo dpkg --remove box86-no-binfmt-restart:armhf 2>/dev/null
 install_packages box86:armhf || exit 1
 
 if ! sudo systemctl restart systemd-binfmt ;then
