@@ -1,5 +1,5 @@
 #!/bin/bash
-version=5.14.3
+version=5.14.4
 
 install_packages https://github.com/Ulauncher/Ulauncher/releases/download/${version}/ulauncher_${version}_all.deb python3-distutils-extra python3-levenshtein python3-websocket || exit 1
 
