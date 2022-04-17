@@ -140,7 +140,7 @@ EOF
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin shellcheck'
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     sudo apt install $dependencies -y -f --no-install-recommends
