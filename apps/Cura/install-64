@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=20220310
-version2=0.4.0
+version2=0.4.1
 wget -O /tmp/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-aarch64-${version}.AppImage || error "Failed to download!"
 sudo mv /tmp/Cura.AppImage /opt
 sudo chmod +x /opt/Cura.AppImage
