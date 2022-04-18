@@ -54,6 +54,30 @@ fi
 #specifies a category to preload (can be left empty to load main page)
 prefix="$2"
 
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "$text_color" ] && [ "$format" == yad ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    text_color=$(echo "import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import Gdk
+win = Gtk.Window()
+vb = Gtk.VBox()
+tv = Gtk.TextView()
+vb.add(tv)
+win.show_all()
+style = tv.get_style_context()
+textcolor = style.get_color(Gtk.StateType.NORMAL)
+print(Gdk.RGBA.to_string(textcolor))
+" | python -)
+  else
+    text_color=""
+  fi
+fi
+export text_color
+
 timestampfile="${DIRECTORY}/data/preload/timestamps-$(echo "$prefix" | tr -d '/')"
 listfile="${DIRECTORY}/data/preload/LIST-$(echo "$prefix" | tr -d '/')"
 
