@@ -7,12 +7,6 @@ error() { #red text and exit 1
 
 export GDK_BACKEND=x11
 
-if ! pidof -o %PPID -x "$0" >/dev/null; then
-  # this is the first instance of the gui script running
-  # clear the app waitlist
-  rm -f /tmp/pi-apps-waitlist
-fi
-
 if ! command -v yad &>/dev/null; then
   error "YAD needs to be installed to run Pi-Apps."
 fi
@@ -51,9 +45,8 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
       fi
     }
     # Check if another instance of manage is running before starting
-    # also check if another app is in the top position of the waitlist
     sp="/-\|"
-    while pidof -o %PPID -x "${DIRECTORY}/manage" >/dev/null || [ "$(head -n 1 /tmp/pi-apps-waitlist)" != "'"$app"'" ]; do
+    while pidof -o %PPID -x "${DIRECTORY}/manage" >/dev/null; do
       # if inside the loop, another script instance of manage is still running
       echo -en "Waiting for another script to finish before continuing... ${sp:i++%${#sp}:1} \e[0K\r" 1>&2
       # wait a random amount of seconds before checking again
@@ -66,8 +59,6 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
     done
     "${DIRECTORY}/manage" multi-"'"$action"'" "'"$app"'"
     exitcode=$?
-    # remove app from waitlist
-    sed -i "/^"'"$app"'"$/d" /tmp/pi-apps-waitlist
     
     #refresh app list
     refresh_list
@@ -247,19 +238,11 @@ if [ ! -z "$3" ];then
     case $button in
     4)
       #install
-      # add app to end of waitlist
-      echo "$app" >> /tmp/pi-apps-waitlist
       terminal_manage install "$app"
-      # remove app from waitlist
-      sed -i "/^$app$/d" /tmp/pi-apps-waitlist
       ;;
     2)
       #uninstall
-      # add app to end of waitlist
-      echo "$app" >> /tmp/pi-apps-waitlist
       terminal_manage uninstall "$app"
-      # remove app from waitlist
-      sed -i "/^$app$/d" /tmp/pi-apps-waitlist
       ;;
     6)
       #scripts
