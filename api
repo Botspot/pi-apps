@@ -2155,6 +2155,9 @@ else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
 
+#Make dual-pane yad windows work correctly on wayland
+export GDK_BACKEND=x11
+
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then
   DIRECTORY="$(readlink -f "$(dirname "$0")")"
