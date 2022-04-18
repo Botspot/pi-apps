@@ -44,19 +44,7 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
         "${DIRECTORY}/preload" yad "'"$prefix"'" > "'"$pipe"'" 2>/dev/null
       fi
     }
-    # Check if another instance of manage is running before starting
-    sp="/-\|"
-    while pidof -o %PPID -x "${DIRECTORY}/manage" >/dev/null; do
-      # if inside the loop, another script instance of manage is still running
-      echo -en "Waiting for another script to finish before continuing... ${sp:i++%${#sp}:1} \e[0K\r" 1>&2
-      # wait a random amount of seconds before checking again
-      # the problem with waiting a fixed amount of seconds is if it happens that more than one scripts are waiting for one to finish
-      # when the one finishes, manage script is not running anymore, and all of them may exit this while loop at once, starting their own installs all at once
-      # using a random time reduces that chance but does not make it zero
-      MINWAIT=1
-      MAXWAIT=5
-      sleep $((MINWAIT+RANDOM % (MAXWAIT-MINWAIT)))
-    done
+    
     "${DIRECTORY}/manage" multi-"'"$action"'" "'"$app"'"
     exitcode=$?
     
