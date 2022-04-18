@@ -63,11 +63,6 @@ terminal_manage() { #function to install/uninstall one or more apps - uses a ter
       MINWAIT=1
       MAXWAIT=5
       sleep $((MINWAIT+RANDOM % (MAXWAIT-MINWAIT)))
-      if [ ! -s /tmp/pi-apps-waitlist ]; then
-        # waitlist is somehow empty or non-existant
-        # break out of the while loop and continue
-        break
-      fi
     done
     "${DIRECTORY}/manage" multi-"'"$action"'" "'"$app"'"
     exitcode=$?
