@@ -210,7 +210,7 @@ ${i} ($(app_status "${i}"));${DIRECTORY}/apps/${i}/icon-64.png;${i}"
     done
     IFS="$PREIFS"
   fi
-  LIST="$(echo -e "$LIST")"
+  LIST="$(echo -e "$LIST" | sed 's/&/&amp;/g')"
   
   #save entire list string to file for future use
   echo "$LIST" > "$listfile"

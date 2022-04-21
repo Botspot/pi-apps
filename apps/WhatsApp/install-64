@@ -1,17 +1,5 @@
 #!/bin/bash
-rm -rf ~/whatsapp.tar.xz ~/WhatsApp
-mkdir ~/WhatsApp
-wget -O ~/whatsapp.tar.xz https://github.com/cycool29/whatsapp-for-linux/releases/download/rpi-arm64-1.0/WhatsApp-linux-arm64.tar.xz || error 'Failed to download!'
-tar -xf ~/whatsapp.tar.xz -C ~/WhatsApp || error "Failed to extract!"
-rm ~/whatsapp.tar.xz
-mv ~/WhatsApp/WhatsApp-linux-armv7l/* ~/WhatsApp && rm -rf ~/WhatsApp/WhatsApp-linux-armv7l
-#create menu shortcut
-echo "[Desktop Entry]
-Name=WhatsApp
-Exec=bash -c "\""rm -rf $HOME/.config/whats*/Service* ; $HOME/WhatsApp/WhatsApp"\""
-Path=$HOME/WhatsApp
-Icon=$(dirname "$0")/icon-64.png
-Terminal=false
-StartupNotify=true
-Type=Application
-Categories=Network;" > ~/.local/share/applications/whatsapp.desktop || error "Failed to create menu button!"
+
+version=5.0
+
+install_packages https://github.com/cycool29/whatsapp-for-linux/releases/download/${version}/whatsapp_${version}_arm64.deb || exit 1

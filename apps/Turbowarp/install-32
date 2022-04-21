@@ -1,11 +1,11 @@
 #!/bin/bash
 
-version=1.0.0
+version=1.2.2
 install_packages https://github.com/TurboWarp/desktop/releases/download/v${version}/TurboWarp-linux-armv7l-${version}.deb || exit 1
 
 echo -n "Moving menu launcher from Education to Programming category... "
 sudo sed -i 's/Categories=Education;/Categories=Application;Development;/g' /usr/share/applications/turbowarp-desktop.desktop
-sudo sed -i 's/%U/%f%U/g' /usr/share/applications/turbowarp-desktop.desktop
+sudo sed -i 's/%U/%F %U/g' /usr/share/applications/turbowarp-desktop.desktop
 echo done
 #create scratch project mime type
 echo -n "Creating .sb3 mimetype... "

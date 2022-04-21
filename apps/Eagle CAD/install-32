@@ -1,28 +1,30 @@
 #!/bin/bash
-#On Botspot's system, libssl1.0-dev was required to launch Eagle. But too many error reports say that this package is not installinbg, so I'm commenting it out.
-#install_packages libssl1.0-dev || exit 1
+
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
-#Acquired from http://eagle.autodesk.com/eagle/software-versions/1
+
+#An older version of libssl is required to run the old version of QT in Eagle.
+install_packages libssl1.0.2 || install_packages libssl1.0.0 || exit 1
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
 if [ ! -d $HOME/eagle-7.7.0 ];then
   rm -rf $HOME/eagle-7.7.0
-  echo -n "Downloading Eagle 7.7.0... "
-  wget -q http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
-  echo 'done'
-  echo -n "Extracting... "
-  bash ./eagle.run $HOME >/dev/null|| error "Failed to run eagle.run!"
+  status -n "Downloading Eagle 7.7.0... "
+  #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
+  wget http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
+  
+  status -n "Extracting... "
+  bash ./eagle.run $HOME >/dev/null || error "Failed to run eagle.run!"
   rm -f ./eagle.run
-  echo "done"
+  status_green Done
 fi
 mkdir -p $HOME/eagle &>/dev/null
 
 #make it runnable from a terminal
 sudo ln -s $HOME/eagle-7.7.0/bin/eagle /usr/local/bin/eagle
-echo -n "Creating menu button... "
-mkdir -p ~/.local/share/applications/ &>/dev/null
+
+status -n "Creating menu button... "
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
 Version=7.7.0
@@ -33,21 +35,29 @@ Name=Eagle
 Exec=box86 eagle %f
 Comment=Design Circuit Boards with Eagle CAD
 MimeType=application/brd;
-Categories=Development;Electronics;" > ~/.local/share/applications/eagle.desktop
-echo "done"
-echo -n "Creating .brd mimetype... "
-sudo bash -c 'echo "<?xml version="\""1.0"\"" encoding="\""UTF-8"\""?>
-<mime-info xmlns="\""http://www.freedesktop.org/standards/shared-mime-info"\"">
-   <mime-type type="\""application/brd"\"">
+Categories=Development;Electronics;" | sudo tee /usr/share/applications/eagle.desktop >/dev/null
+status_green "Done"
+
+status -n "Creating .brd mimetype... "
+echo '<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+   <mime-type type="application/brd">
      <comment>EagleCAD Project</comment>
-     <glob pattern="\""*.brd"\""/>
+     <glob pattern="*.brd"/>
+     <generic-icon name="eagle"/>
    </mime-type>
-</mime-info>" > /usr/share/mime/packages/brd.xml'
+</mime-info>' | sudo tee /usr/share/mime/packages/brd.xml >/dev/null
 sudo update-mime-database /usr/share/mime
-echo done
-if [ -z "$(cat ~/.config/mimeapps.list | grep 'eagle.desktop')" ];then
-  echo -n "Associating the .brd mimetype with Eagle... "
+
+#File icon
+sudo cp ~/eagle-7.7.0/bin/eagle-logo.png /usr/share/icons/eagle.png
+sudo update-icon-caches /usr/share/icons/*
+
+status_green Done
+
+if ! grep -qF 'eagle.desktop' ~/.config/mimeapps.list ;then
+  status -n "Associating the .brd mimetype with Eagle... "
   echo "[Added Associations]
 application/brd=eagle.desktop;" >> ~/.config/mimeapps.list
-  echo done
+  status_green Done
 fi

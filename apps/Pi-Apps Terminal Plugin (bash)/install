@@ -1,10 +1,7 @@
 #!/bin/bash
-red="\e[31m"
-normal="\e[0m"
-function error() {
-  echo -e "${red}$1${normal}"
-  exit 1
-}
+readonly red="\e[31m"
+readonly normal="\e[0m"
+
 #Removing existing /usr/local/bin/pi-apps and script
 echo -n "removing existing version of the script..."
 sudo rm -f /usr/local/bin/pi-apps

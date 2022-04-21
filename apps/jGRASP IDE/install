@@ -1,16 +1,17 @@
 #!/bin/bash
+
 #get java
-if [ -f install_packages ];then
-  install_packages openjdk-11-jdk || exit 1
-else
-  apt install -y openjdk-11-jdk || sudo apt install -y openjdk-11-jdk || error "Failed to install openjdk-11-jdk."
-fi
+install_packages openjdk-11-jdk || exit 1
+
 rm -rf ~/jgrasp.zip ~/jgrasp
 
-wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_07.zip' -O ~/jgrasp.zip || error "Failed to download jgrasp.zip!"
+wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_09.zip' -O ~/jgrasp.zip || error "Failed to download jgrasp.zip!"
 unzip ~/jgrasp.zip || error "Failed to extract jgrasp.zip!"
+rm -f ~/jgrasp.zip
+
 echo "Running jgrasp's configure script..."
 ~/jgrasp/src/configure || error "jgrasp's configure script failed!"
+
 echo "[Desktop Entry]
 Encoding=UTF-8
 Version=1.0
@@ -18,7 +19,7 @@ Name=jGRASP
 GenericName=IDE
 Exec=$HOME/jgrasp/bin/jgrasp %F
 Terminal=false
-Icon=$([ -f "$(dirname "$0")/icon-64.png" ] && echo "$(dirname "$0")/icon-64.png" || echo "$HOME/jgrasp/data/gric48.png")
+Icon=$(dirname "$0")/icon-64.png
 Type=Application
 Categories=Application;Development;IDE;
 Comment=jGRASP IDE

@@ -2,11 +2,14 @@
 
 status "This script helps you setup a Minecraft-Java-Server (for any version)."
 
+# add jq to use in script
+install_packages jq || exit 1
+
 # userinput function to display yad prompts to the user
 function userinput_func {
   unset uniq_selection
   if [[ "${#@}" == "2" ]];then
-    echo -e "$1" |  yad --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
+    echo -e "$1" |  yad --no-escape --undecorated --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
     --text-info --fontname="@font@ 11" --wrap --width=800 --height=200 --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
     --show-uri \
     --button="$2":0
@@ -17,7 +20,7 @@ function userinput_func {
     done
     uniq_selection[0]=TRUE
     output=$(
-    yad --center \
+    yad --no-escape --undecorated --center \
       --borders="20" \
       --window-icon="${DIRECTORY}/apps/Minecraft Java Server/icon-64.png" \
       --text "$1" \
@@ -40,37 +43,53 @@ function userinput_func {
 mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
-description="What type of server do you want to run?.\
-\n\nVanilla Minecraft, Fabric, or Forge?"
-table=("Vanilla" "Fabric" "Forge")
+description="What type of Minecraft server\ndo you want to run?"
+table=("Vanilla" "Fabric" "Forge" "Paper" "Bukkit" "Spigot" "Purpur" "Tuinity")
 userinput_func "$description" "${table[@]}"
 server_type="$output"
 
-# open folder for user to place the downloaded file
-xdg-open "$HOME/Minecraft-Java-Server" 2>/dev/null
-
 case "$server_type" in
-  "Vanilla")
-    # open browser to download the server version of user choice
-    setsid x-www-browser "https://mcversions.net/" > /dev/null 2>&1 &
-    server_jar="server.jar"
-    ;;
   "Fabric")
-    # open browser to download the server version of user choice
-    setsid x-www-browser "https://fabricmc.net/use/server/" > /dev/null 2>&1 &
-    server_jar="fabric-server*.jar"
-    
+    available_versions=$(curl -s https://meta.fabricmc.net/v2/versions/game | jq -r '.[] | select( .stable == true ) | .version')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    loader_version=$(curl -s https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
+    installer_verison=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
+    server_jar="fabric-server-mc.$server_version-loader.$loader_version-launcher.$installer_verison.jar"
+    wget -O "$server_jar" "https://meta.fabricmc.net/v2/versions/loader/$server_version/$loader_version/$installer_verison/server/jar" || exit 1
     ;;
   "Forge")
-    # open browser to download the server version of user choice
-    setsid x-www-browser "https://files.minecraftforge.net/net/minecraftforge/forge/" > /dev/null 2>&1 &
-    server_jar="forge-*-installer.jar"
+    # remove versions without an "installer" form
+    available_versions=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'del((."1.1", ."1.2.3", ."1.2.4", ."1.2.5", ."1.3.2", ."1.4.0", ."1.4.1", ."1.4.2", ."1.4.3", ."1.4.4", ."1.4.5", ."1.4.6", ."1.4.7", ."1.5", ."1.5.1", ."1.5.2", ."1.6.1", ."1.6.2", ."1.6.3")) | keys_unsorted | reverse | .[]')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    installer_version=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
+
+    # example file formats
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.1-39.0.63/forge-1.18.1-39.0.63-installer.jar
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.3.2-4.3.5.318/forge-1.3.2-4.3.5.318-universal.zip
+    # https://maven.minecraftforge.net/net/minecraftforge/forge/1.2.5-3.4.9.171/forge-1.2.5-3.4.9.171-server.zip
+
+    server_jar="forge-$installer_version-installer.jar"
+    wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
+    ;;
+  "Vanilla"|"Paper"|"Bukkit"|"Spigot"|"Purpur"|"Tuinity")
+    available_versions=$(curl -s https://serverjars.com/api/fetchAll/$server_type/0 | jq -r '.response[] | .version')
+    description="What version of $server_type do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    server_jar="${server_type,,}-$server_version.jar"
+    wget -O "$server_jar" "https://serverjars.com/api/fetchJar/$server_type/$server_version" || exit 1
     ;;
   *)
     error "You did not choose an option, exiting the script."
     ;;
 esac
-
 
 while [[ ! -a $(echo ${server_jar}) ]]; do
   description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
@@ -83,16 +102,44 @@ done
 # use * to get full name of server jar
 server_jar=$(echo ${server_jar})
 
-# tell user to choose java 8, 16, or 17
-description="You can now close your browser.\
-\nIn order to run Minecraft, the game requires a specific version of Java.\
-\nPlease choose below which version of java the server of your choice should run with.\
-\nJava versions can be 8, 16, or 17.\
-\n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-\nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
-table=("Java 17" "Java 16" "Java 8")
-userinput_func "$description" "${table[@]}"
-java_selection="$output"
+if [ -z "$server_version" ]; then
+  # tell user to choose java 8, 16, or 17
+  description="In order to run Minecraft, the game requires a specific version of Java.\
+  \nPlease choose below which version of java the server of your choice should run with.\
+  \nJava versions can be 8, 16, or 17.\
+  \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
+  \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+  table=("Java 17" "Java 16" "Java 8")
+  userinput_func "$description" "${table[@]}"
+  java_selection="$output"
+else
+  # we know the version of minecraft in use
+  # choose the appropriate version of java based on that
+  # version <= 1.16.5 java 8
+  # 1.16.5 < version <= 1.17.1 java 16
+  # version >= 1.18 java 17
+  function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+  if [ $(version $server_version) -le $(version "1.16.5") ]; then
+    echo "Using Java 8 by default"
+    java_selection="Java 8"
+  elif [ $(version $server_version) -le $(version "1.17.1") ]; then
+    echo "Using Java 16 by default"
+    java_selection="Java 16"
+  elif [ $(version $server_version) -ge $(version "1.18") ]; then
+    echo "Using Java 17 by default"
+    java_selection="Java 17"
+  else
+    description="WARNING: We don't know how you got here... your version $server_version does not seem to be a normal minecraft format.\
+    \n\nIn order to run Minecraft, the game requires a specific version of Java.\
+    \nPlease choose below which version of java the server of your choice should run with.\
+    \nJava versions can be 8, 16, or 17.\
+    \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
+    \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
+    table=("Java 17" "Java 16" "Java 8")
+    userinput_func "$description" "${table[@]}"
+    java_selection="$output"
+  fi
+fi
 
 install_packages lsb-release wget gpg screen || exit 1
 
@@ -201,20 +248,54 @@ case "$java_selection" in
     ;;
 esac
 
+jvm_test="1"
+jvm_args=""
+while [[ $jvm_test != 0 ]]; do
+  # userinput jvm_args
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA defaut list is prepopulated in the text box below.\n\nThe most inportant arguments -XmxXXXXM -XmsXXXXM are at the beginning and define how much ram for your server to use.\nHint, use your keyboard Home key to see the start of this list" --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  $java_location $jvm_args -version
+  jvm_test="$?"
+  if [[ $jvm_test != 0 ]]; then
+    echo "Your JVM Arguments were invalid. Your input was: $jvm_args"
+    yad --center --text "OH NO! The JVM Arguments you inputed are either invalid (like a typo) or incompatible with the selected java version.\n\nRefer to the terminal log immeditately above to determine the issue and try again." --button="Try New JVM Arguments":0
+  fi
+done
+
 if [[ "$server_type" == "Forge" ]]; then
   # run the server installer
   rm -f start-server.sh
   $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
   rm -f ${server_jar}
-  sed -i "s:java:${java_location}:g" run.sh
-  sed -i 's:"$@":nogui:g' run.sh
-  mv run.sh start-server.sh
-  chmod +x start-server.sh
-else
+
+  # forge has MANY ways to launch depending on the version
+  # for some reason they like re-inventing the wheel and doing things differently than everyone else
+  # the below covers all the ways I have seen from 1.6.4 - 1.18.1
+  # its possible I missed an obscure format that was only used once... please create an issue if that is the case
+  if [[ -f "minecraftforge-universal-$installer_version.jar" ]]; then
+    server_jar="minecraftforge-universal-$installer_version.jar"
+  elif [[ -f "forge-$installer_version-universal.jar" ]]; then
+    server_jar="forge-$installer_version-universal.jar"
+  elif [[ -f "forge-$installer_version.jar" ]]; then
+    server_jar="forge-$installer_version.jar"
+  elif [[ -f "run.sh" ]]; then
+    # set server_jar to empty to skip start-server.sh universal script creation
+    # this is the most up to date forge launch format where their own run.sh file is provided
+    server_jar=""
+    sed -i "s:java:${java_location}:g" run.sh
+    sed -i 's:"$@":nogui:g' run.sh
+    echo "$jvm_args" > user_jvm_args.txt
+    mv run.sh start-server.sh
+    chmod +x start-server.sh
+  else
+    error "We have never seen this new obscure Forge format from $installer_version. Please report this error to pi-apps"
+  fi
+fi
+
+if [ -n "$server_jar" ]; then
   sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
 #!/bin/bash
 echo 'Minecraft Server starting'
-$java_location -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
+$java_location $jvm_args -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
 echo 'Minecraft Server has stopped'
 sleep 3
 _EOF_"
@@ -231,7 +312,7 @@ mkdir -p "$HOME/.local/share/applications"
 tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
-Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ $? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
+Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ \$? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
 Path=$HOME/Minecraft-Java-Server
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application

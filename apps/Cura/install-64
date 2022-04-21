@@ -1,10 +1,10 @@
 #!/bin/bash
 
-version=20211110
-version2=0.4.0
-wget -O ~/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-aarch64-${version}.AppImage || error "Failed to download!"
-
-chmod +x ~/Cura.AppImage
+version=20220310
+version2=0.4.1
+wget -O /tmp/Cura.AppImage https://github.com/smartavionics/Cura/releases/download/${version}/Cura-mb-master-aarch64-${version}.AppImage || error "Failed to download!"
+sudo mv /tmp/Cura.AppImage /opt
+sudo chmod +x /opt/Cura.AppImage
 
 #ensure libfuse2 is installed to avoid "error loading libfuse.so.2" error
 install_packages libfuse2 libgles-dev || exit 1
@@ -18,16 +18,18 @@ if [ -z "$(cat ~/.config/mimeapps.list | grep -F 'cura.desktop')" ];then
 model/stl=cura.desktop;" >> ~/.config/mimeapps.list
 fi
 
+enable_module fuse || exit 1
+
 echo "[Desktop Entry]
 Name=Ultimaker Cura
 GenericName=3D Printing Software
 Comment=Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=bash -c 'sudo modprobe fuse; ~/Cura.AppImage '"'\ "%f"'"
+Exec=/opt/Cura.AppImage %f
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application
-MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
+MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;model/x3d+xml;model/stl;
 Categories=Graphics;Education;Development;Science;
 Keywords=3D;Printing;
-StartupNotify=true" > ~/.local/share/applications/cura.desktop || error "Failed to create menu button!"
+StartupNotify=true" | sudo tee /usr/share/applications/cura.desktop >/dev/null || error "Failed to create menu button!"
 

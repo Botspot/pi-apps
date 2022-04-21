@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#This used to be a package-app, but it turns out the 'kodi' package conflicts with 'kodi-data' and 'kodi-bin' in an annoying way. Using a script allows us to remove these packages first, to avoid causing apt errors.
+if package_installed kodi-data ;then
+  status "First removing kodi-data package to avoid errors..."
+  apt_lock_wait
+  sudo apt purge kodi-data -y --autoremove
+fi
+
+if package_installed kodi-bin ;then
+  status "First removing kodi-bin package to avoid errors..."
+  apt_lock_wait
+  sudo apt purge kodi-bin -y --autoremove
+fi
+
+install_packages kodi || exit 1
+

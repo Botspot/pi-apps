@@ -184,7 +184,7 @@ if [ -d /opt/wine/mesa ];then
   export LIBGL_DRIVERS_PATH=/opt/wine/mesa/lib/arm-linux-gnueabihf/dri/
   export VK_ICD_FILENAMES=/opt/wine/mesa/share/vulkan/icd.d/broadcom_icd.armv7l.json
 fi
-setarch linux32 -L /opt/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
+/opt/wine/bin/wine"' "$@"' | sudo tee /usr/local/bin/wine >/dev/null
 
 echo "  - winetricks"
 echo "#!/bin/bash

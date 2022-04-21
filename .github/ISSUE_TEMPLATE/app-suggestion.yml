@@ -1,0 +1,40 @@
+name: App suggestion
+description: Suggest an app to be added Pi Apps. pi-apps developers may choose to assist in adding your app suggestion.
+labels: App Request
+body:
+  - type: input
+    id: app-name
+    attributes:
+      label: What is the name of the app?
+      placeholder: Ex - Zoom, AndroidBuddy
+    validations:
+      required: true
+      
+  - type: textarea
+    id: host
+    attributes:
+      label: (Optional) Where is the app hosted?
+      placeholder: Ex - Github link, Gitlab link, Sourceforge link
+    validations:
+      required: false
+  
+  - type: textarea
+    id: about
+    attributes:
+      label: About the app
+      description: What is its main purpose? How does it work? 
+      placeholder: Tell us about the app here!
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I have confirmed that this app is legal and not piracy.
+          required: true
+        - label: I have confirmed that this app has never been discussed in https://github.com/Botspot/pi-apps/issues and https://github.com/Botspot/pi-apps/pulls, and it is not in the Pi Apps app list.
+          required: true
+        - label: I have confirmed that this app can run on Raspberry Pi.
+          required: true

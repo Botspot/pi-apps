@@ -1,3 +1,3 @@
 #!/bin/bash
-rm -rf ~/eDEX-UI-RPi ~/.local/share/applications/appimagekit-edex-ui.desktop ~/.local/share/applications/appimagekit-edex-ui-3.desktop
+rm -rf $HOME/eDEX-UI.AppImage ~/.local/share/applications/appimagekit-edex-ui.desktop ~/.local/share/applications/appimagekit-edex-ui-3.desktop ~/.local/share/applications/edex-ui.desktop
 exit 0

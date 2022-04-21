@@ -1,7 +1,0 @@
-#!/bin/bash
-
-install_packages https://www.linuxcnc.org/dists/buster/2.8-rtpreempt/binary-armhf/linuxcnc-uspace_2.8.1_armhf.deb || exit 1
-
-#move all desktop files to the Programming category
-find /usr/share/applications -type f -name 'linuxcnc*' | xargs sudo sed -i 's/Categories=.*/Categories=Development;/g'
-

@@ -1,5 +1,5 @@
 #!/bin/bash
-version=7.2.1
+version=7.2.2
 
 rm -rf "$HOME/powershell"
 install_packages libssl1.1 libunwind8 || exit 1

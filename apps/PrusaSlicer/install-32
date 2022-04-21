@@ -7,11 +7,13 @@ chmod +x ~/PrusaSlicer.AppImage || error "Failed to mark as executable!"
 
 mkdir -p ~/prusa-slicer
 
+enable_module fuse || exit 1
+
 echo "[Desktop Entry]
 Name=PrusaSlicer
 GenericName=3D Printing Software
 Comment=PrusaSlicer converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=bash -c 'sudo modprobe fuse; ~/PrusaSlicer.AppImage'
+Exec=$HOME/PrusaSlicer.AppImage
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application

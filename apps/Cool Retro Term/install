@@ -1,6 +1,6 @@
 #!/bin/bash
 # Get dependencies
-install_packages build-essential qmlscene qt5-qmake qtbase5-dev qtchooser qtdeclarative5-dev qml-module-qtquick-controls qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel || error "Failed to install dependencies"
+install_packages build-essential qmlscene qt5-qmake qtbase5-dev qtchooser qtdeclarative5-dev qtquickcontrols2-5-dev qml-module-qtquick-controls qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel || error "Failed to install dependencies"
 # install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
 package_available qt5-default
 if [[ $? == "0" ]]; then
