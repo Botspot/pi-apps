@@ -95,6 +95,104 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
   done
 }
 
+validate_apps_gui() { #Given a list of actions and apps, graphically notify the user if there is a problem or ask for confirmation. Result is sent to stdout.
+  #action and app are separated by semicolon. (;)
+  #example line of input on $1: "install;Zoom"
+  
+  local IFS=$'\n'
+  
+  local queue="$1"
+  
+  #Ensure that the first word of each line is 'install' or 'uninstall'
+  local i=1 #track the line number in queue
+  for line in $queue ;do
+    action="$(echo "$line" | awk -F ';' '{print $1}')"
+    
+    if [ "$action" != install ] && [ "$action" != uninstall ] && [ "$action" != update ];then
+      warning "illegal mode: '$action' Removing this line from the queue"
+      
+      #remove the app from list
+      queue="$(echo "$queue" | sed ${i}d)"
+    fi
+    
+    i=$((i+1))
+  done
+  [ -z "$queue" ] && exit 0
+  
+  #Ensure that each app-name is valid
+  local i=1 #track the line number in queue
+  for line in $queue ;do
+    action="$(echo "$line" | awk -F ';' '{print $1}')"
+    app="$(echo "$line" | awk -F ';' '{print $2}')"
+    
+    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+      yad --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
+        --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --button=OK!"${DIRECTORY}/icons/check.png":0
+      
+      #remove the app from list
+      queue="$(echo "$queue" | sed ${i}d)"
+    fi
+    
+    i=$((i+1))
+  done
+  [ -z "$queue" ] && exit 0
+  
+  #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
+  local i=1 #track the line number in queue
+  for line in $queue ;do
+    action="$(echo "$line" | awk -F ';' '{print $1}')"
+    app="$(echo "$line" | awk -F ';' '{print $2}')"
+    
+    if [ "$(app_status "${app}")" == "${action}ed" ];then
+      yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
+        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
+      
+      if [ $? != 0 ];then
+        #user clicked No, so remove the app from list
+        queue="$(echo "$queue" | sed ${i}d)"
+      fi
+    fi
+    
+    i=$((i+1))
+  done
+  [ -z "$queue" ] && exit 0
+  
+  #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
+  
+  for line in $queue ;do
+    action="$(echo "$line" | awk -F ';' '{print $1}')"
+    app="$(echo "$line" | awk -F ';' '{print $2}')"
+    
+    if [ $action == install ];then
+      #determine the filename for the app's script to be run
+      script_name_cpu="$(script_name_cpu "$app")"
+      
+      #if the app-script doesn't match version in update folder
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+        
+        "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
+        
+        yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to update $app</b> before installing it?" \
+          --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
+          --button="Install anyway"!"${DIRECTORY}/icons/forward.png":1 --button="Update first"!"${DIRECTORY}/icons/download.png":0
+        
+        if [ $? == 0 ];then
+          #if user clicked Yes, run the updater and avoid launching a second terminal
+          use_terminal=0 "${DIRECTORY}/updater" gui fast
+          
+          #now that the api script was potentially updated, source it again to get new functions
+          source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+        fi
+      fi
+    fi
+  done
+  [ -z "$queue" ] && exit 0
+  
+  echo "$queue"
+}
+
 #remove old mcpi repositories - this runonce is here so that terminal-only users will still receive the fix.
 (runonce <<"EOF"
   if [ -f /etc/apt/sources.list.d/mcpi-revival.list ] && cat /etc/apt/sources.list.d/mcpi-revival.list | grep -qF 'https://mcpirevival.tk/mcpi-packages' ;then
@@ -113,6 +211,10 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
   fi
 EOF
 ) &>/dev/null
+
+#An apt repository's Packages file can be corrupted so that an apt update will silently fail. See: https://bugs.launchpad.net/ubuntu/+source/apt/+bug/1809174
+#This line will fix the problem by removing any zero-size Packages files.
+find /var/lib/apt/lists -type f -name '*Packages' -size 0 2>/dev/null | xargs sudo rm -f
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
@@ -165,7 +267,7 @@ else
 fi
 
 if [ "$1" == 'daemon' ];then
-  #Daemon to run in the background and install/uninstall apps as the user makes selections
+  #Daemon to run in the background and install/uninstall/update apps as the user makes selections
   #This allows the user to queue up a list of actions that will run sequentially.
   
   #this folder will contain the runtime files necessary to make the daemon work.
@@ -195,21 +297,21 @@ $icon
 $app"
     elif [ "$status" == 0 ];then
       #if status is 0, then action completed successfully.
-      local content="${DIRECTORY}/icons/${action}ed.png
+      local content="${DIRECTORY}/icons/success.png
 ${DIRECTORY}/icons/$action.png
-${action^}ed
+$(echo "${action^}ed" | sed 's/Updateed/Updated/g')
 $icon
 $app"
     elif [ "$status" == 'in-progress' ];then
       #if status is "in-progress", then action is currently being executed.
       local content="${DIRECTORY}/icons/prompt.png
 ${DIRECTORY}/icons/$action.png
-${action^}ing...
+$(echo "${action^}ing..." | sed 's/Updateing/Updating/g')
 $icon
 $app"
     else
       #if status is 1, then action completed unsuccessfully.
-      local content="${DIRECTORY}/icons/error-20.png
+      local content="${DIRECTORY}/icons/failure.png
 ${DIRECTORY}/icons/$action.png
 ${action^} failed
 $icon
@@ -233,6 +335,7 @@ $app"
     local output='' #variable to send to yadlist file
     
     local IFS=$'\n'
+    local line
     for line in $queue ;do
       
       action="$(echo "$line" | awk -F';' '{print $1}')"
@@ -259,96 +362,8 @@ $app"
   queue="$(echo "$queue" | sed 's/^\( *[^ ]\+\) /\1;/')"
   
   #validate the selections first
-  {
-  IFS=$'\n'
-  
-  #Ensure that the first word of each line is 'install' or 'uninstall'
-  i=1 #track the line number in queue
-  for line in $queue ;do
-    action="$(echo "$line" | awk -F ';' '{print $1}')"
-    
-    if [ "$action" != install ] && [ "$action" != uninstall ];then
-      warning "manage daemon: illegal mode: '$action' Removing this line from the queue"
-      
-      #remove the app from list
-      queue="$(echo "$queue" | sed ${i}d)"
-    fi
-    
-    i=$((i+1))
-  done
+  queue="$(validate_apps_gui "$queue")"
   [ -z "$queue" ] && exit 0
-  
-  #Ensure that each app-name is valid
-  i=1 #track the line number in queue
-  for line in $queue ;do
-    action="$(echo "$line" | awk -F ';' '{print $1}')"
-    app="$(echo "$line" | awk -F ';' '{print $2}')"
-    
-    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-      yad --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
-        --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
-        --button=OK!"${DIRECTORY}/icons/check.png":0
-      
-      #remove the app from list
-      queue="$(echo "$queue" | sed ${i}d)"
-    fi
-    
-    i=$((i+1))
-  done
-  [ -z "$queue" ] && exit 0
-  
-  #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
-  i=1 #track the line number in queue
-  for line in $queue ;do
-    action="$(echo "$line" | awk -F ';' '{print $1}')"
-    app="$(echo "$line" | awk -F ';' '{print $2}')"
-    
-    if [ "$(app_status "${app}")" == "${action}ed" ];then
-      yad --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
-        --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
-        --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
-      
-      if [ $? != 0 ];then
-        #user clicked No, so remove the app from list
-        queue="$(echo "$queue" | sed ${i}d)"
-      fi
-    fi
-    
-    i=$((i+1))
-  done
-  [ -z "$queue" ] && exit 0
-  
-  #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
-  
-  for line in $queue ;do
-    action="$(echo "$line" | awk -F ';' '{print $1}')"
-    app="$(echo "$line" | awk -F ';' '{print $2}')"
-    
-    if [ $action == install ];then
-      #determine the filename for the app's script to be run
-      script_name_cpu="$(script_name_cpu "$app")"
-      
-      #if the app-script doesn't match version in update folder
-      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
-        
-        "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
-        
-        yad --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to update $app</b> before installing it?" \
-          --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
-          --button="Install anyway"!"${DIRECTORY}/icons/forward.png":1 --button="Update first"!"${DIRECTORY}/icons/download.png":0
-        
-        if [ $? == 0 ];then
-          #if user clicked Yes, run the updater and avoid launching a second terminal
-          use_terminal=0 "${DIRECTORY}/updater" gui fast
-          
-          #now that the api script was potentially updated, source it again to get new functions
-          source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-        fi
-      fi
-    fi
-  done
-  [ -z "$queue" ] && exit 0
-  } #end of validating input
   
   #send each requested action to the queue file
   if [ ! -z "$queue" ];then
@@ -386,11 +401,14 @@ $app"
   #Another named pipe is created to refresh the yad list later.
   rm -f "${DIRECTORY}/data/manage-daemon/yadlist"
   mkfifo "${DIRECTORY}/data/manage-daemon/yadlist" #make a named pipe
-  tail -F "${DIRECTORY}/data/manage-daemon/yadlist" | yad --center --title='Monitor Progress' \
+  
+  [ -z "$geometry2" ] && geometry2='--center'
+  
+  tail -F "${DIRECTORY}/data/manage-daemon/yadlist" | yad "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text --width=330 --height=200 \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \
-    --no-buttons "$geometry2" &
+    --no-buttons &
   yadpid=$!
   
   trap "kill $yadpid 2>/dev/null" EXIT
@@ -429,6 +447,8 @@ $app"
         action="$(echo "$line" | awk -F';' '{print $1}')"
         app="$(echo "$line" | awk -F';' '{print $2}')"
         
+        echo "Action is $action, app is $app"
+        
         "${DIRECTORY}/manage" "$action" "$app"
         exitcode=$?
         
@@ -445,7 +465,7 @@ $app"
     else #no further items in queue, so stop the daemon
       
       #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
-      echo "${DIRECTORY}/icons/check.png
+      echo "${DIRECTORY}/icons/none-1.png
 ${DIRECTORY}/icons/none-1.png
 Done.
 ${DIRECTORY}/icons/none-1.png
@@ -475,8 +495,9 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   app_list="$2" #newline-separated list of apps to install/uninstall
   
-  #check if any app names are invalid
-  validate_apps_gui "$(echo "$app_list" | sed "s/^/${action} /g")"
+  #check if any app names are invalid - use the validate_apps_gui function which requires the action to prefix each line. Then filter out the action afterwards.
+  app_list="$(validate_apps_gui "$(echo "$app_list" | sed "s/^/${action};/g")" | sed 's/.*;//g')"
+  [ -z "$app_list" ] && exit 0
   
   #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
   failed_apps=''
@@ -485,8 +506,7 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
     "${DIRECTORY}/manage" $action "$app"
     if [ $? != 0 ];then
       #this app failed to install - add it to the list of failed apps
-      failed_apps="$failed_apps
-$app"
+      failed_apps+="$app"$'\n'
     fi
   done
   
