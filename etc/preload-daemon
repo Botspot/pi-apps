@@ -38,7 +38,7 @@ All Apps"
 IFS=$'\n'
 
 #For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
-if [ -z "$text_color" ];then
+if [ -z "${text_color+x}" ];then
   #0400 is the latest version
   yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
   if [ $yad_version -lt 0400 ]; then
