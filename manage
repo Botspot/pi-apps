@@ -257,7 +257,7 @@ fi
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
 
 #remove week-old logfiles
-find "${DIRECTORY}/logs" -type f -mtime +7 -exec rm -f {} \; &>/dev/null &
+find "${DIRECTORY}/logs" -type f -mtime +6 -exec rm -f {} \; &>/dev/null &
 
 #check if hardware and OS is supported
 if is_supported_system >/dev/null;then
