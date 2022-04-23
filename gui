@@ -9,6 +9,30 @@ if ! command -v yad &>/dev/null; then
   error "YAD needs to be installed to run Pi-Apps."
 fi
 
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "$text_color" ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    text_color=$(echo "import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import Gdk
+win = Gtk.Window()
+vb = Gtk.VBox()
+tv = Gtk.TextView()
+vb.add(tv)
+win.show_all()
+style = tv.get_style_context()
+textcolor = style.get_color(Gtk.StateType.NORMAL)
+print(Gdk.RGBA.to_string(textcolor))
+" | python -)
+  else
+    text_color=""
+  fi
+fi
+export text_color
+
 terminal_manage() { #function to install/uninstall one app - uses a terminal and refreshes the app list
   if [ "$1" == 'uninstall' ];then
     action=uninstall

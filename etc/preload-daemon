@@ -37,10 +37,12 @@ All Apps"
 
 IFS=$'\n'
 
-#0400 is the latest version
-yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
-if [ $yad_version -lt 0400 ]; then
-  text_color=$(echo "import gi
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "$text_color" ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -53,9 +55,11 @@ style = tv.get_style_context()
 textcolor = style.get_color(Gtk.StateType.NORMAL)
 print(Gdk.RGBA.to_string(textcolor))
 " | python -)
-else
-  text_color=""
+  else
+    text_color=""
+  fi
 fi
+export text_color
 
 #runs every 30 secs for 10 mins
 for i in {1..20};do
