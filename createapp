@@ -451,8 +451,7 @@ A text editor should have openened... Never mind, you know what to do." \
       ;;
       
     5) #Verify in app list
-      LIST="${DIRECTORY}/icons/uninstalled.png
-${DIRECTORY}/apps/${name}/icon-24.png
+      LIST="${DIRECTORY}/apps/${name}/icon-24.png
 $name
 "\("uninstalled"\)" $(echo "$(cat "${DIRECTORY}/apps/${name}/description" 2>/dev/null || echo "Description unavailable")" | head -n1)"
       
@@ -460,7 +459,7 @@ $name
         --title="List view" --width=310 --height=400 \
         --text="Make sure everything looks right.
 Here's what it will look like in the app list:" \
-        --column=:IMG --column=:IMG --column=Name --column=tip:HD --tooltip-column=4 --no-headers \
+        --column=:IMG --column=Name --column=tip:HD --tooltip-column=4 --no-headers \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \
         --button=Next!"${DIRECTORY}/icons/forward.png":0 \
         2>/dev/null
