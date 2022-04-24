@@ -73,10 +73,10 @@ This wizard will save your work as you go." | yad "${yadflags[@]}" --text-info -
       fields=() #this array contains the yad window options
       
       if [ -z "$name" ];then
-        #if name varable is empty, make the field editable
+        #if name variable is empty, make the field editable
         fields+=(--field="Name of app:" "$name")
       else
-        #if name varable is set, make the field read-only
+        #if name variable is set, make the field read-only
         fields+=(--field="Name of app: <b>$name</b>":RO '')
       fi
       
@@ -379,7 +379,7 @@ Or do you want one combined install script?" | yad "${yadflags[@]}" --text-info 
           --text="Now it's time to make your install-32 and install-64 scripts.
 
 One of these scripts will be executed when somebody clicks your app's Install button.
-Two text editors should have openened and you can create your scripts.
+Two text editors should have opened and you can create your scripts.
 Need help? <a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">Read the tutorial!</a>
 Still need help? Botspot can try to help you if you <a href="\""https://github.com/Botspot/pi-apps/issues/new/choose"\"">open in issue.</a>" \
           --field="Run install-32 script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME ; DIRECTORY='$DIRECTORY' ; source '${DIRECTORY}/api' ; '${DIRECTORY}/apps/${name}/install-32' ; echo 'Closing in 10 seconds.' ; sleep 10"\"" "\""Running install-32 script of $name"\""" \
@@ -396,7 +396,7 @@ Still need help? Botspot can try to help you if you <a href="\""https://github.c
           --title="Install script" --width=310 --height=400 \
           --text="Now it's time to make your ${compatibility} script. This will be executed anytime somebody clicks the Install button.
 
-A text editor should have openened and you can create your install script.
+A text editor should have opened and you can create your install script.
 Need help? <a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">Read the tutorial!</a>
 Still need help? Botspot can try to help you if you <a href="\""https://github.com/Botspot/pi-apps/issues/new/choose"\"">open in issue.</a>" \
           --field="Run script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME ; DIRECTORY='$DIRECTORY' ; source '${DIRECTORY}/api' ; '${DIRECTORY}/apps/${name}/${compatibility}' ; echo 'Closing in 10 seconds.' ; sleep 10"\"" "\""Running ${compatibility} script of $name"\""" \
@@ -430,7 +430,7 @@ Still need help? Botspot can try to help you if you <a href="\""https://github.c
       output="$(yad "${yadflags[@]}" --form --on-top \
         --title="Uninstall script" --width=310 --height=400 \
         --text="Now it's time to make your uninstall script. This will be executed anytime somebody clicks the Uninstall button.
-A text editor should have openened... Never mind, you know what to do." \
+A text editor should have opened... Never mind, you know what to do." \
         --field="Run script":FBTN "${DIRECTORY}/etc/terminal-run "\""cd $HOME;$'${DIRECTORY}/apps/${name}/uninstall';echo 'Closing in 10 seconds.';sleep 10"\"" "\""Running uninstall script of $name"\""" \
         --field="Shellcheck"!!'Having problems? This utility helps you locate syntax errors.':FBTN "${DIRECTORY}/etc/terminal-run "\""shellcheck $'${DIRECTORY}/apps/${name}/uninstall';echo 'Press Enter to exit.';read enter"\"" "\""Shellcheck"\""" \
         --button=Previous!"${DIRECTORY}/icons/back.png":2 \

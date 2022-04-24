@@ -414,7 +414,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     #copy new version
     cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
-    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    #special edge-case: if current file ends in .c, delete the corresponding executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
       rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
     fi
