@@ -598,7 +598,7 @@ if [[ "$guimode" == yad* ]];then
     (echo -e '\f' > $pipe
     sleep 0.5
     "${DIRECTORY}/preload" yad '' >> $pipe) &
-
+    
     #retrieve a random line from the announcements file for this session
     motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
     
@@ -610,8 +610,8 @@ if [[ "$guimode" == yad* ]];then
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
       --tooltip-column=4 \
       --dclick-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" --select-action "env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui'" \
-      --button="!${DIRECTORY}/icons/search.png!Search":"env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui' '' '' Search/ Search/" \
-      --button="!${DIRECTORY}/icons/options.png":2 \
+      --button="!${DIRECTORY}/icons/search.png"!'Search':"env pipe=$pipe geometry2=$geometry2 '${DIRECTORY}/gui' '' '' Search/ Search/" \
+      --button="!${DIRECTORY}/icons/options.png"!'Settings':2 \
       "$geometry1"
     
     button=$? #get exit code of yad - indicates which button was clicked
