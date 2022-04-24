@@ -1456,7 +1456,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
-    error_caption+=("The git commit encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
