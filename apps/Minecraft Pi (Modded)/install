@@ -5,7 +5,7 @@ version="196/artifact/out/minecraft-pi-reborn-client-2.3.5"
 
 # Install
 case "${arch}" in
-    "64") do url_arch=armhf ;;
+    "64") do url_arch=arm64 ;;
     "32") do url_arch=armhf ;;
 esac
 url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-${url_arch}.AppImage"
@@ -17,7 +17,7 @@ sudo apt-get uninstall -y gmcpil jmcpil minecraft-pi-reborn-client || :
 
 # Download file
 mkdir -p ~/.local/bin || error "Could not make directory"
-wget -O ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage "${url}"
+wget -O ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage "${url}" || error 'Failed to download AppImage'
 chmod +x ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage
 
 enable_module fuse || exit 1
