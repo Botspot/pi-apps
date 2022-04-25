@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Version
+version="196/artifact/out/minecraft-pi-reborn-client-2.3.5"
+
+# Install
+url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-arm64.AppImage"
+source "$(dirname "$0")/install-common.sh"
