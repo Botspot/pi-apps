@@ -217,7 +217,7 @@ removal_list="$(find /var/lib/apt/lists -type f -name '*Packages' -size 0 2>/dev
 if [ ! -z "$removal_list" ]; then
   if [ x$DISPLAY != x ] ; then
     while ! sudo -n true; do
-      yad --title="Pi-Apps Needs Your Password" --text="Please enter your user password:" --image="dialog-password" --entry --hide-text 2>/dev/null | sudo -S echo "" 2>&1 >/dev/null
+      yad --title="Broken Local Packages Repo Detected" --text="Please enter your user password \nso pi-apps can attempt a repair:" --image="dialog-password" --entry --hide-text 2>/dev/null | sudo -S echo "" 2>&1 >/dev/null
     done
   fi
   echo "$removal_list" | xargs sudo rm -f
