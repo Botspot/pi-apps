@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Version
+version="196/artifact/out/minecraft-pi-reborn-client-2.3.5"
+
+# Install
+case "${arch}" in
+    "64") do url_arch=armhf ;;
+    "32") do url_arch=armhf ;;
+esac
+url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-${url_arch}.AppImage"
+
 # Cleanup Old Script Versions
 rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
 rm -f /etc/apt/sources.list.d/mcpi-revival.list
