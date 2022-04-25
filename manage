@@ -214,7 +214,15 @@ EOF
 
 #An apt repository's Packages file can be corrupted so that an apt update will silently fail. See: https://bugs.launchpad.net/ubuntu/+source/apt/+bug/1809174
 #This line will fix the problem by removing any zero-size Packages files.
-find /var/lib/apt/lists -type f -name '*Packages' -size 0 2>/dev/null | xargs sudo rm -f
+removal_list="$(find /var/lib/apt/lists -type f -name '*Packages' -size 0 2>/dev/null)"
+if [ ! -z "$removal_list" ]; then
+  if [ x$DISPLAY != x ] ; then
+    while ! sudo -n true; do
+      yad --title="Pi-Apps Needs Your Password" --text="Please enter your user password:" --image="dialog-password" --entry --hide-text 2>/dev/null | sudo -S echo "" 2>&1 >/dev/null
+    done
+  fi
+  echo "$removal_list" | xargs sudo rm -f
+fi
 
 #Silently re-download repo if github repository is over 3 months out of date
 {
