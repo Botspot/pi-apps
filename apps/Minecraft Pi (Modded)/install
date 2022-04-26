@@ -11,8 +11,8 @@ esac
 url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-${url_arch}.AppImage"
 
 # Cleanup Old Script Versions
-rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
-rm -f /etc/apt/sources.list.d/mcpi-revival.list
+sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
 if package_installed gmcpil ;then
   apt_lock_wait
   sudo apt uninstall -y gmcpil
@@ -36,7 +36,7 @@ enable_module fuse || exit 1
 # Make Desktop file
 mkdir -p ~/.local/share/applications || error "Could not make directory"
 echo "[Desktop Entry]
-Name=Minecraft: Pi Edition: Reborn (Client)
+Name=Minecraft Pi (Modded)
 Comment=Fun with Blocks
 Icon=$(dirname "$0")/icon-64.png
 StartupNotify=false
