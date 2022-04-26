@@ -4,10 +4,11 @@
 version="196/artifact/out/minecraft-pi-reborn-client-2.3.5"
 
 # Install
-case "${arch}" in
-    "64") do url_arch=arm64 ;;
-    "32") do url_arch=armhf ;;
-esac
+if [ "${arch}" = "64" ]; then
+    url_arch=arm64
+else
+    url_arch=armhf
+fi
 url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-${url_arch}.AppImage"
 
 # Cleanup Old Script Versions
@@ -15,15 +16,15 @@ sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
 sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
 if package_installed gmcpil ;then
   apt_lock_wait
-  sudo apt uninstall -y gmcpil
+  sudo apt-get remove -y gmcpil
 fi
 if package_installed jmcpil ;then
   apt_lock_wait
-  sudo apt uninstall -y jmcpil
+  sudo apt-get remove -y jmcpil
 fi
 if package_installed minecraft-pi-reborn-client ;then
   apt_lock_wait
-  sudo apt uninstall -y minecraft-pi-reborn-client
+  sudo apt-get remove -y minecraft-pi-reborn-client
 fi
 
 # Download file
