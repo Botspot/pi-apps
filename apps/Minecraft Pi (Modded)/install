@@ -13,7 +13,18 @@ url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${vers
 # Cleanup Old Script Versions
 rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
 rm -f /etc/apt/sources.list.d/mcpi-revival.list
-sudo apt-get uninstall -y gmcpil jmcpil minecraft-pi-reborn-client || :
+if package_installed gmcpil ;then
+  apt_lock_wait
+  sudo apt uninstall -y gmcpil
+fi
+if package_installed jmcpil ;then
+  apt_lock_wait
+  sudo apt uninstall -y jmcpil
+fi
+if package_installed minecraft-pi-reborn-client ;then
+  apt_lock_wait
+  sudo apt uninstall -y minecraft-pi-reborn-client
+fi
 
 # Download file
 mkdir -p ~/.local/bin || error "Could not make directory"
