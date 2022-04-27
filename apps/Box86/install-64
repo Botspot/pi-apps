@@ -43,3 +43,15 @@ if ! sudo systemctl restart systemd-binfmt ;then
   systemctl status systemd-binfmt.service
   echo "Still exiting with success, but you will have to manually run all x86 applications with box86 as binfmt isn't there to do it for you."
 fi
+
+# adding some debug output to the end of the script
+echo "dpkg --print-foreign-architectures:"
+dpkg --print-foreign-architectures
+echo "zcat /proc/config.gz | grep CONFIG_COMPAT="
+zcat /proc/config.gz | grep CONFIG_COMPAT=
+echo "dpkg -l libc6:armhf"
+dpkg -l libc6:armhf
+echo "/lib/arm-linux-gnueabihf/ld-*.so"
+/lib/arm-linux-gnueabihf/ld-*.so
+echo "/usr/local/bin/box86 --version"
+/usr/local/bin/box86 --version
