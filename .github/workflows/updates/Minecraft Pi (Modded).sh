@@ -13,5 +13,6 @@ deb_id="$(curl -s "https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job
 # Update
 webVer="${build_id}/artifact/out/minecraft-pi-reborn-client-${deb_id}"
 # This URL is only used for validation.
-all_url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${webVer}-armhf.AppImage"
+armhf_url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${webVer}-armhf.AppImage"
+arm64_url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${webVer}-arm64.AppImage"
 source "${GITHUB_WORKSPACE}/.github/workflows/update_github_script.sh"
