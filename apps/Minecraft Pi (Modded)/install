@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version
-version="196/artifact/out/minecraft-pi-reborn-client-2.3.5"
+version=198/artifact/out/minecraft-pi-reborn-client-2.3.6
 
 # Install
 if [ "${arch}" = "64" ]; then
