@@ -763,13 +763,13 @@ Notes:
 
 ## Automatic App Updaters
 #### Location:
-These are scripts which reside on the github repo for pi-apps specificially for keeping app versions updated with their upstream projects and repos. These automatic app updaters are found in the `.github/worklfows/updates` folder.
+These are scripts which reside on the github repo for pi-apps specificially for keeping app versions updated with their upstream projects and repos. These automatic app updaters are found in the `.github/workflows/updates` folder.
 Each script/app in pi-apps which has automatic version updating functionality has a script in this folder. The script name is the same as the app name.
 #### Purpose:
-To keep versions of apps in pi-apps up to date with the latests fixes, features, and improvements.
+To keep versions of apps in pi-apps up to date with the latest fixes, features, and improvements.
 #### What can updater script do:
 Updater scripts have access to a few special functions and scripts that normal pi-apps install scripts do not have access to.
-Its easier to explain with an example of an updater script
+It is easier to explain with an example of an updater script.
 
 #### Github release example:<br>
 ```
@@ -780,7 +780,7 @@ all_url="https://github.com/angryip/ipscan/releases/download/${webVer}/ipscan_${
 
 source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
 ```
-This is Angry IP scanners's update script. New releases of the .deb are posted on the angrypi/scan github, so a few times a day, the pi-apps github actions runs this script to check for new releases of Angry IP Scanner.
+This is Angry IP scanners's update script. New releases of the .deb are posted on the `angrypi/scan` github, so a few times a day, the pi-apps github actions runs this script to check for new releases of Angry IP Scanner.
 There are a few special functions designed for github scripts to use, so that they can obtain the latest app version.
 ```
 get_release() {
@@ -793,7 +793,14 @@ get_prerelease() {
 `get_release` followed by the app `githubowner/reponame` will obtain the latest github release version number<br>
 `get_prerelease` followed by the app `githubowner/reponame` will obtain the latest github prerelease version number.
 
-For pi-apps install scripts written with this in mind, this version number can be used to automatically generate a pi-apps PR with the updated version. Simply set the URL of the deb/binary found on the github with the `webVer` variable substituted in (`all_url` for install scripts, `armhf_url` for install-32 scripts, and `arm64_url` for install-64 scripts), and call the update_github_script. Pi-apps install scripts should be formated with a `version` varaible for this automatic script to update with the latest version.
+For pi-apps install scripts written with this in mind, this version number can be used to automatically generate a pi-apps PR with the updated version. Simply set the URL of the deb/binary found on the github with the `webVer` variable substituted in `all_url` for install scripts, `armhf_url` for install-32 scripts, and `arm64_url` for install-64 scripts, and call the update_github_script. Pi-apps install scripts should be formated with a `version` varaible for this automatic script to update with the latest version.<br>
+See angry ip scanners's `install` file for an example:
+```
+#!/bin/bash
+
+version=3.8.2
+install_packages openjdk-11-jdk rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1
+```
 
 #### Debian repo example:<br>
 For apps which are published to a debian repo, but it is not desired to add the repo to a users install, the update_debian_repo_script can be used to automatically update an apps install scripts.
@@ -816,4 +823,12 @@ The package used on pi-apps is hosted at the `raspbian-addons` repo, so we speci
 We then specify what the package name we would like to have checked from that repo is named, in this case, its `antimicrox` set to the variables `armhf_packagename` `arm64_packagename`.<br>
 Finally, to update the pi-apps scripts, we call the update_debian_repo_script as shown.
 
-The corresponding app install scripts in pi-apps should contain a `filename` variable (`filename_32` and `filename_64` if there are separate armhf and arm64 filenames in the same `install` script) with the entire URL path of the .deb file contained.
+The corresponding app install scripts in pi-apps should contain a `filename` variable (`filename_32` and `filename_64` if there are separate armhf and arm64 filenames in the same `install` script) with the entire URL path of the .deb file contained.<br>
+See antimicrox's `install-64` file for an example:
+```
+#!/bin/bash
+
+filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicrox_3.2.1_arm64.deb"
+
+install_packages "${filepath}" || exit 1
+```
