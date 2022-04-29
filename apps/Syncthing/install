@@ -1,0 +1,16 @@
+#!/bin/bash
+
+filepath_32="junk"
+filepath_64="junk"
+
+case "$arch" in
+  "64")
+    install_packages "${filepath_64}" || error "Failed to install syncthing"
+    ;;
+  "32")
+    install_packages "${filepath_32}" || error "Failed to install syncthing"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    ;;
+esac
