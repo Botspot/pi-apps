@@ -53,5 +53,9 @@ echo "dpkg -l libc6:armhf"
 dpkg -l libc6:armhf
 echo "/lib/arm-linux-gnueabihf/ld-*.so"
 /lib/arm-linux-gnueabihf/ld-*.so
+echo "apt-cache show box86:armhf"
+apt-cache show box86
+echo "file /usr/local/bin/box86"
+file /usr/local/bin/box86
 echo "/usr/local/bin/box86 --version"
 /usr/local/bin/box86 --version
