@@ -1,5 +1,5 @@
 #!/bin/bash
 
-filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicrox_3.2.1_armhf.deb"
+filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicrox_3.2.3_armhf.deb"
 
 install_packages "${filepath}" || exit 1
