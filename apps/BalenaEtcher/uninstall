@@ -1,4 +1,2 @@
 #!/bin/bash
 purge_packages || exit 1
-rm -f ~/etcher.deb &>/dev/null
-exit 0
