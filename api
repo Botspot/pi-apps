@@ -1778,6 +1778,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
+  #### IMPORTANT: for anyone wishing to change the wording following this, you MUST also change the send_error_report function
   [ ! -z "$DIRECTORY" ] && echo "Last updated Pi-Apps on: $(cd "$DIRECTORY"; git show -s --format="%ad" --date=short | xargs date +%x -d)"
   [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
