@@ -4,7 +4,7 @@
 
 # Build ID
 # This obtains the latest successful build ID.
-build_id="$(curl https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/buildNumber)"
+build_id="$(curl -s https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/lastSuccessfulBuild/buildNumber)"
 
 # Version Number
 # This obtains the latest successful build's version number.
