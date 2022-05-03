@@ -76,7 +76,7 @@ for i in {1..20};do
   timestamps="$(mktimestamps)"
   
   #determine the app list style (it may change)
-  guimode="$(cat "${DIRECTORY}/settings/App List Style")"
+  guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
   
   #only re-preload everything if something in the pi-apps folder was changed
   if [ "$timestamps" != "$pretimestamps" ];then
