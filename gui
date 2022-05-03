@@ -9,6 +9,9 @@ if ! command -v yad &>/dev/null; then
   error "YAD needs to be installed to run Pi-Apps."
 fi
 
+# set GUI format versioning
+export GUI_FORMAT_VERSION=2
+
 #For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
 if [ -z "${text_color+x}" ];then
   #0400 is the latest version
