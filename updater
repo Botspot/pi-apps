@@ -616,7 +616,6 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
       echo "skipped stopping the gui"
     fi
 EOF
-  fi
   
   "$0" get-status &>/dev/null
   exit $?
