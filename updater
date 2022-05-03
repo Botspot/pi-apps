@@ -611,8 +611,7 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   if [[ "$GUI_FORMAT_VERSION" != 2 ]]; then
     runonce <<"EOF"
       echo "stopping the GUI"
-      pkill gui
-      "${DIRECTORY}/gui" &
+      pkill gui && ( "${DIRECTORY}/gui" & )
 EOF
   fi
   
