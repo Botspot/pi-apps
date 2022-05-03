@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /tmp
+wget -O renoise-armhf.tar.gz "https://files.renoise.com/demo/Renoise_3_4_1_Demo_Linux_armhf.tar.gz" || exit 1
+status "Extracting Renoise..."
+tar -xf renoise-armhf.tar.gz || error "Failed to extract Renoise!"
+cd renoise-armhf || error "Failed to cd into 'renoise-armhf'!"
+sudo ./uninstall.sh || error "Failed to unistall Renoise with 'uninstall.sh'!"
