@@ -23,7 +23,7 @@ fi
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 #for mktimestamps function
-source "${DIRECTORY}/preload" source
+source "${DIRECTORY}/preload" "source"
 
 #variable 1 is yad or xlunch
 #variable 2 is 'once', if you only want this to run once and exit.
