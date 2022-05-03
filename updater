@@ -608,10 +608,13 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   # this is the only part of any script that is called after running an update using the new files
   # since the new gui merge requires the gui script to be restarted, use this opportunity to kill the old GUI and start a new one
   # only done once with a runonce if current gui format version is not 2
-  if [[ "$GUI_FORMAT_VERSION" != 2 ]]; then
-    runonce <<"EOF"
-      echo "stopping the GUI"
+  runonce <<"EOF"
+    if [[ "$GUI_FORMAT_VERSION" != 2 ]]; then
       pkill gui && ( "${DIRECTORY}/gui" & )
+      echo "stopped the GUI"
+    else
+      echo "skipped stopping the gui"
+    fi
 EOF
   fi
   
