@@ -107,7 +107,8 @@ Pi-Apps is very easy to use.
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
   - ![icon](icons/screenshots/buttons/search.png?raw=true) Search for apps.
-  - ![icon](icons/screenshots/buttons/info.png?raw=true) Open the selected category. (you can also double-click on the category)
+  - ![icon](icons/screenshots/buttons/settings.png?raw=true) Search for apps.
+  - Click on a category to open it.
     
 - Opening a category will reveal a **list of apps**:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
