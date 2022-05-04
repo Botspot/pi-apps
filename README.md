@@ -111,14 +111,11 @@ Pi-Apps is very easy to use.
     
 - Opening a category will reveal a **list of apps**:  
 ![app list](icons/screenshots/app%20list.png?raw=true)  
-  - ![icon](icons/screenshots/buttons/back.png?raw=true) Go back to the main list of categories.
-  - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
-  - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
-  - ![icon](icons/screenshots/buttons/info.png?raw=true) See more details about the app. (see **details window** below)
+  - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the main list of categories.
+  - Click on an App name to see its details (see **details window** below)
 
 - This is the **details window**:  
-![details](icons/screenshots/details%20window.png?raw=true)  
-  - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the list of apps.
+![details](icons/screenshots/app%20open.png?raw=true)  
   - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
   - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Settings)
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
