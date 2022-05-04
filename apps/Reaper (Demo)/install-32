@@ -15,13 +15,13 @@ sudo ln -s /opt/REAPER/reaper /usr/local/bin/reaper || error "Failed to link /op
 mkdir -p "$HOME/.local/share/icons/hicolor/64x64/apps/" || error "Failed to make icon directory!"
 cp "${DIRECTORY}/pi-apps/apps/Reaper (Demo)/icon-64.png" "$HOME/.local/share/icons/hicolor/64x64/apps/reaper.png" || error "Failed to copy icon!"
 echo "[Desktop Entry]
-Name: Reaper
-Comment: Reaper is a complete Digital Audio Workstation, for computers, offering a full multitrack audio and MIDI recording, editing, processing, mixing and mastering toolset. 
-Exec: reaper
-Icon: $HOME/.local/share/icons/hicolor/64x64/apps/reaper.png
-Terminal: false
-Category: AudioVideo;Audio;
-Type: Application
+Name=Reaper
+Comment=Reaper is a complete Digital Audio Workstation, for computers, offering a full multitrack audio and MIDI recording, editing, processing, mixing and mastering toolset. 
+Exec=reaper
+Icon=$HOME/.local/share/icons/hicolor/64x64/apps/reaper.png
+Terminal=false
+Categories=AudioVideo;Audio;
+Type=Application
 " | tee "$HOME/.local/share/applications/reaper.desktop" || error "Failed to make menu entry!"
 status_green "Done!"
 status "Cleaning up..."
