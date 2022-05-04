@@ -107,7 +107,7 @@ Pi-Apps is very easy to use.
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
   - ![icon](icons/screenshots/buttons/search.png?raw=true) Search for apps.
-  - ![icon](icons/screenshots/buttons/settings.png?raw=true) Search for apps.
+  - ![icon](icons/screenshots/buttons/settings.png?raw=true) Open pi-apps settings.
   - Click on a category to open it.
     
 - Opening a category will reveal a **list of apps**:  
@@ -115,7 +115,7 @@ Pi-Apps is very easy to use.
   - ![icon](icons/screenshots/buttons/back2.png?raw=true) Go back to the main list of categories.
   - Click on an App name to see its details (see **details window** below)
 
-- This is the **details window**:  
+- On the right is the app **details window**:  
 ![details](icons/screenshots/app%20open.png?raw=true)  
   - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
   - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Settings)
@@ -138,7 +138,7 @@ To learn more about Pi-Apps, read [the documentation](https://github.com/Botspot
 You don't need to be a programmer to help!  
 - The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
 - If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... `¯\_(ツ)_/¯`
-- You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md).
+- You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-suggestion.yml).
 - You can create and submit an app. Don't worry, it's about as easy as using the terminal! (And it's even easier if you're submitting a simple apt-package.)
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
