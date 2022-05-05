@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=3.2.0
+version=3.2.3
 
 install_packages https://github.com/Jai-JAP/hyper-arm-builds/releases/download/v${version}/hyper_${version}_armv7l.deb || exit 1
 
