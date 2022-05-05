@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#Thanks to GitHub user @ZhymabekRoman for pointing out that Puffin has secret Linux amd64, i386, and arm64 releases on their repo.
+# https://github.com/ZhymabekRoman/Puffin-Browser-on-Linux/issues/2
+
+install_packages https://download.puffinbrowser.com/repo/pool/stable/arm64/puffin-internet-terminal-demo_8.2.4.705_arm64.deb || exit 1
+
