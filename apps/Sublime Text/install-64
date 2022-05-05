@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Install dependencies
-install_packages wget gpg || error "Failed to install dependencies"
+install_packages wget || error "Failed to install dependencies"
 
 status "Adding GPG key..."
 wget -qO- https://download.sublimetext.com/sublimehq-pub.gpg | sudo tee /etc/apt/trusted.gpg.d/sublimehq.asc || error "Failed to add GPG key for sublime-text repository!"
