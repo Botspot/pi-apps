@@ -13,7 +13,7 @@ sudo ./install-reaper.sh --install /opt || error "Failed to run 'sudo install-re
 sudo rm -f /usr/local/bin/reaper &>/dev/null
 sudo ln -s /opt/REAPER/reaper /usr/local/bin/reaper || error "Failed to link /opt/REAPER/reaper to /usr/local/bin/reaper!"
 mkdir -p "$HOME/.local/share/icons/hicolor/64x64/apps/" || error "Failed to make icon directory!"
-cp "${DIRECTORY}/pi-apps/apps/Reaper/icon-64.png" "$HOME/.local/share/icons/hicolor/64x64/apps/reaper.png" || error "Failed to copy icon!"
+cp "${DIRECTORY}/apps/Reaper/icon-64.png" "$HOME/.local/share/icons/hicolor/64x64/apps/reaper.png" || error "Failed to copy icon!"
 echo "[Desktop Entry]
 Name=Reaper
 Comment=Reaper is a complete Digital Audio Workstation, for computers, offering a full multitrack audio and MIDI recording, editing, processing, mixing and mastering toolset. 
