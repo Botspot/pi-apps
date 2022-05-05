@@ -115,7 +115,7 @@ if [ -z "$prefix" ] && [ "$format" == yad ] && ([ -s "${DIRECTORY}/data/update-s
   echo "${DIRECTORY}/icons/categories/Updates.png
 Updates
 Updates/
-App folder
+Pi-Apps updates are available. Click here to update your apps.
 $text_color"
 elif [ -z "$prefix" ] && [ "$format" == xlunch ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
   #xlunch format
@@ -173,18 +173,20 @@ $text_color" | tee "$listfile"
       else
         diricon="${DIRECTORY}/icons/categories/default.png"
       fi
-      
+      declare -A dir_lookup
+      dir_lookup=( ["Browsers"]="Internet browsers." ["All Apps"]="All Pi-Apps Applications in one long list." ["Appearance"]="Applications and Themes which modify the look and feel of your OS." ["Editors"]="Code Editors, Word Processors, Drawing and Creative Applications, CAD/3D-Printing and so much more." ["Games"]="Games and Emulators" ["Installed"]="All Pi-Apps Apps that you have installed." ["Internet"]="Browsers, Chat Clients, Email Clients, and so much more." ["Multimedia"]="Video playback and creation, audio playback and creation, and streaming alternatives." ["Packages"]="Simple Apps that install directly from APT repos." ["Tools"]="An assortment of helpful programs that don't already fit into another category.")
+
       if [ ! -z "$prefix" ];then
         add="$diricon
 $dir
 $prefix/$dir/
-App folder
+"${dir_lookup["$dir"]}"
 $text_color"
       else
         add="$diricon
 $dir
 $dir/
-App folder
+"${dir_lookup["$dir"]}"
 $text_color"
       fi
       echo "$add"
