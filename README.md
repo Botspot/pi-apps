@@ -116,7 +116,7 @@ Pi-Apps is very easy to use.
   - Click on an App name to see its details (see **details window** below)
 
 - On the right is the app **details window**:  
-![details](icons/screenshots/app%20open.png?raw=true)  
+![details](icons/screenshots/details%20window.png?raw=true)  
   - ![icon](icons/screenshots/buttons/scripts.png?raw=true) View the shell-scripts responsible for installing or uninstalling the selected app.
   - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Settings)
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
