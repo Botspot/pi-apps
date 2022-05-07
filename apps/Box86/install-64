@@ -24,12 +24,12 @@ fi
 #install box86 dependencies
 if [[ "$(get_codename)" == "focal" ]]; then
   install_packages libraspberrypi0:armhf libssh-gcrypt-4:armhf libgssapi-krb5-2:armhf libkrb5-3:armhf libssl1.1:armhf libcups2:armhf libsdl1.2debian:armhf libopusfile0:armhf libc6:armhf libx11-6:armhf libgdk-pixbuf2.0-0:armhf libgtk2.0-0:armhf libstdc++6:armhf libsdl2-2.0-0:armhf mesa-va-drivers:armhf libsdl1.2-dev:armhf libsdl-mixer1.2:armhf libpng16-16:armhf libcal3d12v5:armhf libsdl2-net-2.0-0:armhf libopenal1:armhf libsdl2-image-2.0-0:armhf libvorbis-dev:armhf libcurl4:armhf osspd:armhf pulseaudio libjpeg62:armhf libudev1:armhf libgl1-mesa-dev:armhf libsnappy1v5:armhf libx11-dev:armhf libsmpeg0:armhf libboost-filesystem1.67.0:armhf libboost-program-options1.67.0:armhf libavcodec58:armhf libavformat58:armhf libswscale5:armhf libmyguiengine3debian1v5:armhf libboost-iostreams1.67.0:armhf libsdl2-mixer-2.0-0:armhf || exit 1
-elif [[ "$(get_codename)" == "bullseye" || "$(get_codename)" == "hirsute" || "$(get_codename)" == "impish" || "$(get_codename)" == "jammy" ]]; then
+elif [[ "$(get_codename)" == "bullseye" || "$(get_codename)" == "impish" || "$(get_codename)" == "jammy" ]]; then
   install_packages libraspberrypi0:armhf libssh-gcrypt-4:armhf libgssapi-krb5-2:armhf libkrb5-3:armhf libssl1.1:armhf libcups2:armhf libsdl1.2debian:armhf libopusfile0:armhf libc6:armhf libx11-6:armhf libgdk-pixbuf2.0-0:armhf libgtk2.0-0:armhf libstdc++6:armhf libsdl2-2.0-0:armhf mesa-va-drivers:armhf libsdl1.2-dev:armhf libsdl-mixer1.2:armhf libpng16-16:armhf libcal3d12v5:armhf libsdl2-net-2.0-0:armhf libopenal1:armhf libsdl2-image-2.0-0:armhf libvorbis-dev:armhf libcurl4:armhf osspd:armhf pulseaudio libjpeg62:armhf libudev1:armhf libgl1-mesa-dev:armhf libsnappy1v5:armhf libx11-dev:armhf libsmpeg0:armhf libboost-filesystem1.74.0:armhf libboost-program-options1.74.0:armhf libavcodec58:armhf libavformat58:armhf libswscale5:armhf libmyguiengine3debian1v5:armhf libboost-iostreams1.74.0:armhf libsdl2-mixer-2.0-0:armhf || exit 1
 elif [[ "$(get_codename)" == "buster" ]]; then
   error "User error: Box86 cannot be installed on Raspberry Pi OS Buster 64-bit due to lack of official support. Consider upgrading your system to Raspberry Pi OS Bullseye or use the 32-bit version to install Box86."
 else
-  error "This script can't run on your OS! It HAS to be Raspbian/Debian Bullseye or Ubuntu 20.04, 21.04, 21.10 or 22.04"
+  error "User error: This script can't run on your OS! It HAS to be Raspbian/Debian Bullseye or Ubuntu 20.04, 21.10 or 22.04"
 fi
 
 sudo rm /etc/apt/sources.list.d/box86.list &>/dev/null
