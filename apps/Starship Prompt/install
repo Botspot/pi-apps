@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Uninstall Powerline-Shell as it may cause issues
+"${DIRECTORY}/manage" uninstall 'Powerline-Shell'
+
+# Install Fira Code (Nerd Font) font
+status 'Installing Fira Code fonts'
+mkdir $HOME/.local/share/fonts/fira-code
+git_clone https://github.com/open-sorcerer64/fira-code-fonts.git || error 'Failed to download fonts'
+cd $HOME/fira-code-fonts || error 'Failed to move fonts'
+mv *.ttf $HOME/.local/share/fonts/fira-code || error 'Failed to move fonts'
+mv *.otf $HOME/.local/share/fonts/fira-code || error 'Failed to move fonts'
+echo fontname >> $HOME/.config/lxterminal/lxterminal.conf
+sed -i '/fontname/c\fontname=Fira Code Medium Nerd Font 11' $HOME/.config/lxterminal/lxterminal.conf
+echo FontName >> $HOME/.config/xfce4/terminal/terminalrc
+sed -i '/FontName/c\FontName=Fira Code Medium Nerd Font 12' $HOME/.config/xfce4/terminal/terminalrc
+
+# Install Starship from official script
+status 'Installing Starship Prompt'
+sh -c "$(curl -fsSL https://starship.rs/install.sh)" || error 'Failed to download starship prompt'
+
+# Add Starship in Bash
+if [ -f "$HOME/.bashrc" ]; then
+	sed -i '/\eval "$(starship init bash)"/d' "$HOME/.bashrc"
+	echo 'eval "$(starship init bash)"' >> "$HOME/.bashrc" || error 'Failed to set starship prompt in .bashrc'
+fi
+
+# Add Starship in Fish
+if [ -f "$HOME/.config/fish/config.fish" ]; then
+	sed -i '/\starship init fish | source/d' "$HOME/.config/fish/config.fish"
+	echo "starship init fish" >> "$HOME/.config/fish/config.fish" || error 'Failed to set starship prompt in config.fish'
+fi
+
+# Add Starship in Zsh
+if [ -f "$HOME/.zshrc" ]; then
+	sed -i '/\eval "$(starship init zsh)"/d' "$HOME/.zshrc"
+	echo 'eval "$(starship init bash)"' >> "$HOME/.zshrc" || error 'Failed to set starship prompt in .zshrc'
+fi
+
+# Add Starship in PowerShell 
+if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]; then
+	sed -i '/\Invoke-Expression (&starship init powershell)"/d' "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
+	echo 'Invoke-Expression (&starship init powershell)' >> "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" || error 'Failed to set starship prompt in PowerShell_profile'
+fi
