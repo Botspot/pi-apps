@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=6.0
+version=5.0
 
 install_packages https://github.com/cycool29/whatsapp-for-linux/releases/download/${version}/whatsapp_${version}_armhf.deb || exit 1
