@@ -2,7 +2,7 @@
 
 install_packages xz-utils tar || exit 1
 cd /tmp
-wget -O reaper.tar.xz "https://www.reaper.fm/files/6.x/reaper656_linux_aarch64.tar.xz" || error "Failed to download reaper!"
+wget -O reaper.tar.xz "https://www.reaper.fm/files/6.x/reaper657_linux_aarch64.tar.xz" || error "Failed to download reaper!"
 status "Extracting reaper..."
 tar -xf reaper.tar.xz || error "Failed to extract reaper!"
 cd reaper_linux_aarch64 || error "Failed to cd into 'reaper_linux_aarch64'"
