@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/first-interaction@v1
       with:
-        repo-token: ${{ secrets. GH_PERSONAL_ACCESS_TOKEN }}
+        repo-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         issue-message: |
           Hello there 👋
           Thanks for submitting your first issue to the Pi-Apps project! We'll try to get back to you as soon as possible. 
