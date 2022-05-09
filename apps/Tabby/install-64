@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.176
+version=1.0.174
 
 install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux-arm64.deb || exit 1
 
