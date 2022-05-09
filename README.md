@@ -143,6 +143,16 @@ You don't need to be a programmer to help!
 - You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.md), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug_report.md), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-request.md).
 - You can create and submit an app. Don't worry, it's about as easy as using the terminal! (And it's even easier if you're submitting a simple apt-package.)
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
+    
+## App eligibilty
+ If you want to add an app to Pi-Apps, it needs to follow these rules:
+- The app needs to be useful for people who use their Raspberry Pi as an everyday, desktop computer.
+    - Apps that are meant to run on a headless Pi will not be accepted. (Rosetta@home, pihole, etc)
+    - Apps that are not designed for everyday GUI users won't be accepted. (command-line file servers, webservers, etc)
+- The app needs to be legal to download and use. (No piracy allowed)
+    - Paid apps are allowed. If your app has a free demo mode (like Doom 3), please ask the user if they want the demo mode or the full version.
+- The app should be appropriate for all ages. After all, Raspberry Pies are designed with children in mind.
+- Even if your app follows all of these guidelines, there still may be a reason we decide not to add it to the official Pi-Apps repository. If that happens, you can still take advantage of Pi-Apps's features by telling your users to import the zip file for your app.
 
 ## Badge
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README:  
