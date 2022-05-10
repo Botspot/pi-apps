@@ -1,7 +1,9 @@
 #!/bin/bash
 
 version="657"
+version2="1.2.4"
 base_ver="$(echo ${version} | sed -e 's/.$//' -e 's/.$//')"
+
 install_packages xz-utils tar || exit 1
 cd /tmp
 wget -O reaper.tar.xz "https://www.reaper.fm/files/${base_ver}.x/reaper${version}_linux_aarch64.tar.xz" || error "Failed to download reaper!"
