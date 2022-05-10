@@ -1,9 +1,0 @@
-#!/bin/bash
-
-version=1.2.4
-
-${DIRECTORY}/manage "install-if-not-installed" "Reaper" || exit 1
-
-mkdir -p $HOME/.config/REAPER/UserPlugins/
-cd $HOME/.config/REAPER/UserPlugins/ || error "Failed to cd into '$HOME/.config/REAPER/UserPlugins/'!"
-wget "https://github.com/cfillion/reapack/releases/download/v${version}/reaper_reapack-armv7l.so" || error "Failed to download ReaPack!!!"
