@@ -1,14 +1,10 @@
 #!/bin/bash
 
-echo "Checking Renoise version and getting download urls (This will take a long time)..."
+echo "Checking Renoise version and getting download urls..."
 
-for (( i=999; i > 0; i-- )); do
-	webVer="$(echo "$i" | sed -e 's/^\(.\{1\}\)/\1_/' -e 's/^\(.\{3\}\)/\1_/')"
-        armhf_url="https://files.renoise.com/demo/Renoise_${webVer}_Demo_Linux_armhf.tar.gz"
-        arm64_url="https://files.renoise.com/demo/Renoise_${webVer}_Demo_Linux_arm64.tar.gz"
-	wget --spider $armhf_url &>/dev/null && break
-done
-
+webVer=$(curl -s https://files.renoise.com/demo/ | grep "armhf" | sed -e 's/<a href="//' -e 's/".*//' -e 's/Renoise_//' -e 's/_Demo_Linux_armhf.tar.gz//')
+armhf_url="https://renoise.com/demo/Renoise_${webVer}_Demo_Linux_armhf.tar.gz"
+arm64_url="https://renoise.com/demo/Renoise_${webVer}_Demo_Linux_arm64.tar.gz"
 echo "Double-checking urls..."
 
 if ! wget --spider ${arm64_url} &>/dev/null; then
