@@ -24,6 +24,11 @@ Categories=AudioVideo;Audio;
 Type=Application
 " | tee "$HOME/.local/share/applications/reaper.desktop" || error "Failed to make menu entry!"
 status_green "Done!"
+status "Installing ReaPack (Reaper Package Manager)..."
+mkdir -p $HOME/.config/REAPER/UserPlugins; cd $_ || error "Failed to cd into '$HOME/.config/REAPER/UserPlugins'!"
+wget "https://github.com/cfillion/reapack/releases/download/v1.2.4/reaper_reapack-armv7l.so" || error "Failed to download ReaPack!"
+status_green "Done!"
+status "You can use ReaPack by opening Reaper and navigating to Extentions -> ReaPack.\n"
 status "Cleaning up..."
 rm -rf reaper.tar.xz reaper_linux_aarch64
 status_green "Done!"
