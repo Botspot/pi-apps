@@ -1,16 +1,18 @@
 #!/bin/bash
 
+version="3_4_1"
+
 cd /tmp
-wget -O renoise-armhf.tar.gz "https://files.renoise.com/demo/Renoise_3_4_1_Demo_Linux_armhf.tar.gz" || exit 1
+wget -O renoise-armhf.tar.gz "https://files.renoise.com/demo/Renoise_${version}_Demo_Linux_armhf.tar.gz" || exit 1
 status "Extracting Renoise..."
 tar -xf renoise-armhf.tar.gz || error "Failed to extract Renoise!"
-cd Renoise_3_4_1_Demo_Linux_armhf || error "Failed to cd into 'Renoise_3_4_1_Demo_Linux_armhf'!"
+cd Renoise_${version}_Demo_Linux_armhf || error "Failed to cd into 'Renoise_${version}_Demo_Linux_armhf'!"
 status_green "Done!"
 status "Installing Renoise..."
 chmod +x install.sh || error "Failed to set 'install.sh' as execuable!"
 sudo ./install.sh
 if [ "$?" == "1" ]; then
-  status_green "Done!"  
+  status_green "Done!"
 elif [ "$?" == "0" ]; then
   error "Failed to install Renoise with 'install.sh'"
 else
@@ -18,5 +20,5 @@ else
 fi
 status "Cleaning up..."
 cd ../
-rm -rf Renoise_3_4_1_Demo_Linux_armhf renoise-armhf.tar.gz
+rm -rf Renoise_${version}_Demo_Linux_armhf renoise-armhf.tar.gz
 status_green "Done!"
