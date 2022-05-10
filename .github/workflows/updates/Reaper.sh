@@ -11,6 +11,7 @@ echo "Checking Reaper minor version and getting download urls..."
 for (( i=99; i > 0; i-- )); do
 	armhf_url="https://reaper.fm/files/${base_ver}.x/reaper${base_ver}${i}_linux_armv7l.tar.xz"
 	arm64_url="https://reaper.fm/files/${base_ver}.x/reaper${base_ver}${i}_linux_aarch64.tar.xz"
+	minor_ver="${i}"
 	wget --spider $armhf_url &>/dev/null && break
 done
 
@@ -27,5 +28,8 @@ if ! wget --spider ${armhf_url} &>/dev/null; then
 else
         echo "\$armhf_url ($armhf_url) checks out! We're good to go."
 fi
+
+webVer="${base_ver}${minor_ver}"
+echo "Latest version: ${webVer}"
 
 source ${GITHUB_WORKSPACE}/.github/workflows/update_github_script.sh
