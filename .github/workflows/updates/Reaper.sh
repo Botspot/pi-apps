@@ -31,10 +31,11 @@ else
 fi
 
 webVer[0]="${base_ver}${minor_ver}"
-echo "Latest version: ${webVer}"
+echo "Latest version: ${webVer[0]}"
 
+echo "Checking ReaPack version..."
 webVer[1]="$(get_release cfillion/reapack)"
-armhf_url[1]="https://github.com/cfillion/reapack/releases/download/v${webVer}/reaper_reapack-armv7l.so"
-arm64_url[1]="https://github.com/cfillion/reapack/releases/download/v${webVer}/reaper_reapack-aarch64.so"
+armhf_url[1]="https://github.com/cfillion/reapack/releases/download/v${webVer[1]}/reaper_reapack-armv7l.so"
+arm64_url[1]="https://github.com/cfillion/reapack/releases/download/v${webVer[1]}/reaper_reapack-aarch64.so"
 
 source ${GITHUB_WORKSPACE}/.github/workflows/update_github_script.sh
