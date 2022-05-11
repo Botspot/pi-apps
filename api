@@ -1809,6 +1809,7 @@ get_device_info() { #returns information about current install and hardware
   model=${model//All Series}
   model=${model//�}
   echo "Device model: $model"
+  echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
