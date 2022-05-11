@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="3_4_1"
+version=3_4_2
 
 cd /tmp
 wget -O renoise-armhf.tar.gz "https://files.renoise.com/demo/Renoise_${version}_Demo_Linux_armhf.tar.gz" || exit 1
