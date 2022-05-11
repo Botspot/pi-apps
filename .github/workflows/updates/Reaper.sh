@@ -1,37 +1,10 @@
 #!/bin/bash
+echo "Checking Reaper version and getting urls..."
+webVer[0]=$(curl -s https://www.reaper.fm/download.php | grep "linux_aarch64.tar.xz" | sed -e 's/ /\n/g' -e 's/href="//g' -e 's/"//g' | grep 'linux_aarch64' | sed -e 's|files/.*/reaper||g' -e 's/_linux_aarch64.tar.xz//g')
+arm64_url[0]="https://reaper.fm/$(curl -s https://www.reaper.fm/download.php | grep 'linux_aarch64.tar.xz' | sed -e 's/ /\n/g' -e 's/href="//g' -e 's/"//g' | grep 'linux_aarch64')"
+armhf_url[0]="https://reaper.fm/$(curl -s https://www.reaper.fm/download.php | grep 'linux_aarch64.tar.xz' | sed -e 's/ /\n/g' -e 's/href="//g' -e 's/"//g' | grep 'linux_armv7l')"
 
-echo "Checking Reaper major version..."
-for (( i=0; i < 10; i++ )); do
-        base_ver_test_url="https://reaper.fm/files/${i}.x/reaper${i}01_linux_armv7l.tar.xz"
-	base_ver="${i}"
-        wget --spider $base_ver_test_url &>/dev/null && break
-done
-
-echo "Checking Reaper minor version and getting download urls..."
-
-for (( i=99; i > 0; i-- )); do
-	armhf_url[0]="https://reaper.fm/files/${base_ver}.x/reaper${base_ver}${i}_linux_armv7l.tar.xz"
-	arm64_url[0]="https://reaper.fm/files/${base_ver}.x/reaper${base_ver}${i}_linux_aarch64.tar.xz"
-	minor_ver="${i}"
-	wget --spider $armhf_url &>/dev/null && break
-done
-
-echo "Double-checking urls..."
-
-if ! wget --spider ${arm64_url} &>/dev/null; then
-	echo "\$arm64_url ($arm64_url) isn't good! Something bad happened, not updating arm64..."; unset arm64_url
-else
-	echo "\$arm64_url ($arm64_url) checks out! We're good to go."
-fi
-
-if ! wget --spider ${armhf_url} &>/dev/null; then
-        echo "\$armhf_url ($armhf_url) isn't good! Something bad happened, not updating armhf..."; unset armhf_url
-else
-        echo "\$armhf_url ($armhf_url) checks out! We're good to go."
-fi
-
-webVer[0]="${base_ver}${minor_ver}"
-echo "Latest version: ${webVer[0]}"
+echo -e "armhf: $armhf_url\narm64: $arm64_url\n webVer: $webVer"
 
 echo "Checking ReaPack version..."
 webVer[1]="$(get_release cfillion/reapack)"
