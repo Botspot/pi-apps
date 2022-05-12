@@ -1,8 +1,12 @@
 #!/bin/bash
 
+version="657"
+version2="1.2.4"
+base_ver="$(echo ${version} | sed -e 's/.$//' -e 's/.$//')"
+
 install_packages xz-utils tar || exit 1
 cd /tmp
-wget -O reaper.tar.xz "https://www.reaper.fm/files/6.x/reaper657_linux_aarch64.tar.xz" || error "Failed to download reaper!"
+wget -O reaper.tar.xz "https://www.reaper.fm/files/${base_ver}.x/reaper${version}_linux_aarch64.tar.xz" || error "Failed to download reaper!"
 status "Extracting reaper..."
 tar -xf reaper.tar.xz || error "Failed to extract reaper!"
 cd reaper_linux_aarch64 || error "Failed to cd into 'reaper_linux_aarch64'"
@@ -24,6 +28,11 @@ Categories=AudioVideo;Audio;
 Type=Application
 " | tee "$HOME/.local/share/applications/reaper.desktop" || error "Failed to make menu entry!"
 status_green "Done!"
+status "Installing ReaPack (Reaper Package Manager)..."
+mkdir -p "$HOME/.config/REAPER/UserPlugins" || error "Failed to create '$HOME/.config/REAPER/UserPlugins'!"
+wget -O "$HOME/.config/REAPER/UserPlugins/reaper_reapack-aarch64.so" "https://github.com/cfillion/reapack/releases/download/v${version2}/reaper_reapack-aarch64.so" || error "Failed to download ReaPack!"
+status_green "Done!"
+status "You can use ReaPack by opening Reaper and navigating to Extentions -> ReaPack.\n"
 status "Cleaning up..."
 rm -rf reaper.tar.xz reaper_linux_aarch64
 status_green "Done!"
