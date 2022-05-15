@@ -1,5 +1,0 @@
-#!/bin/bash
-
-filepath="https://github.com/ryanfortner/snapdrop-rpi/raw/master/snapdrop_20221216_armhf.deb"
-
-install_packages "${filepath}" || exit 1

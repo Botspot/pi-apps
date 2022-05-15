@@ -1,0 +1,27 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
+echo "Creating launcher and menu button..."
+echo '#!/bin/bash
+
+chromium-browser --user-data-dir="$HOME/.config/webapps/stackedit" --app=https://stackedit.io/app#' | sudo tee /usr/local/bin/stackedit >/dev/null || error "Failed to create stackedit launcher!"
+
+sudo chmod +x /usr/local/bin/stackedit || error "Failed to set stackedit launcher permissions!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/stackedit.png || error "Failed to install stackedit icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/stackedit.png || error "Failed to install stackedit icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+echo "[Desktop Entry]
+Name=StackEdit
+GenericName=Markdown editor
+Comment=A chromium webapp for the stackedit markdown editor
+Exec=/usr/local/bin/stackedit
+Icon=stackedit
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Development;IDE;" | sudo tee /usr/local/share/applications/stackedit.desktop >/dev/null || error "Failed to create menu shortcut!"

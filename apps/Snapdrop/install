@@ -1,0 +1,27 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
+echo "Creating launcher and menu button..."
+echo '#!/bin/bash
+
+chromium-browser --user-data-dir="$HOME/.config/webapps/snapdrop" --app=https://snapdrop.net/' | sudo tee /usr/local/bin/snapdrop >/dev/null || error "Failed to create snapdrop launcher!"
+
+sudo chmod +x /usr/local/bin/snapdrop || error "Failed to set snapdrop launcher permissions!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/snapdrop.png || error "Failed to install snapdrop icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/snapdrop.png || error "Failed to install snapdrop icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+echo "[Desktop Entry]
+Name=Snapdrop
+GenericName=Local File Sharing
+Comment=Local file sharing in your browser. Inspired by Apple's Airdrop.
+Exec=/usr/local/bin/snapdrop
+Icon=snapdrop
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility" | sudo tee /usr/local/share/applications/snapdrop.desktop >/dev/null || error "Failed to create menu shortcut!"
