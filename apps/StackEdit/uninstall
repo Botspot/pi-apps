@@ -1,6 +1,4 @@
 #!/bin/bash
-echo "removing ~/stackedit..."
-rm -rf ~/stackedit || error "Failed to remove ~/stackedit!"
-echo "removing menu shortcut..."
-rm -f ~/.local/share/applications/stackedit.desktop || error "Failed to remove menu shortcut!"
-echo "DONE!"
+
+sudo rm -f /usr/local/share/applications/stackedit.desktop /usr/local/share/icons/hicolor/64x64/apps/stackedit.png /usr/local/share/icons/hicolor/24x24/apps/stackedit.png /usr/local/bin/stackedit
+purge_packages || exit 1

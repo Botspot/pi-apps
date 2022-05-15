@@ -1,3 +1,4 @@
 #!/bin/bash
 
+sudo rm -f /usr/local/share/applications/snapdrop.desktop /usr/local/share/icons/hicolor/64x64/apps/snapdrop.png /usr/local/share/icons/hicolor/24x24/apps/snapdrop.png /usr/local/bin/snapdrop
 purge_packages || exit 1

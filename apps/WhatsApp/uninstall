@@ -1,3 +1,4 @@
 #!/bin/bash
 
+sudo rm -f /usr/local/share/applications/whatsapp.desktop /usr/local/share/icons/hicolor/64x64/apps/whatsapp.png /usr/local/share/icons/hicolor/24x24/apps/whatsapp.png /usr/local/bin/whatsapp
 purge_packages || exit 1

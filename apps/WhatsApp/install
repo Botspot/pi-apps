@@ -1,0 +1,28 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
+echo "Creating launcher and menu button..."
+echo '#!/bin/bash
+
+chromium-browser --user-data-dir="$HOME/.config/webapps/WhatsApp" --app=https://web.whatsapp.com' | sudo tee /usr/local/bin/whatsapp >/dev/null || error "Failed to create whatsapp launcher!"
+
+sudo chmod +x /usr/local/bin/whatsapp || error "Failed to set whatsapp launcher permissions!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/whatsapp.png || error "Failed to install whatsapp icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/whatsapp.png || error "Failed to install whatsapp icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+echo "[Desktop Entry]
+Name=WhatsApp
+GenericName=Online Messaging
+Comment=A chromium webapp for the WhatsApp messaging service
+Exec=/usr/local/bin/whatsapp
+Icon=whatsapp
+Type=Application
+StartupNotify=false
+StartupWMClass=WhatsApp
+Categories=Internet;Chat;Network
+Keywords=whatsapp;" | sudo tee /usr/local/share/applications/whatsapp.desktop >/dev/null || error "Failed to create menu shortcut!"
