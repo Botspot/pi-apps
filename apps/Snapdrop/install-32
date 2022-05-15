@@ -1,5 +1,0 @@
-#!/bin/bash
-
-filepath="https://apt.raspbian-addons.org/debian/pool/main/s/snapdrop/snapdrop_20220226_armhf.deb"
-
-install_packages "${filepath}" || exit 1

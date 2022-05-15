@@ -1,0 +1,15 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+echo "Creating menu button..."
+echo "[Desktop Entry]
+Name=Snapdrop
+GenericName=Local File Sharing
+Comment=Local file sharing in your browser. Inspired by Apple's Airdrop.
+Exec=chromium-browser %U --user-data-dir=$HOME/.config/webapps/snapdrop --app=https://snapdrop.net/
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility" > ~/.local/share/applications/Snapdrop.desktop

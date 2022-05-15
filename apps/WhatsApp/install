@@ -1,0 +1,15 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+echo "Creating menu button..."
+echo "[Desktop Entry]
+Name=WhatsApp
+Comment=A chromium webapp for the WhatsApp messaging service
+Exec=chromium-browser %U --user-data-dir=$HOME/.config/webapps/WhatsApp --app=https://web.whatsapp.com
+Icon=$(dirname "$0")/icon-64.png
+Type=Application
+StartupNotify=false
+StartupWMClass=WhatsApp
+Categories=Internet;Chat;Network
+Keywords=whatsapp;" > ~/.local/share/applications/WhatsApp.desktop
