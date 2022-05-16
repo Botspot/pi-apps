@@ -1,8 +1,12 @@
-**NOTE**: This changelog mainly covers major events in Pi-Apps like new apps being added. If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
+# Changelog
+
+This changelog mainly covers major events in Pi-Apps like new apps being added. 
+
+If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
+
 Last updated: May 16, 2022 by [@ryanfortner](https://github.com/ryanfortner)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
-
 - **9/20/2020** Development begins.
 - **9/22/2020** Initial upload to github, including these apps: Arduino, BalenaEtcher, Chromium Media Edition, CommanderPi, Cool Retro Term, Cura, FreeCAD, Pi-Power-Tools, Raspi2png, and Windows 10 Theme.  
 - **10/1/2020** Many bugs fixed, createapp added, and added TBOPlayer app.  
