@@ -183,7 +183,7 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
   #find all package-lists pertaining to the url
   local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
   
-  #for every repo-file, chack if any of them have an installed file
+  #for every repo-file, check if any of them have an installed file
   local found=0
   local IFS=$'\n'
   local repofile
@@ -250,7 +250,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   (sleep 3; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
   
-  #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
+  #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
@@ -586,7 +586,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     status "The $package_name package is not installed so there's nothing to do."
   fi
   
-  status_green "All packages have been purged succesfully."
+  status_green "All packages have been purged successfully."
   rm -f "${DIRECTORY}/data/installed-packages/${app}"
 }
 
@@ -1456,7 +1456,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
-    error_caption+=("The git commend encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
@@ -1485,7 +1485,7 @@ See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
   fi
   
   if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
-    error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
+    error_caption+=("This error occurred: Failed to load module \"appmenu-gtk-module\"
 
 Try installing two packages with this command:
 sudo apt install appmenu-gtk2-module appmenu-gtk3-module
@@ -1544,14 +1544,14 @@ For solutions, see: https://askubuntu.com/a/59517")
   fi
   
   if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
-    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occurring.")
     error_type="system"
   fi
   
   if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
-If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
     error_type="system"
   fi
   
@@ -1676,7 +1676,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
 }
 #end of logfile functions
 
-#miscelaneous low-level functions below
+#miscellaneous low-level functions below
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
@@ -2156,6 +2156,9 @@ elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
+
+#Make dual-pane yad windows work correctly on wayland
+export GDK_BACKEND=x11
 
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then

@@ -23,6 +23,9 @@ get_date() {
 }
 
 check_repo() { #download pi-apps repository to the update/pi-apps folder
+  if [ "$speed" == fast ];then
+    return 0
+  fi
   echo -n "Checking for online changes... " 1>&2
   
   #if the updater script exists in update folder, then just git pull to save time
@@ -109,9 +112,10 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
+  
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
-    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
+    local updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
     echo -n "Scanning files... " 1>&2
@@ -119,16 +123,14 @@ get_updatable_files() { #sets the updatable_files variable
     #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
     local file_list="$(list_files)" || exit 1
     
-    updatable_files='' #the variable to be returned
+    local updatable_files='' #the variable to be returned
     local IFS=$'\n'
-    
     for file in $file_list ;do
       
       echo -en "Scanning files... $file\e[0K\r" 1>&2
       if [ ! -f "${DIRECTORY}/${file}" ];then
         #file is missing locally - add to updatable_files list
-        updatable_files="${updatable_files}
-${file}"
+        updatable_files+=$'\n'"${file}"
         
       elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
         #file is missing in the update folder - local
@@ -136,8 +138,7 @@ ${file}"
         
       elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
         #files don't match - add to updatable_files list
-        updatable_files="${updatable_files}
-${file}"
+        updatable_files+=$'\n'"${file}"
       fi
     done
     #remove initial newline character
@@ -150,8 +151,8 @@ ${file}"
     local exclusion_msg+="\n'$file' won't be updated - it's listed in data/update-exclusion."
   done
   
-  echo "$updatable_files"
   echo -e "Scanning files... Done\e[0K" 1>&2
+  echo "$updatable_files"
   
   #if any files were excluded by update-exclusion, list them now, after echoing "Done"
   [ ! -z "$exclusion_msg" ] && echo -e "$exclusion_msg\n" 1>&2
@@ -159,15 +160,15 @@ ${file}"
   return 0
 }
 
-get_updatable_apps() { #sets the updatable_apps variable
+get_updatable_apps() { #return a list of updatable apps
   
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-apps" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
-    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
+    local updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
     
   else #compare each file to the one in the update folder
-    updatable_apps=''
-    IFS=$'\n'
+    local updatable_apps=''
+    local IFS=$'\n'
     for app in $(list_apps online)
     do
       echo -en "Scanning apps... $app\e[0K\r" 1>&2
@@ -183,8 +184,8 @@ get_updatable_apps() { #sets the updatable_apps variable
     done
     updatable_apps="${updatable_apps:1}" #remove initial newline character
   fi
-  echo "$updatable_apps"
   echo -e "Scanning apps... Done\e[0K" 1>&2
+  echo "$updatable_apps"
 }
 
 generate_yad_list() { #input: updatable_apps and updatable_files variables
@@ -337,8 +338,9 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
     --list --checklist --separator='\n' --print-column=4 --no-headers \
     --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
     --column=:CHK --column=:IMG --column=Name --column=ID:HD \
-    --button='Later'!"${DIRECTORY}/icons/exit.png"!"Remind me later":1 \
-    --button='Update now'!"${DIRECTORY}/icons/download.png":0)" || exit 0
+    --button='Cancel'!"${DIRECTORY}/icons/exit.png"!"Close without updating anything":1 \
+    --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
+    "${args[@]}")" || exit 1
   
   #remove empty newlines from output
   output="$(echo "$output" | grep .)"
@@ -412,7 +414,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     #copy new version
     cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     
-    #special edge-case: if current file ends in .c, delete the corresponsing executable so that it will be recompiled.
+    #special edge-case: if current file ends in .c, delete the corresponding executable so that it will be recompiled.
     if [[ "$file" == *.c ]];then
       rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
     fi
@@ -460,16 +462,29 @@ screen_height="$(xrandr | grep -oP '(?<=primary )[x\d]+' | cut -d x -f 2)"
 
 runmode="$1"
 speed="$2"
-if [ ! -z "$speed" ] && [ "$speed" != 'fast' ];then
-  error "Unknown value for speed: "\""$speed"\"". Allowed value: fast"
-fi
 
+if [ ! -z "$speed" ] && [ "$speed" != 'fast' ];then
+  #error "Unknown value for speed: "\""$speed"\"". Allowed value: fast"
+  true
+  #speed is $2, which may be a yadflag if it's not 'fast'.
+else
+  shift #$2 is setting speed, so move everything over so $3 starts yad flags
+fi
 if [ "$runmode" == onboot ];then
+  #older pi-apps installations used an autostarted script with the 'onboot' flag.
   runmode=autostarted
 elif [ "$runmode" == source ];then
+  #this script can be sourced to get functions: source "${DIRECTORY}/updater" source
   return 0
 elif [ -z "$runmode" ];then
+  #if no runmode was specified, default to gui.
   runmode=gui
+fi
+
+#get remaining arguments to pass them to yad
+shift;args=("$@")
+if [ ! -z "$(echo "${args[@]}")" ];then
+  echo "Flags to be passed to yad: ${args[*]}"
 fi
 
 #runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes
@@ -580,8 +595,27 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   
-  echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
-  echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
+  #write to updatable-apps file only if something was changed
+  if [ "$updatable_apps" != "$(cat "${DIRECTORY}/data/update-status/updatable-apps")" ];then
+    echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
+  fi
+  
+  #write to updatable-files file only if something was changed
+  if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files")" ];then
+    echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
+  fi
+
+  # this is the only part of any script that is called after running an update using the new files
+  # since the new gui merge requires the gui script to be restarted, use this opportunity to kill the old GUI and start a new one
+  # only done once with a runonce if current gui format version is not 2
+  runonce <<"EOF"
+    if [[ "$GUI_FORMAT_VERSION" != 2 ]]; then
+      pkill gui && ( "${DIRECTORY}/gui" & )
+      echo "stopped the GUI"
+    else
+      echo "skipped stopping the gui"
+    fi
+EOF
   
   "$0" get-status &>/dev/null
   exit $?
@@ -595,8 +629,6 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
     status "Nothing is updatable."
     exit 0
   fi
-  
-  echo
   
   list_updates_gui
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then

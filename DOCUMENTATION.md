@@ -102,7 +102,7 @@ The `manage` script supports these **modes**:
   - These two modes are so similar that they share the same code!
 - `install-if-not-installed`: Installs the specified app, only if it has not already been installed.
   - This mode is especially useful for apps that **need another app to be installed first**.
-  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this comand:
+  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this command:
   ```bash
   "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
   ```
@@ -436,7 +436,7 @@ End of Flatpak functions. App functions below.
     ```
 - `refresh_pkgapp_status` - For the specified package-app, if dpkg thinks it's installed, then mark it as installed.
 - `refresh_all_pkgapp_status` - For every package-app, if dpkg thinks it's installed, then mark it as installed.
-- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforseen changes in script design may cause the app list to be displayed improperly.
+- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforeseen changes in script design may cause the app list to be displayed improperly.
 
 Logfile functions below.
 - `get_logfile` - Find the most recent logfile for the specified app.

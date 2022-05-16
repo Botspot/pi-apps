@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="layer" x="0px" y="0px" viewBox="174.697 261.105 302.605 302.605" style="enable-background:new 0 0 652 652;" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <filter id="drop-shadow-filter-0" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 14 0.73 rgba(0,0,0,0.4)">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
+      <feOffset dx="0" dy="10"/>
+      <feComponentTransfer result="offsetblur">
+        <feFuncA id="spread-ctrl" type="linear" slope="1.46"/>
+      </feComponentTransfer>
+      <feFlood flood-color="rgba(0,0,0,0.4)" x="10" y="10"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <style type="text/css">
+	.st0{fill:#020203;}
+	.st1{fill:#6ABF4B;}
+	.st2{fill:#C31C4A;}
+</style>
+  <g transform="matrix(0.78414, 0, 0, 0.78414, 73.326454, 90.673027)" style="filter: url(#drop-shadow-filter-0);">
+    <title>logo</title>
+    <rect x="144.58" y="218.624" width="355.3" height="355.3" style="" rx="62.1" ry="62.1">
+      <title>black</title>
+    </rect>
+  </g>
+  <path d="M 204.8 468.74 L 204.8 495.673 L 285.6 495.673 L 285.6 468.74 Z M 204.8 307.141 L 204.8 334.074 L 339.467 334.074 L 339.467 307.141 Z M 339.467 522.607 L 339.467 495.673 L 447.2 495.673 L 447.2 468.74 L 339.467 468.74 L 339.467 441.807 L 312.534 441.807 L 312.534 522.607 Z M 258.667 361.007 L 258.667 387.941 L 204.8 387.941 L 204.8 414.874 L 258.667 414.874 L 258.667 441.807 L 285.6 441.807 L 285.6 361.007 Z M 447.2 414.874 L 447.2 387.941 L 312.534 387.941 L 312.534 414.874 Z M 366.4 361.007 L 393.333 361.007 L 393.333 334.074 L 447.2 334.074 L 447.2 307.141 L 393.333 307.141 L 393.333 280.207 L 366.4 280.207 Z" style="fill: rgb(247, 13, 77);"/>
+</svg>
