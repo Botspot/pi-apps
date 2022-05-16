@@ -1890,6 +1890,58 @@ $(head -n1 "${DIRECTORY}/apps/$app/description")"
   fi
 }
 
+multi_uninstall_gui() { #graphical interface to uninstall multiple apps from a list.
+  
+  #get list of apps that are installed
+  local apps="$(list_apps installed)"
+  
+  local IFS=$'\n'
+  local app
+  
+  apps="$(for app in $apps ;do
+    echo "FALSE
+${DIRECTORY}/apps/$app/icon-24.png
+$app
+$(head -n1 "${DIRECTORY}/apps/$app/description")"
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+    --width=300 --height=500 \
+    --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
+    --text="Uninstall everything you want!"$'\n'"Note: apps that are not installed are not shown." \
+    --column=:chk --column=:img --column=name --column=:tip \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 --button='Uninstall selected'!"${DIRECTORY}/icons/uninstall.png":0)"
+  
+  if [ $? == 0 ] && [ ! -z "$apps" ];then
+    #remove empty lines from yad's output
+    apps="$(grep . <<<"$apps")"
+    echo "Will uninstall these apps:"$'\n'"$apps"
+    
+    #set the terminal title text
+    title="Uninstalling $(wc -l <<<"$apps") apps"
+    
+    #in a terminal, first get the api functions, display the pi-apps logo, run the manage script, and refresh the app list if the $pipe variable is set
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      source "${DIRECTORY}/api"
+      generate_logo
+      
+      "${DIRECTORY}/manage" multi-uninstall "'"$apps"'"
+      exitcode=$?
+      
+      if [ $exitcode == 0 ];then
+        echo
+        #display countdown
+        for i in {30..1} ;do
+          echo -en "You can close this window now. Auto-closing in $i seconds.\e[0K\r"
+          sleep 1
+        done
+      else
+        echo -e "\nClose this window to exit."
+        read enter #technically you could press Enter to exit.
+      fi' "$title"
+    
+  fi
+}
+
 #command interceptors - functions that enhance a command
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
   local module="$1"
