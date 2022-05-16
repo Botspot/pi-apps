@@ -1,5 +1,5 @@
 **NOTE**: This changelog mainly covers major events in Pi-Apps like new apps being added. If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: November 11, 2021 by RPiNews
+Last updated: May 16, 2022 by [@ryanfortner](https://github.com/ryanfortner)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -40,7 +40,7 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **11/18/2020** Added Browsh app
 - **11/24/2020** Updated to now use terminal-run to fix pi-apps not working with some terminal types. Updated all scripts to use ~/ instead of /home/pi
 - **11/26/2020** Added Steam app and added a credits section in the app creator
-- **11/27/2020** Added beta xlunch GUI which is more flexable than YAD.
+- **11/27/2020** Added beta xlunch GUI which is more flexible than YAD.
 - **11/28/2020** Switch TBOPlayer to master branch, added WPS Office for aarch64 and added Pycharm CE
 - **11/29/2020** Added testimonies, improved multi-installing apps, and added Puffin Browser Demo app along with Timeshift
 - **12/6/2020** Made Steam not install box86 on TwisterOS
@@ -72,13 +72,13 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **1/31/2021** Added Wine x86 app
 - **2/1/2021** Added Remarkable app and fixed Minecraft Pi (Modded) install
 - **2/3/2021** Updated Minecraft Pi (Modded) to v0.1.8 and added Node.js app
-- **2/8/2021** Added StackEdit and FreeTube apps, hid RetroPie and made Doom 3 visable.
+- **2/8/2021** Added StackEdit and FreeTube apps, hid RetroPie and made Doom 3 visible.
 - **2/13/2021** Added credits button for apps and fixed Minecraft Pi (Modded) install issues
 - **2/17/2021** Updated BalenaEtcher, Cura, and WhatsApp apps, and also added QEMU app.
 - **2/20/2021** Changed wine install scripts and fixed WhatsApp download bug.
 - **2/21/2021** Added Geany Dark Mode app, updated FreeTube, and more Wine install fixes.
 - **2/28/2021** Hidden Wine on Twister OS.
-- **3/4/2021** Added pi-apps terminal plugin and Mac OS theme apps, updated Minecraft Pi (Modded) and addded info about getting better FPS on both Minecraft apps
+- **3/4/2021** Added pi-apps terminal plugin and Mac OS theme apps, updated Minecraft Pi (Modded) and added info about getting better FPS on both Minecraft apps
 - **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports
 - **3/8/2021** Added Snapdrop app, updated intellij IDEA and Minecraft Pi (Modded) with a FPS counter and newer build
 - **3/10/2021** Added Decent 1/2 and ppsspp apps
@@ -101,7 +101,7 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **4/7/2021** Bumped Discord version to renamed "WebCord"
 - **4/8/2021** Added new api script, improved icons, faster preloading. Updated whatsapp + stackedit. Added Bongo Cam and OpenSCAD apps.
 - **4/9/2021** Display user count for apps and squarify icons
-- **4/10/2021** Added flameshot, Processing IDE, Scratch 2 (with flash player fixes), Heros 2 and Linux Mint's Web Apps
+- **4/10/2021** Added flameshot, Processing IDE, Scratch 2 (with flash player fixes), Heroes 2 and Linux Mint's Web Apps
 - **4/12/2021** Added AstroMenace app
 - **4/13/2021** Added Lego Digital Designer app and changed Wine to add extra menu sortcuts
 - **4/14-15-20/2021** Changed pkg-install to use dummy debs for depends to let APT handle depend issues
@@ -153,5 +153,5 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **10/26/2021** Added Temps app and individual icons for all categories
 - **10/28/2021** Added Deskreen app
 - **10/6/2021** Added Alacritty Terminal app
-
+- **5/16/2022** Major GUI updates and script modifications made. https://github.com/Botspot/pi-apps/pull/1580 https://github.com/Botspot/pi-apps/issues/1578
 

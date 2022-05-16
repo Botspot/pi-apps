@@ -1,4 +1,6 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -rf ~/.local/share/applications/eagle.desktop /usr/local/bin/eagle $HOME/eagle-7.7.0 &>/dev/null
+sudo rm -rf ~/.local/share/applications/eagle.desktop /usr/local/bin/eagle $HOME/eagle-7.7.0 /usr/share/applications/eagle.desktop /usr/share/mime/packages/brd.xml /usr/share/icons/eagle.png &>/dev/null
+
+exit 0

@@ -8,7 +8,7 @@ function error {
 }
 
 #remove week-old logfiles
-find "$DIRECTORY/logs" -type f -mtime +7 -exec rm -f {} \;
+find "$DIRECTORY/logs" -type f -mtime +6 -exec rm -f {} \;
 
 #list of all files within "$DIRECTORY/logs", newest first
 logfiles="$(ls "$DIRECTORY/logs"/* -t)"
@@ -21,8 +21,21 @@ else
   ampm=0
 fi 
 
+#determine which day of the week it is. (used for text replacement)
+today="$(date +%A)"
+#determine which day of the week yesterday was. (used for text replacement)
+yesterday=$(date +%A --date='yesterday')
+
+#create a named pipe to send list to yad on-the-fly
+pipe="$(mktemp -u)" #get a random filename to work with
+mkfifo $pipe #make the named pipe
+trap "rm $pipe" EXIT #remove this named pipe on exit
+echo pipe is $pipe
+
+#generate the yad list in a subprocess and send the output to the pipe as it's being generated
+(
 IFS=$'\n'
-for file in $logfiles;do
+for file in $logfiles ;do
   #Parse various tidbits based on the filename
   #$app: the name of the app for this logfile
   app="$(echo "$(basename "$file")" | sed 's/^install-//g' | sed 's/^uninstall-//g' | sed 's/^incomplete-//g' | sed 's/^fail-//g' | sed 's/^success-//g' | sed 's/.log.*$//g')"
@@ -33,39 +46,81 @@ for file in $logfiles;do
   #$date: human-readable timestamp.
   if [ $ampm == 1 ];then
     #AM/PM timestamp: 'Friday 6:21 PM'
-    date="$(date -r "$file" '+%A %l:%M %p' | sed 's/  / /g' | sed "s/$(date +%A)/Today/g" | sed "s/$(date +%A --date=' 1 days ago')/Yesterday/g")"
+    date="$(date -r "$file" '+%A %l:%M %p' | sed 's/  / /g' | sed "s/$today/Today/g" | sed "s/$yesterday/Yesterday/g")"
   else
     #24h timestamp: 'Friday 18:21'
-    date="$(date -r "$file" '+%A %k:%M' | sed 's/  / /g' | sed "s/$(date +%A)/Today/g" | sed "s/$(date +%A --date=' 1 days ago')/Yesterday/g")"
+    date="$(date -r "$file" '+%A %k:%M' | sed 's/  / /g' | sed "s/$today/Today/g" | sed "s/$yesterday/Yesterday/g")"
   fi
   
   #echo "$app\n  $action\n  $result\n"
   
+  #determine app icon
+  if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
+    app_icon="${DIRECTORY}/apps/${app}/icon-24.png"
+  else
+    app_icon="${DIRECTORY}/icons/none-24.png"
+  fi
+  
+  #determine action icon
+  if [ "$action" == uninstall ];then
+    action_icon="${DIRECTORY}/icons/uninstall.png"
+  elif [ "$action" == install ];then
+    action_icon="${DIRECTORY}/icons/install.png"
+  else
+    action_icon="${DIRECTORY}/icons/none-24.png"
+  fi
+  
+  #determine result icon
+  if [ "$result" == success ];then
+    result_icon="${DIRECTORY}/icons/success.png"
+  elif [ "$result" == fail ];then
+    result_icon="${DIRECTORY}/icons/failure.png"
+  else #incomplete
+    result_icon="${DIRECTORY}/icons/interrupted.png"
+  fi
+  
+  #determine caption - "Installing Zoom succeeded."
+  if [ "$action" == uninstall ];then
+    caption="Uninstalling $app"
+  elif [ "$action" == install ];then
+    caption="Installing $app"
+  fi
+  if [ "$result" == success ];then
+    caption+=" succeeded."
+  elif [ "$result" == fail ];then
+    caption+=" failed."
+  else #incomplete
+    caption+=" was interrupted."
+  fi
+  
   #add lines to the yad list
-  LIST="$LIST
-$date
-${DIRECTORY}/apps/${app}/icon-24.png
-$(echo $action | sed "s+^uninstall$+${DIRECTORY}/icons/uninstall-short.png+g" | sed "s+^install$+${DIRECTORY}/icons/install-short.png+g")
-$(echo $result | sed "s+^success$+${DIRECTORY}/icons/${action}ed.png+g" | sed "s+^fail$+${DIRECTORY}/icons/corrupted.png+g" | sed "s+^incomplete$+${DIRECTORY}/icons/corrupted.png+g")
-$(echo $action | sed 's/^uninstall$/Uninstalling/g' | sed 's/^install$/Installing/g') $app $(echo $result | sed 's/success/succeeded./g' | sed 's/fail/failed./g' | sed 's/incomplete/was interrupted./g')
-$file"
+  echo "$date
+$action_icon
+$app_icon
+$result_icon
+$caption
+$file" > "$pipe"
   
 done
+) &
 
-LIST="$(echo "$LIST" | grep .)"
-#echo "$LIST"
-output="$(echo -e "$LIST" | yad --center --title='Log file viewer' --width=500 --height=400 --on-top \
+echo
+echo ready
+
+tail -F "$pipe" | tee /dev/stderr | yad --center --title='Log file viewer' --width=500 --height=400 --on-top \
   --text="Review the errors from installing or uninstalling apps."$'\n'"Week-old log files will be deleted." \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
   --column=Day --column=I:IMG --column=A:IMG --column=R:IMG --column=Description --column=tooltip:HD \
   --print-column=6 --tooltip-column=6 --select-action="$(dirname "$0")/viewlog" --dclick-action='true' \
-  --button='Delete all'!"${DIRECTORY}/icons/trash.png"!"Delete all log files from $DIRECTORY/logs":0 \
+  --button='Delete all'!"${DIRECTORY}/icons/trash.png"!"Delete all log files from $DIRECTORY/logs":2 \
   --button=Close!"${DIRECTORY}/icons/exit.png":1
-)"
+
 button=$?
 
-if [ $button == 0 ];then
-   rm -rf "$DIRECTORY/logs"
-   mkdir "$DIRECTORY/logs"
-   echo "Deleted everything inside of $DIRECTORY/logs"
+#delete all logfiles if user requested
+if [ $button == 2 ];then
+  rm -rf "$DIRECTORY/logs"
+  mkdir "$DIRECTORY/logs"
+  echo "Deleted everything inside of $DIRECTORY/logs"
 fi
+

@@ -9,15 +9,24 @@ function error {
   exit 1
 }
 
+#Only one instance of this script should run at a time. Exit now if another process other than this one is running
+proc="$(pgrep preload-daemon)"
+num_proc="$(echo "$proc" | wc -l)"
+if [ "$2" != 'once' ] && [ "$num_proc" -gt 1 ];then
+  echo "Preload-daemon is already running." 1>&2
+  exit 0
+else
+  echo "Running preload-daemon..." 1>&2
+fi
+
+#for refresh_all_pkgapp_status function, and to prevent preload script from sourcing api
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+#for mktimestamps function
+source "${DIRECTORY}/preload" "source"
 
 #variable 1 is yad or xlunch
 #variable 2 is 'once', if you only want this to run once and exit.
-
-if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ] && [ "$2" != 'once' ];then
-  #echo "Another instance of preload-daemon is already running. Exiting now."
-  exit 0
-fi
 
 #generate list of folders to preload, including special folders
 folders="$(read_category_files | awk -F '|' '{print $2}' | sort | uniq | grep .)
@@ -26,20 +35,63 @@ Packages
 All Apps"
 #echo "$folders"
 
-[[ "$1" != yad* ]] && [[ "$1" != xlunch* ]] && [ ! -z "$1" ] && error "Unrecognized list format $1"
+IFS=$'\n'
+
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "${text_color+x}" ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    text_color=$(echo "import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import Gdk
+win = Gtk.Window()
+vb = Gtk.VBox()
+tv = Gtk.TextView()
+vb.add(tv)
+win.show_all()
+style = tv.get_style_context()
+textcolor = style.get_color(Gtk.StateType.NORMAL)
+print(Gdk.RGBA.to_string(textcolor))
+" | python -)
+  else
+    text_color=""
+  fi
+fi
+export text_color
 
 #runs every 30 secs for 10 mins
 for i in {1..20};do
-  IFS=$'\n'
-  "${DIRECTORY}/preload" "$1" &>/dev/null
-  for folder in $folders ; do
-    echo "Preloading $folder..."
-    "${DIRECTORY}/preload" "$1" "$folder" &>/dev/null
-  done
   
   #hide package-apps that are unavailable in the repositories, and change their status accordingly
-  refresh_all_pkgapp_status
+  #only run this if the /var/lib/dpkg/status has been changed since last time
+  if [ "$(stat -c %Y /var/lib/dpkg/status 2>/dev/null)" != "$(cat "${DIRECTORY}/data/preload/timestamps-dpkg-status" 2>/dev/null)" ];then
+    echo "Refreshing pkgapp_status..." 1>&2
+    stat -c %Y /var/lib/dpkg/status 2>/dev/null > "${DIRECTORY}/data/preload/timestamps-dpkg-status"
+    refresh_all_pkgapp_status &
+  fi
   
-  [ "$2" == 'once' ] && exit 0
+  #get modified timestamps for files/directories in the pi-apps folder
+  timestamps="$(mktimestamps)"
+  
+  #determine the app list style (it may change)
+  guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
+  
+  #only re-preload everything if something in the pi-apps folder was changed
+  if [ "$timestamps" != "$pretimestamps" ];then
+    
+    "${DIRECTORY}/preload" "$guimode" &>/dev/null
+    for folder in $folders ; do
+      echo "Preloading $folder..." 1>&2
+      "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null
+    done
+    echo done 1>&2
+  else
+    echo "Preloading skipped; nothing was changed" 1>&2
+  fi
+  
+  [ "$2" == 'once' ] && exit 0 #if the $2 flag to this script is 'once', then it will only preload everything once.
   sleep 30
+  pretimestamps="$timestamps"
 done

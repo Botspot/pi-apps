@@ -28,20 +28,16 @@ if package_installed libobs-dev ;then
   sudo apt purge -y --autoremove libobs-dev
 fi
 
-#Install all debs. the obs-studio package will automatically install needed dependencies.
-install_packages http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_armhf.deb http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_armhf.deb https://apt.raspbian-addons.org/debian/pool/main/o/obs-studio/obs-studio_27.2.0-beta3-40-g3ce12bc5e_armhf.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0  libxcb-randr0 libxcb-shm0 libxcb-xfixes0 libxcb-xinerama0 libxcb1 libxcb-xinput-dev libxcb-damage0 libxcb-ewmh2 libxcb-xtest0 libxcb-composite0 libxdamage1 libx264-dev libxcomposite1 libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig "libxcb-util1 | libxcb-util0" || exit 1
+if [ "$(get_codename)" == "bullseye" ]; then
+    #install bullseye version
+    install_packages http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_armhf.deb http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_armhf.deb https://github.com/ryanfortner/ryanfortner/releases/download/1002/obs-studio_27.2.0-286-gac674e413-bullseye_armhf.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0  libxcb-randr0 libxcb-shm0 libxcb-xfixes0 libxcb-xinerama0 libxcb1 libxcb-xinput-dev libxcb-damage0 libxcb-ewmh2 libxcb-xtest0 libxcb-composite0 libxdamage1 libx264-dev libxcomposite1 libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig "libxcb-util1 | libxcb-util0" || exit 1
+else 
+    #install buster version
+    install_packages http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac2_2.0.1-1_armhf.deb http://ftp.debian.org/debian/pool/non-free/f/fdk-aac/libfdk-aac-dev_2.0.1-1_armhf.deb https://apt.raspbian-addons.org/debian/pool/main/o/obs-studio/obs-studio_27.2.0-beta3-40-g3ce12bc5e_armhf.deb libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev libvlc-dev libx11-dev libx11-xcb1 libx11-xcb-dev libxcb-xinput0  libxcb-randr0 libxcb-shm0 libxcb-xfixes0 libxcb-xinerama0 libxcb1 libxcb-xinput-dev libxcb-damage0 libxcb-ewmh2 libxcb-xtest0 libxcb-composite0 libxdamage1 libx264-dev libxcomposite1 libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig "libxcb-util1 | libxcb-util0" || exit 1
+fi
 
 #Create workaround wrapper script to override MESA_GL_VERSION
-[ ! -f /usr/bin/obs-exec ] && sudo mv /usr/bin/obs /usr/bin/obs-exec
+file -bL --mime /usr/bin/obs | grep -q "binary" && sudo mv /usr/bin/obs /usr/bin/obs-exec
 echo '#!/bin/bash
 MESA_GL_VERSION_OVERRIDE=3.3 /usr/bin/obs-exec "$@"' | sudo tee /usr/bin/obs >/dev/null
 sudo chmod +x /usr/bin/obs
-
-#temporary fix of `error while loading shared libraries: libxcb-util.so.0: cannot open shared object file: No such file or directory` (PR #1352)
-if ! package_installed libxcb-util0 ;then
-  libpath="$(dirname "$(dpkg -S libxcb-util.so.1 | grep "libxcb-util.so.1$" | awk '{print $2}')")" #Value on RPiOS Bullseye: /usr/lib/arm-linux-gnueabihf
-  if [ ! -e "${libpath}/libxcb-util.so.0" ] ;then
-    status "Fixing libxcb-util.so.0 library"
-    sudo ln -sf "${libpath}/libxcb-util.so.1" "${libpath}/libxcb-util.so.0"
-  fi
-fi

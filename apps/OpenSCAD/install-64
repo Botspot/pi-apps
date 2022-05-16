@@ -1,19 +1,42 @@
 #!/bin/bash
-wget 'https://github.com/koendv/openscad-raspberrypi/releases/download/v1.7/OpenSCAD-2021.09.13-aarch64.AppImage' -O ~/OpenSCAD.AppImage || error "Failed to download appimage!"
 
-chmod +x ~/OpenSCAD.AppImage || error "Failed to mark as executable!"
+wget 'https://github.com/koendv/openscad-raspberrypi/releases/download/v1.7/OpenSCAD-2021.09.13-aarch64.AppImage' -O /tmp/OpenSCAD.AppImage || error "Failed to download appimage!"
+sudo mv /tmp/OpenSCAD.AppImage /opt/OpenSCAD.AppImage
+sudo chmod +x /opt/OpenSCAD.AppImage || error "Failed to mark as executable!"
 
 enable_module fuse || exit 1
 
+status -n "Creating .scad mimetype... "
+echo '<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+   <mime-type type="application/x-openscad">
+     <comment>OpenSCAD Project</comment>
+     <glob pattern="*.scad"/>
+     <generic-icon name="openscad"/>
+   </mime-type>
+</mime-info>' | sudo tee /usr/share/mime/packages/openscad.xml >/dev/null
+sudo update-mime-database /usr/share/mime
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/share/icons/openscad.png
+sudo update-icon-caches /usr/share/icons/*
+status_green Done
+
+if ! grep -qF 'OpenSCAD.desktop' ~/.config/mimeapps.list ;then
+  status -n "Associating the .scad mimetype with OpenSCAD... "
+  echo "[Added Associations]
+application/x-openscad=OpenSCAD.desktop;" >> ~/.config/mimeapps.list
+  status_green Done
+fi
+
+status -n "Creating menu button... "
 echo "[Desktop Entry]
 Name=OpenSCAD
-GenericName=The Programmers Solid 3D CAD Modeller
-Comment=OpenSCAD is a software for creating 3D CAD objects.
-Exec=$HOME/OpenSCAD.AppImage
+Comment=The Programmer's Solid 3D CAD Modeler
+Exec=/opt/OpenSCAD.AppImage %f
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application
 MimeType=application/x-openscad;
 Categories=Graphics;3DGraphics;Engineering;
 Keywords=3d;solid;geometry;csg;model;stl;
-StartupNotify=true" > ~/.local/share/applications/OpenSCAD.desktop || error "Failed to create menu button!"
+StartupNotify=true" | sudo tee /usr/share/applications/OpenSCAD.desktop >/dev/null || error "Failed to create menu button!"

@@ -39,21 +39,21 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789')"
-  if [ -z "$version_id" ] || [ "$version_id" -lt 11 ];then
-    echo -e "\e[40m\e[97m    ${green}▅${darkgreen}▅▅▅▅${green}▅\e[40m\e[97m
- ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂\e[40m\e[97m
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀▆ ▄
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄\e[97m ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
- ${blue}\e[7m▂\e[27m\e[107m▃▃▃▃▃▃▃▃▃▃\e[40m\e[7m▂\e[27m\e[40m\e[40m\e[97m                  █    █
-\e[0m\e[0m"
-  else
+  if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
  ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
  \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
  ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
+\e[0m\e[0m"
+  else
+    echo -e "\e[40m\e[97m    ${green}▅${darkgreen}▅▅▅▅${green}▅\e[40m\e[97m
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂\e[40m\e[97m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀▆ ▄
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄\e[97m ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
+ \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
+ ${blue}\e[7m▂\e[27m\e[107m▃▃▃▃▃▃▃▃▃▃\e[40m\e[7m▂\e[27m\e[40m\e[40m\e[97m                  █    █
 \e[0m\e[0m"
   fi
 }
@@ -143,7 +143,7 @@ package_dependencies() { #outputs the list of dependencies for the $1 package
   package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
 }
 
-package_latest_version() { #returns the latest availabl versions of the specified package-name. Doesn't matter if it's installed or not.
+package_latest_version() { #returns the latest available versions of the specified package-name. Doesn't matter if it's installed or not.
   local package="$1"
   [ -z "$package" ] && error "package_version(): no package specified!"
   
@@ -183,7 +183,7 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
   #find all package-lists pertaining to the url
   local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
   
-  #for every repo-file, chack if any of them have an installed file
+  #for every repo-file, check if any of them have an installed file
   local found=0
   local IFS=$'\n'
   local repofile
@@ -250,7 +250,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   (sleep 3; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
   
-  #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
+  #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
@@ -586,7 +586,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     status "The $package_name package is not installed so there's nothing to do."
   fi
   
-  status_green "All packages have been purged succesfully."
+  status_green "All packages have been purged successfully."
   rm -f "${DIRECTORY}/data/installed-packages/${app}"
 }
 
@@ -784,11 +784,11 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   
   #show special "Packages" category
   if [ "$show_apps_setting" != standard ];then
-    list_apps package | list_intersect "$(list_apps visible)" | sed 's+^+Packages/+g'
+    list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
   fi
   
   #show special "All Apps" category
-  list_apps cpu_installable | list_intersect "$(list_apps visible)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
 }
 
 bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
@@ -812,7 +812,7 @@ bitly_link() { #Runs whenever an app is installed/uninstalled to tally the numbe
 usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
   #If clicklist file missing or over a day old, download it.
   if [ ! -f "${DIRECTORY}/data/clicklist" ] || [ ! -z "$(find "${DIRECTORY}/data/clicklist" -mtime +1 -print)" ]; then
-    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" || return 1
+    wget 'https://raw.githubusercontent.com/Botspot/pi-apps-analytics/main/clicklist' -qO "${DIRECTORY}/data/clicklist" >/dev/null || return 1
   fi
   clicklist="$(cat "${DIRECTORY}/data/clicklist")"
   
@@ -879,14 +879,8 @@ app_status() { #Gets the $1 app's current status. installed, uninstalled, corrup
   [ -z "$1" ] && error 'app_status(): requires an argument.'
   #don't check if app exists, it may be a new app in an update
   
-  if [ "$(app_type "$1")" == standard ] && [ -f "${DIRECTORY}/data/status/${1}" ];then
+  if [ -f "${DIRECTORY}/data/status/${1}" ];then
     cat "${DIRECTORY}/data/status/${1}"
-  elif [ "$(app_type "$1")" == package ];then
-    if package_installed "$(cat "${DIRECTORY}/apps/$1/packages" | awk '{print $1}')" ;then
-      echo 'installed'
-    else
-      echo 'uninstalled'
-    fi
   else
     echo 'uninstalled' #if app status file doesn't exist, assume uninstalled
   fi
@@ -939,10 +933,10 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   #search description and website
   local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g')"
   #hide incompatible and hidden/disabled apps
-  results="$(echo "$results" | list_intersect "$(list_apps visible)" | list_intersect "$(list_apps cpu_installable)" | sort)"
+  results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
   #search app names
-  results="$(list_apps cpu_installable | list_intersect "$(list_apps visible)" | grep -i "$query" | sort)
+  results="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | grep -i "$query" | sort)
 $results"
   
   #remove duplicate entries
@@ -950,7 +944,7 @@ $results"
   
 }
 
-app_search_gui() {
+app_search_gui() { #graphical interface to search for apps
   local output=''
   output="$(yad "${yadflags[@]}" --title=Search --width=310 \
     --text="Search for apps."$'\n'"Not case-sensitive." \
@@ -974,7 +968,11 @@ app_search_gui() {
   
   results="$(app_search "$query" "$search_files")"
   
-  if [ ! -z "$results" ];then
+  if [ "$(echo "$results" | wc -l)" == 1 ];then
+    #if only one result, don't ask user to select it
+    echo "$results"
+    
+  elif [ ! -z "$results" ];then
     
     IFS=$'\n'
     LIST=''
@@ -989,11 +987,6 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
       --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3)" || exit 0
-    
-    #if only one app is listed, user should not have to select it.
-    if [ "$(echo "$results" | wc -l)" == 1 ] && [ -z "$app" ];then
-      app="$results"
-    fi
     
     echo "$app"
   else
@@ -1044,6 +1037,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   if package_installed "$package" ;then
     #mark this app as installed
     if [ "$(app_status "$app")" != 'installed' ];then
+      echo "Marking $app as installed"
       echo 'installed' > "${DIRECTORY}/data/status/${app}"
       bitly_link "$app" install &
     fi
@@ -1051,11 +1045,13 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   elif package_available "$package" ;then
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
     if [ "$(app_status "$app")" != 'uninstalled' ];then
-      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+      echo "Marking $app as uninstalled"
+      rm -f "${DIRECTORY}/data/status/${app}"
       bitly_link "$app" uninstall &
     fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
+    echo "Marking $app as hidden"
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   fi
 }
@@ -1247,8 +1243,15 @@ sudo mkdir -p /var/lib/dpkg/updates")
   if grep -q "E: Repository .* changed its 'Suite' value" <<<"$errors" ;then
     error_caption+=("One or more APT repositories on your system have changed Suite values. Usually this occurs when a new version of Debian is released every two years.
 
-Pi-Apps ought to work around this error, but somehow it did not.
+Pi-Apps should work around this error, but somehow it did not.
 Please run this command in a terminal: sudo apt update --allow-releaseinfo-change")
+    error_type="system"
+  fi
+  
+  if grep -q "E: Failed to fetch .* File has unexpected size .* Mirror sync in progress\?" <<<"$errors" ;then
+    error_caption+=("APT encountered a repository with a file that is of incorrect size. This can be caused by a periodic mirror sync, or maybe the repository is faulty.
+
+In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3rd-party APT repos first, and if that doesn't work then ask for help.")
     error_type="system"
   fi
   
@@ -1453,19 +1456,19 @@ Check your internet connection and try again.")
   fi
   
   if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
-    error_caption+=("The git commend encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
-  if grep -qF "The TLS connection was non-properly terminated." <<<"$errors" ;then
-    error_caption+=("Your system seems to be having Internet trouble.
+  if grep -q "The TLS connection was non-properly terminated\.\|Can't load uri .* Unacceptable TLS certificate" <<<"$errors" ;then
+    error_caption+=("Your system seems to be having trouble with TLS connections.
 
 Check your internet connection and try again.")
     error_type="internet"
@@ -1482,7 +1485,7 @@ See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
   fi
   
   if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
-    error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
+    error_caption+=("This error occurred: Failed to load module \"appmenu-gtk-module\"
 
 Try installing two packages with this command:
 sudo apt install appmenu-gtk2-module appmenu-gtk3-module
@@ -1541,14 +1544,14 @@ For solutions, see: https://askubuntu.com/a/59517")
   fi
   
   if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
-    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occurring.")
     error_type="system"
   fi
   
   if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
-If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
     error_type="system"
   fi
   
@@ -1619,6 +1622,15 @@ See: https://raspberrypi.stackexchange.com/a/8423/107602")
     error_type="system"
   fi
   
+  if grep -q "Error: Failed to read commit .* No such metadata object\|error: Failed to install org.freedesktop.Platform: Failed to read commit .* No such metadata object\|Error: Error deploying: .* No such metadata object" <<<"$errors" ;then
+    error_caption+=("Flatpak failed to install something due to a past incompleted download.
+
+To repair it, please run this command in a terminal: flatpak repair --user
+
+If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/3479")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
@@ -1658,34 +1670,13 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   #-F "syntaxes[]=text"
   
   
-  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXkxhc3QgdXBkYXRlZCBQaS1BcHBzIG9uOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
-  
-}
-
-send_error_report_gui() { #Ask user for permission to send error report
-  [ -z "$1" ] && error "send_error_report_gui(): requires an argument for error report file!"
-  [ ! -f "$1" ] && error "send_error_report_gui(): Given error report file ($1) does not exist!"
-  [ -z "$2" ] && error "send_error_report_gui(): requires an argument for window text!"
-  
-  command -v curl >/dev/null || error "send_error_report_gui(): curl is not installed!"
-  
-  yad "${yadflags[@]}" --title="Send error report?" \
-    --text="$2"$'\n'"Send anonymous error report to Pi-Apps developers?"$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>." --on-top \
-    --button='Send report'!"${DIRECTORY}/icons/upload.png":0 \
-    --button='View report'!"${DIRECTORY}/icons/log-file.png"!"View the log file to be sent.":"bash -c 'view_file "\""$1"\""'" \
-    --button="Don't send"!"${DIRECTORY}/icons/exit.png":1
-  local button=$?
-  #echo "Button: $button"
-  
-  if [ "$button" == 0 ];then
-    send_error_report "$1"
-  fi
   
 }
 #end of logfile functions
 
-#miscelaneous low-level functions below
+#miscellaneous low-level functions below
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
@@ -1787,8 +1778,9 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
-  [ ! -z "$DIRECTORY" ] && echo "Pi-Apps local commit ID: $(cd "$DIRECTORY"; git rev-parse HEAD)"
-  [ -s "$DIRECTORY"/etc/git_url ] && echo "Github latest commit ID: $(git ls-remote  $(cat "$DIRECTORY"/etc/git_url) HEAD | sed s/HEAD//g)"
+  #### IMPORTANT: for anyone wishing to change the wording following this, you MUST also change the send_error_report function
+  [ ! -z "$DIRECTORY" ] && echo "Last updated Pi-Apps on: $(cd "$DIRECTORY"; git show -s --format="%ad" --date=short | xargs date +%x -d)"
+  [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
@@ -1817,6 +1809,7 @@ get_device_info() { #returns information about current install and hardware
   model=${model//All Series}
   model=${model//�}
   echo "Device model: $model"
+  echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
@@ -1832,12 +1825,68 @@ get_device_info() { #returns information about current install and hardware
 }
 
 get_codename() { #get debian/ubuntu codename
+  if ! command -v lsb_release &>/dev/null; then
+    apt_update && sudo apt-get install -y lsb-release
+  fi
+  
   # check if upstream-release is available
   if [ -f /etc/upstream-release/lsb-release ]; then
     # this is a derivative, get the upstream release info
     lsb_release -suc
-  else
+else
     lsb_release -sc
+  fi
+}
+
+multi_install_gui() { #graphical interface to install multiple apps from a list.
+  
+  #get list of apps - hide hidden apps and hide installed apps
+  local apps="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | list_subtract "$(list_apps installed)")"
+  
+  local IFS=$'\n'
+  local app
+  
+  apps="$(for app in $apps ;do
+    echo "FALSE
+${DIRECTORY}/apps/$app/icon-24.png
+$app
+$(head -n1 "${DIRECTORY}/apps/$app/description")"
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+    --width=300 --height=500 \
+    --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
+    --text="Install everything you want!"$'\n'"Note: apps that are already installed are not shown." \
+    --column=:chk --column=:img --column=name --column=:tip \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 --button='Install selected'!"${DIRECTORY}/icons/install.png":0)"
+  
+  if [ $? == 0 ] && [ ! -z "$apps" ];then
+    #remove empty lines from yad's output
+    apps="$(grep . <<<"$apps")"
+    echo "Will install these apps:"$'\n'"$apps"
+    
+    #set the terminal title text
+    title="Installing $(wc -l <<<"$apps") apps"
+    
+    #in a terminal, first get the api functions, display the pi-apps logo, run the manage script, and refresh the app list if the $pipe variable is set
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      source "${DIRECTORY}/api"
+      generate_logo
+      
+      "${DIRECTORY}/manage" multi-install "'"$apps"'"
+      exitcode=$?
+      
+      if [ $exitcode == 0 ];then
+        echo
+        #display countdown
+        for i in {30..1} ;do
+          echo -en "You can close this window now. Auto-closing in $i seconds.\e[0K\r"
+          sleep 1
+        done
+      else
+        echo -e "\nClose this window to exit."
+        read enter #technically you could press Enter to exit.
+      fi' "$title"
+    
   fi
 }
 
@@ -1845,6 +1894,26 @@ get_codename() { #get debian/ubuntu codename
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
   local module="$1"
   [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
+  
+  #This function is used most often to load the "fuse" module.
+  # Fuse is used for AppImages.
+  #   AppImages need libfuse2 to be installed.
+  #    Install libs necessary to run AppImages.
+  if [ "$module" == 'fuse' ];then
+    if package_installed libfuse2 || package_installed libfuse3-3 ;then
+      true #nothing to do
+    else
+      #install fuse
+      apt_update
+      if package_available fuse3 ;then
+        apt_lock_wait
+        sudo apt install -y fuse3
+      elif package_available fuse ;then
+        apt_lock_wait
+        sudo apt install -y fuse
+      fi
+    fi
+  fi
   
   #load the module now if not already loaded
   if ! lsmod | awk '{print $1}' | grep -qxF "$module" ;then
@@ -2066,6 +2135,14 @@ if [ "$guimode" == yad-dark ];then
   export GTK_THEME=Adwaita-dark
 elif [ "$guimode" == yad-light ];then
   export GTK_THEME=PiXflat
+elif [ "$guimode" == yad-default ];then
+  export GTK_THEME=''
+elif [ "$guimode" == xlunch-light-3d ];then
+  export GTK_THEME=''
+elif [ "$guimode" == xlunch-dark-3d ];then
+  export GTK_THEME=Adwaita-dark
+elif [ "$guimode" == xlunch-dark ];then
+  export GTK_THEME=Adwaita-dark
 fi
 
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
@@ -2079,6 +2156,9 @@ elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
+
+#Make dual-pane yad windows work correctly on wayland
+export GDK_BACKEND=x11
 
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then

@@ -1,0 +1,69 @@
+#!/bin/bash
+
+function check-armhf() {
+	ARMHF="$(dpkg --print-foreign-architectures | grep "armhf")"
+}
+
+
+#add armhf architecture (multiarch)
+check-armhf
+if [[ "$ARMHF" == *"armhf"* ]]; then
+  echo "armhf arcitecture already added..."
+else
+  sudo dpkg --add-architecture armhf
+  check-armhf
+  if [[ "$ARMHF" != *"armhf"* ]]; then
+    error "armhf architecture should be added by now, but it isn't!"
+  fi
+fi
+
+if dpkg -l box86 &>/dev/null ;then
+  sudo apt purge -y box86
+fi
+
+#install box86 dependencies
+if [[ "$(get_codename)" == "focal" ]]; then
+  install_packages libraspberrypi0:armhf libssh-gcrypt-4:armhf libgssapi-krb5-2:armhf libkrb5-3:armhf libssl1.1:armhf libcups2:armhf libsdl1.2debian:armhf libopusfile0:armhf libc6:armhf libx11-6:armhf libgdk-pixbuf2.0-0:armhf libgtk2.0-0:armhf libstdc++6:armhf libsdl2-2.0-0:armhf mesa-va-drivers:armhf libsdl1.2-dev:armhf libsdl-mixer1.2:armhf libpng16-16:armhf libcal3d12v5:armhf libsdl2-net-2.0-0:armhf libopenal1:armhf libsdl2-image-2.0-0:armhf libvorbis-dev:armhf libcurl4:armhf osspd:armhf pulseaudio libjpeg62:armhf libudev1:armhf libgl1-mesa-dev:armhf libsnappy1v5:armhf libx11-dev:armhf libsmpeg0:armhf libboost-filesystem1.67.0:armhf libboost-program-options1.67.0:armhf libavcodec58:armhf libavformat58:armhf libswscale5:armhf libmyguiengine3debian1v5:armhf libboost-iostreams1.67.0:armhf libsdl2-mixer-2.0-0:armhf || exit 1
+elif [[ "$(get_codename)" == "bullseye" || "$(get_codename)" == "hirsute" || "$(get_codename)" == "impish" || "$(get_codename)" == "jammy" ]]; then
+  install_packages libraspberrypi0:armhf libssh-gcrypt-4:armhf libgssapi-krb5-2:armhf libkrb5-3:armhf libssl1.1:armhf libcups2:armhf libsdl1.2debian:armhf libopusfile0:armhf libc6:armhf libx11-6:armhf libgdk-pixbuf2.0-0:armhf libgtk2.0-0:armhf libstdc++6:armhf libsdl2-2.0-0:armhf mesa-va-drivers:armhf libsdl1.2-dev:armhf libsdl-mixer1.2:armhf libpng16-16:armhf libcal3d12v5:armhf libsdl2-net-2.0-0:armhf libopenal1:armhf libsdl2-image-2.0-0:armhf libvorbis-dev:armhf libcurl4:armhf osspd:armhf pulseaudio libjpeg62:armhf libudev1:armhf libgl1-mesa-dev:armhf libsnappy1v5:armhf libx11-dev:armhf libsmpeg0:armhf libboost-filesystem1.74.0:armhf libboost-program-options1.74.0:armhf libavcodec58:armhf libavformat58:armhf libswscale5:armhf libmyguiengine3debian1v5:armhf libboost-iostreams1.74.0:armhf libsdl2-mixer-2.0-0:armhf || exit 1
+elif [[ "$(get_codename)" == "buster" ]]; then
+  error "User error: Box86 cannot be installed on Raspberry Pi OS Buster 64-bit due to lack of official support. Consider upgrading your system to Raspberry Pi OS Bullseye or use the 32-bit version to install Box86."
+else
+  error "This script can't run on your OS! It HAS to be Raspbian/Debian Bullseye or Ubuntu 20.04, 21.04, 21.10 or 22.04"
+fi
+
+sudo rm /etc/apt/sources.list.d/box86.list &>/dev/null
+echo "Adding box86 repo..."
+wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -qO- | sed -r 's/deb /deb [arch=armhf] /' | sudo tee /etc/apt/sources.list.d/box86.list >/dev/null|| error "Failed to download /etc/apt/sources.list.d/box86.list"
+echo "Adding key..."
+wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
+echo "Installing box86..."
+sudo dpkg --remove box86-no-binfmt-restart 2>/dev/null
+install_packages box86:armhf || exit 1
+
+if ! sudo systemctl restart systemd-binfmt ;then
+  echo -e "\nWarning: systemd-binfmt failed to restart. Getting debug info..."
+  echo "Running command: 'systemctl status systemd-binfmt.service'"
+  systemctl status systemd-binfmt.service
+  echo "Still exiting with success, but you will have to manually run all x86 applications with box86 as binfmt isn't there to do it for you."
+fi
+
+# adding some debug output to the end of the script
+echo "dpkg --print-foreign-architectures:"
+dpkg --print-foreign-architectures
+echo "zcat /proc/config.gz | grep CONFIG_COMPAT="
+zcat /proc/config.gz | grep CONFIG_COMPAT=
+echo "dpkg -l libc6:armhf"
+dpkg -l libc6:armhf
+echo "/lib/arm-linux-gnueabihf/ld-*.so"
+/lib/arm-linux-gnueabihf/ld-*.so
+echo "apt list box86 -a"
+apt list box86 -a
+echo "apt list box86-no-binfmt-restart -a"
+apt list box86-no-binfmt-restart -a
+echo "apt-cache show pi-apps-5f3374a7"
+apt-cache show pi-apps-5f3374a7
+echo "file /usr/local/bin/box86"
+file /usr/local/bin/box86
+echo "/usr/local/bin/box86 --version"
+/usr/local/bin/box86 --version
