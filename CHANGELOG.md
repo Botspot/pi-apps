@@ -1,5 +1,5 @@
 **NOTE**: This changelog mainly covers major events in Pi-Apps like new apps being added. If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
-Last updated: November 11, 2021 by RPiNews
+Last updated: May 16, 2022 by [@ryanfortner](https://github.com/ryanfortner)
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 
@@ -153,5 +153,5 @@ Added pi-apps terminal command (you can now run pi-apps with `pi-apps`).
 - **10/26/2021** Added Temps app and individual icons for all categories
 - **10/28/2021** Added Deskreen app
 - **10/6/2021** Added Alacritty Terminal app
-
+- **5/16/2022** Major GUI updates and script modifications made. https://github.com/Botspot/pi-apps/pull/1580 https://github.com/Botspot/pi-apps/issues/1578
 
