@@ -245,11 +245,11 @@ if [ ! -z "$3" ];then
     case $button in
     4)
       #install
-      terminal_manage install "$app"
+      terminal_manage install "$app" &
       ;;
     2)
       #uninstall
-      terminal_manage uninstall "$app"
+      terminal_manage uninstall "$app" &
       ;;
     6)
       #scripts
@@ -732,7 +732,7 @@ elif [[ "$guimode" == xlunch* ]];then
       #in subprocess, open details window for app
       geometry2="--center --height=$((height/2)) --width=$width" pipe='' "${DIRECTORY}/gui" '' '' "$line" "$line"
       
-      #back to main level
+      #show app list again
       "${DIRECTORY}/preload" xlunch "$(dirname "$line" | sed 's/^.$//g')" > $pipe
     fi
   done
