@@ -26,7 +26,7 @@ if [[ "$release" != "bionic" ]]; then
   echo "Preventing Ubuntu repository from causing apt problems..."
   echo "Package: *
 Pin: release a=bionic-updates
-Pin-Priority: 1" | sudo tee /etc/apt/preferences.d/99bionic-updates
+Pin-Priority: 1" | sudo tee /etc/apt/preferences.d/99bionic-updates >/dev/null
   if [ $? != 0 ];then
     sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
     error "wget failed to download 99bionic-updates config file!"
