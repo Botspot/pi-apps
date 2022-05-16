@@ -1152,6 +1152,17 @@ Review the errors to see how long you need to wait.")
     error_type="system"
   fi
   
+  #check for "Release file for <repo-url> is expired"
+  if grep -q "Release file for .* is expired" <<<"$errors" ;then
+    error_caption+=("APT reported a repository whose release file was invalidated in the past.
+Please check that your system clock is set correctly, and if it is, check if the repository is kept updated or if its developers abandoned it.
+
+If you think think you shouldn't see this error, you can try refreshing APT with these commands:
+sudo rm -rf /var/lib/apt
+sudo apt update")
+    error_type="system"
+  fi
+  
   #check for typo in sources.list and list.d
   if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
     error_caption+=("APT reported a typo in the sources.list file.
@@ -1252,6 +1263,47 @@ Please run this command in a terminal: sudo apt update --allow-releaseinfo-chang
     error_caption+=("APT encountered a repository with a file that is of incorrect size. This can be caused by a periodic mirror sync, or maybe the repository is faulty.
 
 In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3rd-party APT repos first, and if that doesn't work then ask for help.")
+    error_type="system"
+  fi
+  
+  #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
+  if [ -f /etc/rpi-issue ] && [ ! -f /etc/apt/sources.list.d/raspi.list ] ;then
+    error_caption+=("Packages failed to install because you seem to have deleted an important repository file in /etc/apt/sources.list.d
+
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing, but you may have deleted other files as well.
+The raspi.list file should contain this:
+
+deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main")
+    error_type="system"
+  fi
+  
+  #if /etc/apt/sources.list missing, display error message
+  if [ ! -f /etc/apt/sources.list ] ;then
+    if [ -f /etc/rpi-issue ] && [ "$arch" == 32 ];then
+       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+You appear to be using Raspberry Pi OS 32-bit, so the sources.list file should contain this:
+deb http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+deb-src http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi")
+    elif [ -f /etc/rpi-issue ] && [ "$arch" == 64 ];then
+       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+You appear to be using Raspberry Pi OS 64-bit, so the sources.list file should contain this:
+deb http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
+deb http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
+deb http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free
+# Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
+#deb-src http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
+#deb-src http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free")
+    else
+      error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+The contents of this file will vary based on your operating system. You are not using Raspberry Pi OS, so you will have to find what to put in there yourself.")
+    fi
     error_type="system"
   fi
   
