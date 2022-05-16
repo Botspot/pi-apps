@@ -24,7 +24,9 @@ if [[ "$release" != "bionic" ]]; then
 
   # Add preferences so the ubuntu repositories don't become your "default" repositories
   echo "Preventing Ubuntu repository from causing apt problems..."
-  sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/ryanfortner/pi-bashscripts-files/main/Files/99bionic-updates
+  echo "Package: *
+Pin: release a=bionic-updates
+Pin-Priority: 1" | sudo tee /etc/apt/preferences.d/99bionic-updates
   if [ $? != 0 ];then
     sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
     error "wget failed to download 99bionic-updates config file!"
