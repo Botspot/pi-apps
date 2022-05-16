@@ -242,7 +242,7 @@ $prefix/$app
     
     #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
     if [ ! -z "$prefix" ];then
-      echo "Back;${DIRECTORY}/icons/back-64.png;:exec echo /" | tee "$listfile"
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile"
     else
       echo -n '' > "$listfile"
     fi
@@ -256,16 +256,16 @@ $prefix/$app
         diricon="${DIRECTORY}/icons/categories/default-64.png"
       fi
       
-      echo "${dir};${diricon};:exec echo '${prefix}${dir}/'"
+      echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
     done | tee -a "$listfile"
     
     for app in $APPS
     do
       if [ -f "${DIRECTORY}/data/status/${app}" ];then
-        echo "${app} ($(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo $prefix/${app}"\"""
+        echo "${app} ($(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       else
         #status file missing - app has never been installed
-        echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo $prefix/${app}"\"""
+        echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       fi
     done | tee -a "$listfile"
     
