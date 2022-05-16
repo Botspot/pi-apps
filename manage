@@ -508,7 +508,7 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
   failed_apps=''
-  for app in $app_list ;do
+  echo "$app_list" | while read app;do
     
     "${DIRECTORY}/manage" $action "$app"
     if [ $? != 0 ];then
