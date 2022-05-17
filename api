@@ -38,7 +38,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   red='\e[38;5;197m'
   
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
-  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789')"
+  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
  ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
