@@ -358,10 +358,15 @@ runonce <<"EOF"
     echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
   fi
   
+  #remove deprecated apps
   rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
   rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
   rm -rf "${DIRECTORY}/apps/Cordless"
   rm -rf "${DIRECTORY}/apps/Retropie"
+  rm -rf "${DIRECTORY}/apps/Raspi2png"
+  rm -rf "${DIRECTORY}/apps/Falkon"
+  rm -rf "${DIRECTORY}/apps/FreeCAD"
+  rm -rf "${DIRECTORY}/apps/LinuxCNC"
   
   #remove TBOPlayer if it's not already successfully installed
   if [ "$(app_status TBOPlayer)" != 'installed' ];then
