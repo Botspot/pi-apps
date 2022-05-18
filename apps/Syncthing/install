@@ -1,0 +1,16 @@
+#!/bin/bash
+
+filepath_32="https://apt.syncthing.net/dists/syncthing/stable/binary-armhf/syncthing_1.20.1_armhf.deb"
+filepath_64="https://apt.syncthing.net/dists/syncthing/stable/binary-arm64/syncthing_1.20.1_arm64.deb"
+
+case "$arch" in
+  "64")
+    install_packages "${filepath_64}" || error "Failed to install syncthing"
+    ;;
+  "32")
+    install_packages "${filepath_32}" || error "Failed to install syncthing"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    ;;
+esac

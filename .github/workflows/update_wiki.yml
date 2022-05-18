@@ -6,6 +6,8 @@ name: Update_Wiki_Scripts
 on:
   # triggers the action when megascript_apps.txt file is updated
   push:
+    branches:
+      - master
     paths:
       - 'etc/categories'
       - 'apps/**/description'

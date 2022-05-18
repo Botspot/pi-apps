@@ -1,0 +1,3 @@
+#!/bin/bash
+
+install_packages "https://cdn.tracktion.com/file/tracktiondownload/waveform/1157/waveform_pi_64bit_v11.5.7.deb" || exit 1

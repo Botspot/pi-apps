@@ -1,37 +1,48 @@
 #!/bin/bash
-"${DIRECTORY}/api" apt_lock_wait
 
-# Remove old MCPILs
-sudo apt-get remove -y mcpil-r mcpil &>/dev/null || true
+# Version
+version=216/artifact/out/minecraft-pi-reborn-client-2.3.10
 
-# Install the repos
-wget -qO- https://raw.githubusercontent.com/MCPI-Revival/mcpi-packages/master/install.sh | grep -v 'sudo apt update' | sudo bash - || error "Failed to install APT repo!"
+# Install
+if [ "${arch}" = "64" ]; then
+    url_arch=arm64
+else
+    url_arch=armhf
+fi
+url="https://jenkins.thebrokenrail.com/job/minecraft-pi-reborn/job/master/${version}-${url_arch}.AppImage"
 
+# Cleanup Old Script Versions
+sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
+if package_installed gmcpil ;then
+  apt_lock_wait
+  sudo apt-get remove -y gmcpil
+fi
+if package_installed jmcpil ;then
+  apt_lock_wait
+  sudo apt-get remove -y jmcpil
+fi
+if package_installed minecraft-pi-reborn-client ;then
+  apt_lock_wait
+  sudo apt-get remove -y minecraft-pi-reborn-client
+fi
 
+# Download file
+mkdir -p ~/.local/bin || error "Could not make directory"
+wget -O ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage "${url}" || error 'Failed to download AppImage'
+chmod +x ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage
 
-# Choose MCPIL to use
-PS3="Which launcher for MCPI Modded would you like to use? Need help deciding? Ask here: https://discord.com/invite/aDqejQGMMy
-"
-options=("gMCPIL (recommended, unmaintained)" "jMCPIL (better GUI, unmaintained)" "Planet (Unofficial, but maintained)" "Quit")
-select opt in "${options[@]}"
-do
-  case $opt in
-    "${options[0]}")
-        MCPIL="gmcpil"
-        break;;
-    "${options[1]}")
-        MCPIL="jmcpil"
-        break;;
-    "${options[2]}")
-        MCPIL="planet-launcher"
-        curl -s --compressed "https://mcpiscript.github.io/PPA/KEY.gpg" | sudo apt-key add -
-        sudo curl -s --compressed -o /etc/apt/sources.list.d/mcpiscript.list "https://mcpiscript.github.io/PPA/mcpiscript.list"
-        sudo apt update
-        break;;
-    "${options[3]}")
-        exit 0;;
-    *) echo "Invalid option: $REPLY";;
-  esac
-done
-install_packages $MCPIL python3-pip python3-dev || error "Failed to install dependencies"
-pip3 install mcpi || error "The pip3 command failed to install mcpi!"
+enable_module fuse || exit 1
+
+# Make Desktop file
+mkdir -p ~/.local/share/applications || error "Could not make directory"
+echo "[Desktop Entry]
+Name=Minecraft Pi (Modded)
+Comment=Fun with Blocks
+Icon=$(dirname "$0")/icon-64.png
+StartupNotify=false
+StartupWMClass=Minecraft: Pi Edition: Reborn
+Exec=${HOME}/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage
+Terminal=false
+Type=Application
+Categories=Game;" > ~/.local/share/applications/com.thebrokenrail.MCPIRebornClient.desktop

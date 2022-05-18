@@ -1,10 +1,8 @@
 #!/bin/bash
 
-version=3.2.0
+version=3.2.3
 
 install_packages https://github.com/Jai-JAP/hyper-arm-builds/releases/download/v${version}/hyper_${version}_arm64.deb || exit 1
 
-if [[ "$(sudo cat /usr/share/applications/hyper.desktop)" =~ "Categories=TerminalEmulator;" ]]; then
-status "Fixing Hyper's Menu entry..."
-sudo sed -i /usr/share/applications/hyper.desktop 's/Categories=TerminalEmulator;/Categories=Utility;/' | sudo tee /usr/share/applications/hyper.desktop &>/dev/null || error "Failed to fix desktop file!"
-fi
+status "Moving Menu entry to Accessories..."
+sudo sed -i 's/Categories=TerminalEmulator;/Categories=Utility;/' /usr/share/applications/hyper.desktop || error "Failed to fix desktop file!"

@@ -7,6 +7,10 @@ install_packages build-essential git cmake libssl-dev libudev-dev qtbase5-dev qt
 package_available qt5-default
 if [[ $? == "0" ]]; then
   install_packages qt5-default || error "Failed to install dependencies"
+else
+  # attempt to fix common error where users libqt5core5a package did not install properly
+  # this should not be necessary, but /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf is missing on multiple users installs and is part of this package
+  sudo apt install --reinstall libqt5core5a -y
 fi
 
 # print debug output to terminal

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-install_packages https://github.com/Itai-Nelken/Etcher-arm-32-64/releases/download/v1.7.8/balena-etcher-electron_1.7.8+549d744d_arm64.deb || exit 1
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/balena-etcher-electron_1.7.9%2B5945ab1f~seccompfix_arm64.deb || exit 1
 

@@ -38,7 +38,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   red='\e[38;5;197m'
   
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
-  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789')"
+  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
  ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
@@ -183,7 +183,7 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
   #find all package-lists pertaining to the url
   local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
   
-  #for every repo-file, chack if any of them have an installed file
+  #for every repo-file, check if any of them have an installed file
   local found=0
   local IFS=$'\n'
   local repofile
@@ -250,7 +250,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   (sleep 3; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
   
-  #Try to install a non-existant package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
+  #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
@@ -586,7 +586,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     status "The $package_name package is not installed so there's nothing to do."
   fi
   
-  status_green "All packages have been purged succesfully."
+  status_green "All packages have been purged successfully."
   rm -f "${DIRECTORY}/data/installed-packages/${app}"
 }
 
@@ -1152,6 +1152,17 @@ Review the errors to see how long you need to wait.")
     error_type="system"
   fi
   
+  #check for "Release file for <repo-url> is expired"
+  if grep -q "Release file for .* is expired" <<<"$errors" ;then
+    error_caption+=("APT reported a repository whose release file was invalidated in the past.
+Please check that your system clock is set correctly, and if it is, check if the repository is kept updated or if its developers abandoned it.
+
+If you think think you shouldn't see this error, you can try refreshing APT with these commands:
+sudo rm -rf /var/lib/apt
+sudo apt update")
+    error_type="system"
+  fi
+  
   #check for typo in sources.list and list.d
   if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
     error_caption+=("APT reported a typo in the sources.list file.
@@ -1252,6 +1263,47 @@ Please run this command in a terminal: sudo apt update --allow-releaseinfo-chang
     error_caption+=("APT encountered a repository with a file that is of incorrect size. This can be caused by a periodic mirror sync, or maybe the repository is faulty.
 
 In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3rd-party APT repos first, and if that doesn't work then ask for help.")
+    error_type="system"
+  fi
+  
+  #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
+  if [ -f /etc/rpi-issue ] && [ ! -f /etc/apt/sources.list.d/raspi.list ] ;then
+    error_caption+=("Packages failed to install because you seem to have deleted an important repository file in /etc/apt/sources.list.d
+
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing, but you may have deleted other files as well.
+The raspi.list file should contain this:
+
+deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main")
+    error_type="system"
+  fi
+  
+  #if /etc/apt/sources.list missing, display error message
+  if [ ! -f /etc/apt/sources.list ] ;then
+    if [ -f /etc/rpi-issue ] && [ "$arch" == 32 ];then
+       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+You appear to be using Raspberry Pi OS 32-bit, so the sources.list file should contain this:
+deb http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+deb-src http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi")
+    elif [ -f /etc/rpi-issue ] && [ "$arch" == 64 ];then
+       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+You appear to be using Raspberry Pi OS 64-bit, so the sources.list file should contain this:
+deb http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
+deb http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
+deb http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free
+# Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
+#deb-src http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
+#deb-src http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free")
+    else
+      error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
+
+The contents of this file will vary based on your operating system. You are not using Raspberry Pi OS, so you will have to find what to put in there yourself.")
+    fi
     error_type="system"
   fi
   
@@ -1456,7 +1508,7 @@ Check your internet connection and try again.")
   fi
   
   if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
-    error_caption+=("The git commend encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
@@ -1485,7 +1537,7 @@ See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
   fi
   
   if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
-    error_caption+=("This error occured: Failed to load module \"appmenu-gtk-module\"
+    error_caption+=("This error occurred: Failed to load module \"appmenu-gtk-module\"
 
 Try installing two packages with this command:
 sudo apt install appmenu-gtk2-module appmenu-gtk3-module
@@ -1544,14 +1596,14 @@ For solutions, see: https://askubuntu.com/a/59517")
   fi
   
   if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
-    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occuring.")
+    error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occurring.")
     error_type="system"
   fi
   
   if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error" <<<"$errors" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
-If this problem continues occuring, please reach out to the Pi-Apps developers for help.")
+If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
     error_type="system"
   fi
   
@@ -1670,13 +1722,13 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   #-F "syntaxes[]=text"
   
   
-  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXlBpLUFwcHMgbG9jYWwgY29tbWl0IElEOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXkxhc3QgdXBkYXRlZCBQaS1BcHBzIG9uOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF3bz0iKSIgfCAkKGJhc2U2NCAtZCA8PDwiWW1GelpUWTBJQzFrQ2c9PSIpKSIgO2Vsc2Ugc2xlZXAgMC43IDtmaQo=" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
 #end of logfile functions
 
-#miscelaneous low-level functions below
+#miscellaneous low-level functions below
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
@@ -1778,8 +1830,9 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
 get_device_info() { #returns information about current install and hardware
   echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   echo "OS architecture: ${arch}-bit"
-  [ ! -z "$DIRECTORY" ] && echo "Installed Pi-Apps version: $(cd "$DIRECTORY"; git show -s --format="%ad" --date=short | xargs date +%x -d)"
-  [ -s "$DIRECTORY/etc/git_url" ] && echo "Most recent Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
+  #### IMPORTANT: for anyone wishing to change the wording following this, you MUST also change the send_error_report function
+  [ ! -z "$DIRECTORY" ] && echo "Last updated Pi-Apps on: $(cd "$DIRECTORY"; git show -s --format="%ad" --date=short | xargs date +%x -d)"
+  [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
@@ -1808,6 +1861,7 @@ get_device_info() { #returns information about current install and hardware
   model=${model//All Series}
   model=${model//�}
   echo "Device model: $model"
+  echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
   if [ -f /etc/rpi-issue ];then
@@ -1888,6 +1942,58 @@ $(head -n1 "${DIRECTORY}/apps/$app/description")"
   fi
 }
 
+multi_uninstall_gui() { #graphical interface to uninstall multiple apps from a list.
+  
+  #get list of apps that are installed
+  local apps="$(list_apps installed)"
+  
+  local IFS=$'\n'
+  local app
+  
+  apps="$(for app in $apps ;do
+    echo "FALSE
+${DIRECTORY}/apps/$app/icon-24.png
+$app
+$(head -n1 "${DIRECTORY}/apps/$app/description")"
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+    --width=300 --height=500 \
+    --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
+    --text="Uninstall everything you want!"$'\n'"Note: apps that are not installed are not shown." \
+    --column=:chk --column=:img --column=name --column=:tip \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 --button='Uninstall selected'!"${DIRECTORY}/icons/uninstall.png":0)"
+  
+  if [ $? == 0 ] && [ ! -z "$apps" ];then
+    #remove empty lines from yad's output
+    apps="$(grep . <<<"$apps")"
+    echo "Will uninstall these apps:"$'\n'"$apps"
+    
+    #set the terminal title text
+    title="Uninstalling $(wc -l <<<"$apps") apps"
+    
+    #in a terminal, first get the api functions, display the pi-apps logo, run the manage script, and refresh the app list if the $pipe variable is set
+    "${DIRECTORY}/etc/terminal-run" '
+      DIRECTORY="'"$DIRECTORY"'"
+      source "${DIRECTORY}/api"
+      generate_logo
+      
+      "${DIRECTORY}/manage" multi-uninstall "'"$apps"'"
+      exitcode=$?
+      
+      if [ $exitcode == 0 ];then
+        echo
+        #display countdown
+        for i in {30..1} ;do
+          echo -en "You can close this window now. Auto-closing in $i seconds.\e[0K\r"
+          sleep 1
+        done
+      else
+        echo -e "\nClose this window to exit."
+        read enter #technically you could press Enter to exit.
+      fi' "$title"
+    
+  fi
+}
+
 #command interceptors - functions that enhance a command
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup
   local module="$1"
@@ -1950,7 +2056,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
     error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi
   
-  status 'Done'
+  status_green 'Done'
 }
 
 wget() { #Intercept all wget commands. When possible, uses aria2c.
@@ -2154,6 +2260,9 @@ elif [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 01' ];then
 else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
+
+#Make dual-pane yad windows work correctly on wayland
+export GDK_BACKEND=x11
 
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then

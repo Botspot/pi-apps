@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get dependencies
-install_packages xterm python3-pil python3-pil.imagetk python3-pip mpg123 lolcat || exit 1
+install_packages xterm python3-pil python3-pil.imagetk python3-pip python3-dev mpg123 lolcat || exit 1
 # Get Python dependencies
 pip3 install playsound psutil distro py-notifier
 

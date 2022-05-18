@@ -1,5 +1,8 @@
 #!/bin/bash
 
-version=1.0.174
+version=1.0.177
 
-install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux-armv7l.deb || exit 1
+install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux-armhf.deb || exit 1
+
+status "Moving Menu entry to Accessories..."
+sudo sed -i 's/Categories=.*/Categories=Utility;/' /usr/share/applications/tabby.desktop || error "Failed to fix desktop file!"

@@ -4,6 +4,7 @@ purge_packages || exit 1
 rm -f ~/.local/share/applications/cura.desktop
 rm -f ~/Cura-mb-master-armhf-20200902.AppImage
 rm -rf ~/.cache/cura
+sudo rm -f /opt/Cura.AppImage
 
 #remove the libxcb-util.so.0 symlink, only if it's a symlink
 if [ -h /usr/lib/arm-linux-gnueabihf/libxcb-util.so.0 ];then
