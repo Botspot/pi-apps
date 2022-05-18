@@ -28,12 +28,13 @@ rm -rf ./scrcpy
 status_green Done
 
 #menu entry
+sudo mkdir -p /usr/local/share/applications
 status -n "Making menu entry..."
-cat << "EOF" | sudo tee /usr/share/applications/scrcpy.desktop
+cat << "EOF" | sudo tee /usr/local/share/applications/scrcpy.desktop
 [Desktop Entry]
 Name=Scrcpy
 Exec=bash -c "errors="\""$(scrcpy 2>&1)"\"" || yad --text-info --center --width=500 --height=300 --font-name=12 --button=Close --text="\""Scrcpy failed to launch. Errors below."\"" <<<"\""$errors"\"""
-Icon=scrcpy
+Icon=/usr/local/share/icons/hicolor/256x256/apps/scrcpy.png
 Type=Application
 Comment=Display and control of Android devices connected on USB
 Categories=ConsoleOnly;Utility;System;
