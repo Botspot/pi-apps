@@ -1,29 +1,24 @@
 #!/bin/bash
-install_packages adb ffmpeg libsdl2-2.0-0 python3-pip python3-dev python3-tk python3-pil.imagetk gcc git pkg-config meson ninja-build libavcodec-dev libavformat-dev libavutil-dev libsdl2-dev || error "Failed to install dependencies"
 
-if [ -e ~/scrcpy ] && [ -e /usr/bin/adb];then
-  #SCRCPY
-  wget https://misapuntesde.com/rpi_share/scrcpy-1.13.tar.gz || error "Failed to download!"
-  tar -xf scrcpy-1.13.tar.gz || error "Failed to extract!"
-  rm scrcpy-1.13.tar.gz
-  
-  ln -s /usr/bin/adb $HOME/scrcpy/
-  
-  sudo mkdir -p /usr/local/share/scrcpy
-  sudo cp -af $HOME/scrcpy/scrcpy-server /usr/local/share/scrcpy/scrcpy-server
-  #END OF SCRCPY
-fi
-rm -rf ~/droidbuddy
-git_clone https://gitlab.com/gazlene/droidbuddy.git || error 'Could not clone AndroidBuddy repo!'
+"${DIRECTORY}/manage" install-if-not-installed Scrcpy || exit 1
+#Remove scrcpy menu button
+sudo rm -f /usr/share/applications/scrcpy.desktop
+
+install_packages python3-pip python3-dev python3-tk python3-pil.imagetk || error "Failed to install dependencies"
+
+cd /tmp
+git_clone https://gitlab.com/gazlene/droidbuddy || error 'Could not clone AndroidBuddy repo!'
+sudo mv -f /tmp/droidbuddy /opt
+
 sudo pip3 install Pillow
 
-mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Name=AndroidBuddy
 Comment=GUI for Android device recovery and maintainence
 Icon=$(dirname "$0")/icon-64.png
-Exec=bash -c 'cd $HOME/droidbuddy ; python3 main.py'
+Exec=python3 main.py
+Path=/opt/droidbuddy
 Type=Application
 Encoding=UTF-8
 Terminal=false
-Categories=Utility;" > ~/.local/share/applications/androidbuddy.desktop
+Categories=Utility;" | sudo tee /usr/share/applications/androidbuddy.desktop
