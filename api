@@ -2056,7 +2056,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
     error "\nFailed to download $repo_name repository.\nErrors: $errors"
   fi
   
-  status 'Done'
+  status_green 'Done'
 }
 
 wget() { #Intercept all wget commands. When possible, uses aria2c.
