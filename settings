@@ -97,11 +97,13 @@ $(echo "$params" | grep -vx "$curval")"
   output="$(yad --center --title='Pi-Apps Settings' --width=310 --height=300 \
     --form --separator='\n' --window-icon="${DIRECTORY}/icons/settings.png" --columns=2 \
     "${tooltips[@]}" \
-    --field='Categories'!"${DIRECTORY}/icons/categories.png":FBTN "bash -c '${DIRECTORY}/etc/categoryedit &>/dev/null'" \
-    --field='Log files'!"${DIRECTORY}/icons/log-file.png":FBTN "bash -c '${DIRECTORY}/etc/logviewer &>/dev/null'" \
+    --field='Categories'!"${DIRECTORY}/icons/categories.png"!"Does an App belong in Editors instead of Tools? This lets you move it.":FBTN "bash -c '${DIRECTORY}/etc/categoryedit 1>&2'" \
+    --field='Log files'!"${DIRECTORY}/icons/log-file.png"!"View past installation logs. Useful for debugging, or to see what you installed yesterday.":FBTN "bash -c '${DIRECTORY}/etc/logviewer 1>&2'" \
+    --field='Multi-Install'!"${DIRECTORY}/icons/multi-select.png"!"Install multiple apps at the same time.":FBTN "bash -c '${DIRECTORY}/api multi_install_gui 1>&2'" \
     "${yadparams[@]}" \
-    --field='New App'!"${DIRECTORY}/icons/create.png":FBTN "bash -c '${DIRECTORY}/createapp &>/dev/null'" \
-    --field='Import App'!"${DIRECTORY}/icons/download.png":FBTN "bash -c '${DIRECTORY}/etc/import-app &>/dev/null'" \
+    --field='New App'!"${DIRECTORY}/icons/create.png"!"Make your own app! It's pretty easy if you follow the instructions.":FBTN "bash -c '${DIRECTORY}/createapp 1>&2'" \
+    --field='Import App'!"${DIRECTORY}/icons/download.png"!"Did someone else make an app but it's not on Pi-Apps yet? Import it here.":FBTN "bash -c '${DIRECTORY}/etc/import-app 1>&2'" \
+    --field='Multi-Uninstall'!"${DIRECTORY}/icons/multi-select.png"!"Uninstall multiple apps at the same time.":FBTN "bash -c '${DIRECTORY}/api multi_uninstall_gui 1>&2'" \
     --button='Reset'!"${DIRECTORY}/icons/backup.png"!'Reset all settings to their defaults':2 \
     --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
     --button=Save!"${DIRECTORY}/icons/check.png":0 \
@@ -140,9 +142,5 @@ do
   settingnumber=$((settingnumber + 1))
 done
 IFS="$PREIFS"
-
-#refresh app list just in case the theme or app-arrangement
-echo "Refreshing app list..."
-"${DIRECTORY}/etc/preload-daemon" "$(cat "${DIRECTORY}/data/settings/App List Style")" once
 
 

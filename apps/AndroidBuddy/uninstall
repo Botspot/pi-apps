@@ -1,6 +1,7 @@
 #!/bin/bash
 purge_packages || error "Dependencies failed to uninstall"
 
-rm -rf ~/droidbuddy ~/scrcpy ~/.local/share/applications/scrcpy.desktop ~/.local/share/applications/androidbuddy.desktop 2>/dev/null
-sudo rm -rf /usr/local/share/scrcpy 2>/dev/null
+"${DIRECTORY}/manage" uninstall Scrcpy
+sudo rm -rf /opt/droidbuddy /usr/share/applications/androidbuddy.desktop
+
 exit 0

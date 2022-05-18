@@ -17,6 +17,7 @@ This guide will attempt to explain how Pi-Apps works. By nature, this cannot be 
 - [The `categoryedit` script](#the-categoryedit-script)
 - [The `logviewer` script](#the-logviewer-script)
 - [The `viewlog` script](#the-viewlog-script)
+- [Automatic app updaters](#automatic-app-updaters)
 # How Pi-Apps works
 ## Introduction
 - Pi-Apps is written in **`bash`**. This is a scripting language for Linux, with origins in the 80s. Bash is not a compiled language like C, it's an interpreted language, similar to Python and Windows .bat files.  
@@ -101,7 +102,7 @@ The `manage` script supports these **modes**:
   - These two modes are so similar that they share the same code!
 - `install-if-not-installed`: Installs the specified app, only if it has not already been installed.
   - This mode is especially useful for apps that **need another app to be installed first**.
-  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this comand:
+  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this command:
   ```bash
   "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
   ```
@@ -435,7 +436,7 @@ End of Flatpak functions. App functions below.
     ```
 - `refresh_pkgapp_status` - For the specified package-app, if dpkg thinks it's installed, then mark it as installed.
 - `refresh_all_pkgapp_status` - For every package-app, if dpkg thinks it's installed, then mark it as installed.
-- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforseen changes in script design may cause the app list to be displayed improperly.
+- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforeseen changes in script design may cause the app list to be displayed improperly.
 
 Logfile functions below.
 - `get_logfile` - Find the most recent logfile for the specified app.
@@ -759,3 +760,75 @@ Notes:
 - This script will kill previous instances of itself.
 - This script **does not obey** the "Preferred text editor" setting.
   - Why? Viewing a log in ***`geany`*** (the default "Preferred text editor" setting) is cumbersome and breaks the whole concept of closing the editor once you click on a new logfile.
+
+## Automatic App Updaters
+#### Location:
+These are scripts which reside on the github repo for pi-apps specificially for keeping app versions updated with their upstream projects and repos. These automatic app updaters are found in the `.github/workflows/updates` folder.
+Each script/app in pi-apps which has automatic version updating functionality has a script in this folder. The script name is the same as the app name.
+#### Purpose:
+To keep versions of apps in pi-apps up to date with the latest fixes, features, and improvements.
+#### What can updater script do:
+Updater scripts have access to a few special functions and scripts that normal pi-apps install scripts do not have access to.
+It is easier to explain with an example of an updater script.
+
+#### Github release example:<br>
+```
+#!/bin/bash
+
+webVer=$(get_release angryip/ipscan)
+all_url="https://github.com/angryip/ipscan/releases/download/${webVer}/ipscan_${webVer}_all.deb"
+
+source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
+```
+This is Angry IP scanners's update script. New releases of the .deb are posted on the `angrypi/scan` github, so a few times a day, the pi-apps github actions runs this script to check for new releases of Angry IP Scanner.
+There are a few special functions designed for github scripts to use, so that they can obtain the latest app version.
+```
+get_release() {
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
+}
+get_prerelease() {
+  curl --silent "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
+}
+```
+`get_release` followed by the app `githubowner/reponame` will obtain the latest github release version number<br>
+`get_prerelease` followed by the app `githubowner/reponame` will obtain the latest github prerelease version number.
+
+For pi-apps install scripts written with this in mind, this version number can be used to automatically generate a pi-apps PR with the updated version. Simply set the URL of the deb/binary found on the github with the `webVer` variable substituted in `all_url` for install scripts, `armhf_url` for install-32 scripts, and `arm64_url` for install-64 scripts, and call the update_github_script. Pi-apps install scripts should be formated with a `version` varaible for this automatic script to update with the latest version.<br>
+See angry ip scanners's `install` file for an example:
+```
+#!/bin/bash
+
+version=3.8.2
+install_packages openjdk-11-jdk rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1
+```
+
+#### Debian repo example:<br>
+For apps which are published to a debian repo, but it is not desired to add the repo to a users install, the update_debian_repo_script can be used to automatically update an apps install scripts.
+
+```
+#!/bin/bash
+
+armhf_webPackages="https://apt.raspbian-addons.org/debian/dists/precise/main/binary-armhf/Packages"
+arm64_webPackages="https://apt.raspbian-addons.org/debian/dists/precise/main/binary-arm64/Packages"
+armhf_packagename="antimicrox"
+arm64_packagename="antimicrox"
+
+# The corresponding appname in pi-apps will have its corresponding filepath= variable update
+# the filepath variable will contain the full filepath of the debian package with the version included
+
+source $GITHUB_WORKSPACE/.github/workflows/update_debian_repo_script.sh
+```
+Debian repos contain what is called a `Packages` file, this file contains all the control data for all packages hosted on that repo under that distro, and architecture. Shown above is the anitmicrox updater script.<br>
+The package used on pi-apps is hosted at the `raspbian-addons` repo, so we specify the location of the `Packages` file on that repo using `armhf_webPackages` and `arm64_webPackages`.<br>
+We then specify what the package name we would like to have checked from that repo is named, in this case, its `antimicrox` set to the variables `armhf_packagename` `arm64_packagename`.<br>
+Finally, to update the pi-apps scripts, we call the update_debian_repo_script as shown.
+
+The corresponding app install scripts in pi-apps should contain a `filename` variable (`filename_32` and `filename_64` if there are separate armhf and arm64 filenames in the same `install` script) with the entire URL path of the .deb file contained.<br>
+See antimicrox's `install-64` file for an example:
+```
+#!/bin/bash
+
+filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicrox_3.2.1_arm64.deb"
+
+install_packages "${filepath}" || exit 1
+```

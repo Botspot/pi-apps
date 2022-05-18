@@ -1,9 +1,9 @@
 #!/bin/bash
 
-version=2022.3.18
+version=2022.3.20
 #Bot automatically updates this when I make a new release.
 
-install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel || exit 1
+install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel unzip zip || exit 1
 
 mkdir -p ~/LineRider
 cd ~/LineRider || error "Could not move to folder"

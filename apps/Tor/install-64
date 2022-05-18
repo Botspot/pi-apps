@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=11.0.7
+version=11.0.11
 
 #if ~/tor-browser_en-US folder exists, prepare to import its user-data
 if [ -d ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser ];then

@@ -32,11 +32,11 @@ jobs:
 
           #add special functions
           get_release() {
-            curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
+            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
           }
 
           get_prerelease() {
-            curl --silent "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
+            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
           }
 
           function validate_url(){
@@ -94,7 +94,7 @@ jobs:
           title: "[AUTO] Update App Versions"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
-            Workflow run: https://github.com/Botspot/pi-apps/actions/runs/${{ github.run_id }}
+            Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Apps updated:
 
             ${{ env.UPDATED_APPS }}

@@ -70,8 +70,8 @@ preserve-environment=true" | sudo tee /etc/schroot/chroot.d/wps-office-chroot >/
 
 echo
 #package found in: https://linux.wps.cn/
-version=11.1.0.10920
-wget "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
+version=11.1.0.10976
+wget "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
 sudo mv /tmp/wps-office.deb /opt/wps-office-chroot/wps-office.deb
 
 status "Installing wps package in the chroot..."

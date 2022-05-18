@@ -85,11 +85,6 @@ echo '#!/bin/bash
 export LANG=C
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-if [ $(id -u) -ne 0 ]; then
-  echo "$0 must be run as root user"
-  exit 1
-fi
-
 if [ "$1" == --help ] || [ "$1" == -h ];then
   echo -e "This is a script made by Botspot to increase usable RAM by setting up ZRAM.
 ZRAM uses compression to fit more memory in your available RAM.
@@ -104,17 +99,25 @@ sudo zram.sh storage-off   Disable the file-storage at /zram on next run
 sudo zram.sh storage-on    Enable the file-storage at /zram on next run
 zram.sh --help, -h         Display this information and exit"
   exit 0
+fi
+
+
+if [ $(id -u) -ne 0 ]; then
+  echo "$0 must be run as root user"
+  exit 1
+fi
+
 #avoid creating /zram storage if storage-off flag passed
-elif [ "$1" == storage-off ]; then
+if [ "$1" == storage-off ]; then
   #retain this flag for next boot
-  sed -i "s+^ExecStart=/usr/bin/zram.sh$+ExecStart=/usr/bin/zram.sh storage-off+g" /etc/systemd/system/zram-swap.service && \
-  echo -e "zram.sh will not set up file-storage at /zram.\nChanges take effect when this script is run normally."
-  exit 0
+  if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram-swap.service ;then
+    sed -i "s+^ExecStart=/usr/bin/zram.sh$+ExecStart=/usr/bin/zram.sh storage-off+g" /etc/systemd/system/zram-swap.service
+  fi
+  echo -e "zram.sh will not set up file-storage at /zram from now on."
 #the /zram storage can be re-enabled with storage-on flag
 elif [ "$1" == storage-on ]; then
-  sed -i "s+^ExecStart=/usr/bin/zram.sh storage-off$+ExecStart=/usr/bin/zram.sh+g" /etc/systemd/system/zram-swap.service && \
-  echo -e "zram.sh will set up file-storage at /zram.\nChanges take effect when this script is run normally."
-  exit 0
+  sed -i "s+^ExecStart=/usr/bin/zram.sh storage-off$+ExecStart=/usr/bin/zram.sh+g" /etc/systemd/system/zram-swap.service
+  echo -e "zram.sh will set up file-storage at /zram from now on."
 fi
 
 # Load zram module
@@ -180,8 +183,8 @@ if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram
   #create a partition and mount it
   mkfs.ext4 /dev/zram${drive_num} >/dev/null
   mkdir -p /zram
-  chmod -R a+rw /zram #make writable for any user
   mount /dev/zram${drive_num} /zram
+  chmod -R 777 /zram #make writable for any user
 fi' | sudo tee /usr/bin/zram.sh >/dev/null
 
 sudo chmod +x /usr/bin/zram.sh

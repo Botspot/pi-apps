@@ -16,16 +16,16 @@ fi
 command -v apt >/dev/null || error "apt: command not found. Most likely this system is not running Debian."
 
 #Ensure running arm processor
-if uname -m | grep -q 'x86' ;then
-  error "Pi-Apps is not not supported on non-arm processor architectures like amd64 and i386. You may be interested in Pi-Apps x86, a unofficial fork of Pi-Apps for x64 and x86 systems: https://github.com/Pi-Apps-Recreates/pi-apps-x86"
+if uname -m | grep -qi 'x86\|i686\|i386' ;then
+  error "Pi-Apps is not supported on non-ARM CPU architectures. You may be interested in Pi-Apps x86, a unofficial fork of Pi-Apps for x64 and x86 systems: https://github.com/Pi-Apps-Recreates/pi-apps-x86"
 fi
 
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
 #install dependencies
-dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales'
-## Install dependencies if necessary
-if ! dpkg -s $dependencies >/dev/null 2>&1; then
+dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool'
+
+if ! dpkg -s $dependencies &>/dev/null ;then
   sudo apt install $dependencies -y -f --no-install-recommends
 fi
 
@@ -41,18 +41,18 @@ if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash 
   if [ ! -d "$DIRECTORY" ];then
     echo "Downloading Pi-Apps..."
     output="$(git clone --depth 1 https://github.com/Botspot/pi-apps "$DIRECTORY" 2>&1)"
-    if [ ! -d "$DIRECTORY" ];then
+    if [ $? != 0 ] || [ ! -d "$DIRECTORY" ];then
       error "Pi-Apps download failed!\ngit clone output was: $output"
     fi
   fi
 fi #Past this point, DIRECTORY variable populated with valid pi-apps directory
 
-#if chromeOS, install lxterminal
+#if ChromeOS, install lxterminal
 if command -v garcon-terminal-handler >/dev/null ;then
-  echo "In order to install apps on chromeOS, a working terminal emulator is required.
+  echo "In order to install apps on ChromeOS, a working terminal emulator is required.
 Installing lxterminal in 10 seconds... (press Ctrl+C to cancel)"
   sleep 10
-  sudo apt install -yf lxterminal || error "Failed to install lxterminal on chromeOS!"
+  sudo apt install -yf lxterminal || error "Failed to install lxterminal on ChromeOS!"
 fi
 
 #menu button
@@ -70,6 +70,10 @@ Type=Application
 Categories=Utility;
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 
+#copy menu button to Desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
+
+#settings menu button
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button..."
 fi
@@ -102,7 +106,7 @@ mkdir -p installed-packages preload settings status update-status categories
 cd $HOME
 
 #hide template app by default
-"${DIRECTORY}/etc/categoryedit" "template" 'hidden' >/dev/null
+"${DIRECTORY}/etc/categoryedit" "template" 'hidden' &>/dev/null
 
 #hide duplicates if running in twisteros
 if [ -f /usr/local/bin/twistver ] && [[ $(twistver) == "Twister OS version"* ]]; then
@@ -154,11 +158,10 @@ Mac OS Theme"
 fi
 
 #pi-apps terminal command
-if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui";then
+if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui" ;then
   echo "#!/bin/bash
 ${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
-  echo "You can now launch pi-apps from a terminal, just by running 'pi-apps'"
 fi
 
 #generate settings
@@ -171,13 +174,7 @@ fi
 if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
   echo "Preloading app list..."
 fi
-"${DIRECTORY}/preload" &>/dev/null
+"${DIRECTORY}/preload" yad &>/dev/null
 
-#generate splash screen
-if [ ! -f "${DIRECTORY}/icons/splashscreen.png" ];then
-  echo "Generating loading screen..."
-fi
-"${DIRECTORY}/api" generate_splashscreen
-
-echo "Installation complete."
+echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
 

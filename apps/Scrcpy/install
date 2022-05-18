@@ -1,24 +1,41 @@
 #!/bin/bash
 echo -e "==============\n"
-echo " · More info: run "scrcpy --help" or visit https://github.com/Genymobile/scrcpy"
+echo " · More info: run "\""scrcpy --help"\"" or visit https://github.com/Genymobile/scrcpy"
 echo " · The Android device requires at least API 21 (Android 5.0)."
 echo " · Make sure you enabled adb debugging on your device(s)."
 echo " · On some devices, you also need to enable an additional option to control it using keyboard and mouse."
 echo " · If you have issues, try to run the app a couple of times through Terminal."
-sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop 2>/dev/null
 
-install_packages adb ffmpeg libsdl2-2.0-0 gcc git pkg-config meson ninja-build libsdl2-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libusb-1.0-0-dev || exit 1
+sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop
 
-git clone https://github.com/Genymobile/scrcpy || error "Failed to clone."
+install_packages adb android-sdk-platform-tools-common ffmpeg libsdl2-2.0-0 gcc git pkg-config meson ninja-build libsdl2-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libusb-1.0-0-dev || exit 1
+
+#Add user to plugdev group
+status -n "Addung user '$USER' to the 'plugdev' group..."
+sudo usermod -aG plugdev "$USER" || error "Failed to add user '$USER' to the 'plugdev' group!"
+status_green Done
+
+cd /tmp
+git_clone https://github.com/Genymobile/scrcpy || error "Failed to download repo!"
 cd scrcpy
-./install_release.sh || error "Failed to install."
+status "Compiling and installing..."
+./install_release.sh || error "Failed to install!"
 
-sudo mkdir -p /usr/local/share/scrcpy
-sudo cp -af $HOME/scrcpy/scrcpy-server /usr/local/share/scrcpy/scrcpy-server
-echo "[Desktop Entry]
+#clean up
+status -n "Cleaning up..."
+cd ..
+rm -rf ./scrcpy
+status_green Done
+
+#menu entry
+status -n "Making menu entry..."
+cat << "EOF" | sudo tee /usr/share/applications/scrcpy.desktop
+[Desktop Entry]
 Name=Scrcpy
-Exec=scrcpy
-Icon=$(dirname "$0")/icon-64.png
+Exec=bash -c "errors="\""$(scrcpy 2>&1)"\"" || yad --text-info --center --width=500 --height=300 --font-name=12 --button=Close --text="\""Scrcpy failed to launch. Errors below."\"" <<<"\""$errors"\"""
+Icon=scrcpy
 Type=Application
 Comment=Display and control of Android devices connected on USB
-Categories=ConsoleOnly;Utility;System;" > ~/.local/share/applications/scrcpy.desktop
+Categories=ConsoleOnly;Utility;System;
+EOF
+status_green Done
