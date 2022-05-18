@@ -1,0 +1,20 @@
+#!/bin/bash
+
+rm -rf ~/sphero-sdk-raspberrypi-python.git
+
+git_clone https://github.com/sphero-inc/sphero-sdk-raspberrypi-python.git || error "Failed to clone repository!"
+cd ~/sphero-sdk-raspberrypi-python
+
+./first-time-setup.sh || error "Failed to run first time setup!"
+
+echo "------------------------------------------------
+The SDK should now be fully set up!
+To reach your code, type cd ~/sphero-sdk-raspberrypi-python, same goes for entering sub-folders, just type the name and there you go!
+You always have to make sure after entering any program folder, cd into observer, not asyncio.
+For example, cd getting_started ==> observer ==> then enter any folder shown, such as power.
+To run your programs, type sudo, followed by python3 (program_name.py).
+If the SDK reports that there is a problem relating to missing packages, 
+run either sudo apt install (package name) or type pip3 install (package name).
+------------------------------------------------
+It is recommended that you reboot your device as soon as possible to ensure everything is working as expected.
+------------------------------------------------"
