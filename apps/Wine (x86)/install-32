@@ -152,6 +152,9 @@ sudo tar zxf /tmp/wine.tgz -C /opt --no-same-owner || error 'Failed to extract w
 rm -f /tmp/wine.tgz
 [ ! -f /opt/wine/bin/wine ] && error "The wine.tgz extraction succeeded, but the file '/opt/wine/bin/wine' is missing!"
 
+#edit wine.inf to disable mime-associations. Nobody wants to double-click a text file, wonder why nothing is happening, then watch 15 Wine notepad windows pop up. Ask me how I know.
+sudo sed -i 's/winemenubuilder.exe -a -r/winemenubuilder.exe -r/' /opt/wine/share/wine/wine.inf #See: https://askubuntu.com/a/400430
+
 #download winetricks
 wget -O /tmp/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" || exit 1
 sudo mv /tmp/winetricks /opt/wine/bin/winetricks || error "Failed to move winetricks script to /opt/wine/bin folder!"
@@ -213,6 +216,13 @@ cd
 status -n "Creating Menu launchers... "
 #remove old local menu launchers
 rm -f ~/.local/share/applications/wine-config.desktop ~/.local/share/applications/wine-tricks.desktop ~/.local/share/applications/wine-explorer.desktop ~/.local/share/applications/wine-uninstaller.desktop ~/.local/share/applications/wine-taskmgr.desktop ~/.local/share/applications/wine-killer.desktop ~/.local/share/applications/wine-regenerate.desktop
+
+#Remove wine auto-generated desktop files that handle mimetypes. Nobody in their right mind would want this.
+#See: https://askubuntu.com/a/400430
+rm -f ~/.local/share/mime/packages/x-wine*
+rm -f ~/.local/share/applications/wine-extension*
+rm -f ~/.local/share/icons/hicolor/*/*/application-x-wine-extension*
+rm -f ~/.local/share/mime/application/x-wine-extension*
 
 echo "[Desktop Entry]
 StartupNotify=true
@@ -292,7 +302,7 @@ echo
 $(declare -f error)
 $(declare -f status)
 
-if "\$(id -u)" == 0 ];then
+if [ "\$(id -u)" == 0 ];then
   error "Please don't run this script with sudo."
 fi
 
@@ -341,10 +351,13 @@ echo '
 "FontSmoothingGamma"=dword:00000578' >> \$TMPFILE
 
 echo "  - Windows 10 appearance theme"
+mkdir -p "\$WINEPREFIX/drive_c/windows/Resources/Themes/Windows_10"
+cp -f /opt/wine/Windows_10.msstyles "\$WINEPREFIX/drive_c/windows/Resources/Themes/Windows_10"
+
 echo '
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager]
 "ColorName"="NormalColor"
-"DllName"="F:\\\\opt\\\\wine\\\\Windows_10.msstyles"
+"DllName"="C:\\\\windows\\\\Resources\\\\Themes\\\\Windows_10\\\\Windows_10.msstyles"
 "FlatMenu"=dword:00000000
 "GradientCaption"=dword:00000001
 "IconTitleFont"=hex:f5,ff,ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,\
@@ -482,6 +495,15 @@ echo '
 
 [HKEY_CURRENT_USER\Control Panel\Desktop]
 "LogPixels"=dword:00000078' >> \$TMPFILE
+
+echo "  - Disabling Wine mime associations" #see https://askubuntu.com/a/400430
+
+echo '
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServices]
+"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -a"
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServices]
+"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -a"' >> \$TMPFILE
 
 wine regedit \$TMPFILE
 

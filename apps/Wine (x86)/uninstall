@@ -16,6 +16,14 @@ status -n "Removing menu shortcuts... "
 sudo rm -rf ~/.local/share/applications/wine ~/.local/share/applications/wine-*.desktop /usr/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
 status_green "Done"
 
+status -n "Removing mimetypes... "
+#See: https://askubuntu.com/a/400430
+rm -f ~/.local/share/mime/packages/x-wine*
+rm -f ~/.local/share/applications/wine-extension*
+rm -f ~/.local/share/icons/hicolor/*/*/application-x-wine-extension*
+rm -f ~/.local/share/mime/application/x-wine-extension*
+status_green "Done"
+
 purge_packages || exit 1
 
 if [ -e "$HOME/.wine" ];then
