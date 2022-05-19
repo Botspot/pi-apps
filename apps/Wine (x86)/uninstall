@@ -4,7 +4,7 @@ pkill -9 wine
 command -v wineserver >/dev/null && wineserver -k
 
 status -n "Removing terminal commands... "
-sudo rm -rf /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/winetricks
+sudo rm -rf /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/winetricks /usr/local/bin/generate-wine-prefix
 status_green "Done"
 
 status -n "Removing Wine folders... "
@@ -13,7 +13,7 @@ rm -rf ~/.cache/winetricks ~/.cache/wine
 status_green "Done"
 
 status -n "Removing menu shortcuts... "
-rm -rf ~/.local/share/applications/wine ~/.local/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
+sudo rm -rf ~/.local/share/applications/wine ~/.local/share/applications/wine-*.desktop /usr/share/applications/wine-*.desktop || error 'Failed to remove wine menu shortcuts!'
 status_green "Done"
 
 purge_packages || exit 1

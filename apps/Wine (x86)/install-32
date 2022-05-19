@@ -201,6 +201,7 @@ cd /tmp
 rm -rf "$PWD/wine-stuff"
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv "$PWD/wine-stuff/icons" /opt/wine
+sudo mv "$PWD/wine-stuff/Windows_10.msstyles" /opt/wine
 if [ $(ldd --version | head -n1 | awk '{print $NF}' | sed 's/\..*//g') -ge 2 ] && [ "$(ldd --version | head -n1 | awk '{print $NF}' | sed 's/.*\.//g')" -ge 30 ];then
   #only install mesa if glibc is 2.30 or greater
   sudo mv "$PWD/wine-stuff/mesa" /opt/wine
@@ -210,6 +211,9 @@ cd
 
 #create menu launchers
 status -n "Creating Menu launchers... "
+#remove old local menu launchers
+rm -f ~/.local/share/applications/wine-config.desktop ~/.local/share/applications/wine-tricks.desktop ~/.local/share/applications/wine-explorer.desktop ~/.local/share/applications/wine-uninstaller.desktop ~/.local/share/applications/wine-taskmgr.desktop ~/.local/share/applications/wine-killer.desktop ~/.local/share/applications/wine-regenerate.desktop
+
 echo "[Desktop Entry]
 StartupNotify=true
 Terminal=false
@@ -218,7 +222,7 @@ Name=Wine Configuration
 Exec=wine winecfg
 Icon=/opt/wine/icons/winecfg.png
 Categories=System;
-Comment=Configure wine" > ~/.local/share/applications/wine-config.desktop
+Comment=Configure wine" | sudo tee /usr/share/applications/wine-config.desktop
 
 echo "[Desktop Entry]
 Name=Winetricks
@@ -227,7 +231,7 @@ Exec=bash -c 'BOX86_NOBANNER=1 box86 winetricks --gui'
 Terminal=false
 Icon=/opt/wine/icons/winetricks.png
 Type=Application
-Categories=System;" > ~/.local/share/applications/wine-tricks.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-tricks.desktop
 
 echo "[Desktop Entry]
 Version=1.0
@@ -237,7 +241,7 @@ Comment=Wine graphical desktop environment to mimic a Windows OS
 Icon=/opt/wine/icons/wine-desktop.png
 Exec=wine explorer /desktop=shell,1280x720
 Terminal=false
-Categories=System;" > ~/.local/share/applications/wine-explorer.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-explorer.desktop
 
 echo "[Desktop Entry]
 Version=1.0
@@ -247,7 +251,7 @@ Comment=Install/Remove Windows programs
 Icon=/opt/wine/icons/wine-program-manager.png
 Exec=wine uninstaller
 Terminal=false
-Categories=System;" > ~/.local/share/applications/wine-uninstaller.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-uninstaller.desktop
 
 echo "[Desktop Entry]
 Version=1.0
@@ -257,7 +261,7 @@ Comment=View running processes within Wine
 Icon=/opt/wine/icons/winetask.png
 Exec=wine taskmgr
 Terminal=false
-Categories=System;" > ~/.local/share/applications/wine-taskmgr.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-taskmgr.desktop
 
 echo "[Desktop Entry]
 StartupNotify=false
@@ -268,7 +272,7 @@ Comment=Terminate any running Wine processes
 Icon=/opt/wine/icons/winestop.png
 Exec=wineserver -k
 Terminal=false
-Categories=System;" > ~/.local/share/applications/wine-killer.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-killer.desktop
 
 echo "[Desktop Entry]
 Version=1.0
@@ -276,56 +280,219 @@ Type=Application
 Name=Wine Reset
 Comment=Clean out the default Wine prefix and start over
 Icon=/opt/wine/icons/wine-regenerate.png
-Exec=bash -c "\""yad --window-icon=/opt/wine/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && ${DIRECTORY}/etc/terminal-run 'set -x ; echo y | winetricks annihilate -q ; wine wineboot ; W_OPT_UNATTENDED=1 winetricks mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 ; wine wineboot -u' 'Generating Wine prefix...'"\""
+Exec=bash -c "\""yad --window-icon=/opt/wine/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && ${DIRECTORY}/etc/terminal-run 'echo y | winetricks annihilate -q ; generate-wine-prefix' 'Generating Wine prefix...'"\""
 Terminal=false
-Categories=System;" > ~/.local/share/applications/wine-regenerate.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-regenerate.desktop
 status_green "Done"
 
+cat << EOF | sudo tee /usr/local/bin/generate-wine-prefix >/dev/null
 echo
-if [ -e "$HOME/.wine" ];then
-  status "Checking Wine prefix..."
-else
-  status "Generating Wine prefix..."
+
+#set up functions
+$(declare -f error)
+$(declare -f status)
+
+if "\$(id -u)" == 0 ];then
+  error "Please don't run this script with sudo."
 fi
+
+if [ -z "\$WINEPREFIX" ];then
+  WINEPREFIX="\$HOME/.wine"
+fi
+export WINEPREFIX
+
+if [ -e "\$HOME/.wine" ];then
+  status "Checking Wine prefix at \$WINEPREFIX..."
+else
+  status "Generating Wine prefix at \$WINEPREFIX..."
+fi
+echo "To choose another prefix, set the WINEPREFIX variable."
+echo "Waiting 5 seconds..."
 sleep 5
 
-# Boot wine (make fresh wineprefix in ~/.wine
+# Boot wine (make fresh wineprefix)
 export BOX86_NOBANNER=1 #hide box86 output (for cosmetics)
 export WINEARCH=win32 #Make sure Wine creates a 32-bit prefix
 #export WINEDLLOVERRIDES="mscoree,mshtml=" #Avoid asking user to install gecko or mono
+
 wine wineboot #this won't display any dialog boxes that require a button to be clicked
 #wait until above process exits
 sleep 2
-while [ ! -z "$(pgrep -i 'wine C:')" ];do
+while [ ! -z "\$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
 
+status "Making registry changes..."
+TMPFILE="\$(mktemp)" || exit 1
+echo 'REGEDIT4' > \$TMPFILE
+
 #enable font smoothing - see https://askubuntu.com/a/219795
-status "Enabling font smoothing..."
-TMPFILE=$(mktemp) || exit 1
+echo "  - Font smoothing"
 
 MODE=2 # 0 = disabled; 2 = enabled
 TYPE=2 # 1 = regular;  2 = subpixel
 ORIENTATION=1 # 0 = BGR; 1 = RGB
 
-echo "REGEDIT4
+echo '
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"FontSmoothing"="'\$MODE'"
+"FontSmoothingOrientation"=dword:0000000'\$ORIENTATION'
+"FontSmoothingType"=dword:0000000'\$TYPE'
+"FontSmoothingGamma"=dword:00000578' >> \$TMPFILE
+
+echo "  - Windows 10 appearance theme"
+echo '
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager]
+"ColorName"="NormalColor"
+"DllName"="F:\\\\opt\\\\wine\\\\Windows_10.msstyles"
+"FlatMenu"=dword:00000000
+"GradientCaption"=dword:00000001
+"IconTitleFont"=hex:f5,ff,ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,\
+  00,00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"NonClientMetrics"=hex:f8,01,00,00,01,00,00,00,10,00,00,00,10,00,00,00,12,00,\
+  00,00,12,00,00,00,f5,ff,ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,bc,02,00,\
+  00,00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0f,00,\
+  00,00,0f,00,00,00,fa,ff,ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,\
+  00,00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,12,00,\
+  00,00,12,00,00,00,f5,ff,ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,\
+  00,00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,f5,ff,\
+  ff,ff,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,00,00,00,00,00,00,00,00,\
+  22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,f5,ff,ff,ff,00,00,00,00,00,00,\
+  00,00,00,00,00,00,90,01,00,00,00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,\
+  00,6d,00,61,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00
+"SizeName"="NormalSize"
+"ThemeActive"="1"
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager\Control Panel\Colors]
+"ActiveBorder"="212 208 200"
+"ActiveTitle"="10 36 106"
+"AppWorkSpace"="128 128 128"
+"Background"="58 110 165"
+"ButtonAlternateFace"="181 181 181"
+"ButtonDkShadow"="64 64 64"
+"ButtonFace"="212 208 200"
+"ButtonHilight"="255 255 255"
+"ButtonLight"="212 208 200"
+"ButtonShadow"="128 128 128"
+"ButtonText"="0 0 0"
+"GradientActiveTitle"="166 202 240"
+"GradientInactiveTitle"="192 192 192"
+"GrayText"="128 128 128"
+"Hilight"="10 36 106"
+"HilightText"="255 255 255"
+"HotTrackingColor"="0 0 200"
+"InactiveBorder"="212 208 200"
+"InactiveTitle"="128 128 128"
+"InactiveTitleText"="212 208 200"
+"InfoText"="0 0 0"
+"InfoWindow"="255 255 225"
+"Menu"="212 208 200"
+"MenuBar"="212 208 200"
+"MenuHilight"="10 36 106"
+"MenuText"="0 0 0"
+"Scrollbar"="212 208 200"
+"TitleText"="255 255 255"
+"Window"="255 255 255"
+"WindowFrame"="0 0 0"
+"WindowText"="0 0 0"
+
+[HKEY_CURRENT_USER\Control Panel\Colors]
+"ActiveBorder"="212 208 200"
+"ActiveTitle"="115 188 238"
+"AppWorkSpace"="128 128 128"
+"Background"="0 0 0"
+"ButtonAlternateFace"="181 181 181"
+"ButtonDkShadow"="106 106 106"
+"ButtonFace"="240 240 240"
+"ButtonHilight"="255 255 255"
+"ButtonLight"="227 227 227"
+"ButtonShadow"="165 165 165"
+"ButtonText"="0 0 0"
+"GradientActiveTitle"="115 188 238"
+"GradientInactiveTitle"="158 214 250"
+"GrayText"="165 165 165"
+"Hilight"="231 239 245"
+"HilightText"="0 0 0"
+"HotTrackingColor"="59 152 211"
+"InactiveBorder"="212 208 200"
+"InactiveTitle"="158 214 250"
+"InactiveTitleText"="150 150 150"
+"InfoText"="0 0 0"
+"InfoWindow"="255 255 225"
+"Menu"="255 255 255"
+"MenuBar"="240 240 240"
+"MenuHilight"="230 230 230"
+"MenuText"="0 0 0"
+"Scrollbar"="212 208 200"
+"TitleText"="28 28 28"
+"Window"="255 255 255"
+"WindowFrame"="0 0 0"
+"WindowText"="0 0 0"
+
+[HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics]
+"BorderWidth"="1"
+"CaptionFont"=hex:08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,bc,02,00,00,\
+  00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"IconFont"=hex:09,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,00,00,\
+  00,00,01,00,00,00,00,53,00,65,00,67,00,6f,00,65,00,20,00,55,00,49,00,20,00,\
+  53,00,65,00,6d,00,69,00,62,00,6f,00,6c,00,64,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"MenuFont"=hex:08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,00,00,\
+  00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"MessageFont"=hex:08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,00,\
+  00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"ScrollHeight"="-255"
+"ScrollWidth"="-255"
+"SmCaptionFont"=hex:05,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,\
+  00,00,00,00,01,00,00,00,00,53,00,65,00,67,00,6f,00,65,00,20,00,55,00,49,00,\
+  20,00,53,00,65,00,6d,00,69,00,62,00,6f,00,6c,00,64,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+"SmCaptionHeight"="-300"
+"SmCaptionWidth"="-300"
+"StatusFont"=hex:08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,90,01,00,00,\
+  00,00,00,00,00,00,00,22,54,00,61,00,68,00,6f,00,6d,00,61,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00' >> \$TMPFILE
+
+echo "  - Setting DPI to 120"
+echo '
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Hardware Profiles\Current\Software\Fonts]
+"LogPixels"=dword:00000078
+
+[HKEY_CURRENT_USER\Software\Wine\Fonts]
+"LogPixels"=dword:00000078
 
 [HKEY_CURRENT_USER\Control Panel\Desktop]
-\"FontSmoothing\"=\"$MODE\"
-\"FontSmoothingOrientation\"=dword:0000000$ORIENTATION
-\"FontSmoothingType\"=dword:0000000$TYPE
-\"FontSmoothingGamma\"=dword:00000578" > $TMPFILE
+"LogPixels"=dword:00000078' >> \$TMPFILE
 
-wine regedit $TMPFILE
+wine regedit \$TMPFILE
 
-rm -f $TMPFILE
+rm -f \$TMPFILE
 
 #install some packages with winetricks for a better out-of-the-box experience
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
 for i in mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 fontfix corefonts gdiplus dotnet20 msxml3 vcrun2005sp1 vcrun2008 ;do
   echo
-  status "Installing $i with winetricks..."
-  winetricks $i
+  status "Installing \$i with winetricks..."
+  winetricks \$i
 done
 status "Winetricks finished"
 
@@ -333,9 +500,13 @@ status "Winetricks finished"
 wine wineboot -u
 #wait until above process exits
 sleep 2
-while [ ! -z "$(pgrep -i 'wine C:')" ];do
+while [ ! -z "\$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
+EOF
+
+sudo chmod +x /usr/local/bin/generate-wine-prefix
+/usr/local/bin/generate-wine-prefix
 
 exit 0
 
