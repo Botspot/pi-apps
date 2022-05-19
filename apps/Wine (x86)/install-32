@@ -489,7 +489,7 @@ rm -f \$TMPFILE
 
 #install some packages with winetricks for a better out-of-the-box experience
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
-for i in mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 fontfix corefonts gdiplus dotnet20 msxml3 vcrun2005sp1 vcrun2008 ;do
+for i in winxp mfc42 vcrun6 vcrun2003 xact d3drm d3dx9_43 d3dcompiler_43 d3dx9 fontfix corefonts gdiplus dotnet20 msxml3 vcrun2005sp1 vcrun2008 ;do
   echo
   status "Installing \$i with winetricks..."
   winetricks \$i
