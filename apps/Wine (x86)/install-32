@@ -500,10 +500,10 @@ echo "  - Disabling Wine mime associations" #see https://askubuntu.com/a/400430
 
 echo '
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServices]
-"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -a"
+"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -r"
 
 [HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServices]
-"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -a"' >> \$TMPFILE
+"winemenubuilder"="C:\\\\windows\\\\system32\\\\winemenubuilder.exe -r"' >> \$TMPFILE
 
 wine regedit \$TMPFILE
 
