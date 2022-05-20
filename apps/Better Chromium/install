@@ -23,6 +23,13 @@ else
   dark_mode=FALSE
 fi
 
+#detect if dark mode for all websites is currently enabled by this tool
+if [ -f "${folder}/site_dark_mode"  ];then
+  site_dark_mode=TRUE
+else
+  site_dark_mode=FALSE
+fi
+
 #detect current UI scale value
 if [ -f "${folder}/ui_scale" ];then
   ui_scale="$(cat "${folder}/ui_scale" | grep -o '\--force-device-scale-factor=.*' | tr -cd '0123456789.\n')"
@@ -79,6 +86,7 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --window-icon="$(dirname "$0")/icon-64.png" \
   --text="$text" \
   --field="Enable Dark Mode":CHK "$dark_mode" \
+  --field="Dark Mode for all websites":CHK "$site_dark_mode" \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
   --field="Enable Google Sync":CHK "$google_sync" \
   --field="Performance Improvements":CHK "$performance_improvements" \
@@ -94,15 +102,17 @@ fi
 echo "Received values:"
 dark_mode="$(sed -n 1p <<<"$output")"
 echo "dark_mode: $dark_mode"
-ui_scale="$(sed -n 2p <<<"$output")"
+site_dark_mode="$(sed -n 2p <<<"$output")"
+echo "site_dark_mode: $site_dark_mode"
+ui_scale="$(sed -n 3p <<<"$output")"
 echo "ui_scale: $ui_scale"
-google_sync="$(sed -n 3p <<<"$output")"
+google_sync="$(sed -n 4p <<<"$output")"
 echo "google_sync: $google_sync"
-performance_improvements="$(sed -n 4p <<<"$output")"
+performance_improvements="$(sed -n 5p <<<"$output")"
 echo "performance_improvements: $performance_improvements"
-reduce_writes="$(sed -n 5p <<<"$output")"
+reduce_writes="$(sed -n 6p <<<"$output")"
 echo "reduce_writes: $reduce_writes"
-widevine="$(sed -n 6p <<<"$output")"
+widevine="$(sed -n 7p <<<"$output")"
 echo "widevine: $widevine"
 echo
 
@@ -141,6 +151,22 @@ else
     status "Removing ${folder}/dark_mode"
   fi
   sudo rm -f "${folder}/dark_mode"
+fi
+
+#dark mode for all websites
+if [ "$site_dark_mode" == TRUE ];then
+  #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
+  echo "Adding ---enable-features=WebContentsForceDark:increase_text_contrast/true to ${folder}/site_dark_mode"
+  
+  cat << EOF | sudo tee "${folder}/site_dark_mode" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none/foreground_lightness_threshold/150/background_lightness_threshold/150" #WebContentsForceDark:increase_text_contrast/true"
+EOF
+else
+  #dark mode set to false - so remove the file
+  if [ -f "${folder}/site_dark_mode" ];then
+    status "Removing ${folder}/site_dark_mode"
+  fi
+  sudo rm -f "${folder}/site_dark_mode"
 fi
 
 #UI scale
@@ -183,7 +209,7 @@ fi
 if [ "$performance_improvements" == TRUE ];then
   #various chromium flags from https://forums.raspberrypi.com/viewtopic.php?t=199543
   #I removed a few because they reduced WebGL performance or stability
-  flags="--ignore-gpu-blacklist --enable-checker-imaging --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --answers-in-suggest --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder --enable-accelerated-video-decode"
+  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --answers-in-suggest --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder --enable-accelerated-video-decode"
   
   echo "Adding $flags to ${folder}/performance_improvements"
   cat << EOF | sudo tee "${folder}/performance_improvements" >/dev/null
@@ -201,6 +227,7 @@ fi
 if [ "$reduce_writes" == TRUE ];then
   #mount chromium files to tmpfs (script will run with user's privileges whenever Chromium is launched)
   #From: https://forums.raspberrypi.com/viewtopic.php?p=1865820
+  echo "Adding ${folder}/reduce_writes script to mount cache/ServiceWorker to /dev/shm when Chromium launches"
   cat << "EOF" | sudo tee "${folder}/reduce_writes" >/dev/null
 #!/bin/bash
 
