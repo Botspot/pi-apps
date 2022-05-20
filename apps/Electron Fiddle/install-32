@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=0.28.1
+version=0.29.0
 
 install_packages https://github.com/electron/fiddle/releases/download/v"$version"/electron-fiddle_"$version"_armhf.deb || exit 1
