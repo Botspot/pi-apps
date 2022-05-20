@@ -37,12 +37,6 @@ else
   google_sync=FALSE
 fi
 
-if [ -d /opt/WidevineCdm ];then
-  widevine=TRUE
-else
-  widevine=FALSE
-fi
-
 #detect if various performance improvements are currently enabled by this tool
 if [ -f "${folder}/performance_improvements" ];then
   performance_improvements=TRUE
@@ -50,10 +44,26 @@ else
   performance_improvements=FALSE
 fi
 
+#detect if the reduce_writes script is enabled
 if [ -f "${folder}/reduce_writes" ];then
   reduce_writes=TRUE
 else
   reduce_writes=FALSE
+fi
+
+#detect if Widevine is enabled
+if [ -d /opt/WidevineCdm ];then
+  widevine=TRUE
+else
+  widevine=FALSE
+fi
+#detect if Widevine can be enabled
+if [ $arch == 32 ];then
+  widevine_possible=TRUE
+  widevine_message=(--field="Enable Widevine DRM":CHK "$widevine")
+else
+  widevine_possible=FALSE
+  widevine_message=()
 fi
 
 #Set text of dialog window
@@ -71,9 +81,9 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --field="Enable Dark Mode":CHK "$dark_mode" \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
   --field="Enable Google Sync":CHK "$google_sync" \
-  --field="Enable Widevine DRM for Netflix":CHK "$widevine" \
   --field="Performance Improvements":CHK "$performance_improvements" \
-  --field="Reduce SD card writes":CHK "$reduce_writes")"
+  --field="Reduce SD card writes":CHK "$reduce_writes" \
+  "${widevine_message[@]}")"
 
 button=$?
 if [ "$button" != 0 ];then
@@ -88,12 +98,12 @@ ui_scale="$(sed -n 2p <<<"$output")"
 echo "ui_scale: $ui_scale"
 google_sync="$(sed -n 3p <<<"$output")"
 echo "google_sync: $google_sync"
-widevine="$(sed -n 4p <<<"$output")"
-echo "widevine: $widevine"
-performance_improvements="$(sed -n 5p <<<"$output")"
+performance_improvements="$(sed -n 4p <<<"$output")"
 echo "performance_improvements: $performance_improvements"
-reduce_writes="$(sed -n 6p <<<"$output")"
+reduce_writes="$(sed -n 5p <<<"$output")"
 echo "reduce_writes: $reduce_writes"
+widevine="$(sed -n 6p <<<"$output")"
+echo "widevine: $widevine"
 echo
 
 #if user enabled reduce_writes or performance_improvements, and ZRAM is not installed, then recommend the More RAM app
@@ -169,21 +179,6 @@ else
   sudo rm -f "${folder}/apikeys"
 fi
 
-#widevine
-if [ "$widevine" == TRUE ] && [ ! -d /opt/WidevineCdm ];then
-  "${DIRECTORY}/manage" install "Chromium Widevine"
-  
-elif [ "$widevine" == FALSE ];then
-  #disable Chromium Widevine
-  if package_installed libwidevinecdm0 ;then
-    sudo apt purge -y libwidevinecdm0
-  fi
-  
-  if [ -d /opt/WidevineCdm ];then
-    "${DIRECTORY}/manage" uninstall "Chromium Widevine"
-  fi
-fi
-
 #performance improvements
 if [ "$performance_improvements" == TRUE ];then
   #various chromium flags from https://forums.raspberrypi.com/viewtopic.php?t=199543
@@ -228,6 +223,23 @@ else
     status "Removing ${folder}/reduce_writes"
   fi
   sudo rm -f "${folder}/reduce_writes"
+fi
+
+#widevine
+if [ "$widevine_possible" == TRUE ] && [ "$widevine" == TRUE ] && [ ! -d /opt/WidevineCdm ];then
+  #install Chromium Widevine app
+  "${DIRECTORY}/manage" install "Chromium Widevine"
+  
+elif [ "$widevine_possible" == TRUE ] && [ "$widevine" == FALSE ];then
+  #disable Chromium Widevine
+  if package_installed libwidevinecdm0 ;then
+    sudo apt purge -y libwidevinecdm0
+  fi
+  
+  if [ -d /opt/WidevineCdm ];then
+    #uninstall Chromium Widevine app
+    "${DIRECTORY}/manage" uninstall "Chromium Widevine"
+  fi
 fi
 
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
