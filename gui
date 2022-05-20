@@ -429,14 +429,14 @@ runonce <<"EOF"
   dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
-    sudo apt install $dependencies -y -f --no-install-recommends
+    pkexec apt install $dependencies -y -f --no-install-recommends
   fi
 EOF
 
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
-    sudo dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && sudo apt update && sudo apt install box86 -y
+    pkexec bash -c 'dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && apt update && apt install box86 -y'
   fi
   
   #if box86 is supposedly installed, but box86 command not found, reinstall box86
