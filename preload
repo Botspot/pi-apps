@@ -54,6 +54,10 @@ fi
 #specifies a category to preload (can be left empty to load main page)
 prefix="$2"
 
+if [ "$prefix" == '/' ];then
+  prefix=
+fi
+
 #For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
 if [ -z "${text_color+x}" ] && [ "$format" == yad ];then
   #0400 is the latest version
@@ -97,7 +101,7 @@ if [ -f "$timestampfile" ];then
     #timestamps don't match, so reload the list
     reloadlist=1
     echo "Timestamps don't match" 1>&2
-    echo -e "original file: $(cat "$timestampfile")\nnew timestamp: $timestamps" 1>&2
+    #echo -e "original file: $(cat "$timestampfile")\nnew timestamp: $timestamps" 1>&2
   fi
 else
   #timestamp file not found
@@ -123,7 +127,7 @@ elif [ -z "$prefix" ] && [ "$format" == xlunch ] && ([ -s "${DIRECTORY}/data/upd
 fi
 
 if [ $reloadlist == 1 ];then
-  echo "Generating list..." 1>&2
+  echo "Generating list for '$prefix'..." 1>&2
   
   #for app_categories() and app_status() functions
   if ! command -v app_categories >/dev/null ;then
@@ -277,7 +281,7 @@ $prefix/$app
   fi
   echo "$timestamps" > "$timestampfile"
 else
-  echo "Reading list file..." 1>&2
+  echo "Reading list file for '$prefix'..." 1>&2
   cat "$listfile"
 fi
 
