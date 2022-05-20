@@ -499,15 +499,27 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
   
   if [[ "$guimode" == yad* ]];then
     #total dimensions for both yad windows side by side
-    height=400
-    width=600
+    if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
+      #gui size for small screens
+      height=400
+      width=600
+      
+      #width of first window
+      width1=250
+      #width of second window
+      width2=$((width - width1))
+    else
+      #gui size for large screens
+      height=600
+      width=800
+      
+      #width of first window
+      width1=320
+      #width of second window
+      width2=$((width - width1))
+    fi
     #how far down from the top of screen should both windows be?
     yoffset=$(((screen_height/2)-(height/2)))
-    
-    #width of first window
-    width1=250
-    #width of second window
-    width2=$((width - width1))
     
     #screen offsets for window 1
     xoffset1=$(((screen_width/2)-(width/2)))
