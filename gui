@@ -106,6 +106,7 @@ if [ ! -z "$3" ];then
   
   if [[ "$input" == *'Updates/' ]];then
     #updater window
+    get_positions
     
     "${DIRECTORY}/updater" gui fast $geometry2 --skip-taskbar --close-on-unfocus
     exitcode=$? #0 if update successful, 1 if list of updates was closed
@@ -118,6 +119,7 @@ if [ ! -z "$3" ];then
     fi
   elif [ "$input" == 'Search/' ];then
     #search window
+    get_positions
     
     source "${DIRECTORY}/api" #to set the yadflags array variable
     
@@ -234,6 +236,7 @@ if [ ! -z "$3" ];then
       done) &
     
     #display app details window
+    get_positions
     (cat "${DIRECTORY}/apps/$app/description" || echo "Description unavailable") | yad --text-info --fontname=12 --wrap --show-uri \
       --text="$(sed 's/&/&amp;/g' <<<"$abovetext")" \
       "${imageline[@]}" \
@@ -426,7 +429,7 @@ EOF
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool'
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     pkexec apt install $dependencies -y -f --no-install-recommends
@@ -485,7 +488,7 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 
 #In YAD mode, two windows are handled in a side-by-side configuration. As a group, they must be centered on the the screen.
 #In Xlunch mode, the window must be centered, but xlunch only handles absolute offsets.
-{
+get_positions() {
   #determine screen_width and screen_height
   screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
   if [ -z "$screen_dimensions" ];then
@@ -498,37 +501,91 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
   unset screen_dimensions
   
   if [[ "$guimode" == yad* ]];then
-    #total dimensions for both yad windows side by side
-    if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
-      #gui size for small screens
-      height=400
-      width=600
+
+    # if this is being run by yad, there should be a yad window id
+    # store in arrary of x and y
+    # this allows for windows to be moved by the user and the second window to still show up where expected
+    main_yad_window=$(xdotool search --name ^Pi-Apps$)
+    if [ -n "${main_yad_window}" ]; then
+      main_yad_window_pos=($(xwininfo -id $main_yad_window | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'))
+      extents=$(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
+      bl=$(echo $extents | cut -d ',' -f 1) # width of left border
+      br=$(echo $extents | cut -d ',' -f 2) # width of right border
+      t=$(echo $extents | cut -d ',' -f 3)  # height of title bar
+      bb=$(echo $extents | cut -d ',' -f 4) # height of bottom border
+      main_yad_window_pos[0]=$((main_yad_window_pos[0]-bl))
+      main_yad_window_pos[1]=$((main_yad_window_pos[1]-t))
+      #xdotool getwindowgeometry $main_yad_window | awk '{print $2}' | sed -n 2p | tr ',' '\n'
+      #xwininfo -id $main_yad_window | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'
+      echo "${main_yad_window_pos[@]}" >/dev/stderr
+      echo "$main_yad_window" >/dev/stderr
+      #total dimensions for both yad windows side by side
+      if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
+        #gui size for small screens
+        height=400
+        width=600
+        
+        #width of first window
+        width1=250
+        #width of second window
+        width2=$((width - width1))
+      else
+        #gui size for large screens
+        height=600
+        width=800
+        
+        #width of first window
+        width1=320
+        #width of second window
+        width2=$((width - width1))
+      fi
+      #how far down from the top of screen should both windows be?
+      yoffset="${main_yad_window_pos[1]}"
       
-      #width of first window
-      width1=250
-      #width of second window
-      width2=$((width - width1))
+      #screen offsets for window 1
+      #use current position
+      xoffset1="${main_yad_window_pos[0]}"
+      #screen offsets for window 2
+      xoffset2=$((xoffset1+width1))
+      
+      #set completed location arguments for both yad windows
+      geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
+      geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     else
-      #gui size for large screens
-      height=600
-      width=800
+      unset main_yad_window_pos
+      # default positions when the main window does not exist yet
+      #total dimensions for both yad windows side by side
+      if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
+        #gui size for small screens
+        height=400
+        width=600
+        
+        #width of first window
+        width1=250
+        #width of second window
+        width2=$((width - width1))
+      else
+        #gui size for large screens
+        height=600
+        width=800
+        
+        #width of first window
+        width1=320
+        #width of second window
+        width2=$((width - width1))
+      fi
+      #how far down from the top of screen should both windows be?
+      yoffset=$(((screen_height/2)-(height/2)))
       
-      #width of first window
-      width1=320
-      #width of second window
-      width2=$((width - width1))
+      #screen offsets for window 1
+      xoffset1=$(((screen_width/2)-(width/2)))
+      #screen offsets for window 2
+      xoffset2=$(((screen_width/2)-(width/2)+width1))
+      
+      #set completed location arguments for both yad windows
+      geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
+      geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     fi
-    #how far down from the top of screen should both windows be?
-    yoffset=$(((screen_height/2)-(height/2)))
-    
-    #screen offsets for window 1
-    xoffset1=$(((screen_width/2)-(width/2)))
-    #screen offsets for window 2
-    xoffset2=$(((screen_width/2)-(width/2)+width1))
-    
-    #set completed location arguments for both yad windows
-    geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
-    geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     
   elif [[ "$guimode" == xlunch* ]];then
     #desired dimensions for xlunch window
@@ -541,6 +598,8 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
     error "Unrecognized app list style '$guimode'!"
   fi
 }
+# run get_positions once incase sometime requires the position value immediatly
+get_positions
 
 #Compile xlunch if required
 if [[ "$guimode" == xlunch* ]] && ([ ! -d "${DIRECTORY}/xlunch" ] || [ ! -f /usr/bin/xlunch ]);then
