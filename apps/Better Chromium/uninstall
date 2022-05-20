@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#determine where the Chromium customizations folder is.
+if [ -d /etc/chromium.d ];then
+  folder=/etc/chromium.d
+elif [ -d /etc/chromium-browser/customizations ];then
+  folder=/etc/chromium-browser/customizations
+else
+  error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
+fi
+
+status "Reverting all changes..."
+echo "Removing these files:
+  - ${folder}/dark_mode
+  - ${folder}/ui_scale
+  - ${folder}/apikeys
+  - ${folder}/performance_improvements
+  - ${folder}/reduce_writes"
+sudo rm -f "${folder}/apikeys" "${folder}/ui_scale" "${folder}/dark_mode" "${folder}/performance_improvements" "${folder}/reduce_writes"
+
+if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+  status "Changes will take effect after you relaunch Chromium."
+fi

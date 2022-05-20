@@ -1,0 +1,14 @@
+Make the most of your browser.
+This is a collection of improvements for various aspects of Chromium.
+A window will appear with options. Feel free to pick and choose what you want, and uninstall this app to revert all changes.
+Be sure to close Chromium and re-launch it for the changes to take effect.
+
+Features:
+- Dark mode
+- Change UI scale
+- Google Chrome Sync
+- Widevine DRM support (for protected media like Netflix or Spotify)
+- Performance Improvements
+- Reduce writes to the SD card
+
+With the exception of Widevine, this script simply adds files fo the /etc/chromium.d folder, most of which will add command-line flags to Chromium as it launches. Feel free to inspect the script to see how each of these features work.
