@@ -12,7 +12,6 @@ fi
 
 #filter it for the current architecture
 architecture="$(dpkg --print-architecture)"
-architecture=arm64
 url_list="$(echo "$url_list" | grep "_${architecture}\.deb$\|_all\.deb$")"
 
 if [ -z "$url_list" ];then
