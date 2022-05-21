@@ -505,7 +505,7 @@ get_positions() {
     # if this is being run by yad, there should be a yad window id
     # store in arrary of x and y
     # this allows for windows to be moved by the user and the second window to still show up where expected
-    main_yad_window=$(xdotool search --name ^Pi-Apps$)
+    main_yad_window=$YAD_XID
     if [ -n "${main_yad_window}" ]; then
       main_yad_window_pos=($(xwininfo -id $main_yad_window | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'))
       extents=$(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
