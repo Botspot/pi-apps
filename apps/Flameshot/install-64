@@ -1,5 +1,4 @@
 #!/bin/bash
 
 version=11.0.0
-debian_version="$(cat /etc/os-release | grep -oPm1 '(?<=VERSION=")\d+')"
-install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-${debian_version}.arm64.deb || exit 1
+install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-${get_codename}.arm64.deb || exit 1
