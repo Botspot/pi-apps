@@ -166,7 +166,7 @@ EOT
 } # End config_helper()
 
 cd
-install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev || exit 1
+install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev yad || exit 1
 rm -rf $HOME/xmrig
 git_clone --branch v$version https://github.com/xmrig/xmrig || error 'Failed to clone repository!'
 mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
@@ -197,4 +197,4 @@ elif [ "$use_old_config" == "no" ] || [ ! -e $HOME/xmrig.json.bak ]; then
 fi
 
 status_green "\nAll done!"
-status "\n\nIf you chose to run the config helper, you can now run XMRig by running 'xmrig' in from your Terminal.\nIf you didn't (set up a config), then you'll need to use flags to specify your Wallet Address, Rig ID, and so forth.\nHave fun!"
+status "\n\nIf you chose to run the config helper, you can now run XMRig by running 'xmrig' in your Terminal.\nIf you didn't (set up a config), then you'll need to use flags to specify your Wallet Address, Rig ID, and so forth.\nHave fun!"

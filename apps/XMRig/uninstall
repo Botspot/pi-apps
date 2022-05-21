@@ -1,10 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -f /usr/local/bin/xmrig /usr/local/bin/xmrig-chroot
-
-if [ "$1" == "update" ]; then
-  status "Not removing the 'xmrig' folder because uninstall run from updater."
-else
-  sudo rm -rf $HOME/xmrig || error 'Failed to remove $HOME/xmrig dir!'
-fi
+sudo rm -f /usr/local/bin/xmrig /usr/local/bin/xmrig-chroot $HOME/xmrig
