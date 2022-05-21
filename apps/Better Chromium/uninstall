@@ -12,11 +12,17 @@ fi
 status "Reverting all changes..."
 echo "Removing these files:
   - ${folder}/dark_mode
+  - ${folder}/site_dark_mode
   - ${folder}/ui_scale
   - ${folder}/apikeys
   - ${folder}/performance_improvements
   - ${folder}/reduce_writes"
-sudo rm -f "${folder}/apikeys" "${folder}/ui_scale" "${folder}/dark_mode" "${folder}/performance_improvements" "${folder}/reduce_writes"
+sudo rm -f "${folder}/dark_mode" \
+  "${folder}/site_dark_mode" \
+  "${folder}/ui_scale" \
+  "${folder}/apikeys" \
+  "${folder}/performance_improvements" \
+  "${folder}/reduce_writes"
 
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
