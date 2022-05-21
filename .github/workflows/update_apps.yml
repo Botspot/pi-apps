@@ -40,7 +40,7 @@ jobs:
           }
 
           function validate_url(){
-            if command wget -q --spider "$1"; then
+            if command wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36" -q --spider "$1"; then
               return 0
             else
               return 1
