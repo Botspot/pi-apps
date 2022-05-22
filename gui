@@ -507,7 +507,10 @@ get_positions() {
     # this allows for windows to be moved by the user and the second window to still show up where expected
     main_yad_window=$YAD_XID
     if [ -n "${main_yad_window}" ]; then
-      main_yad_window_pos=($(xwininfo -id $main_yad_window | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'))
+      window_info=$(xwininfo -id $main_yad_window)
+      main_yad_window_pos=($(echo "$window_info" | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'))
+      main_yad_window_width=$(echo "$window_info" | grep 'Width:' | awk '{print $2}')
+      main_yad_window_height=$(echo "$window_info" | grep 'Height:' | awk '{print $2}')
       extents=$(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
       bl=$(echo $extents | cut -d ',' -f 1) # width of left border
       br=$(echo $extents | cut -d ',' -f 2) # width of right border
@@ -522,20 +525,20 @@ get_positions() {
       #total dimensions for both yad windows side by side
       if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
         #gui size for small screens
-        height=400
+        height=$main_yad_window_height
         width=600
         
         #width of first window
-        width1=250
+        width1=$main_yad_window_width
         #width of second window
         width2=$((width - width1))
       else
         #gui size for large screens
-        height=600
+        height=$main_yad_window_height
         width=800
         
         #width of first window
-        width1=320
+        width1=$main_yad_window_width
         #width of second window
         width2=$((width - width1))
       fi
@@ -546,7 +549,7 @@ get_positions() {
       #use current position
       xoffset1="${main_yad_window_pos[0]}"
       #screen offsets for window 2
-      xoffset2=$((xoffset1+width1))
+      xoffset2=$((xoffset1+width1+bl+br))
       
       #set completed location arguments for both yad windows
       geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
