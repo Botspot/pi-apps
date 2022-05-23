@@ -1,5 +1,4 @@
 #!/bin/bash
 
-purge_packages || exit 1
-
 flatpak_remove io.github.lainsce.Quilter || exit 1
+purge_packages || exit 1
