@@ -24,6 +24,14 @@ sudo rm -f "${folder}/dark_mode" \
   "${folder}/performance_improvements" \
   "${folder}/reduce_writes"
 
+#clean up old symlinks from reduce_writes script - to avoid errors
+if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
+  rm -rf "$HOME/.config/chromium/Default/Service Worker"
+fi
+if [ -L "$HOME/.cache/chromium" ];then
+  rm -rf "$HOME/.cache/chromium"
+fi
+
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
 fi

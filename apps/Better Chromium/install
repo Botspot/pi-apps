@@ -250,6 +250,14 @@ else
     status "Removing ${folder}/reduce_writes"
   fi
   sudo rm -f "${folder}/reduce_writes"
+  
+  #clean up old symlinks
+  if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
+    rm -rf "$HOME/.config/chromium/Default/Service Worker"
+  fi
+  if [ -L "$HOME/.cache/chromium" ];then
+    rm -rf "$HOME/.cache/chromium"
+  fi
 fi
 
 #widevine
