@@ -1,5 +1,5 @@
 #!/bin/bash
-install_packages yad aria2 udftools cabextract wimtools chntpw genisoimage exfat-fuse exfat-utils wget || exit 1
+install_packages yad aria2 udftools cabextract wimtools chntpw genisoimage exfat-fuse wget exfatprogs '|' exfat-utils || exit 1
 
 git_clone https://github.com/Botspot/wor-flasher || error "Failed to download wor-flasher repository!"
 if [ -d ~/wor-flasher-files ];then
