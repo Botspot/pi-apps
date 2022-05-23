@@ -510,13 +510,14 @@ get_positions() {
       window_info=$(xwininfo -id $main_yad_window)
       # for speed of execution, we are assuming the order of matches from xwininfo
       # this is safe as the output order has been standardized for over a decade
+      # this is the location of where the window content starts inside the title bar and window borders (pos x then pos y)
       main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
+      # these are the dimensions of where the window content starts inside the title bar and window borders (dim x then dim y)
       main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
       # again, for speed, all border widths are saved to one array
       # left, right, title, bottom [0, 1, 2, 3]
+      # this is the size of the window borders (including title bar)
       border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
-      main_yad_window_pos[0]=$((main_yad_window_pos[0]-border_widths[0]))
-      main_yad_window_pos[1]=$((main_yad_window_pos[1]-border_widths[2]))
       #total dimensions for both yad windows side by side
       if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
         #gui size for small screens
@@ -537,20 +538,20 @@ get_positions() {
         #width of second window
         width2=$((width - width1))
       fi
-      #how far down from the top of screen should both windows be?
-      yoffset="${main_yad_window_pos[1]}"
+      #how far down the top of the title bar of yad window is from the top of the screen
+      yoffset=$((main_yad_window_pos[1]-border_widths[2]))
       
       #screen offsets for window 1
-      #use current position
-      xoffset1="${main_yad_window_pos[0]}"
+      #use current position of the left side of the main window border
+      xoffset1=$((main_yad_window_pos[0]-border_widths[0]))
       #screen offsets for window 2
-      xoffset2=$((xoffset1+width1+border_widths[0]+border_widths[1]))
+      #use current position of the right side of the main window border
+      xoffset2=$((xoffset1+border_widths[0]+width1+border_widths[1]))
       
       #set completed location arguments for both yad windows
       geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
       geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     else
-      unset main_yad_window_pos
       # default positions when the main window does not exist yet
       #total dimensions for both yad windows side by side
       if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
@@ -572,7 +573,7 @@ get_positions() {
         #width of second window
         width2=$((width - width1))
       fi
-      #how far down from the top of screen should both windows be?
+      #how far down the top of the title bar of yad window is from the top of the screen
       yoffset=$(((screen_height/2)-(height/2)))
       
       #screen offsets for window 1
