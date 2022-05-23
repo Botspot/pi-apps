@@ -614,8 +614,9 @@ flatpak_install() { #install an app using flatpak
     error "flatpak_install(): Could not install $1 because flatpak is not installed!"
   fi
   
+  status -n "Flatpak: Adding flathub remote... "
   #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
-  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep -v "Note that the directories 
+  ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep --line-buffered -v "Note that the directories 
 '/var/lib/flatpak/exports/share'
 '$HOME/.local/share/flatpak/exports/share'
 are not in the search path set by the XDG_DATA_DIRS environment variable, so
@@ -625,9 +626,11 @@ session is restarted."
   if [ ${PIPESTATUS[0]} != 0 ];then
     exit 1
   fi
+  status_green Done
   
+  status -n "Flatpak: installing $1... "
   #Install the specified app, first as root, if that fails then try installing as user, while removing unwanted output
-  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep -v "Note that the directories 
+  ( sudo flatpak install flathub "$1" -y || flatpak install flathub "$1" -y || error "Flatpak failed to install $1!" ) | grep --line-buffered -v "Note that the directories 
 
 '/var/lib/flatpak/exports/share'
 '$HOME/.local/share/flatpak/exports/share'
@@ -638,6 +641,18 @@ session is restarted."
   if [ ${PIPESTATUS[0]} != 0 ];then
     exit 1
   fi
+  status_green Done
+  
+  #Pi-Apps tries to avoid unnecessary reboots at all cost. Flatpak places desktop launchers in /var/lib/flatpak/exports/share/applications, which is not searched by default.
+  #This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
+  #If there are files in /var/lib/flatpak/exports/share/applications, and XDG_DATA_DIRS is missing flatpak paths, then bind-mount to /usr/share/applications
+  if [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] && [ ! -z "$(ls /var/lib/flatpak/exports/share/applications)" ] && [ -z "$(ls /usr/share/applications/flatpak-temporary)" ];then
+    sudo mkdir -p /usr/share/applications/flatpak-temporary
+    sudo mount --bind /var/lib/flatpak/exports/share/applications /usr/share/applications/flatpak-temporary
+  elif [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] ;then
+    sudo rm -rf /usr/share/applications/flatpak-temporary
+  fi
+  true
 }
 
 flatpak_uninstall() { #uninstall an app using flatpak
