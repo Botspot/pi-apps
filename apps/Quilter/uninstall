@@ -1,0 +1,3 @@
+#!/bin/bash
+
+flatpak_remove io.github.lainsce.Quilter || exit 1
