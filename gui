@@ -479,8 +479,13 @@ runonce <<"EOF"
   fi
 EOF
 
+#Raspbian Buster systems have a bug where XDG_DATA_DIRS is overwritten as the Raspberry Pi desktop is loaded.
+#This fixes it, as PiOS maintainers are unwilling to.
+#See: https://github.com/Botspot/pi-apps/issues/1833
 runonce <<"EOF"
-  sudo_popup sed -i 's;/var/lib/menu-xdg";/var/lib/menu-xdg${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}";g' /usr/bin/startlxde-pi
+  if [ -f /usr/bin/startlxde-pi ] && grep -q '/var/lib/menu-xdg"' /usr/bin/startlxde-pi ;then
+    sudo_popup sed -i 's;/var/lib/menu-xdg";/var/lib/menu-xdg${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}";g' /usr/bin/startlxde-pi
+  fi
 EOF
 
 ) &
