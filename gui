@@ -508,37 +508,32 @@ get_positions() {
     main_yad_window=$YAD_XID
     if [ -n "${main_yad_window}" ]; then
       window_info=$(xwininfo -id $main_yad_window)
-      main_yad_window_pos=($(echo "$window_info" | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'))
-      main_yad_window_width=$(echo "$window_info" | grep 'Width:' | awk '{print $2}')
-      main_yad_window_height=$(echo "$window_info" | grep 'Height:' | awk '{print $2}')
-      extents=$(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
-      bl=$(echo $extents | cut -d ',' -f 1) # width of left border
-      br=$(echo $extents | cut -d ',' -f 2) # width of right border
-      t=$(echo $extents | cut -d ',' -f 3)  # height of title bar
-      bb=$(echo $extents | cut -d ',' -f 4) # height of bottom border
-      main_yad_window_pos[0]=$((main_yad_window_pos[0]-bl))
-      main_yad_window_pos[1]=$((main_yad_window_pos[1]-t))
-      #xdotool getwindowgeometry $main_yad_window | awk '{print $2}' | sed -n 2p | tr ',' '\n'
-      #xwininfo -id $main_yad_window | grep "Corners:" | awk '{print $2}' | tr '+' '\n' | tr '-' '-\n' | sed '/^$/d'
-      echo "${main_yad_window_pos[@]}" >/dev/stderr
-      echo "$main_yad_window" >/dev/stderr
+      # for speed of execution, we are assuming the order of matches from xwininfo
+      # this is safe as the output order has been standardized for over a decade
+      main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
+      main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
+      # again, for speed, all border widths are saved to one array
+      # left, right, title, bottom [0, 1, 2, 3]
+      border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
+      main_yad_window_pos[0]=$((main_yad_window_pos[0]-border_widths[0]))
+      main_yad_window_pos[1]=$((main_yad_window_pos[1]-border_widths[2]))
       #total dimensions for both yad windows side by side
       if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
         #gui size for small screens
-        height=$main_yad_window_height
+        height=${main_yad_window_dim[1]}
         width=600
         
         #width of first window
-        width1=$main_yad_window_width
+        width1=${main_yad_window_dim[0]}
         #width of second window
         width2=$((width - width1))
       else
         #gui size for large screens
-        height=$main_yad_window_height
+        height=${main_yad_window_dim[1]}
         width=800
         
         #width of first window
-        width1=$main_yad_window_width
+        width1=${main_yad_window_dim[0]}
         #width of second window
         width2=$((width - width1))
       fi
@@ -549,7 +544,7 @@ get_positions() {
       #use current position
       xoffset1="${main_yad_window_pos[0]}"
       #screen offsets for window 2
-      xoffset2=$((xoffset1+width1+bl+br))
+      xoffset2=$((xoffset1+width1+border_widths[0]+border_widths[1]))
       
       #set completed location arguments for both yad windows
       geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
