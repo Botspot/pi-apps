@@ -121,8 +121,8 @@ echo "chromium-browser-l10n hold" | sudo dpkg --set-selections
 "${DIRECTORY}/api" apt_lock_wait
 echo "chromium-codecs-ffmpeg-extra hold" | sudo dpkg --set-selections
 
-if [ "$output" -le 88 ] && [ "$(lsb_release -s -c)" == 'bullseye' ];then
-  status "Fixing seccomp errors for Chromium $output on Bullseye."
+if [ "$version" -le 88 ] && [ "$(lsb_release -s -c)" == 'bullseye' ];then
+  status "Fixing seccomp errors for Chromium $version on Bullseye."
   echo "Creating an override file at /etc/chromium-browser/customizations/01-disable-seccomp"
   echo 'CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --disable-seccomp-filter-sandbox"' | sudo tee /etc/chromium-browser/customizations/01-disable-seccomp
 fi
