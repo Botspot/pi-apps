@@ -2240,6 +2240,16 @@ unzip() { #say what is being extracted
   command unzip -o "$@"
   return $?
 }
+
+sudo_popup() { #just like sudo on passwordless systems like PiOS, but displays a password dialog otherwise. Avoids displaying a password prompt to an invisible terminal.
+  if sudo -n true; then
+    # sudo is available (within sudo timer) or passwordless
+    sudo "$@"
+  else
+    # sudo is not available (not within sudo timer)
+    pkexec "$@"
+  fi
+}
 #end of command interceptors
 
 trap "exit 1" INT

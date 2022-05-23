@@ -432,14 +432,14 @@ runonce <<"EOF"
   dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
-    pkexec apt install $dependencies -y -f --no-install-recommends
+    sudo_popup apt install $dependencies -y -f --no-install-recommends
   fi
 EOF
 
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
-    pkexec bash -c 'dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && apt update && apt install box86 -y'
+    sudo_popup bash -c 'dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && apt update && apt install box86 -y'
   fi
   
   #if box86 is supposedly installed, but box86 command not found, reinstall box86
@@ -477,6 +477,10 @@ runonce <<"EOF"
   if [ -d "${DIRECTORY}/xlunch" ];then
     rm -rf "${DIRECTORY}/xlunch"
   fi
+EOF
+
+runonce <<"EOF"
+  sudo_popup sed -i 's;/var/lib/menu-xdg";/var/lib/menu-xdg${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}";g' /usr/bin/startlxde-pi
 EOF
 
 ) &
