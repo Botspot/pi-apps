@@ -527,7 +527,7 @@ get_positions() {
         #width of first window
         width1=${main_yad_window_dim[0]}
         #width of second window
-        width2=$((width - width1))
+        width2=350
       else
         #gui size for large screens
         height=${main_yad_window_dim[1]}
@@ -536,7 +536,7 @@ get_positions() {
         #width of first window
         width1=${main_yad_window_dim[0]}
         #width of second window
-        width2=$((width - width1))
+        width2=480
       fi
       #how far down the top of the title bar of yad window is from the top of the screen
       yoffset=$((main_yad_window_pos[1]-border_widths[2]))
