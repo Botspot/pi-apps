@@ -1,0 +1,3 @@
+#!/bin/bash
+
+flatpak_remove org.gnome.World.PikaBackup || exit 1
