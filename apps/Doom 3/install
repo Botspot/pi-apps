@@ -7,7 +7,7 @@ sudo apt purge -y sdl2-image sdl2-mixer sdl2-ttf || true
 install_packages libfontconfig-dev automake libtool libfreeimage-dev \
 libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
 libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
-freeglut3-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake build-essential \
+freeglut3-dev libvorbisfile3 libcurl4 cmake build-essential \
 libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
 
 cd /tmp
