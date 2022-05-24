@@ -1,29 +1,51 @@
 #!/bin/bash
-# Add repository source to apt sources.list
-echo "Adding ubuntu repository..."
-echo "deb http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
 
-# Add ubuntu keyring
-echo "Signing ubuntu repository..."
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3B4FE6ACC0B21F32
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
-  error "Failed to sign the bionic-updates repository!"
+# check if upstream-release is available
+if [ -f /etc/upstream-release/lsb-release ]; then
+  # this is a derivative, get the upstream release info
+  release=$(lsb_release -suc)
+else
+  release=$(lsb_release -sc)
 fi
 
-# Add preferences so the ubuntu repositories don't become your "default" repositories
-echo "Preventing Ubuntu repository from causing apt problems..."
-sudo wget -O /etc/apt/preferences.d/99bionic-updates https://raw.githubusercontent.com/ryanfortner/pi-bashscripts-files/main/Files/99bionic-updates
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
-  error "wget failed to download 99bionic-updates config file!"
+# it would be bad to run this on bionic, check and skip adding the repo if on ubuntu bionic
+if [[ "$release" != "bionic" ]]; then
+  # Add repository source to apt sources.list
+  echo "Adding ubuntu repository..."
+  echo "deb [arch=$(dpkg --print-architecture)] http://ports.ubuntu.com/ubuntu-ports bionic-updates main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
+
+  # Add ubuntu keyring
+  echo "Signing ubuntu repository..."
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3B4FE6ACC0B21F32
+  if [ $? != 0 ];then
+    sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+    error "Failed to sign the bionic-updates repository!"
+  fi
+
+  # Add preferences so the ubuntu repositories don't become your "default" repositories
+  echo "Preventing Ubuntu repository from causing apt problems..."
+  echo "Package: *
+Pin: release a=bionic-updates
+Pin-Priority: 1" | sudo tee /etc/apt/preferences.d/99bionic-updates >/dev/null
+  if [ $? != 0 ];then
+    sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+    error "wget failed to download 99bionic-updates config file!"
+  fi
+
+  "${DIRECTORY}/api" apt_lock_wait
+
+  echo "Running 'sudo apt update'..."
+  sudo apt update || error "Failed to run 'sudo apt update'!"
+  "${DIRECTORY}/api" apt_lock_wait
+  echo "Installing Firefox package..."
+  sudo apt install -t bionic-updates firefox -y || error "Failed to install firefox!"
+
+else
+  "${DIRECTORY}/api" apt_lock_wait
+
+  echo "Running 'sudo apt update'..."
+  sudo apt update || error "Failed to run 'sudo apt update'!"
+  "${DIRECTORY}/api" apt_lock_wait
+  echo "Installing Firefox package..."
+  sudo apt install firefox -y || error "Failed to install firefox!"
 fi
-
-"${DIRECTORY}/api" apt_lock_wait
-
-echo "Running 'sudo apt update'..."
-sudo apt update || error "Failed to run 'sudo apt update'!"
-"${DIRECTORY}/api" apt_lock_wait
-
-echo "Installing Firefox package..."
-sudo apt install -t bionic-updates firefox -y || error "Failed to install firefox!"

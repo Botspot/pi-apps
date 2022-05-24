@@ -1,0 +1,282 @@
+#!/bin/bash
+
+#determine if chromium is installed
+if command -v chromium >/dev/null || command -v chromium-browser >/dev/null ;then
+  echo "Chromium is installed. Continuing..."
+else
+  error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
+fi
+
+#determine where the Chromium customizations folder is.
+if [ -d /etc/chromium.d ];then
+  folder=/etc/chromium.d
+elif [ -d /etc/chromium-browser/customizations ];then
+  folder=/etc/chromium-browser/customizations
+else
+  error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
+fi
+
+#detect if dark mode is currently enabled by this tool
+if [ -f "${folder}/dark_mode" ];then
+  dark_mode=TRUE
+else
+  dark_mode=FALSE
+fi
+
+#detect if dark mode for all websites is currently enabled by this tool
+if [ -f "${folder}/site_dark_mode"  ];then
+  site_dark_mode=TRUE
+else
+  site_dark_mode=FALSE
+fi
+
+#detect current UI scale value
+if [ -f "${folder}/ui_scale" ];then
+  ui_scale="$(cat "${folder}/ui_scale" | grep -o '\--force-device-scale-factor=.*' | tr -cd '0123456789.\n')"
+else
+  ui_scale=1.00
+fi
+
+#detect if google sync is currently enabled by this tool
+if [ -f "${folder}/apikeys" ];then
+  google_sync=TRUE
+else
+  google_sync=FALSE
+fi
+
+#detect if various performance improvements are currently enabled by this tool
+if [ -f "${folder}/performance_improvements" ];then
+  performance_improvements=TRUE
+else
+  performance_improvements=FALSE
+fi
+
+#detect if the reduce_writes script is enabled
+if [ -f "${folder}/reduce_writes" ];then
+  reduce_writes=TRUE
+else
+  reduce_writes=FALSE
+fi
+
+#detect if Widevine is enabled
+if [ -d /opt/WidevineCdm ];then
+  widevine=TRUE
+else
+  widevine=FALSE
+fi
+#detect if Widevine can be enabled
+if [ $arch == 32 ];then
+  widevine_possible=TRUE
+  widevine_message=(--field="Enable Widevine DRM":CHK "$widevine")
+else
+  widevine_possible=FALSE
+  widevine_message=()
+fi
+
+#Set text of dialog window
+text="<b>Better Chromium</b> - by Botspot"
+
+#detect if chromium is running, and if so, remind the user to relaunch it when done
+if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+  text+=$'\n'"Changes will take effect after you relaunch Chromium."
+fi
+
+output="$(yad --center --form --width=410 --separator='\n' \
+  --title="Better Chromium" \
+  --window-icon="$(dirname "$0")/icon-64.png" \
+  --text="$text" \
+  --field="Enable Dark Mode":CHK "$dark_mode" \
+  --field="Dark Mode for all websites":CHK "$site_dark_mode" \
+  --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
+  --field="Enable Google Sync":CHK "$google_sync" \
+  --field="Performance Improvements":CHK "$performance_improvements" \
+  --field="Reduce SD card writes":CHK "$reduce_writes" \
+  "${widevine_message[@]}")"
+
+button=$?
+if [ "$button" != 0 ];then
+  echo "User error: Exiting now without making any changes."
+  exit 1
+fi
+
+echo "Received values:"
+dark_mode="$(sed -n 1p <<<"$output")"
+echo "dark_mode: $dark_mode"
+site_dark_mode="$(sed -n 2p <<<"$output")"
+echo "site_dark_mode: $site_dark_mode"
+ui_scale="$(sed -n 3p <<<"$output")"
+echo "ui_scale: $ui_scale"
+google_sync="$(sed -n 4p <<<"$output")"
+echo "google_sync: $google_sync"
+performance_improvements="$(sed -n 5p <<<"$output")"
+echo "performance_improvements: $performance_improvements"
+reduce_writes="$(sed -n 6p <<<"$output")"
+echo "reduce_writes: $reduce_writes"
+widevine="$(sed -n 7p <<<"$output")"
+echo "widevine: $widevine"
+echo
+
+#if user enabled reduce_writes or performance_improvements, and ZRAM is not installed, then recommend the More RAM app
+if [ ! -f /usr/bin/zram.sh ] && [ "$performance_improvements" == TRUE ] ;then
+  
+  yad --center --width=410 --separator='\n' \
+  --title="Better Chromium" \
+  --window-icon="$(dirname "$0")/icon-64.png" \
+  --text="You've chosen to improve Chromium's performance by adding a few flags to it. Further improvement is possible by installing the <b>More RAM</b> app on Pi-Apps. This increases usable RAM while avoiding a swap file." \
+  --button="Thanks for the tip - I'll check out <b>More RAM</b>.":0 &>/dev/null &
+elif [ ! -f /usr/bin/zram.sh ] && [ "$reduce_writes" == TRUE ] ;then
+  
+  yad --center --width=410 --separator='\n' \
+  --title="Better Chromium" \
+  --window-icon="$(dirname "$0")/icon-64.png" \
+  --text="You've chosen to reduce writes to the SD card. Further improvement is possible by installing the <b>More RAM</b> app on Pi-Apps. This increases usable RAM while avoiding a swap file." \
+  --button="Thanks for the tip - I'll check out <b>More RAM</b>.":0 &>/dev/null &
+fi
+
+#
+#write changes to chromium flag folder
+#
+status "Writing changes..."
+#dark mode
+if [ "$dark_mode" == TRUE ];then
+  #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
+  echo "Adding --force-dark-mode to ${folder}/dark_mode"
+  
+  cat << EOF | sudo tee "${folder}/dark_mode" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --force-dark-mode"
+EOF
+else
+  #dark mode set to false - so remove the file
+  if [ -f "${folder}/dark_mode" ];then
+    status "Removing ${folder}/dark_mode"
+  fi
+  sudo rm -f "${folder}/dark_mode"
+fi
+
+#dark mode for all websites
+if [ "$site_dark_mode" == TRUE ];then
+  #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
+  echo "Adding ---enable-features=WebContentsForceDark:increase_text_contrast/true to ${folder}/site_dark_mode"
+  
+  cat << EOF | sudo tee "${folder}/site_dark_mode" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none/foreground_lightness_threshold/150/background_lightness_threshold/150" #WebContentsForceDark:increase_text_contrast/true"
+EOF
+else
+  #dark mode set to false - so remove the file
+  if [ -f "${folder}/site_dark_mode" ];then
+    status "Removing ${folder}/site_dark_mode"
+  fi
+  sudo rm -f "${folder}/site_dark_mode"
+fi
+
+#UI scale
+if [ "$ui_scale" != 1.00 ];then
+  #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
+  echo "Adding --device-scale-factor=${ui_scale} to ${folder}/ui_scale"
+  
+  cat << EOF | sudo tee "${folder}/ui_scale" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --force-device-scale-factor=${ui_scale}"
+EOF
+else
+  #ui scale set to 1.00 (default), so remove file
+  if [ -f "${folder}/ui_scale" ];then
+    status "Removing ${folder}/ui_scale"
+  fi
+  sudo rm -f "${folder}/ui_scale"
+fi
+
+#google_sync
+if [ "$google_sync" == TRUE ];then
+  #add a file from official Debian version of the chromium package
+  echo "Adding GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID, and GOOGLE_DEFAULT_CLIENT_SECRET to ${folder}/apikeys"
+  
+  cat << EOF | sudo tee "${folder}/apikeys" >/dev/null
+# API keys assigned to Debian by Google for access to their services like sync and gmail.
+
+export GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k"
+export GOOGLE_DEFAULT_CLIENT_ID="811574891467.apps.googleusercontent.com"
+export GOOGLE_DEFAULT_CLIENT_SECRET="kdloedMFGdGla2P1zacGjAQh"
+EOF
+else
+  #google sync set to false, so remove the file
+  if [ -f "${folder}/apikeys" ];then
+    status "Removing ${folder}/apikeys"
+  fi
+  sudo rm -f "${folder}/apikeys"
+fi
+
+#performance improvements
+if [ "$performance_improvements" == TRUE ];then
+  #various chromium flags from https://forums.raspberrypi.com/viewtopic.php?t=199543
+  #I removed a few because they reduced WebGL performance or stability
+  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --answers-in-suggest --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder --enable-accelerated-video-decode"
+  
+  echo "Adding $flags to ${folder}/performance_improvements"
+  cat << EOF | sudo tee "${folder}/performance_improvements" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS $flags"
+EOF
+else
+  #performance improvements set to false, so remove file
+  if [ -f "${folder}/performance_improvements" ];then
+    status "Removing ${folder}/performance_improvements"
+  fi
+  sudo rm -f "${folder}/performance_improvements"
+fi
+
+#reduce sd card writes
+if [ "$reduce_writes" == TRUE ];then
+  #mount chromium files to tmpfs (script will run with user's privileges whenever Chromium is launched)
+  #From: https://forums.raspberrypi.com/viewtopic.php?p=1865820
+  echo "Adding ${folder}/reduce_writes script to mount cache/ServiceWorker to /dev/shm when Chromium launches"
+  cat << "EOF" | sudo tee "${folder}/reduce_writes" >/dev/null
+#!/bin/bash
+
+rm -rf /dev/shm/chromium
+rm -rf "$HOME/.config/chromium/Default/Service Worker"
+rm -rf "$HOME/.cache/chromium"
+
+mkdir -p /dev/shm/chromium
+
+mkdir -p /dev/shm/chromium/serviceWorker
+rm -rf "$HOME/.config/chromium/Default/Service Worker"
+ln -s /dev/shm/chromium/serviceWorker/ "$HOME/.config/chromium/Default/Service Worker"
+
+mkdir -p /dev/shm/chromium/cache
+rm -rf "$HOME/.cache/chromium"
+ln -s /dev/shm/chromium/cache/ "$HOME/.cache/chromium"
+EOF
+else
+  if [ -f "${folder}/reduce_writes" ];then
+    status "Removing ${folder}/reduce_writes"
+  fi
+  sudo rm -f "${folder}/reduce_writes"
+  
+  #clean up old symlinks
+  if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
+    rm -rf "$HOME/.config/chromium/Default/Service Worker"
+  fi
+  if [ -L "$HOME/.cache/chromium" ];then
+    rm -rf "$HOME/.cache/chromium"
+  fi
+fi
+
+#widevine
+if [ "$widevine_possible" == TRUE ] && [ "$widevine" == TRUE ] && [ ! -d /opt/WidevineCdm ];then
+  #install Chromium Widevine app
+  "${DIRECTORY}/manage" install "Chromium Widevine"
+  
+elif [ "$widevine_possible" == TRUE ] && [ "$widevine" == FALSE ];then
+  #disable Chromium Widevine
+  if package_installed libwidevinecdm0 ;then
+    sudo apt purge -y libwidevinecdm0
+  fi
+  
+  if [ -d /opt/WidevineCdm ];then
+    #uninstall Chromium Widevine app
+    "${DIRECTORY}/manage" uninstall "Chromium Widevine"
+  fi
+fi
+
+if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+  status "Changes will take effect after you relaunch Chromium."
+fi

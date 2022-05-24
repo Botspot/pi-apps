@@ -1,0 +1,131 @@
+#!/bin/bash
+
+#Automatically determine available Chromium versions from Raspberry Pi Archive website
+url_list="$(wget -O- https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/ | \
+  tr '<>' '\n' | grep '^a href="chromium' | tr '"' '\n' | grep '\.deb$')"
+# $url_list is a list of lines like this: "chromium-*-rpt1_arm[hf,64].deb"
+
+#make sure $url_list contains a list
+if [ -z "$url_list" ];then
+  error "Failed to get a list of available Chromium versions!\nURL was: https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/"
+fi
+
+#filter it for the current architecture
+architecture="$(dpkg --print-architecture)"
+url_list="$(echo "$url_list" | grep "_${architecture}\.deb$\|_all\.deb$")"
+
+if [ -z "$url_list" ];then
+  error "There do not appear to be any available Chromium versions for your '$architecture' architecture."
+fi
+
+#determine the available versions of Chromium
+version_list="$(echo "$url_list" | grep '^chromium-browser_' | sed 's/\..*//' | sed 's/.*_//' | sort -V | uniq)"
+
+#determine the main package names available. (chromium-browser, chromium-codecs-ffmpeg, etc.)
+package_names="$(echo "$url_list" | sed 's/_.*//' | sort | uniq)"
+
+#Some versions of Chromium have been recompiled by Raspbian multiple times. (rpt1_armhf.deb, rpt4_armhf.deb, rpt5_armhf.deb, rpt6_armhf.deb)
+#Only show the last rpt* versions
+IFS=$'\n'
+url_list_2=''
+for version in $version_list ;do
+  #determine the last rpt release of every url for the given version
+  for package_name in $package_names ;do
+    url_list_2+="$(echo "$url_list" | grep "^${package_name}_" | grep "_${version}\." | sort -Vr | head -n1)"$'\n'
+  done
+done
+url_list="$(grep . <<<"$url_list_2")" #set url_list to url_list_2, while removing any empty lines.
+unset url_list_2
+
+#chromium version can be specified by $1
+#usage: /path/to/this-script 78
+
+if [ -z "$1" ];then
+  yad_list="$(echo "$version_list" | sed 's/^/false\nChromium version /g')"
+  
+  version=''
+  while [ -z "$version" ];do
+    version="$(echo "$yad_list" | yad --center --title="Choose Chromium version" --height=290 --no-headers \
+      --text="  Which Chromium version to install today?  " \
+      --radiolist --list --column=Tick --column=version --separator='\n' --print-column=2 \
+      --window-icon="$(dirname "$0")/icon-64.png" \
+      --button=!${DIRECTORY}/icons/check.png!OK:0)"
+    button=$?
+    
+    [ $button != 0 ] && error "User error: exited chromium version selection list"
+  done
+  #get just chromium version NUMBER
+  version="$(echo "$version" | awk '{print $3}')"
+else
+  version="$1"
+fi
+
+#Set url variables based on selected version number
+cb_url="$(echo "$url_list" | grep "^chromium-browser_${version}\.")"
+l10n_url="$(echo "$url_list" | grep "^chromium-browser-l10n_${version}\.")"
+ffmpeg_extra_url="$(echo "$url_list" | grep "^chromium-codecs-ffmpeg-extra_${version}\.")"
+
+if [ -z "$cb_url" ];then
+  error "Failed to determine the url for chromium-browser!\nChosen version was '$version'\nurl_list was: '$url_list'"
+elif [ -z "$l10n_url" ];then
+  error "Failed to determine the url for chromium-browser-l10n!\nChosen version was '$version'\nurl_list was: '$url_list'"
+elif [ -z "$ffmpeg_extra_url" ];then
+  error "Failed to determine the url for chromium-codecs-ffmpeg-extra!\nChosen version was '$version'\nurl_list was: '$url_list'"
+fi
+
+echo "Debs to install:
+$cb_url
+$l10n_url
+$ffmpeg_extra_url"
+
+#wait until chromium is not running
+if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
+  echo -n "Please close all Chromium windows first."
+  yad --info --center --window-icon="$(dirname "$0")/icon-64.png" \
+  --title="Close Chromium first" --text="$(echo -e "  Chromium is running.\n  To reduce the risk of Chromium profile corruption, please close Chromium first.  ")" \
+  --window-icon="$(dirname "$0")/icon-64.png" --no-buttons &
+  yadpid=$!
+  while [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];do
+    echo -n '.'
+    sleep 1
+  done
+  echo
+  kill $yadpid
+fi
+
+#back up chromium config directory
+if [ ! -d ~/.config/chromium.bak ];then
+  echo "Backing up existing Chromium profile directory..."
+  rm -rf ~/.config/chromium.bak
+  
+  cp -a ~/.config/chromium ~/.config/chromium.bak
+fi
+
+#download the files
+status "Downloading the packages..."
+rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
+wget -O cb.deb "https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/$cb_url" || error "Failed to download $cb_url"
+wget -O l10n.deb "https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/$l10n_url" || error "Failed to download $l10n_url"
+wget -O ffmpeg_extra.deb "https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/$ffmpeg_extra_url" || error "Failed to download $ffmpeg_extra_url"
+
+status "Installing the packages..."
+"${DIRECTORY}/api" apt_lock_wait
+sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" || error "APT failed to install the packages"
+rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
+
+status "Holding Chromium version so it won't upgrade..."
+"${DIRECTORY}/api" apt_lock_wait
+echo "chromium-browser hold" | sudo dpkg --set-selections
+"${DIRECTORY}/api" apt_lock_wait
+echo "chromium-browser-l10n hold" | sudo dpkg --set-selections
+"${DIRECTORY}/api" apt_lock_wait
+echo "chromium-codecs-ffmpeg-extra hold" | sudo dpkg --set-selections
+
+if [ "$version" -le 88 ] && [ "$(lsb_release -s -c)" == 'bullseye' ];then
+  status "Fixing seccomp errors for Chromium $version on Bullseye."
+  echo "Creating an override file at /etc/chromium-browser/customizations/01-disable-seccomp"
+  echo 'CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --disable-seccomp-filter-sandbox"' | sudo tee /etc/chromium-browser/customizations/01-disable-seccomp
+fi
+
+#echo "Fixing Chromium profile..."
+#rm ~/'.config/chromium/Default/Web Data' &>/dev/null

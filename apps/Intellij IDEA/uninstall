@@ -1,6 +1,5 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm -rf ~/idea_ic 2>/dev/null
-rm ~/.local/share/applications/intellijidea.desktop
+sudo rm -rf /opt/ideaIC /usr/share/applications/intellijidea.desktop
 exit 0

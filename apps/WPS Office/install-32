@@ -34,14 +34,14 @@ fi
 echo
 install_packages schroot debootstrap || exit 1
 
-chroot_dependencies="sudo wget strace file python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv"
+chroot_dependencies="sudo ttf-mscorefonts-installer wget strace file python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv"
 
 #Generate the chroot
 status "\nGenerating chroot... this will take a while."
 sudo schroot --all-sessions -e #end any running schroots
 sudo rm -rf /opt/wps-office-chroot || true #this may fail if the chroot is already mounted, but it doesn't matter
 #This is an arm64 userspace of Debian Bullseye; run with nice to reduce system lagginess
-sudo nice debootstrap --variant=buildd --include="$(echo "$chroot_dependencies" | sed 's/ /,/g')" --arch arm64 bullseye /opt/wps-office-chroot http://ftp.us.debian.org/debian/ || error "debootstrap failed to build a Bullseye chroot!"
+sudo nice debootstrap --variant=buildd --components=main,contrib,non-free --include="$(echo "$chroot_dependencies" | sed 's/ /,/g')" --arch arm64 bullseye /opt/wps-office-chroot http://ftp.us.debian.org/debian/ || error "debootstrap failed to build a Bullseye chroot!"
 
 #Enable internet in the chroot
 #sudo cp /etc/resolv.conf /opt/wps-office-chroot/etc/resolv.conf
@@ -70,8 +70,8 @@ preserve-environment=true" | sudo tee /etc/schroot/chroot.d/wps-office-chroot >/
 
 echo
 #package found in: https://linux.wps.cn/
-version=11.1.0.10920
-wget "https://wdl1.cache.wps.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
+version=11.1.0.10976
+wget "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
 sudo mv /tmp/wps-office.deb /opt/wps-office-chroot/wps-office.deb
 
 status "Installing wps package in the chroot..."

@@ -76,4 +76,3 @@ fi
 systemctl --user unmask pulseaudio.service pulseaudio.socket
 systemctl --user enable pulseaudio.service pulseaudio.socket
 echo "Installation complete!"
-

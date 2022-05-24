@@ -1,0 +1,11 @@
+#!/bin/bash
+
+version=2.6.6-1
+
+if [ "$(get_codename)" == "bullseye" ]; then
+    #install bullseye version
+    install_packages https://apt.raspbian-addons.org/debian/pool/main/k/keepassxc/keepassxc_${version}_arm64.deb || exit 1
+else 
+    #install buster version
+    install_packages https://github.com/ryanfortner/ryanfortner/releases/download/1002/keepassxc_2.6.6-5_arm64.deb || exit 1
+fi

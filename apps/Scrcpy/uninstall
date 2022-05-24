@@ -1,4 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop
+sudo rm -rf /usr/local/share/scrcpy /usr/share/applications/scrcpy.desktop /usr/local/share/applications/scrcpy.desktop /usr/local/bin/scrcpy /usr/local/share/man/man1/scrcpy.1 /usr/local/share/icons/hicolor/256x256/apps/scrcpy.png /usr/local/share/zsh/site-functions/_scrcpy /usr/local/share/bash-completion/completions/scrcpy

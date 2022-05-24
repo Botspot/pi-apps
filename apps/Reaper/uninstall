@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+sudo rm -rf /opt/REAPER /usr/local/bin/reaper $HOME/.local/share/icons/hicolor/64x64/apps/reaper.png $HOME/.local/share/applications/reaper.desktop $HOME/.config/REAPER/UserPlugins/reaper_reapack-armv7l.so

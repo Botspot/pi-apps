@@ -1,0 +1,3 @@
+#!/bin/bash
+
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/GitHubDesktop-linux-armhf-3.0.0.deb || exit 1

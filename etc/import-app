@@ -169,6 +169,8 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   
   echo -n "Syncing fork with upstream repo... "
   cd $(pwd)/pi-apps
+  git config user.email "user@example.com" #set email in this repo so that it can pull
+  git config user.name "user" #set username in this repo so that it can pull
   errors="$(git pull https://github.com/Botspot/pi-apps --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
   
   cd .. #back to tmpdir

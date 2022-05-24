@@ -3,91 +3,95 @@
 #this generates a yad-friendly app list. This is run every time the gui script is executed.
 #if this script detects nothing has changed since last run, then it will echo back the app list that was generated last time.
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
+if [ -z "$DIRECTORY" ];then
+  DIRECTORY="$(readlink -f "$(dirname "$0")")"
+fi
+
+mktimestamps() {
+  #these directories are checked for changes
+  checkfiles="${DIRECTORY}/apps
+${DIRECTORY}/data/settings
+${DIRECTORY}/data/status
+${DIRECTORY}/etc
+${DIRECTORY}/icons/categories
+${DIRECTORY}/apps
+${DIRECTORY}/preload
+${DIRECTORY}/api
+${DIRECTORY}/data/category-overrides"
+  local IFS=$'\n'
+  for i in $checkfiles
+  do
+    printf "$i $(stat -c %Y "${i}" 2>/dev/null) "
+    
+    if [ -d "$i" ];then
+      find "$i" -type f -printf '%T@ %p\n' | sort -rn | head -n1
+    else
+      printf '\n'
+    fi
+  done
+}
+
+[ "$1" == source ] && return 0
 
 function error {
   echo -e "\e[91m$1\e[39m" 1>&2
   exit 1
 }
 
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-
 #yad or xlunch format
-format="$1"
+guimode="$1"
 
-if [ -z "$format" ];then
+if [ -z "$guimode" ];then
   format=yad
-elif [[ "$format" = xlunch* ]];then
+elif [[ "$guimode" = xlunch* ]];then
   format=xlunch
-elif [[ "$format" = yad* ]];then
+elif [[ "$guimode" = yad* ]];then
   format=yad
-elif [ "$format" != 'yad' ] && [ "$format" != 'xlunch' ];then
+elif [ "$guimode" != 'yad' ] && [ "$guimode" != 'xlunch' ];then
   error "Unknown list format '$format'!"
 fi
 
-#specifies an app folder(s)
+#specifies a category to preload (can be left empty to load main page)
 prefix="$2"
+
+if [ "$prefix" == '/' ];then
+  prefix=
+fi
+
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "${text_color+x}" ] && [ "$format" == yad ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    text_color=$(echo "import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import Gdk
+win = Gtk.Window()
+vb = Gtk.VBox()
+tv = Gtk.TextView()
+vb.add(tv)
+win.show_all()
+style = tv.get_style_context()
+textcolor = style.get_color(Gtk.StateType.NORMAL)
+print(Gdk.RGBA.to_string(textcolor))
+" | python -)
+  else
+    text_color=""
+  fi
+fi
+export text_color
 
 timestampfile="${DIRECTORY}/data/preload/timestamps-$(echo "$prefix" | tr -d '/')"
 listfile="${DIRECTORY}/data/preload/LIST-$(echo "$prefix" | tr -d '/')"
 
 mkdir -p "${DIRECTORY}/data/preload"
 
-{ #compile the genapplist-yad.c program
-if [ ! -f "${DIRECTORY}/etc/genapplist-yad" ] && [ -f "${DIRECTORY}/etc/genapplist-yad.c" ];then
-  echo "Compiling genapplist-yad program..." 1>&2
-  
-  command -v gcc >/dev/null || sudo apt install -y gcc 1>&2
-  gcc "${DIRECTORY}/etc/genapplist-yad.c" -o "${DIRECTORY}/etc/genapplist-yad" 1>&2 || failed=1
-
-  #Test the program and make sure it outputs 5 lines
-  if [ "$(APPS=Arduino DIRECTORY="$DIRECTORY" "${DIRECTORY}/etc/genapplist-yad" | wc -l)" != 5 ];then
-    failed=1
-  fi
-
-  if [ "$failed" == 1 ];then
-    rm -f "${DIRECTORY}/etc/genapplist-yad"
-    echo "The genapplist-yad program failed to compile." 1>&2
-  else
-    echo "Success! The genapplist-yad program has been compiled." 1>&2
-  fi
-fi
-}
-
-mktimestamps() {
-  #these directories are checked for changes
-  checkdirs="${DIRECTORY}/apps
-${DIRECTORY}/data/settings
-${DIRECTORY}/data/status
-${DIRECTORY}/etc
-${DIRECTORY}/icons/categories"
-  
-  timestamps=''
-  local IFS=$'\n'
-  for dir in $checkdirs
-  do
-    timestamps="$timestamps
-dir $dir $(stat -c %Y "${dir}/$(ls -t "$dir" | head -n1)")"
-  done
-  
-  #remove first empty newline and check a few other things for changes too
-  timestamps="prefix: $prefix
-format: $format
-number of files: $(ls -1q "${DIRECTORY}/apps"/* | wc -l)
-preload shasum: $(sha256sum "${DIRECTORY}/preload" | awk '{print $1}')
-api shasum: $(sha256sum "${DIRECTORY}/api" | awk '{print $1}')
-categories shasum: $(shasum "${DIRECTORY}/etc/categories" | awk '{print $1}')
-category-overrides shasum: $(shasum "${DIRECTORY}/data/category-overrides" | awk '{print $1}')
-updatable-apps shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-apps" | awk '{print $1}')
-updatable-files shasum: $(shasum "${DIRECTORY}/data/update-status/updatable-files" | awk '{print $1}')
-${timestamps:1}"
-}
-
 reloadlist=0
 
 if [ -f "$timestampfile" ];then
-  #get modified timestamps for directories
-  mktimestamps
+  #get modified timestamps for files/directories in the pi-apps folder
+  timestamps="$(mktimestamps)"
   
   if [ "$timestamps" == "$(cat "$timestampfile")" ];then
     #if current timestamps and saved timestamps match, then don't reload the list
@@ -97,8 +101,7 @@ if [ -f "$timestampfile" ];then
     #timestamps don't match, so reload the list
     reloadlist=1
     echo "Timestamps don't match" 1>&2
-    
-    echo -e "original file: $(cat "$timestampfile")\nnew timestamp: $timestamps" 1>&2
+    #echo -e "original file: $(cat "$timestampfile")\nnew timestamp: $timestamps" 1>&2
   fi
 else
   #timestamp file not found
@@ -110,33 +113,42 @@ if [ ! -f "$listfile" ] || [ -z "$(cat "$listfile")" ];then
   reloadlist=1
 fi
 
+#If updates available, show special Updates category (returned separately to avoid re-preloading after update-check finishes)
+if [ -z "$prefix" ] && [ "$format" == yad ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
+  #yad format
+  echo "${DIRECTORY}/icons/categories/Updates.png
+Updates
+Updates/
+Pi-Apps updates are available. Click here to update your apps.
+$text_color"
+elif [ -z "$prefix" ] && [ "$format" == xlunch ] && ([ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ]);then
+  #xlunch format
+  echo "Updates;${DIRECTORY}/icons/categories/Updates-64.png;:exec "\""echo Updates/"\"""
+fi
+
 if [ $reloadlist == 1 ];then
-  echo "Generating list..." 1>&2
+  echo "Generating list for '$prefix'..." 1>&2
   
   #for app_categories() and app_status() functions
-  source "${DIRECTORY}/api"
-  vfiles="$(app_categories | grep . | sort | uniq)" #generate a virtual file system with apps in folders represented as subdirectories
+  if ! command -v app_categories >/dev/null ;then
+    source "${DIRECTORY}/api"
+  fi
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
-    
-    vfiles="$(echo "$vfiles" | grep "^$prefix/" | sed "s+$prefix/++g")"
+    vfiles="$(app_categories | grep . | sort -f | uniq | grep "^$prefix/" | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
+  else
+    vfiles="$(app_categories | grep . | sort -f | uniq)"
   fi
   
   #remove apps within categories - show this layer of stuff only.
-  vfiles="$(echo "$vfiles" | sed 's+/.*+/+g' | sort | uniq)"
+  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | sort -f | uniq)"
   
-  #get list of apps - excluding folders
-  APPS="$(echo "$vfiles" | grep -v '/')"
+  #get list of apps - excluding folders and apps that are incompatible with CPU architecture
+  APPS="$(grep -v '/' <<<"$vfiles" | list_intersect "$(list_apps cpu_installable)")"
   
   #get list of folders - excluding apps - and hide the hidden folder.
-  DIRS="$(echo "$vfiles" | grep '/' | tr -d '/' | grep -vx "hidden")"
-  
-  #If updates available, show special Updates category
-  if "${DIRECTORY}/updater" get-status &>/dev/null;then
-    DIRS="Updates
-$DIRS"
-  fi
+  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/' | grep -vFx "hidden")"
   
   #shuffle the list if enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
@@ -144,96 +156,134 @@ $DIRS"
     DIRS="$(echo "$DIRS" | shuf)"
   fi
   
-  #remove apps that are not compatible with OS architecture
-  APPS="$(echo "$APPS" | list_intersect "$(list_apps cpu_installable)")"
-  
   if [ "$format" == yad ];then
     IFS=$'\n'
-    LIST=''
-    for i in $DIRS
+    
+    #initial value of listfile: if within a prefix, start with a Back button
+    if [ ! -z "$prefix" ];then
+      echo "${DIRECTORY}/icons/back.png
+Back
+$(dirname "$prefix" | sed 's+^\.$++g')/
+Return to the previous location
+$text_color" | tee "$listfile"
+    else
+      echo -n '' > "$listfile"
+    fi
+    
+    for dir in $DIRS
     do
-      if [ -f "${DIRECTORY}/icons/categories/${i}.png" ];then
-        diricon="${DIRECTORY}/icons/categories/${i}.png"
+      if [ -f "${DIRECTORY}/icons/categories/${dir}.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${dir}.png"
       else
         diricon="${DIRECTORY}/icons/categories/default.png"
       fi
-      
-      LIST="${LIST}$diricon
-${DIRECTORY}/icons/none-1.png
-$i
-$i/
-App folder
-"
-    done #finished preloading categories
+      declare -A dir_lookup
+      dir_lookup=( ["Browsers"]="Internet browsers." ["All Apps"]="All Pi-Apps Applications in one long list." ["Appearance"]="Applications and Themes which modify the look and feel of your OS." ["System Management"]="Apps that help you keep track of system resources and general system management." ["Games"]="Games and Emulators" ["Installed"]="All Pi-Apps Apps that you have installed." ["Internet"]="Browsers, Chat Clients, Email Clients, and so much more." ["Multimedia"]="Video playback and creation, audio playback and creation, and streaming alternatives." ["Packages"]="Simple Apps that install directly from APT repos." ["Tools"]="An assortment of helpful programs that don't already fit into another category." ["Terminals"]="Alternative terminal programs built for the modern age as well as to replicate your old vintage computer." ["Programming"]="Code editors, IDEs, and other applications to help you write and make other programs." ["Creative Arts"]="Drawing, Painting, and Photo and Movie Editors" ["Engineering"]="3D Printing slicers, CAD/modeling, and general design software" ["Office"]="Office suites (document and slideshow editors), and other office tools." ["Emulation"]="Applications that help you run non-ARM or non-Linux software." ["Communication"]="Internet messaging, calling, video chatting, and email clients.")
+
+      if [ ! -z "$prefix" ];then
+        add="$diricon
+$dir
+$prefix/$dir/
+"${dir_lookup["$dir"]}"
+$text_color"
+      else
+        add="$diricon
+$dir
+$dir/
+"${dir_lookup["$dir"]}"
+$text_color"
+      fi
+      echo "$add"
+    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    #finished preloading categories
     
-    #set to false to disable genapplist-yad program - use the original bash version
-    if true && [ -f "${DIRECTORY}/etc/genapplist-yad" ];then
-      LIST="$LIST$(DIRECTORY="$DIRECTORY" APPS="$APPS" "${DIRECTORY}/etc/genapplist-yad")
-"
-    else
-      for i in $APPS
-      do
-        status1="$(cat "${DIRECTORY}/data/status/${i}" 2>/dev/null || echo "none")"
-        status2="$(echo "$status1" | sed 's/none/uninstalled/g')"
-        
-        LIST="$LIST$(echo "${DIRECTORY}/icons/$status1.png")
-${DIRECTORY}/apps/${i}/icon-24.png
-$i
-$i
-"\("$status2"\)" $(head -n1 "${DIRECTORY}/apps/${i}/description" || echo "Description unavailable")
-"
-      done
-    fi #finished preloading apps
+    #preload apps
+    for app in $APPS
+    do
+      #get installation status of app
+      status="$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)"
+      
+      #determine app icon
+      if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
+        add="${DIRECTORY}/apps/${app}/icon-24.png"$'\n'
+      else
+        add="${DIRECTORY}/apps/${app}/none-24.png"$'\n'
+      fi
+      
+      #rest of list attributes
+      if [ -z "$status" ];then
+        add+="$app
+$prefix/$app
+$(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+      else
+        add+="$app
+$prefix/$app
+"\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+      fi
+      
+      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
+      if [ -z "$status" ];then
+        add+="$text_color"
+      elif [ "$status" == installed ];then
+        add+="#00AA00"
+      elif [ "$status" == uninstalled ];then
+        add+="#CC3333"
+      elif [ "$status" == corrupted ];then
+        add+="#888800"
+      elif [ "$status" == disabled ];then
+        add+="#FF0000"
+      else
+        # fallback incase unexpected status
+        add+="$text_color"
+      fi
+      #output finished app lines
+      echo "$add"
+    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    #finished preloading apps
     
   elif [ "$format" == xlunch ];then
-    #XUNCH list format
+    #XLUNCH list format
     
-    PREIFS="$IFS"
+    #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
+    if [ ! -z "$prefix" ];then
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile"
+    else
+      echo -n '' > "$listfile"
+    fi
+    
     IFS=$'\n'
-    LIST=''
-    for i in $DIRS
+    for dir in $DIRS
     do
-      if [ -f "${DIRECTORY}/icons/categories/${i}-64.png" ];then
-        diricon="${DIRECTORY}/icons/categories/${i}-64.png"
+      if [ -f "${DIRECTORY}/icons/categories/${dir}-64.png" ];then
+        diricon="${DIRECTORY}/icons/categories/${dir}-64.png"
       else
         diricon="${DIRECTORY}/icons/categories/default-64.png"
       fi
       
-      LIST="$LIST
-${i};$diricon;${i}/"
-    done
+      echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
+    done | tee -a "$listfile"
     
-    for i in $APPS
+    for app in $APPS
     do
-      LIST="$LIST
-${i} ($(app_status "${i}"));${DIRECTORY}/apps/${i}/icon-64.png;${i}"
-    done
-    IFS="$PREIFS"
+      if [ -f "${DIRECTORY}/data/status/${app}" ];then
+        echo "${app} ($(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
+      else
+        #status file missing - app has never been installed
+        echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
+      fi
+    done | tee -a "$listfile"
+    
   fi
-  LIST="$(echo -e "$LIST")"
-  
-  #save entire list string to file for future use
-  echo "$LIST" > "$listfile"
   
   #save timestamps to file too
-  mktimestamps
+  if [ -z "$timestamps" ];then
+    timestamps="$(mktimestamps)"
+  fi
   echo "$timestamps" > "$timestampfile"
 else
-  echo "Reading list file..." 1>&2
-  LIST="$(cat "$listfile")"
+  echo "Reading list file for '$prefix'..." 1>&2
+  cat "$listfile"
 fi
-
-(#put icons in cache
-PREIFS="$IFS"
-IFS=$'\n'
-for icon in $(echo "$LIST" | grep icon-24)
-do
-  cat "$icon" &>/dev/null
-  #echo "Putting $icon in cache..." 1>&2
-done
-IFS="$PREIFS" ) &
-
-echo "$LIST"
 
 #preload all categories in background
 "${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &

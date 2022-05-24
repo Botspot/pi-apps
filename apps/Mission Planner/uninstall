@@ -1,4 +1,6 @@
 #!/bin/bash
 
 purge_packages || exit 1
+remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list
+
 rm -rf ~/.local/share/applications/mission-planner.desktop ~/MissionPlanner-latest

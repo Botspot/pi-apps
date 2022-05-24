@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# install dependencies
+install_packages build-essential git cmake libssl-dev libudev-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libqt5serialport5-dev libqt5svg5-dev libgit2-dev libboost-all-dev || exit 1
+
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+else
+  # attempt to fix common error where users libqt5core5a package did not install properly
+  # this should not be necessary, but /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf is missing on multiple users installs and is part of this package
+  sudo apt install --reinstall libqt5core5a -y
+fi
+
+# print debug output to terminal
+hash -r
+echo "Logging contents of file: /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf"
+cat /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf
+echo "Log file status: /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf"
+ls -l /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf
+echo "Logging contents of file: /usr/share/qtchooser/qt5-*-linux-gnu*.conf"
+cat /usr/share/qtchooser/qt5-*-linux-gnu*.conf
+echo "Log qmake -v output"
+qmake -v
+echo "apt list libqt5core5a qtchooser"
+apt list libqt5core5a qtchooser
+
+# download parts directory
+mkdir -p $HOME/.local/share/fritzing || error "Could not make directory"
+cd $HOME/.local/share/fritzing || error "Could not move to directory"
+rm -rf parts
+git clone https://github.com/fritzing/fritzing-parts.git parts || error "Could not clone parts repo source"
+
+# download, compile, and install fritzing app
+cd /tmp || error "Could not move to directory"
+rm -rf fritzing-app
+git clone https://github.com/fritzing/fritzing-app.git || error "Could not clone fritzing-app source"
+cd fritzing-app || error "Could not move to directory"
+git checkout 0.9.6
+sed -i 's/LIBGIT_STATIC = true/LIBGIT_STATIC = false/g' phoenix.pro
+qmake || error "PLEASE contact us in the Discord. We have seen multiple reports of this error and are unable to reproduce on our end. qmake failed on fritzing configure"
+make -j$(nproc) || error "compilation failed"
+lupdate -noobsolete phoenix.pro
+lrelease -removeidentical phoenix.pro
+sudo make install || error "Install failed"
+sudo sed -i "s:Exec=Fritzing %F:Exec=Fritzing --parts $HOME/.local/share/fritzing/parts %F:g" /usr/share/applications/org.fritzing.Fritzing.desktop
+
+# remove source files
+rm -rf /tmp/fritzing-app
+
+status_green "Fritzing is installed.
+To run: Menu -> Programming -> Fritzing
+To run in a terminal: Fritzing --parts $HOME/.local/share/fritzing/parts
+"

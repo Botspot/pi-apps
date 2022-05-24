@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sudo /usr/local/share/renoise-*/uninstall.sh
+if [ "$?" == "1" ]; then
+  status "Uninstall finished!"
+elif [ "$?" == "0" ]; then
+  error "Failed to uninstall Renoise with 'install.sh -u'"
+else
+  warning "Unknown exit code... Renoise may or may not have uninstalled successfully."
+fi

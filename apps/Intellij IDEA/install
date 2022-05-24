@@ -1,24 +1,27 @@
 #!/bin/bash
 
-version=2021.3.2
+version=2022.1.1
 
 # Get dependencies
 install_packages openjdk-11-jdk || exit 1
-rm -f ideaIC-${version}.tar.gz 2>/dev/null
 
-rm -rf ~/idea_ic 2>/dev/null
-mkdir ~/idea_ic || error "Failed to make idea_ic folder!"
-cd ~/idea_ic
-wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz || error "Failed to download!"
-tar xf ideaIC-${version}.tar.gz --strip-components=1 || error "Failed to extract!"
-rm -f ideaIC-${version}.tar.gz 2>/dev/null
+java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+
+sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
+sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
+wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz /tmp/ideaIC.tar.gz || error "Failed to download!"
+
+cd /opt/ideaIC
+sudo tar xf /tmp/ideaIC.tar.gz --strip-components=1 || error "Failed to extract ideaIC.tar.gz!"
+rm -f /tmp/ideaIC.tar.gz
+
 echo "[Desktop Entry]
 Type=Application
 Version=${version}
 Name=IntelliJ IDEA
-Path=$HOME/idea_ic/bin
-Exec=$HOME/idea_ic/bin/idea.sh
+Path=/opt/ideaIC/bin
+Exec=bash -c "\""JAVA_HOME=$java_home PATH=$java_home/bin/:$PATH /opt/ideaIC/bin/idea.sh"\""
 Comment=A fast and lightweight IDE using GTK+
-Icon=$HOME/idea_ic/bin/idea.png
+Icon=/opt/ideaIC/bin/idea.png
 Categories=Development;IDE;
-StartupNotify=true" > ~/.local/share/applications/intellijidea.desktop
+StartupNotify=true" | sudo tee /usr/share/applications/intellijidea.desktop >/dev/null

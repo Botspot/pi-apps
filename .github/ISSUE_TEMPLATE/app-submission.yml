@@ -1,0 +1,49 @@
+name: App Submission
+description: Submit/Upload an app to be added Pi Apps. For apps with a completed ZIP, install files, deb, or PR ONLY.
+labels: ["App Request","Zip/PR included"]
+body:
+  - type: input
+    id: app-name
+    attributes:
+      label: What is the name of the app?
+      placeholder: Ex - Zoom, AndroidBuddy
+    validations:
+      required: true
+      
+  - type: textarea
+    id: host
+    attributes:
+      label: (Optional) Where is the app hosted?
+      placeholder: Ex - Github link, Gitlab link, Sourceforge link
+    validations:
+      required: false
+  
+  - type: textarea
+    id: about
+    attributes:
+      label: About the app
+      description: What is its main purpose? How does it work? 
+      placeholder: Tell us about the app here!
+    validations:
+      required: true
+      
+  - type: textarea
+    id: zip
+    attributes:
+      label: Upload file or Add PR Link
+      description: "Upload your deb of the app, or a zip file for this app, or link an already opened PR or github repo/branch for your app, or if you have any other relevant files, upload or link them here."
+      placeholder: "Tips: You can upload files here by clicking to expand the regular text-box"
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I have confirmed that this app is legal and not piracy.
+          required: true
+        - label: I have confirmed that this app has never been discussed in https://github.com/Botspot/pi-apps/issues and https://github.com/Botspot/pi-apps/pulls, and it is not in the Pi Apps app list.
+          required: true
+        - label: I have confirmed that this app can run on Raspberry Pi.
+          required: true

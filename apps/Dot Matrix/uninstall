@@ -1,0 +1,3 @@
+#!/bin/bash
+
+flatpak_remove io.github.lainsce.DotMatrix || exit 1

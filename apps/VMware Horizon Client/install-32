@@ -1,0 +1,4 @@
+#!/bin/bash
+
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/vmware-horizon-client_1.0_armhf.deb || exit 1
+

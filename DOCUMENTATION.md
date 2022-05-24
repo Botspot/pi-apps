@@ -6,9 +6,8 @@ This guide will attempt to explain how Pi-Apps works. By nature, this cannot be 
 - [The main Pi-Apps folder](#the-main-pi-apps-folder)
 - [The App Status folder](#the-app-status-folder)
 - [The `manage` script](#the-manage-script)
-- [The `pkg-install` script](#the-pkg-install-script)
 - [The `updater` script](#the-updater-script)
-- [The `api` script](#the-api-script)
+- [The `api` script and available functions](#the-api-script)
 - [The `gui` script](#the-gui-script)
 - [The `createapp` script](#the-createapp-script)
 - [The `settings` script](#the-settings-script)
@@ -18,6 +17,7 @@ This guide will attempt to explain how Pi-Apps works. By nature, this cannot be 
 - [The `categoryedit` script](#the-categoryedit-script)
 - [The `logviewer` script](#the-logviewer-script)
 - [The `viewlog` script](#the-viewlog-script)
+- [Automatic app updaters](#automatic-app-updaters)
 # How Pi-Apps works
 ## Introduction
 - Pi-Apps is written in **`bash`**. This is a scripting language for Linux, with origins in the 80s. Bash is not a compiled language like C, it's an interpreted language, similar to Python and Windows .bat files.  
@@ -33,6 +33,7 @@ The folder's name is the app's name. The Arduino app is a folder located at `app
 There are a few files in each app-folder:
 - `install` - This is a bash script to install the app.
   - Naming the script "install" indicates that it is compatible with 32-bit and 64-bit CPU architectures.
+  - All apps have access to the `arch` variable that contains `64` (for arm64) or `32` (for armhf) if per-architecure changes are necessary.
 - `install-32` - This is a bash script to install the app on 32-bit operating systems.
   - Naming the script "install-32" indicates that it is designed for the 32-bit CPU architecture only.
   - If no "install-64" script exists, **then this app will only be displayed on 32-bit systems.**
@@ -101,7 +102,7 @@ The `manage` script supports these **modes**:
   - These two modes are so similar that they share the same code!
 - `install-if-not-installed`: Installs the specified app, only if it has not already been installed.
   - This mode is especially useful for apps that **need another app to be installed first**.
-  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this comand:
+  For example, the **`Wine (x86)`** app requires Box86. It accomplishes that with this command:
   ```bash
   "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
   ```
@@ -140,61 +141,6 @@ The `manage` script supports these **modes**:
 - `update-all`: This mode will check for app-updates and install them without any user-interaction.
   The `manage` script will run itself in the `check-all` mode, then, for every app that `check-all` mentioned, it will `update` each app.
 
-## The `pkg-install` script
-#### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/pkg-install`. 
-#### Purpose:
-Some background information first:  
-- Goal: Pi-Apps is designed for people who install an app, try it out, then later uninstall it. You should not have to think twice before installing an app. Users should have confidence that **uninstalling the app will undo all changes and restore all disk-space.**
-- Problem: Many apps need to install apt **packages** in order to work. On the surface, this does not seem like a big problem at all: if "app1" installs "package1", "package2", and "package3", then those packages should be purged while uninstalling "app1". What's the problem with that? **Dependencies.**  
-What if some other utility requires "package1" to function? Now that you uninstalled "app1", "package1" just got uninstalled.
-  - Best-case scenario: that utility will not work anymore.
-  - Worst-case scenario: you just broke an essential part of your system and it will fail to boot.
-- Solution: When uninstalling an app, **only remove packages that are not required by anything else**. To accomplish this, we can't just install packages the normal way with `sudo apt install`. Instead, we need to generate a **dummy deb** - a custom apt package that lists "package1", "package2", and "package3" as **dependencies**. Later, when the app is being uninstalled, the dummy deb is removed and a simple `apt autoremove` is enough to safely remove the packages.
-#### Usage:
-In an app's `install` script, there may be a line like this to install "package1", "package2", and "package3":
-```bash
-DIRECTORY=$HOME/pi-apps
-"${DIRECTORY}/pkg-install" 'package1 package2 package3' "$(dirname "$0")" || exit 1
-```
-This is equivalent to:
-```bash
-sudo apt update --allow-releaseinfo-change
-sudo apt install -yf --no-install-recommends --allow-downgrades package1 package2 package3
-```
-#### How it works:
-1. First, `pkg-install` sets the language variables to `C`. This ensures that apt's output is parsed correctly, even if the system is using a different language,
-2. `pkg-install` runs `sudo apt update`.
-3. The output of `sudo apt update` is parsed for various messages from `apt`.
-    - If the output contains "autoremove to remove them", you will receive a message that some packages can be removed with `apt autoremove`.
-    - If the output contains "packages can be upgraded", you will receive a message that some packages can be upgraded.
-    - If the output contains "W:" or "E:" or "Err:", `pkg-install` will **exit with an error** saying that your apt system is messed up.
-    The exact error message depends on apt's exact output - it is designed to help users navigate through apt errors and provides instructions for how to sign a repository, remove a broken repository, or check for an Internet connection.
-4. If any filenames (paths to a local deb package) are specified, `pkg-install` will install each one, then mark it as autoremovable. (Using this command: `sudo apt-mark auto "$packagename"`
-5. If any package names include **regular expression**, `pkg-install` expands the names with `apt-cache search`.
-6. Finally, the dummy deb is created. As mentioned earlier, this package will list the desired packages as dependencies.
-    - The dummy deb for each app has to be named something unique. But this poses a problem because apps can have space characters while apt does not support space characters.
-    - This problem is resolved by naming each dummy-deb based on a **hash of its name**.
-    - The code used to do this is:
-   ```bash
-   echo -n 'pi-apps-' ; echo "$app" | md5sum | cut -c1-8 | awk '{print $1}'
-   ```
-    - Feel free to replace `"$app"` with an app-name of your choice to see what its package name would be.
-7. If the dummy deb's name is already installed, purge it and then continue.
-8. Finally, the dummy deb is installed with `apt`. All packages mentioned in the "`Depends:`" field of the dummy deb are installed as a dependency of the dummy deb.
-9. If apt fails, its errors are diagnosed in the same way errors were diagnosed earlier when `sudo apt update` was run.
-10. `pkg-install` exits with a code of `0` if everything was successful, otherwise it exits with a code of `1`.
-### The `purge-installed` script
-#### Location:
-On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/purge-installed`. 
-#### Purpose:
-This script is the opposite of `pkg-install`: it uninstalls the dummy deb, then runs `sudo apt autoremove`.
-#### Usage:
-In an app's `uninstall` script, there may be a line like this:
-```bash
-DIRECTORY=$HOME/pi-apps
-"${DIRECTORY}/purge-installed" "$(dirname "$0")" || exit 1
-```
 ## The `updater` script
 #### Location:
 On a default pi-apps installation, you will find this script at `/home/pi/pi-apps/updater`. 
@@ -268,19 +214,31 @@ Note: new functions are added often. If you don't see a function on this list bu
 - `status` - Display a custom message in light-blue.
   - Used by scripts to indicate current status, like "Downloading...", "Extracting...", and "Please wait."
   - This function outputs to `stderr`.
-  - Some scripts don't want the ending newline, so this function allows for flags to be passed to the `echo` command. Example usage: `status -n "Downloading... "`
-- `status-green` - Display a custom message in green.
+  - Some scripts don't want the ending newline, so this function allows for flags to be passed to the `echo` command. 
+  - Example usage:
+    ```bash
+    status -n "Downloading... "
+    ```
+- `status_green` - Display a custom message in green.
   - Used by scripts to indicate the success of an action, like "Installed FreeCAD successfully", "Update complete", and "All packages have been purged successfully."
   - This function outputs to `stderr`.
 - `generate_logo` - Displays the Pi-Apps logo in a terminal.
+  - Note: Some keen users may notice that the logo looks different on Debian ***Bullseye*** than on older releases. This is necessary to avoid trying to display missing characters. See: https://github.com/Botspot/pi-apps/issues/1441
+- `generate_splashscreen` - When Pi-Apps launches, it displays a splashscreen for a few moments while it loads. Each time you see it, new app-icons are placed in the 10 locations. This function is responsible for doing that.
+    The method for doing this is fairly straightforward:
+  - First, a vector image is created and images are embedded in it. (In this case, Botspot made the original image with Boxy SVG)
+  - Vector images are simply text-files. They store binary data by encoding it with `base64`.
+  - To replace an embedded image, use a text-editor to replace the existing base64-data with new base64-data from your desired PNG image.
+  - This function does exactly that - it takes `icons/vector/splashscreen-original.svg`, uses `sed` to insert 10 random app-icons, saves the resulting image to `icons/vector/splashscreen.svg`, and then converts that image to PNG and saves it to `icons/splashscreen.png`.
+  - For more details, see: https://github.com/Botspot/pi-apps/issues/1299
 - `add_english` - Ensures an English locale is installed so that log-diagnosing tools can function properly.
   - This was added in [PR #1031](https://github.com/Botspot/pi-apps/pull/1031)
 
 Apt/dpkg/package functions below.
 
-- `apt_lock_wait` - waits until apt locks are released.
 - `package_info` - List everything `dpkg` knows about the specified package.
   - This retrieves a block of text from the `/var/lib/dpkg/status` file.
+  - This only works if the package is currently installed.
 - `package_installed` - determine if the specified package is installed.
   - Returns an exit code of `0` if the package is installed, otherwise it returns `1`.
 - `package_available` - determine if the specified package is able to be installed with `apt`.
@@ -289,11 +247,52 @@ Apt/dpkg/package functions below.
 - `package_dependencies` - List the dependencies of a package
   - This simply isolates a line from the output of the `package_info` function.
   - This is *much* faster than doing an `apt-cache search`.
+  - This only works if the package is currently installed.
+- `package_latest_version` - Return the latest available version of the specified package.
+  - This function is useful for apps that depend on a recent version of a package.
+- `package_is_new_enough` - Given a package and a version threshold, determine if the package-version is greater than the threshold.
+  - This function is an extension of the `package_latest_version` function above, to simplify scripting.
+  - If the package has a higher version than the threshold value, the return coide is `0`, otherwise it returns `1`.
+  - Example usage, from the Mission Planner app:
+    ```bash
+    status -n "Is the mono-complete package new enough? "
+    
+    if package_is_new_enough mono-complete 6.8.0 ;then
+      status_green 'Yes' #answer the question asked above
+    else
+      status_green 'No' #answer the question asked above
+      echo "Adding Mono repository..."
+      install_packages apt-transport-https dirmngr gnupg ca-certificates || exit 1
+      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF || error "Failed to add a key to the repos!"
+      echo "deb https://download.mono-project.com/repo/debian stable-raspbianbuster main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    fi
+    install_packages mono-complete || exit 1
+    ```
+- `anything_installed_from_repo` - Check if any apt-packages have been installed from the given repository-URL.
+  - Example usage:
+    ```bash
+    anything_installed_from_repo http://archive.raspberrypi.org/debian/
+    ```
+  - Returns with code `0` if a package was found, otherwise `1`. It also returns the name of the package that was found.
+  - This function is mainly intended to be used by the `remove_repofile_if_unused` function, which is described below.
+- `remove_repofile_if_unused` - Given a path to an apt-repository file, determine if it is being used and remove it if it's unnecessary.
+  - This function is very useful for apps that have to add their own APT repository. Some apps share repositories, so it's important to check if the `/etc/apt/sources.list.d/XXXX.list` file is in use before removing it.
+  - This function uses the `anything_installed_from_repo` function, and if it returns `1` for all URLs found in the file, then the file is deemed unnecessary and is removed.
+  - Example usage:
+    ```bash
+    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list
+    ```
+    For testing, you can tell the function to not actually delete anything by adding the `test` flag:
+    ```bash
+    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list test
+    ```
+    In this mode, it will return text like "`The given repository is not in use and can be deleted:`".
+- `apt_lock_wait` - waits until apt locks are released.
 - `less_apt` - Reduce the output of an `apt` operation.
   - Example usage:
-  ```bash
-  sudo apt update 2>&1 | less_apt
-  ```
+    ```bash
+    sudo apt update 2>&1 | less_apt
+    ```
 - `apt_update` - A wrapper function to run `sudo apt update`.
   - This will wait for apt locks to be released, handle status information, and display helpful tips if packages are upgradable or autoremovable.
   - Arguments to the function will be passed on to the `apt` command.
@@ -303,15 +302,25 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
 
 - `repo_add` - Add the specified deb file(s) to the local repository.
   - This simply copies specified files to the `/tmp/pi-apps-local-packages` folder.
-- `repo_referesh` - Index the local repository, create a `Packages` file, and a `source.list`.
+- `repo_refresh` - Index the local repository, create a `Packages` file, and a `source.list`.
   - At this point, you can make `apt` use the repository by passing this flag to it: `-o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list`
 - `repo_rm` - Removes the local repository.
 - `app_to_pkgname` - Convert an app-name to an `apt`-compatible package name.
   - This function generates the name to use for creating dummy apt packages. The naming scheme is: `pi-apps-XXXXXXXX` (each `X` can be any lowercase letter or number)
   - View which dummy packages are installed now by running `apt search pi-apps-` in a terminal.
 - `install_packages` - Used by apps to install packages.
-  - This function is replacing the `pkg-install` script.
-  - Example usage: `install_packages package1 /path/to/package2.deb https://example.com/package3.deb package4-* || exit 1`
+  - Some background information first:  
+    - Goal: Pi-Apps is designed for people who install an app, try it out, then later uninstall it. You should not have to think twice before installing an app. Users should have confidence that **uninstalling the app will undo all changes and restore all disk-space.**
+    - Problem: Many apps need to install apt **packages** in order to work. On the surface, this does not seem like a big problem at all: if "app1" installs "package1", "package2", and "package3", then those packages should be purged while uninstalling "app1". What's the problem with that? **Dependencies.**  
+  - What if some other utility requires "package1" to function? Now that you uninstalled "app1", "package1" just got uninstalled.
+    - Best-case scenario: that utility will not work anymore.
+    - Worst-case scenario: you just broke an essential part of your system and it will fail to boot.
+  - Solution: When uninstalling an app, **only remove packages that are not required by anything else**. To accomplish this, we can't just install packages the normal way with `sudo apt install`. Instead, we need to generate a **dummy deb** - a custom apt package that lists "package1", "package2", and "package3" as **dependencies**. Later, when the app is being uninstalled, the dummy deb is removed and a simple `apt autoremove` is enough to safely remove the packages.
+  - The `install_packages` function replaces the old `pkg-install` script which has been removed from pi-apps.
+  - Example usage:
+    ```bash
+    install_packages package1 /path/to/package2.deb https://example.com/package3.deb package4-* || exit 1
+    ```
   - First, each argument is analyzed.
     - If it's a URL, the file is downloaded and added to the local repository.
     - If it's a deb-file, it's added to the local repository.
@@ -320,16 +329,34 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
   - Now an `apt_update` takes place.
   - It's time to configure and install an empty apt-package that "depends on" the packages we want to install. We refer to it as a "dummy deb".
     - First the name of the dummy deb is determined, using the `app_to_pkgname` function.
-    - If the dummy deb is *already* installed, `install_packages` will inherit its dependencies and then purge the dummy deb. This means that **the `install-packages` function can be used multiple times**in an app's script because it's accumulative.
+    - If the dummy deb is *already* installed, `install_packages` will inherit its dependencies and then re-install the dummy deb. This means that **the `install-packages` function can be used multiple times** in an app's script because it's accumulative.
     - The dummy deb is created, packaged, and finally installed.
-- `purge-packages` - Used by apps to remove packages that they previously installed.
+- `purge_packages` - Used by apps to remove packages that they previously installed.
   - This function accepts no arguments. It reads the `$app` variable, purges its associated dummy deb, and autoremoves any packages that are no longer necessary.
 - `get_icon_from_package` - Given a package (or space-separated list of packages), this function will automatically find the program icon for it.
   - This is useful for the `createapp` script to automatically find a suitable icon for package-apps you're trying to add.
   - This uses `dpkg-query` to list all files each package installed. The list is filteres to only show `.png` files in `/icons/` or `/pixmaps/` folders.
   - The list is sorted by filesize to find the picture with the most pixels.
 
-End of apt functions. App functions below.
+End of apt functions. Flatpak functions below.
+
+- `flatpak_install` - Install an app from Flatpak. This function simplifies the process for script-writers and improves terminal-output.
+  - Example usage:
+    ```bash
+    flatpak_install librepcb || exit 1
+    ```
+    Script-writers: Don't forget to install the flatpak package first! (`install_packages flatpak || exit 1`)
+    Also, a menu entry needs to be created. See the LibrePCB app, it's better to show than to explain. ;)
+- `flatpak_uninstall` - Uninstall an app from Flatpak. This function simplifies the process for script-writers and has been designed to avoid false errors.
+  - For example, if `flatpak` is already uninstalled, then trying to run `flatpak` will return an error.
+  - Similarly, if the flatpak-app is already uninstalled, then `flatpak` will return an error!
+  - This function solves both of those edge-cases and prevents unnecessary errors from ocurring.
+  - Example usage:
+    ```bash
+    flatpak_uninstall librepcb || exit 1
+    ```
+
+End of Flatpak functions. App functions below.
 
 - `list_apps` - List all apps that match a given criteria. (In a newline-separated format)
   - `list_apps local` will list apps that exist locally.
@@ -392,7 +419,7 @@ End of apt functions. App functions below.
   - If the app's existing installation script is not identical to the new version of the installation script, AND the app is currently installed, exit with a code of `0`, otherwise exit `1`.
 - `app_search` - Search all apps for the specified search query.
   - In each app-folder, this will search for matches in the following files:
-    -  `description`
+    - `description`
     - `credits`
     - `website`
   - It hides incompatible and invisible apps before displaying the results. (list of app names, one per line)
@@ -403,9 +430,13 @@ End of apt functions. App functions below.
   - The chosen app (if any) is returned.
 - `generate_app_icons` - Resize a specified image and place the icons in the specified app-folder.
   - This requires imagemagick to be installed. If it's missing, a dialog box will appear and ask permission to install it.
-  - Example usage: `generate_app_icons /path/to/my-image.png my-app`
+  - Example usage:
+    ```bash
+    generate_app_icons /path/to/my-image.png my-app
+    ```
 - `refresh_pkgapp_status` - For the specified package-app, if dpkg thinks it's installed, then mark it as installed.
 - `refresh_all_pkgapp_status` - For every package-app, if dpkg thinks it's installed, then mark it as installed.
+- `refresh_app_list` - Forcibly regenerate the app list for the GUI. This overrides the usual shortcuts made by the `preload` script and guarantees that the app list will really be regenerated. It's useful for the `updater`, where unforeseen changes in script design may cause the app list to be displayed improperly.
 
 Logfile functions below.
 - `get_logfile` - Find the most recent logfile for the specified app.
@@ -440,11 +471,10 @@ Below are all functions that don't have anything to do with apps.
   - This works by hashing the entire command first, using `sha256sum`.
   - If the hash matches a line in the `data/runonce_hashes` file, nothing occurs. Otherwise, the command is executed.
 - `text_editor` - Use a text editor to open a file.
-  - This obeys your choice of "Preferred text editor".
-  Usage:
-  ```
-  text_editor /path/to/your.file
-  ```
+  - This obeys your choice of "Preferred text editor":
+    ```
+    text_editor /path/to/your.file
+    ```
 - `view_file` - Display a maximized `yad` window to view a file. This is used to view logfiles.
 - `is_supported_system` - determines if your operating system is supported. This returns an exit-code of `0` if supported, otherwise`1`.
   If any of the below criteria are true, then your system is unsupported:
@@ -460,11 +490,15 @@ Below are all functions that don't have anything to do with apps.
   ~/pi-apps/api get_device_info
   ```
   - This function is used in the `format_log_file` function.
-- `functions_to_files` - Takes every function in the `api` and turns them into their own miniature bash scripts.
-  - This exists purely for developer-convenience. It allows you to handle functions as if they were files.
-  - It creates a folder (`~/pi-apps/function-files`) and then places files in it.
-- `files_to_functions` - Takes every file in the `function-files` folder and re-combines them.
-  - The resulting output is printed to the terminal.
+- `get_codename` - Simple function to return the codename of the operating system.
+  - On Raspberry Pi OS Bullseye, this function returns: `bullseye`
+  - This is useful for scripts that need to do different things depending on the exact system they are running on. The MultiMC5 app is a great example of this.
+- `enable_module` - Always load a defined kernel module on system boot
+  - It creates a file `/etc/modules-load.d/${module}.conf` for which tells a systemd service to load the defined module at boot.
+  - Run this function as part of your install script instead of a `modprobe` in a .desktop file or startup script
+    ```bash
+    enable_module fuse || exit 1
+    ```
 
 Command interceptors below:
 - `git_clone` - Wrapper function for the `git clone` command with improvements:
@@ -726,3 +760,75 @@ Notes:
 - This script will kill previous instances of itself.
 - This script **does not obey** the "Preferred text editor" setting.
   - Why? Viewing a log in ***`geany`*** (the default "Preferred text editor" setting) is cumbersome and breaks the whole concept of closing the editor once you click on a new logfile.
+
+## Automatic App Updaters
+#### Location:
+These are scripts which reside on the github repo for pi-apps specificially for keeping app versions updated with their upstream projects and repos. These automatic app updaters are found in the `.github/workflows/updates` folder.
+Each script/app in pi-apps which has automatic version updating functionality has a script in this folder. The script name is the same as the app name.
+#### Purpose:
+To keep versions of apps in pi-apps up to date with the latest fixes, features, and improvements.
+#### What can updater script do:
+Updater scripts have access to a few special functions and scripts that normal pi-apps install scripts do not have access to.
+It is easier to explain with an example of an updater script.
+
+#### Github release example:<br>
+```
+#!/bin/bash
+
+webVer=$(get_release angryip/ipscan)
+all_url="https://github.com/angryip/ipscan/releases/download/${webVer}/ipscan_${webVer}_all.deb"
+
+source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
+```
+This is Angry IP scanners's update script. New releases of the .deb are posted on the `angrypi/scan` github, so a few times a day, the pi-apps github actions runs this script to check for new releases of Angry IP Scanner.
+There are a few special functions designed for github scripts to use, so that they can obtain the latest app version.
+```
+get_release() {
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
+}
+get_prerelease() {
+  curl --silent "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
+}
+```
+`get_release` followed by the app `githubowner/reponame` will obtain the latest github release version number<br>
+`get_prerelease` followed by the app `githubowner/reponame` will obtain the latest github prerelease version number.
+
+For pi-apps install scripts written with this in mind, this version number can be used to automatically generate a pi-apps PR with the updated version. Simply set the URL of the deb/binary found on the github with the `webVer` variable substituted in `all_url` for install scripts, `armhf_url` for install-32 scripts, and `arm64_url` for install-64 scripts, and call the update_github_script. Pi-apps install scripts should be formated with a `version` varaible for this automatic script to update with the latest version.<br>
+See angry ip scanners's `install` file for an example:
+```
+#!/bin/bash
+
+version=3.8.2
+install_packages openjdk-11-jdk rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1
+```
+
+#### Debian repo example:<br>
+For apps which are published to a debian repo, but it is not desired to add the repo to a users install, the update_debian_repo_script can be used to automatically update an apps install scripts.
+
+```
+#!/bin/bash
+
+armhf_webPackages="https://apt.raspbian-addons.org/debian/dists/precise/main/binary-armhf/Packages"
+arm64_webPackages="https://apt.raspbian-addons.org/debian/dists/precise/main/binary-arm64/Packages"
+armhf_packagename="antimicrox"
+arm64_packagename="antimicrox"
+
+# The corresponding appname in pi-apps will have its corresponding filepath= variable update
+# the filepath variable will contain the full filepath of the debian package with the version included
+
+source $GITHUB_WORKSPACE/.github/workflows/update_debian_repo_script.sh
+```
+Debian repos contain what is called a `Packages` file, this file contains all the control data for all packages hosted on that repo under that distro, and architecture. Shown above is the anitmicrox updater script.<br>
+The package used on pi-apps is hosted at the `raspbian-addons` repo, so we specify the location of the `Packages` file on that repo using `armhf_webPackages` and `arm64_webPackages`.<br>
+We then specify what the package name we would like to have checked from that repo is named, in this case, its `antimicrox` set to the variables `armhf_packagename` `arm64_packagename`.<br>
+Finally, to update the pi-apps scripts, we call the update_debian_repo_script as shown.
+
+The corresponding app install scripts in pi-apps should contain a `filename` variable (`filename_32` and `filename_64` if there are separate armhf and arm64 filenames in the same `install` script) with the entire URL path of the .deb file contained.<br>
+See antimicrox's `install-64` file for an example:
+```
+#!/bin/bash
+
+filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicrox_3.2.1_arm64.deb"
+
+install_packages "${filepath}" || exit 1
+```

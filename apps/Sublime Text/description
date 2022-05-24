@@ -3,4 +3,5 @@ It natively supports many programming languages and markup languages. Additional
 
 To run: Menu -> Programming -> Sublime Text
 
-This runs Sublime Text v2 with the Box86 emulator.
+On armhf based Operating Systems, this runs Sublime Text 2 with the Box86 emulator.
+However on arm64 based Operating Systems this runs the latest Sublime Text 4 without any emulation.

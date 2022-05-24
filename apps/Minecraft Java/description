@@ -1,17 +1,16 @@
-Minecraft Java - now supports Microsoft accounts and Optifine!
+Lunar Client is an all-in-one modpack integrated Launcher available for ONLY popular versions of Minecraft 
 
-This installs a fork of Lunar Client, with built in Optifine and other mods for maximum out-of-the-box performance.
+This installs a fork of Lunar Client with patched dependencies for ARMhf/ARM64 support.
 
-To run: Menu -> Games -> Minecraft Launcher
-To run in a terminal: ~/lunarassets/lunarclient.AppImage
+To run: Menu -> Games -> Minecraft Launcher (Lunar)
+To run in a terminal: MESA_GL_VERSION_OVERRIDE=3.3 ~/lunarassets/lunarclient.AppImage --no-sandbox
 
-NOTE: For best performance (60 FPS+), we recommend an older version of Minecraft like 1.12.2 or 1.8
+NOTE: For best performance, we recommend an older version of Minecraft like 1.12.2 or 1.8
 
 Why lunar?
 - It's easy to use and to setup.
-- It is well-maintained and has a vibrant support community.
 - It supports Microsoft and Mojang accounts.
-- This fork of Lunar for ARM includes Optifine, automatically switches lwjgl libraries (for playing older versions), and includes other optimizations by default.
+- This fork of Lunar for ARM automatically switches lwjgl2/3 libraries (for playing older versions)
 - It's easy to install in a self contained AppImage.
 
 Need help? Please open an issue on this repository: https://github.com/gl91306/lunar

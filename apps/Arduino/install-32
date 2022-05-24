@@ -2,7 +2,8 @@
 version=1.8.19
 
 cd ~/.local/share
-wget https://downloads.arduino.cc/arduino-${version}-linuxarm.tar.xz || error "failed to download!"
+wget -O $(pwd)/arduino-${version}-linuxarm.tar.xz https://downloads.arduino.cc/arduino-${version}-linuxarm.tar.xz || error "failed to download!"
+
 tar -xf $(pwd)/arduino-${version}-linuxarm.tar.xz || error "failed to extract with tar!"
 sudo $(pwd)/arduino-${version}/install.sh || error "failed run Arduino install script!"
 rm -f $HOME/Desktop/arduino-arduinoide.desktop $(pwd)/arduino-${version}-linuxarm.tar.xz
