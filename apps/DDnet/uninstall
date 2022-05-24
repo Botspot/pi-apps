@@ -1,7 +1,0 @@
-#!/bin/bash
-
-purge_packages || exit 1
-
-rm -rf $HOME/ddnet || sudo rm -rf $HOME/ddnet || error 'Failed to delete the DDnet Source Directory'
-rm -f $HOME/.local/share/applications/ddnet.desktop $HOME/.local/share/applications/ddnet-server.desktop || sudo rm -f $HOME/.local/share/applications/ddnet.desktop $HOME/.local/share/applications/ddnet-server.desktop || error 'Failed to delete the Desktop Entry of DDNet'
-rm -rf $HOME/.teeworlds || sudo rm -rf $HOME/.teeworlds || error 'Failed to delete the Teeworlds Directory'
