@@ -37,7 +37,7 @@ git clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from 
 cd dhewm3/neo || exit
 mkdir build || error "Failed to create build folder"
 cd build || exit
-cmake .. || error "Failed to build dhewm3"
+cmake .. -DONATIVE=ON || error "Failed to build dhewm3"
 make -j$(nproc) || error "Failed to build dhewm3"
 
 
