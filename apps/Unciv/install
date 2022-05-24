@@ -61,22 +61,15 @@ mv /tmp/Unciv.jar ~/Unciv/Unciv.jar || exit 1
 echo '- removing /tmp/Unciv.jar'
 rm -f /tmp/Unciv.jar
 
-status "Creating runner script ($HOME/Unciv/Unciv.sh)"
-# This is necessary because some special characters are supported in Desktop Entry Files.
-# Without running Unciv.jar from ~/Unciv, the Game Data will be saved in ~ by default (not ~/Unciv).
-# see https://github.com/yairm210/Unciv/blob/master/desktop/linuxFilesForJar/Unciv.sh
-echo "\
-cd $HOME/Unciv
-$(echo /usr/lib/jvm/temurin-8-*/jre/bin/java) -jar ./Unciv.jar" \
-> ~/Unciv/Unciv.sh || error "Failed to write $HOME/Unciv/Unciv.sh!"
-
-chmod +x $HOME/Unciv/Unciv.sh || error "Failed to make $HOME/Unciv/Unciv.sh executable!"
+# Remove old script artifatcs
+rm -f ~/Unciv/Unciv.sh
 
 status "Creating menu launcher"
 echo "\
 [Desktop Entry]
 Comment=Open-source Android/Desktop remake of Civ V
-Exec=$HOME/Unciv/Unciv.sh
+Path=$HOME/Unciv
+Exec=$(echo /usr/lib/jvm/temurin-8-*/jre/bin/java) -jar Unciv.jar
 GenericName=4X Game
 Icon=$(dirname "$0")/icon-64.png
 Name=Unciv
