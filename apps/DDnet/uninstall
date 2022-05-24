@@ -2,6 +2,17 @@
 
 purge_packages || exit 1
 
-rm -rf $HOME/ddnet || sudo rm -rf $HOME/ddnet || error 'Failed to delete the DDnet Source Directory'
-rm -f $HOME/.local/share/applications/ddnet.desktop $HOME/.local/share/applications/ddnet-server.desktop || sudo rm -f $HOME/.local/share/applications/ddnet.desktop $HOME/.local/share/applications/ddnet-server.desktop || error 'Failed to delete the Desktop Entry of DDNet'
-rm -rf $HOME/.teeworlds || sudo rm -rf $HOME/.teeworlds || error 'Failed to delete the Teeworlds Directory'
+sudo rm -rf /usr/local/share/ddnet \
+/usr/local/bin/DDNet \
+/usr/local/bin/DDNet-Server \
+/usr/local/lib/ddnet \
+/usr/local/share/applications/ddnet.desktop \
+/usr/local/share/metainfo/ddnet.appdata.xml \
+/usr/local/share/icons/hicolor/16x16/apps/ddnet.png \
+/usr/local/share/icons/hicolor/16x16/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/32x32/apps/ddnet.png \
+/usr/local/share/icons/hicolor/32x32/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/48x48/apps/ddnet.png \
+/usr/local/share/icons/hicolor/48x48/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/256x256/apps/ddnet.png \
+/usr/local/share/icons/hicolor/256x256/apps/ddnet-server.png

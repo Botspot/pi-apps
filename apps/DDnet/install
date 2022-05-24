@@ -4,36 +4,13 @@
 install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python google-mock || exit 1
 
 #Clone the Repository
-git_clone https://github.com/KolpixTV/ddnet --recursive || exit 1
+cd /tmp
+git_clone https://github.com/ddnet/ddnet --recursive || exit 1
 
 #Build
-cd $HOME/ddnet
+cd ddnet || exit 1
 mkdir build
-cd build
+cd build || exit 1
 cmake .. || error 'Failed at cmake!'
 make -j$(nproc) || error 'Failed at make!'
-
-#Turn off fullscreen
-mkdir $HOME/.teeworlds && echo "gfx_fullscreen 0" > $HOME/.teeworlds/settings_ddnet.cfg
-
-#Desktop Entry
-echo "[Desktop Entry]
-Name=DDnet
-Comment=Modified Version of Teeworlds
-Comment[de]=Modifizierte Version von Teeworlds
-Exec=$HOME/ddnet/build/DDNet
-Icon=$(dirname "$0")/icon-64.png
-StartupNotify=false
-Terminal=false
-Type=Application
-Categories=Application;Game;" > $HOME/.local/share/applications/ddnet.desktop
-
-echo "[Desktop Entry]
-Name=DDnet Server
-Comment=Server for DDnet
-Exec=$HOME/ddnet/build/DDNet-Server
-Icon=$(dirname "$0")/icon-64.png
-StartupNotify=false
-Terminal=true
-Type=Application
-Categories=Application;Game;" > $HOME/.local/share/applications/ddnet-server.desktop
+sudo make install || error "Failed to install"
