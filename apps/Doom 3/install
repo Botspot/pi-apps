@@ -58,8 +58,8 @@ Terminal=false" | tee $HOME/.local/share/applications/Doom3.desktop >/dev/null |
 while true; do
   read -p  "Do you have the game files [Y/n]?" yn
   case $yn in
-      [Yy]* ) User_Supplied;;
-      [Nn]* ) Download_Demo;;
+      [Yy]* ) User_Supplied; exit;;
+      [Nn]* ) Download_Demo; exit;;
       * ) echo "Please answer yes or no.";;
   esac
 done
