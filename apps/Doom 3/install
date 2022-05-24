@@ -1,8 +1,21 @@
 #!/bin/bash
 
 # fix broken install due to @techcoder20
-sudo apt purge -y sdl2-image sdl2-mixer sdl2-ttf || true
-  
+
+# Remove packages if necessary
+pkgToRemoveListFull="sdl2-image sdl2-mixer sdl2-ttf"
+pkgToRemoveList=""
+for pkgToRemove in $(echo $pkgToRemoveListFull); do
+  $(dpkg --status $pkgToRemove &> /dev/null)
+  if [[ $? -eq 0 ]]; then
+    pkgToRemoveList="$pkgToRemoveList $pkgToRemove"
+  fi
+done
+
+if [[ ! -z "$pkgToRemoveList" ]]; then
+  sudo apt-get --yes --purge remove $pkgToRemoveList || error "Could not remove packages"
+fi
+
 #Installing dependencies
 install_packages libfontconfig-dev automake libtool libfreeimage-dev \
 libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
