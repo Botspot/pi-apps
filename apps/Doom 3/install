@@ -1,5 +1,14 @@
 #!/bin/bash
 
+while true; do
+  read -p  "Do you have the doom3 game files. The demo mode will be installed if you answer No. [Y/n]?" yn
+  case $yn in
+      [Yy]* ) choice=User_Supplied; break;;
+      [Nn]* ) choice=Download_Demo; break;;
+      * ) echo "Please answer yes or no.";;
+  esac
+done
+
 # fix broken install due to @techcoder20
 
 # Remove packages if necessary
@@ -68,13 +77,6 @@ Categories=Game;
 Terminal=false" | tee $HOME/.local/share/applications/Doom3.desktop >/dev/null || error "Failed to create menu button!"
 }
 
-while true; do
-  read -p  "Do you have the game files [Y/n]?" yn
-  case $yn in
-      [Yy]* ) User_Supplied; exit;;
-      [Nn]* ) Download_Demo; exit;;
-      * ) echo "Please answer yes or no.";;
-  esac
-done
+$choice
 
 rm -rf /tmp/dhewm3
