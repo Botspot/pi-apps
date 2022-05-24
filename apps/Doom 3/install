@@ -1,7 +1,7 @@
 #!/bin/bash
 
 while true; do
-  read -p  "Do you have the doom3 game files. The demo mode will be installed if you answer No. [Y/n]?" yn
+  read -p  "Do you have the doom3 game files? The demo mode will be installed if you answer No. [Y/n]" yn
   case $yn in
       [Yy]* ) choice=User_Supplied; break;;
       [Nn]* ) choice=Download_Demo; break;;
