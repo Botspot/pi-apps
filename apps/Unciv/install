@@ -14,11 +14,6 @@ if [[ ! -f ~/Unciv/LICENSE ]]; then
   wget -O ~/Unciv/LICENSE https://raw.githubusercontent.com/yairm210/Unciv/master/LICENSE || error 'Failed to download license!'
 fi
 
-### install temurin-8-jdk
-# the 'default-jre' (OpenJDK-11-jre) package takes too much RAM and runs very sloppy in Raspberry Pi 3B+
-# so, we will use Temurin OpenJDK 8 installation cause thats the minimal Java version Unciv needs
-# Temurin very smoothly on Raspberry Pi 3B+ without any problems
-
 status "Adding Adoptium repository:"
 
 echo "- public key -> keyring"
@@ -37,9 +32,9 @@ sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
 echo " - Creating /etc/apt/sources.list.d/adoptium.list"
 echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
 
-status "Installing temurin-8-jdk"
-#try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
-(install_packages temurin-8-jdk)
+status "Installing temurin-11-jdk"
+#try to install temurin-11-jdk; if it fails, remove repository to avoid breaking user's system
+(install_packages temurin-11-jdk)
 if [ $? != 0 ]; then
   anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
   if [ $? != 0 ]; then
@@ -69,7 +64,7 @@ echo "\
 [Desktop Entry]
 Comment=Open-source Android/Desktop remake of Civ V
 Path=$HOME/Unciv
-Exec=$(echo /usr/lib/jvm/temurin-8-*/jre/bin/java) -jar Unciv.jar
+Exec=$(echo /usr/lib/jvm/temurin-11-*/bin/java) -jar Unciv.jar
 GenericName=4X Game
 Icon=$(dirname "$0")/icon-64.png
 Name=Unciv
