@@ -4,22 +4,11 @@
 sudo apt purge -y sdl2-image sdl2-mixer sdl2-ttf || true
   
 #Installing dependencies
-install_packages libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev \
+install_packages libfontconfig-dev automake libtool libfreeimage-dev \
 libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
-libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
-freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake aria2 \
+libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
+freeglut3-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake build-essential \
 libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
-
-# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
-package_available qt5-default
-if [[ $? == "0" ]]; then
-  install_packages qt5-default || error "Failed to install dependencies"
-else
-  # attempt to fix common error where users libqt5core5a package did not install properly
-  # this should not be necessary, but /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf is missing on multiple users installs and is part of this package
-  sudo apt install --reinstall libqt5core5a -y
-fi
-
 
 cd /tmp
 git clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
