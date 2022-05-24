@@ -1,12 +1,4 @@
 #!/bin/bash
 
 purge_packages || error "Dependencies failed to uninstall"
-if [ -d ~/RPIDoom3Installer ];then
-  cd ~/RPIDoom3Installer || "Failed to Change directory"
-  echo "Running uninstall script..."
-  ./uninstall.sh || error "Failed to execute uninstall script :("
-else
-  echo "WARNING: Doing nothing as ~/RPIDoom3Installer folder does not exist!"
-fi
-
-exit 0
+sudo rm -rf ~/RPIDoom3Installer ~/Doom3GameFiles ~/Doom3Demo ~/Desktop/Doom3Demo.desktop ~/.local/share/applications/Doom3Demo.desktop ~/.local/share/applications/Doom3.desktop

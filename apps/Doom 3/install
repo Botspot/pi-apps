@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# fix broken install due to @techcoder20
+sudo apt purge -y sdl2-image sdl2-mixer sdl2-ttf || true
+  
+#Installing dependencies
+install_packages libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev \
+libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
+libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev libesd0-dev \
+freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev libogg-dev libvorbis-dev libvorbisfile3 libcurl4 cmake aria2 \
+libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
+
+# install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
+package_available qt5-default
+if [[ $? == "0" ]]; then
+  install_packages qt5-default || error "Failed to install dependencies"
+else
+  # attempt to fix common error where users libqt5core5a package did not install properly
+  # this should not be necessary, but /usr/lib/*-linux-gnu*/qt-default/qtchooser/default.conf is missing on multiple users installs and is part of this package
+  sudo apt install --reinstall libqt5core5a -y
+fi
+
+
+cd /tmp
+git clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
+cd dhewm3/neo || exit
+mkdir build || error "Failed to create build folder"
+cd build || exit
+cmake .. || error "Failed to build dhewm3"
+make -j$(nproc) || error "Failed to build dhewm3"
+
+
+Download_Demo () {
+  cd ~
+  rm -f Doom3DemoGameFiles.zip
+  wget https://github.com/techcoder20/RPIDoom3Installer/releases/download/v1.0.0/Doom3DemoGameFiles.zip || error "Failed to download game files"
+  unzip Doom3DemoGameFiles.zip || error "Failed to extract game files"
+  rm -f Doom3DemoGameFiles.zip
+  cd /tmp/dhewm3/neo/build || error "Could not move to dhewm3 directory"
+  cp base.so d3xp.so dhewm3 libidlib.a ~/Doom3Demo || error "Failed to copy necessary files to Doom3Demo Folder"
+  echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Doom3Demo
+Path=$HOME/Doom3Demo
+Icon=$(dirname $0)/icon-64.png
+Exec=$HOME/Doom3Demo/dhewm3
+Categories=Game;
+Terminal=false" | tee $HOME/.local/share/applications/Doom3Demo.desktop >/dev/null || error "Failed to create menu button!"
+}
+
+User_Supplied () {
+  mkdir -p ~/Doom3GameFiles || error "Failed to create Doom3GameFiles Folder"
+  warning "YOU MUST place the game files in ~/Doom3GameFiles for the game to work"
+  sleep 5
+  cd /tmp/dhewm3/neo/build || error "Could not move to dhewm3 directory"
+  cp base.so d3xp.so dhewm3 libidlib.a ~/Doom3GameFiles || error "Failed to copy necessary files to Doom3GameFile Folder"
+  echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Doom3
+Path=$HOME/Doom3GameFiles
+Icon=$(dirname $0)/icon-64.png
+Exec=$HOME/Doom3GameFiles/dhewm3
+Categories=Game;
+Terminal=false" | tee $HOME/.local/share/applications/Doom3.desktop >/dev/null || error "Failed to create menu button!"
+}
+
+while true; do
+  read -p  "Do you have the game files [Y/n]?" yn
+  case $yn in
+      [Yy]* ) User_Supplied;;
+      [Nn]* ) Download_Demo;;
+      * ) echo "Please answer yes or no.";;
+  esac
+done
+
+rm -rf /tmp/dhewm3
