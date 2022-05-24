@@ -22,7 +22,7 @@ function error {
 }
 
 # Check if the current terminal is in /usr/bin - Wallee
-if ! [ -f /usr/bin/$(cat ~/pi-apps/data/settings/Terminal) ]; then
+if ! [ -f /usr/bin/$(cat ~/pi-apps/data/settings/Terminal) ];then
 
   if [ -f /usr/bin/lxterminal ];then
     printf lxterminal > ~/pi-apps/data/settings/Terminal
