@@ -9,12 +9,10 @@ install_packages libboost-all-dev libsdl2-dev \
   libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
   libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev \
   libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev build-essential unzip || exit 2
-  
-#uninstall previous game data version installation if available to rule out corrupted files
-rm -rf ~/AlephOne-${version} ~/AlephOneData
-rm -f ~/AlephOne-${version}.tar.bz2 ~/Marathon-${version}-Data.zip ~/Marathon2-${version}-Data.zip ~/MarathonInfinity-${version}-Data.zip
 
-#creating a directory for game files
+
+#creating a directory for game files and remove previous gamefiles
+rm -rf  ~/AlephOneData
 mkdir -p ~/AlephOneData
 
 #installation of the Marathon game engine (Aleph One)
@@ -22,6 +20,7 @@ cd /tmp
 wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/AlephOne-${version}.tar.bz2 || exit 1
 
 status "Unzipping..."
+rm -f AlephOne-${version}
 tar xjvf AlephOne-${version}.tar.bz2 || error "Unable to decompress source code"
 rm -f AlephOne-*.tar.bz2
 status_green "Done"
@@ -61,6 +60,8 @@ rm -rf AlephOne-${version}
 status_green "Done with build"
 
 #downloading Marathon Trilogy game data files
+rm -rf Marathon*-Data.zip
+rm -rf Marathon*
 status "Downloading Marathon Trilogy game data files... "
 wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/Marathon-${version}-Data.zip || exit 1
 unzip Marathon-${version}-Data.zip || error "Could not extract"
