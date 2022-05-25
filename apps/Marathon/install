@@ -109,6 +109,4 @@ Categories=Game;" > ~/.local/share/applications/marathoninfinity.desktop
 
 status_green "Done"
 
-if [ -e "$HOME/AlephOneData" ];then
-  echo -e "\n\n\e[93mTo prevent data loss, do not delete the AlephOneData folder located in the $HOME/.wine folder.\e[39m\n"
-fi
+warning "To prevent data loss, do not delete the $HOME/AlephOneData folder"
