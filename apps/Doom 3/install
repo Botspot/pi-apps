@@ -1,0 +1,82 @@
+#!/bin/bash
+
+while true; do
+  read -p  "Do you have the doom3 game files? The demo mode will be installed if you answer No. [Y/n]" yn
+  case $yn in
+      [Yy]* ) choice=User_Supplied; break;;
+      [Nn]* ) choice=Download_Demo; break;;
+      * ) echo "Please answer yes or no.";;
+  esac
+done
+
+# fix broken install due to @techcoder20
+
+# Remove packages if necessary
+pkgToRemoveListFull="sdl2-image sdl2-mixer sdl2-ttf"
+pkgToRemoveList=""
+for pkgToRemove in $(echo $pkgToRemoveListFull); do
+  $(dpkg --status $pkgToRemove &> /dev/null)
+  if [[ $? -eq 0 ]]; then
+    pkgToRemoveList="$pkgToRemoveList $pkgToRemove"
+  fi
+done
+
+if [[ ! -z "$pkgToRemoveList" ]]; then
+  sudo apt-get --yes --purge remove $pkgToRemoveList || error "Could not remove packages"
+fi
+
+#Installing dependencies
+install_packages libfontconfig-dev automake libtool libfreeimage-dev \
+libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
+libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
+freeglut3-dev libvorbisfile3 libcurl4 cmake build-essential \
+libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
+
+cd /tmp
+git clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
+cd dhewm3/neo || exit
+mkdir build || error "Failed to create build folder"
+cd build || exit
+cmake .. -DONATIVE=ON || error "Failed to build dhewm3"
+make -j$(nproc) || error "Failed to build dhewm3"
+
+
+Download_Demo () {
+  cd ~
+  rm -f Doom3DemoGameFiles.zip
+  wget https://github.com/techcoder20/RPIDoom3Installer/releases/download/v1.0.0/Doom3DemoGameFiles.zip || error "Failed to download game files"
+  unzip Doom3DemoGameFiles.zip || error "Failed to extract game files"
+  rm -f Doom3DemoGameFiles.zip
+  cd /tmp/dhewm3/neo/build || error "Could not move to dhewm3 directory"
+  cp base.so d3xp.so dhewm3 libidlib.a ~/Doom3Demo || error "Failed to copy necessary files to Doom3Demo Folder"
+  echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Doom3Demo
+Path=$HOME/Doom3Demo
+Icon=${DIRECTORY}/apps/Doom 3/icon-64.png
+Exec=$HOME/Doom3Demo/dhewm3
+Categories=Game;
+Terminal=false" | tee $HOME/.local/share/applications/Doom3Demo.desktop >/dev/null || error "Failed to create menu button!"
+}
+
+User_Supplied () {
+  mkdir -p ~/Doom3GameFiles || error "Failed to create Doom3GameFiles Folder"
+  warning "YOU MUST place the game files in ~/Doom3GameFiles for the game to work"
+  sleep 5
+  cd /tmp/dhewm3/neo/build || error "Could not move to dhewm3 directory"
+  cp base.so d3xp.so dhewm3 libidlib.a ~/Doom3GameFiles || error "Failed to copy necessary files to Doom3GameFile Folder"
+  echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Doom3
+Path=$HOME/Doom3GameFiles
+Icon=${DIRECTORY}/apps/Doom 3/icon-64.png
+Exec=$HOME/Doom3GameFiles/dhewm3
+Categories=Game;
+Terminal=false" | tee $HOME/.local/share/applications/Doom3.desktop >/dev/null || error "Failed to create menu button!"
+}
+
+$choice
+
+rm -rf /tmp/dhewm3
