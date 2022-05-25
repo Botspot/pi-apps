@@ -38,7 +38,7 @@ terminal="$(basename "$(readlink -f "$(command -v x-terminal-emulator)")")"
 
 #if x-terminal-emulator is found and it matchs an option in $choices, then we can use it.
 choice=''
-if [ ! -z "$terminal" ] || echo "$terminals" | grep -qF "$terminal" ;then
+if [ ! -z "$terminal" ] && echo "$terminals" | grep -qFx "$terminal" ;then
   #choose the same terminal that x-terminal-emulator uses
   choice="$terminal"
   [ $DEBUG == 1 ] && echo "Using $terminal from x-terminal-emulator"
