@@ -51,7 +51,7 @@ if ! [ -f /usr/bin/$(cat ~/pi-apps/data/settings/Terminal) ];then
   elif [ -f /usr/bin/x-terminal-emulator ];then
     printf x-terminal-emulator > ~/pi-apps/data/settings/Terminal
 
-  else:
+  else
 
     echo Failed to locate any terminal emulators!
     exit 1
