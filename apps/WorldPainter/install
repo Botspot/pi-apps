@@ -3,3 +3,33 @@
 version=2.10.5
 
 install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
+
+# remove worldpainter duplicate .desktop file due to bad deb
+sudo xdg-desktop-menu uninstall --mode system "/opt/worldpainter/.install4j/install4j_1tsntyi-worldpainter.desktop"
+
+case "$arch" in
+"64") 
+# replace worldpainter .desktop to force java-11
+sudo tee /usr/share/applications/worldpainter.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=WorldPainter
+Exec=bash -c 'INSTALL4J_JAVA_HOME_OVERRIDE=/usr/lib/jvm/java-11-openjdk-arm64 /opt/worldpainter/worldpainter'
+StartupWMClass=install4j-org-pepsoft-worldpainter-Main
+Icon=/opt/worldpainter/.install4j/worldpainter.png
+EOF
+;;
+"32") 
+# replace worldpainter .desktop to force java-11
+sudo tee /usr/share/applications/worldpainter.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=WorldPainter
+Exec=bash -c 'INSTALL4J_JAVA_HOME_OVERRIDE=/usr/lib/jvm/java-11-openjdk-armhf /opt/worldpainter/worldpainter'
+StartupWMClass=install4j-org-pepsoft-worldpainter-Main
+Icon=/opt/worldpainter/.install4j/worldpainter.png
+EOF
+;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
