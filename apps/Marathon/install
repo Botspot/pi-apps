@@ -8,7 +8,7 @@ version=20220115
 install_packages libboost-all-dev libsdl2-dev \
   libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
   libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev \
-  libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev || exit 2
+  libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev build-essential || exit 2
   
 #uninstall previous game data version installation if available to rule out corrupted files
 rm -rf ~/AlephOne-${version} ~/AlephOneData
