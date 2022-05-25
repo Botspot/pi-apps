@@ -77,6 +77,7 @@ rm -rf Marathon*-Data.zip
 status_green "Marathon Infinity installed"
 
 #create menu launchers
+mkdir -p ~/.local/share/applications
 status "Creating Menu launchers... "
 echo "[Desktop Entry]
 Version=1.0
