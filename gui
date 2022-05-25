@@ -472,19 +472,31 @@ runonce <<"EOF"
   [ -a "$HOME/.local/share/applications/pi-apps-settings.desktop" ] && sed -i "s/logo.png/settings.png/g" "$HOME/.local/share/applications/pi-apps-settings.desktop" || true
 EOF
 
-#recompile xlunch for existing users because icons are rendered differently now. See: https://github.com/Tomas-M/xlunch/issues/129#issuecomment-1051006971
-runonce <<"EOF"
-  if [ -d "${DIRECTORY}/xlunch" ];then
-    rm -rf "${DIRECTORY}/xlunch"
-  fi
-EOF
-
 #Raspbian Buster systems have a bug where XDG_DATA_DIRS is overwritten as the Raspberry Pi desktop is loaded.
 #This fixes it, as PiOS maintainers are unwilling to.
 #See: https://github.com/Botspot/pi-apps/issues/1833
 runonce <<"EOF"
   if [ -f /usr/bin/startlxde-pi ] && grep -q '/var/lib/menu-xdg"' /usr/bin/startlxde-pi ;then
     sudo_popup sed -i 's;/var/lib/menu-xdg";/var/lib/menu-xdg${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}";g' /usr/bin/startlxde-pi
+  fi
+EOF
+
+#Doom3 app by techcoder20 installed problematic SDL packages. (sdl2-image sdl2-mixer sdl2-ttf)
+#Nothing else uses them, and they just cause problems with many other games, so remove them
+runonce <<"EOF"
+  # Remove packages if necessary
+  pkgToRemoveListFull="sdl2-image sdl2-mixer sdl2-ttf"
+  pkgToRemoveList=""
+  IFS=' '
+  for pkgToRemove in $(echo $pkgToRemoveListFull); do
+    $(dpkg --status $pkgToRemove &> /dev/null)
+    if [[ $? -eq 0 ]]; then
+      pkgToRemoveList="$pkgToRemoveList $pkgToRemove"
+    fi
+  done
+  
+  if [ ! -z "$pkgToRemoveList" ]; then
+    sudo_popup apt-get --yes --purge remove $pkgToRemoveList || error "Could not remove packages"
   fi
 EOF
 
