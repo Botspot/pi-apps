@@ -24,6 +24,8 @@ function error {
 terminals='lxterminal
 xfce4-terminal
 mate-terminal
+lxterm
+uxterm
 xterm
 konsole
 terminator
@@ -36,7 +38,7 @@ terminal="$(basename "$(readlink -f "$(command -v x-terminal-emulator)")")"
 
 #if x-terminal-emulator is found and it matchs an option in $choices, then we can use it.
 choice=''
-if [ ! -z "$terminal" ] && echo "$terminals" | grep -qF "$terminal" ;then
+if [ ! -z "$terminal" ] || echo "$terminals" | grep -qF "$terminal" ;then
   #choose the same terminal that x-terminal-emulator uses
   choice="$terminal"
   [ $DEBUG == 1 ] && echo "Using $terminal from x-terminal-emulator"
@@ -63,6 +65,12 @@ elif [ "$choice" == xfce4-terminal ];then
 elif [ "$choice" == mate-terminal ];then
   mate-terminal --title="$title" -x bash -c "$commands" &
   
+elif [ "$choice" == lxterm ];then
+  lxterm -T "$title" -e bash -c "$commands" &
+  
+elif [ "$choice" == uxterm ];then
+  uxterm -T "$title" -e bash -c "$commands" &
+  
 elif [ "$choice" == xterm ];then
   xterm -T "$title" -e bash -c "$commands" &
   
@@ -74,7 +82,7 @@ elif [ "$choice" == terminator ];then
   
 elif [ "$choice" == gnome-terminal ];then
   gnome-terminal --title "$title" -x bash -c "$commands" &
-
+  
 elif [ "$choice" == gnome-terminal.wrapper ];then
   gnome-terminal --title "$title" -x bash -c "$commands" &
   
