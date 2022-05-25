@@ -1,0 +1,99 @@
+#!/bin/bash
+
+version=20220115
+
+#made according to the instructions from the developer, but was not originally created for the Pi
+#https://github.com/Aleph-One-Marathon/alephone/wiki/Linux%20Install%20Instructions
+
+install_packages libboost-all-dev libsdl2-dev \
+  libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
+  libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev \
+  libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev miniupnpc || exit 2
+  
+#uninstall previous game data version installation if available to rule out corrupted files
+rm -rf ~/AlephOne-${version} ~/AlephOneData
+rm -f ~/AlephOne-${version}.tar.bz2 ~/Marathon-${version}-Data.zip ~/Marathon2-${version}-Data.zip ~/MarathonInfinity-${version}-Data.zip
+
+#creating a directory for game files
+mkdir -p ~/AlephOneData
+
+#installation of the Marathon game engine (Aleph One)
+cd /tmp
+wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/AlephOne-${version}.tar.bz2 || exit 1
+
+status "Unzipping..."
+tar xjvf AlephOne-${version}.tar.bz2 || error "Unable to decompress source code"
+rm -f AlephOne-*.tar.bz2
+status_green "Done"
+
+status "Compilation..."
+cd AlephOne-${version}
+# get the $DISTRIB_RELEASE by calling lsb_release
+# check if upstream-release is available
+if [ -f /etc/upstream-release/lsb-release ]; then
+  echo "This is a Ubuntu Derivative, checking the upstream-release version info"
+  DISTRIB_CODENAME=$(lsb_release -s -u -c)
+else
+  DISTRIB_CODENAME=$(lsb_release -s -c)
+fi
+case "$DISTRIB_CODENAME" in
+  bionic|stretch) ./configure --without-miniupnpc || error "Unable to configure" ;;
+  *) ./configure || error "Unable to configure" ;;
+esac
+
+make -j$(nproc) || error "Unable to build"
+sudo make install || error "Unable to install"
+cd ..
+rm -rf AlephOne-${version}
+status_green "Done with build"
+
+#downloading Marathon Trilogy game data files
+status "Downloading Marathon Trilogy game data files... "
+wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/Marathon-${version}-Data.zip || exit 1
+unzip Marathon-${version}-Data.zip || error "Could not extract"
+mv Marathon/ ~/AlephOneData/ || error "Could not move directory"
+status_green "Marathon installed"
+wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/Marathon2-${version}-Data.zip || exit 1
+unzip Marathon2-${version}-Data.zip || error "Could not extract"
+mv "Marathon 2" ~/AlephOneData/Marathon_2 || error "Could not move directory"
+status_green "Marathon 2 installed"
+wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/MarathonInfinity-${version}-Data.zip || exit 1
+unzip MarathonInfinity-${version}-Data.zip || error "Could not extract"
+mv "Marathon Infinity" ~/AlephOneData/Marathon_Infinity || error "Could not move directory"
+rm -rf Marathon*-Data.zip
+status_green "Marathon Infinity installed"
+
+#create menu launchers
+status "Creating Menu launchers... "
+echo "[Desktop Entry]
+Version=1.0
+Name=Marathon
+Exec=/usr/local/bin/alephone $HOME/AlephOneData/Marathon/ %u
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;" > ~/.local/share/applications/marathon.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Name=Marathon 2
+Exec=/usr/local/bin/alephone $HOME/AlephOneData/Marathon_2/ %u
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;" > ~/.local/share/applications/marathon2.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Name=Marathon Infinity
+Exec=/usr/local/bin/alephone $HOME/AlephOneData/Marathon_Infinity/ %u
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;" > ~/.local/share/applications/marathoninfinity.desktop
+
+status_green "Done"
+
+if [ -e "$HOME/AlephOneData" ];then
+  echo -e "\n\n\e[93mTo prevent data loss, do not delete the AlephOneData folder located in the $HOME/.wine folder.\e[39m\n"
+fi

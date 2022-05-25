@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#game files and shortcuts
+rm -f $HOME/.local/share/applications/marathon*.desktop
+rm -rf $HOME/AlephOneData
+
+#executable file
+sudo rm -rf /usr/local/bin/alephone /usr/local/share/AlephOne
+
+echo -e "\n\n\e[93mYou just uninstalled the Aleph One app, but it's not completely gone yet.
+Setup files is located in the $HOME/ folder.
+Feel free to delete it to save space.\e[39m\n"
