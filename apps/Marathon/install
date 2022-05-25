@@ -28,6 +28,11 @@ status_green "Done"
 
 status "Compilation..."
 cd AlephOne-${version}
+case "$arch" in
+  "64") extra_args="" ;;
+  "32") extra_args='--build=arm-linux-gnueabihf --host=arm-linux-gnueabihf --target=arm-linux-gnueabihf' ;;
+  *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
 # get the $DISTRIB_RELEASE by calling lsb_release
 # check if upstream-release is available
 if [ -f /etc/upstream-release/lsb-release ]; then
@@ -37,7 +42,7 @@ else
   DISTRIB_CODENAME=$(lsb_release -s -c)
 fi
 case "$DISTRIB_CODENAME" in
-  bionic|stretch) ./configure --without-miniupnpc || error "Unable to configure" ;;
+  bionic|stretch) ./configure --without-miniupnpc "$extra_args" || error "Unable to configure" ;;
   *) ./configure || error "Unable to configure" ;;
 esac
 
