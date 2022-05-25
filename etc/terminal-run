@@ -28,6 +28,7 @@ xterm
 konsole
 terminator
 gnome-terminal
+gnome-terminal.wrapper
 qterminal'
 
 #Try to honor the preference of update-alternatives x-terminal-emulator
@@ -72,6 +73,9 @@ elif [ "$choice" == terminator ];then
   terminator -T "$title" -x bash -c "$commands" &
   
 elif [ "$choice" == gnome-terminal ];then
+  gnome-terminal --title "$title" -x bash -c "$commands" &
+
+elif [ "$choice" == gnome-terminal.wrapper ];then
   gnome-terminal --title "$title" -x bash -c "$commands" &
   
 elif [ "$choice" == qterminal ];then
