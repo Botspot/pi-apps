@@ -1,0 +1,30 @@
+#!/bin/bash
+
+cd ~
+rm -rf download
+rm -rf sauerbraten
+
+install_packages zlib1g-dev libgeoip-dev build-essential libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev || error 'Install of sdl2 and opengl libraries failed!'
+# as strang as it is, downloading from the 'download' name directs to a faster download server
+# downloading the game code and assets
+wget https://sourceforge.net/projects/sauerbraten/files/sauerbraten/2020_11_29/sauerbraten_2020_12_29_linux.tar.bz2/download || error 'Download failed from sourceforge.net!'
+status "Extracting Code and Game Assets"
+status "This may take a while and may not look like anything is happening"
+tar -xf download || error 'Extract of Cube2: Sauerbraten failed!'
+rm -f download
+cd sauerbraten/src || error "Could not move to directory"
+# building the game and server
+make -j$(nproc) || error "Build failed"
+rm -rf ../bin_unix/*
+make install || error "Installation failed"
+
+status "Creating Menu launchers... "
+echo "[Desktop Entry]
+Version=1.0
+Name=Cube 2 Sauerbraten
+Exec=$HOME/sauerbraten/sauerbraten_unix %u
+Path=$HOME/sauerbraten
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;" > ~/.local/share/applications/cube_2_sauerbraten.desktop
