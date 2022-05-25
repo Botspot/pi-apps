@@ -1,3 +1,5 @@
 #!/bin/bash
 
 flatpak_remove io.github.lainsce.DotMatrix || exit 1
+
+purge_packages || exit 1
