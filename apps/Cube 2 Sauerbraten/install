@@ -19,6 +19,7 @@ rm -rf ../bin_unix/*
 make install || error "Installation failed"
 
 status "Creating Menu launchers... "
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Version=1.0
 Name=Cube 2 Sauerbraten
