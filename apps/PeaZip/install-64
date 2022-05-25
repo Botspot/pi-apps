@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+install_packages flatpak || exit 1
+
+flatpak_install io.github.peazip.PeaZip || exit 1
