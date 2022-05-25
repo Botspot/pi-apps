@@ -46,8 +46,8 @@ case "$arch" in
     ;;
   "32") 
     case "$DISTRIB_CODENAME" in
-      bionic|stretch) ./configure --without-miniupnpc --build=arm-linux-gnueabihf --host=arm-linux-gnueabihf --target=arm-linux-gnueabihf || error "Unable to configure" ;;
-      *) ./configure --build=arm-linux-gnueabihf --host=arm-linux-gnueabihf --target=arm-linux-gnueabihf || error "Unable to configure" ;;
+      bionic|stretch) ./configure --without-miniupnpc --build=arm-linux-gnueabihf --host=arm-linux-gnueabihf || error "Unable to configure" ;;
+      *) ./configure --build=arm-linux-gnueabihf --host=arm-linux-gnueabihf || error "Unable to configure" ;;
     esac
     ;;
   *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
