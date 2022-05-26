@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://pi-apps.io">
+    <a>
         <img src="https://github.com/Botspot/pi-apps/blob/master/icons/proglogo.png?raw=true" alt="Pi-Apps logo">
     </a>
 </p>
