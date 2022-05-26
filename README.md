@@ -40,7 +40,7 @@ There is no centralized software repository, except for the `apt` repositories w
 Surely there is a better way! **There is.**  
 Introducing Pi-Apps, a well-maintained collection of app installation-scripts that you can run with **one click**.  
 
-Pi-Apps now serves **over 1,000,000 people** and hosts [nearly 200 apps](https://github.com/Botspot/pi-apps/wiki/Apps-List).
+Pi-Apps now serves **over 1,000,000 people** and hosts [over 200 apps](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ## Install Pi-Apps
 Open a terminal and run this command:
