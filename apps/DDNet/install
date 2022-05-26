@@ -26,3 +26,4 @@ else
 fi
 make -j$(nproc) || error 'Failed at make!'
 sudo make install || error "Failed to install"
+sudo update-icon-caches /usr/local/share/icons/*
