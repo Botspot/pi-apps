@@ -25,20 +25,26 @@ if [ -a "$DIRECTORY/apps/$app_name/install" ]; then
         #If the version is current do:
         status_green "Pi-Apps install version for $app_name is current!"
     else
+        status=""
         for (( iter=0; iter<${#all_url[@]}; iter++ )); do
             #make array appear as one variable inside for loop
             webVer=${webVer}
             pi_apps_ver=${pi_apps_ver}
             all_url=${all_url[$iter]}
             if validate_url "$all_url"; then
+                status=1
                 status_green "Updating pi-apps $app_name install to: $all_url"
-                sed -i "0,/version${version_number}=.*/s;;version${version_number}=${webVer};g" install
-                echo "- $app_name-all: $pi_apps_ver -> ${webVer} " >> /tmp/updated_apps
             else
+                status=0
                 warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
                 echo "**Updating $app_name install had been skipped, the upstream file $all_url does NOT exist.**" >> /tmp/failed_apps
+                break
             fi
         done
+        if [[ $status == 1 ]]; then
+            sed -i "0,/version${version_number}=.*/s;;version${version_number}=${webVer};g" install
+            echo "- $app_name-all: $pi_apps_ver -> ${webVer} " >> /tmp/updated_apps
+        fi
     fi
 fi
 
