@@ -1,0 +1,32 @@
+#!/bin/bash
+
+version=16.1
+
+#Dependencies
+install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python google-mock libx264-dev || exit 1
+
+package_available glslang-tools
+if [[ $? == "0" ]]; then
+  install_packages glslang-tools || error "Failed to install dependencies"
+  vulkan=1
+else
+  vulkan=0
+fi
+
+#Clone the Repository
+cd /tmp
+git_clone https://github.com/ddnet/ddnet --recursive || exit 1
+
+#Build
+cd ddnet || exit 1
+git checkout $version --recurse-submodules
+mkdir build
+cd build || exit 1
+if [[ $vulkan == 1 ]]; then
+  cmake .. || error 'Failed at cmake!'
+else
+  cmake .. -DVULKAN=OFF || error 'Failed at cmake!'
+fi
+make -j$(nproc) || error 'Failed at make!'
+sudo make install || error "Failed to install"
+sudo update-icon-caches /usr/local/share/icons/*

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+purge_packages || exit 1
+
+sudo rm -rf /usr/local/share/ddnet \
+/usr/local/bin/DDNet \
+/usr/local/bin/DDNet-Server \
+/usr/local/lib/ddnet \
+/usr/local/share/applications/ddnet.desktop \
+/usr/local/share/metainfo/ddnet.appdata.xml \
+/usr/local/share/icons/hicolor/16x16/apps/ddnet.png \
+/usr/local/share/icons/hicolor/16x16/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/32x32/apps/ddnet.png \
+/usr/local/share/icons/hicolor/32x32/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/48x48/apps/ddnet.png \
+/usr/local/share/icons/hicolor/48x48/apps/ddnet-server.png \
+/usr/local/share/icons/hicolor/256x256/apps/ddnet.png \
+/usr/local/share/icons/hicolor/256x256/apps/ddnet-server.png
