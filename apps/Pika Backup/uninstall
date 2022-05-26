@@ -1,5 +1,5 @@
 #!/bin/bash
 
-flatpak_remove org.gnome.World.PikaBackup || exit 1
+flatpak_uninstall org.gnome.World.PikaBackup || exit 1
 
 purge_packages || exit 1
