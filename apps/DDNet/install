@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=16.1
+
 #Dependencies
 install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python google-mock libx264-dev || exit 1
 
@@ -17,6 +19,7 @@ git_clone https://github.com/ddnet/ddnet --recursive || exit 1
 
 #Build
 cd ddnet || exit 1
+git checkout $version --recurse-submodules
 mkdir build
 cd build || exit 1
 if [[ $vulkan == 1 ]]; then
