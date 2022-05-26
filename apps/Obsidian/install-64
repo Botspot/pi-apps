@@ -1,7 +1,9 @@
 #!/bin/bash
 
+version=0.9.17
+
 enable_module fuse || exit 1
 
-wget -O /tmp/Obsidian.AppImage https://github.com/obsidianmd/obsidian-releases/releases/download/v0.9.17/Obsidian-0.9.17-arm64.AppImage || exit 1
+wget -O /tmp/Obsidian.AppImage https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}-arm64.AppImage || exit 1
 chmod +x /tmp/Obsidian.AppImage
 sudo mv -f /tmp/Obsidian.AppImage /opt || exit 1
