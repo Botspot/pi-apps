@@ -5,7 +5,7 @@ install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfr
 
 package_available glslang-tools
 if [[ $? == "0" ]]; then
-  install_packages glslang-tools glslang-dev || error "Failed to install dependencies"
+  install_packages glslang-tools || error "Failed to install dependencies"
   vulkan=1
 else
   vulkan=0
