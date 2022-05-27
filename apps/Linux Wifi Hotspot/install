@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Install dependencies
+install_packages bash util-linux procps hostapd iproute2 iw haveged dnsmasq iptables make gcc g++ build-essential pkg-config libgtk-3-0 libgtk-3-dev libqrencode-dev libpng-dev || exit 1
+
+# Clone and cd into repo
+cd "$HOME"
+git_clone https://github.com/lakinduakash/linux-wifi-hotspot || error "Failed to clone repository!"
+cd linux-wifi-hotspot || error "Failed to cd into 'linux-wifi-hotspot'!"
+
+# Build and install
+status "Building Linux Wifi Hotspot..."
+make || error "Failed to build Linux Wifi Hotspot!"
+status_green "Done!"
+status "Installing Linux Wifi Hotspot..."
+sudo make install || error "Failed to install Linux Wifi Hotspot!"
+status_green "Done!"

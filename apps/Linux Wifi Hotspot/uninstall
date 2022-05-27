@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+# Uninstall Linux Wifi Hotspot
+cd "$HOME"/linux-wifi-hotspot || error "Failed to cd into 'linux-wifi-hotspot'!"
+sudo make uninstall || error "Failed to uninstall Linux Wifi Hotspot!"
