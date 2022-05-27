@@ -36,7 +36,7 @@ sudo rm /etc/apt/sources.list.d/box86.list &>/dev/null
 echo "Adding box86 repo..."
 wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -qO- | sed -r 's/deb /deb [arch=armhf] /' | sudo tee /etc/apt/sources.list.d/box86.list >/dev/null|| error "Failed to download /etc/apt/sources.list.d/box86.list"
 echo "Adding key..."
-wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
+curl -fsSL https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/box86-archive-keyring.gpg || error "Failed to add key to box86 repo!"
 echo "Installing box86..."
 sudo dpkg --remove box86-no-binfmt-restart 2>/dev/null
 install_packages box86:armhf || exit 1

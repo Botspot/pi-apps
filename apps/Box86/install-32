@@ -5,10 +5,9 @@ fi
 
 sudo rm -f /etc/apt/sources.list.d/box86.list
 echo "Adding box86 repo..."
-sudo mkdir -p /etc/apt/sources.list.d
 sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
 echo "Adding key..."
-wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
+curl -fsSL https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/box86-archive-keyring.gpg || error "Failed to add key to box86 repo!"
 echo "Installing box86..."
 sudo dpkg --remove box86-no-binfmt-restart 2>/dev/null
 install_packages box86 || exit 1
