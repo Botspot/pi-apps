@@ -703,6 +703,82 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   fi
 }
 
+add_external_repo() { # add an external apt repo and its gpg key.
+  # follows https://wiki.debian.org/DebianRepository/UseThirdParty specification with one-line-style format https://repolib.readthedocs.io/en/latest/deb822-format.html#one-line-format
+  local reponame="$1"
+  # "URI SUITE COMPONENT"
+  local repopath="$2"
+  local pubkeyurl="$3"
+
+  # check if all needed vars are set
+  [ -z "$repopath" ] && error "add_external_repo: repopath not set"
+  [ -z "$reponame" ] && error "add_external_repo: reponame not set"
+  [ -z "$pubkeyurl" ] && error "add_external_repo: pubkeyurl not set"
+
+  # exit if reponame contains space, since apt doesn't accept .list files with spaces in filename or keyname.
+  if [[ $reponame = *" "* ]]; then
+    error "add_external_repo: provided reponame contains a space."
+  fi
+
+  # check if links are valid
+  wget -q --spider "$pubkeyurl" || error "add_external_repo: pubkeyurl isn't a valid link"
+
+  # make apt keyring directory if it doesn't exist
+  if [ ! -d /usr/share/keyrings ]; then
+    sudo mkdir -p /usr/share/keyrings || error "add_external_repo: failed to create apt keyring directory."
+  fi
+
+  # check if .list file already exists
+  if [ -f /etc/apt/sources.list.d/${reponame}.list ]; then
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.list || error "add_external_repo: failed to remove conflicting .list file."
+  fi
+
+  # download gpg key from specified url
+  if [ -f /usr/share/keyrings/${reponame}-archive-keyring.gpg ]; then
+    sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
+  fi 
+  wget -qO- "$pubkeyurl" | sudo gpg --dearmor -o /usr/share/keyrings/${reponame}-archive-keyring.gpg
+
+  if [ $? != 0 ];then
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.list
+    sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
+    error "add_external_repo: download from specified pubkeyurl failed."
+  fi
+
+  # create .list file
+  echo "deb [signed-by=/usr/share/keyrings/${reponame}-archive-keyring.gpg] $repopath" | sudo tee /etc/apt/sources.list.d/${reponame}.list >/dev/null
+
+  if [ $? != 0 ];then
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.list
+    sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
+    error "add_external_repo: failed to create ${reponame}.list file"
+  fi
+}
+
+rm_external_repo() { # remove an external apt repo and its gpg key, if the repo is no longer in use. (force-remove the repo with force argument)
+
+  local reponame="$1"
+  local force="$2"
+
+  [ -z "$reponame" ] && error "rm_external_repo: reponame not provided"
+
+  # exit if reponame contains space, since apt doesn't accept .list files with spaces in filename or keyname.
+  if [[ $reponame = *" "* ]]; then
+    error "rm_external_repo: provided reponame contains a space."
+  fi
+
+  # exit gracefully if .list file does not exist
+  [ -f "/etc/apt/sources.list.d/$reponame.list" ] || exit 0
+  
+  if [ "$force" == force ]; then
+    rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg || error "rm_external_repo: removal of ${reponame}-archive-keyring.gpg failed"
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.list || error "rm_external_repo: removal of ${reponame}.list failed"
+    exit 0
+  fi
+
+  remove_repofile_if_unused /etc/apt/sources.list.d/${reponame}.list "" /usr/share/keyrings/${reponame}-archive-keyring.gpg
+}
+
 adoptium_installer() {
   status "Adding Adoptium repository:"
 
