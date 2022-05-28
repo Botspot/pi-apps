@@ -3,7 +3,7 @@
 version=16.1
 
 #Dependencies
-install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python google-mock libx264-dev || exit 1
+install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-extra libavutil-dev || exit 1
 
 package_available glslang-tools
 if [[ $? == "0" ]]; then
