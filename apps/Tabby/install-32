@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.177
+version=1.0.178
 
 install_packages https://github.com/Jai-JAP/tabby-arm-builds/releases/download/v${version}/tabby-${version}-linux-armhf.deb || exit 1
 
