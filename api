@@ -330,6 +330,10 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   
   #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
   sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
+
+  #hash the repository by creating a Release file
+  (apt-ftparchive release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
+The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   
   #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
   rm -f /tmp/pi-apps-local-packages/source.list
