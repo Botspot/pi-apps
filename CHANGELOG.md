@@ -4,158 +4,306 @@ This changelog mainly covers major events in Pi-Apps like new apps being added.
 
 If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
 
-Last updated: May 16, 2022 by [@ryanfortner](https://github.com/ryanfortner)
+Last updated: May 16, 2022 by [@theofficialgman](https://github.com/theofficialgman)
+
+## New Apps changelog:
+
+- **09/22/2020** Added Arduino app
+- **09/22/2020** Added BalenaEtcher app
+- **09/22/2020** Added CommanderPi app
+- **09/22/2020** Added Cool Retro Term app
+- **09/22/2020** Added Cura app
+- **09/22/2020** Added Pi Power Tools app
+- **09/22/2020** Added template app
+- **09/22/2020** Added Windows 10 Theme app
+- **10/02/2020** Added Discord app
+- **10/02/2020** Added piKiss app
+- **10/03/2020** Added Conky app
+- **10/06/2020** Added Zoom app
+- **10/08/2020** Added Email Checker app
+- **10/10/2020** Added Color Emoji font app
+- **10/11/2020** Added Minecraft Java app
+- **10/11/2020** Added Update Buddy app
+- **10/12/2020** Added Minecraft Bedrock app
+- **10/13/2020** Added Boxy SVG app
+- **10/19/2020** Added Visual Studio Code app
+- **10/26/2020** Added Box86 app
+- **10/31/2020** Added Scrcpy app
+- **11/03/2020** Added SpeedTest-CLI app
+- **11/04/2020** Added Clam Antivirus app
+- **11/04/2020** Added USBImager app
+- **11/05/2020** Added eDEX-UI app
+- **11/06/2020** Added Chromium Widevine app
+- **11/09/2020** Added LibrePCB app
+- **11/09/2020** Added PrusaSlicer app
+- **11/16/2020** Added All Is Well app
+- **11/17/2020** Added PiGro app
+- **11/18/2020** Added Browsh app
+- **11/26/2020** Added Steam app
+- **11/28/2020** Added Pycharm CE app
+- **11/28/2020** Added WPS Office app
+- **11/29/2020** Added Timeshift app
+- **12/11/2020** Added Sublime Text app
+- **12/21/2020** Added Intellij IDEA app
+- **12/21/2020** Added Powerline-Shell app
+- **12/24/2020** Added Doom 3 app
+- **12/28/2020** Added Eagle CAD app
+- **12/28/2020** Added YouTubuddy app
+- **01/03/2021** Added Lightpad app
+- **01/03/2021** Added Mission Planner app
+- **01/03/2021** Added tldr app
+- **01/04/2021** Added Vivaldi app
+- **01/09/2021** Added Ulauncher app
+- **01/11/2021** Added AndroidBuddy app
+- **01/13/2021** Added jGRASP IDE app
+- **01/13/2021** Added Snap Store app
+- **01/16/2021** Added Angry IP scanner app
+- **01/20/2021** Added AnyDesk app
+- **01/26/2021** Added TeamViewer Host app
+- **01/27/2021** Added OBS Studio app
+- **01/28/2021** Added VeraCrypt app
+- **01/28/2021** Added VSCodium app
+- **01/30/2021** Added Minecraft Pi (Modded) app
+- **01/31/2021** Added Wine (x86) app
+- **02/01/2021** Added Remarkable app
+- **02/03/2021** Added Node.js app
+- **02/08/2021** Added FreeTube app
+- **02/08/2021** Added StackEdit app
+- **02/17/2021** Added QEMU app
+- **02/21/2021** Added Geany Dark Mode app
+- **03/04/2021** Added Mac OS Theme app
+- **03/08/2021** Added Snapdrop app
+- **03/10/2021** Added Descent 1 app
+- **03/10/2021** Added Descent 2 app
+- **03/10/2021** Added PPSSPP (PSP emulator) app
+- **03/14/2021** Added Stunt Rally app
+- **03/16/2021** Added Lokinet app
+- **03/18/2021** Added Notepad ++ app
+- **03/20/2021** Added WACUP (new WinAmp) app
+- **03/24/2021** Added Libreoffice MS theme app
+- **03/30/2021** Added Downgrade Chromium app
+- **03/30/2021** Added Github-CLI app
+- **04/06/2021** Added Wechat app
+- **04/08/2021** Added Bongo Cam app
+- **04/08/2021** Added OpenSCAD app
+- **04/10/2021** Added Flameshot app
+- **04/10/2021** Added Heroes 2 app
+- **04/10/2021** Added Processing IDE app
+- **04/10/2021** Added Scratch 2 app
+- **04/10/2021** Added Web Apps app
+- **04/12/2021** Added AstroMenace app
+- **04/13/2021** Added Lego Digital Designer app
+- **05/03/2021** Added PiSafe app
+- **05/04/2021** Added BlockPi app
+- **05/04/2021** Added Windows Screensavers app
+- **05/05/2021** Added Drawing app
+- **05/07/2021** Added Chiaki app
+- **07/02/2021** Added Conky Rings app
+- **07/02/2021** Added Https File Server app
+- **07/03/2021** Added Turbowarp app
+- **07/10/2021** Added Box64 app
+- **07/25/2021** Added Firefox Rapid Release app
+- **08/10/2021** Added Pi-Apps Terminal Plugin (bash) app
+- **08/10/2021** Added Pi-Apps Terminal Plugin (python) app
+- **08/11/2021** Added Autostar app
+- **08/11/2021** Added CloudBuddy app
+- **08/11/2021** Added Godot app
+- **09/01/2021** Added Windows Flasher app
+- **09/15/2021** Added Zoom PWA app
+- **09/19/2021** Added Sysmon app
+- **09/20/2021** Added Minecraft Java MultiMC5 app
+- **09/23/2021** Added Microsoft Teams app
+- **09/23/2021** Added WhatsApp app
+- **09/23/2021** Added XSnow app
+- **09/25/2021** Added Telegram app
+- **09/29/2021** Added Sonic Pi app
+- **10/04/2021** Added Codex app
+- **10/08/2021** Added Min app
+- **10/08/2021** Added Pale Moon app
+- **10/08/2021** Added Puffin app
+- **10/08/2021** Added Quartz app
+- **10/08/2021** Added Tor app
+- **10/11/2021** Added Amiberry app
+- **10/12/2021** Added BleachBit app
+- **10/14/2021** Added Persepolis Download Manager app
+- **10/14/2021** Added Xtreme Download Manager app
+- **10/17/2021** Added BlockBench app
+- **10/24/2021** Added Geekbench app
+- **10/26/2021** Added Oomox Theme Designer app
+- **10/26/2021** Added Temps app
+- **10/28/2021** Added Deskreen app
+- **11/06/2021** Added AntiMicroX app
+- **11/06/2021** Added btop++ app
+- **11/08/2021** Added Alacritty Terminal app
+- **11/15/2021** Added FF Multi Converter app
+- **11/30/2021** Added GIMP app
+- **11/30/2021** Added Imager app
+- **11/30/2021** Added Kolourpaint app
+- **11/30/2021** Added LibreOffice app
+- **11/30/2021** Added MuseScore app
+- **11/30/2021** Added Nautilus app
+- **11/30/2021** Added Scratch 3 app
+- **11/30/2021** Added Screenshot app
+- **11/30/2021** Added Shotwell app
+- **11/30/2021** Added Synaptic app
+- **12/01/2021** Added Filezilla app
+- **12/02/2021** Added Caprine app
+- **12/11/2021** Added Inkscape app
+- **12/13/2021** Added SysMonTask app
+- **12/15/2021** Added Audacious app
+- **12/15/2021** Added Audacity app
+- **12/15/2021** Added Chromium app
+- **12/15/2021** Added Deluge app
+- **12/15/2021** Added Disk Usage Analyzer app
+- **12/15/2021** Added GParted app
+- **12/15/2021** Added Guake Terminal app
+- **12/15/2021** Added Kodi app
+- **12/15/2021** Added NixNote2 app
+- **12/15/2021** Added Pinta app
+- **12/15/2021** Added Steam Link app
+- **12/15/2021** Added Thunderbird app
+- **12/15/2021** Added Transmission app
+- **12/21/2021** Added Unciv app
+- **01/04/2022** Added SimpleScreenRecorder app
+- **01/05/2022** Added More RAM app
+- **01/08/2022** Added Tetris CLI app
+- **01/09/2022** Added BlueJ Java IDE app
+- **01/10/2022** Added Nemo app
+- **01/19/2022** Added Microsoft PowerShell app
+- **01/19/2022** Added Minecraft Java Server app
+- **01/25/2022** Added HTTrack Website Copier app
+- **01/30/2022** Added Epiphany app
+- **02/10/2022** Added LineRider app
+- **02/12/2022** Added KeePassXC app
+- **02/21/2022** Added MatterControl app
+- **02/26/2022** Added PiKISS GUI app
+- **02/27/2022** Added Fritzing app
+- **02/28/2022** Added LibreCAD app
+- **03/01/2022** Added Cawbird app
+- **03/04/2022** Added VMware Horizon Client app
+- **03/24/2022** Added Ducopanel app
+- **03/24/2022** Added TiLP app
+- **03/25/2022** Added Syncthing app
+- **03/29/2022** Added Tabby app
+- **03/30/2022** Added Hyper app
+- **04/25/2022** Added System Monitoring Center app
+- **05/06/2022** Added Renoise (Demo) app
+- **05/07/2022** Added Github Desktop app
+- **05/07/2022** Added Reaper app
+- **05/08/2022** Added Dot Matrix app
+- **05/11/2022** Added Waveform app
+- **05/12/2022** Added LMMS app
+- **05/17/2022** Added Sphero SDK app
+- **05/18/2022** Added Electron Fiddle app
+- **05/19/2022** Added Better Chromium app
+- **05/20/2022** Added Neofetch app
+- **05/22/2022** Added ckb-next app
+- **05/23/2022** Added WorldPainter app
+- **05/24/2022** Added AbiWord app
+- **05/24/2022** Added PeaZip app
+- **05/26/2022** Added DDNet app
+
+
+## Other noteable changes:
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 - **9/20/2020** Development begins.
 - **9/22/2020** Initial upload to github, including these apps: Arduino, BalenaEtcher, Chromium Media Edition, CommanderPi, Cool Retro Term, Cura, FreeCAD, Pi-Power-Tools, Raspi2png, and Windows 10 Theme.  
-- **10/1/2020** Many bugs fixed, createapp added, and added TBOPlayer app.  
-- **10/2/2020** More bug fixes & improvements; added Discord, Minecraft Java, and piKiss apps.  
-- **10/3/2020** Added some more icons, added conky app.  
+- **10/1/2020** Many bugs fixed, createapp added.  
+- **10/2/2020** More bug fixes & improvements.
+- **10/3/2020** Added some more icons
 - **10/4/2020** Added Pi-Apps Settings menu button, improve many descriptions, and a couple bug fixes to `pkg-install`.  
-- **10/6/2020** Added Zoom app, license file, and a few more bug fixes  
+- **10/6/2020** Added license file, and a few more bug fixes  
 - **10/7/2020** Added RetroPie app, overhaul the entire Settings app, and over 20 more bug fixes and improvements  
 At this point, Pi-Apps is no longer in beta stage, but released on the Raspberry Pi forums.  
-- **10/8/2020** Added Email Checker app, and a couple bug fixes  
 - **10/9/2020** Make Zoom install pulseaudio, and compile successfully.   
 At this point, grayduck has said Pi-Apps will be added to TwisterOS.  
-- **10/10/2020** More Zoom fixes, added Color Emoji Font app, remove Icon Browser, implement hidelist for grayduck  
-- **10/11/2020** Rename Minecraft to Minecraft Java, and added Update Buddy app. Zoom now disables pulseaudio autostart. 
-- **10/12/2020** Write the README and added Minecraft Bedrock.  
-- **10/13/2020** Added Boxy SVG and Sonic Pi.
+- **10/10/2020** More Zoom fixes, implement hidelist for grayduck  
+- **10/11/2020** Rename Minecraft to Minecraft Java. Zoom now disables pulseaudio autostart. 
+- **10/12/2020** Write the README
 - **10/15/2020** Fix update buddy, and zoom now disables pulseaudio autostart
 - **10/18/2020** Leepspvideo posted [this video](https://www.youtube.com/watch?v=zxyWQ3FV98I) featuring Pi-Apps. As a result, 3000+ people have installed Pi-Apps.
-- **10/19/2020** Added Visual Studio Code and fix a couple bugs.
-- **10/20/2020** Added Cordless Discord app, and enable preloading.
+- **10/20/2020** Enable preloading.
 - **10/21/2020** Fix Cool-Retro-Term install bug, and enable autostarted updater.
 - **10/12/2020** ETA Prime posted [this video](https://www.youtube.com/watch?v=oqNWJ52DLes) featuring Pi-Apps. As a result, 2000+ more people have installed Pi-Apps.
-- **10/26/2020** Added Box86 app and also mask pulseaudio.service for Zoom
-- **10/31/2020** Reached 20,000 total downloads and added Scrcpy app
+- **10/26/2020** Mask pulseaudio.service for Zoom
+- **10/31/2020** Reached 20,000 total downloads
 - **11/2/2020** Pi-Apps added to [TwisterOS](https://twisteros.com/) with the 1.8.5 patch
-- **11/3/2020** Added Speedtest-CLI app
-- **11/4/2020** Added Clam Antivirus & USBImager apps along with README badge
-- **11/5/2020** Added Back to Chromium 78 app and eDEX-UI
-- **11/6/2020** Added Chromium Widevine for v84 and also enable multiselecting apps to install/uninstall with Ctrl + Click
-- **11/9/2020** Added LibrePCB and PrusaSlicer apps
-- **11/13/2020** Added Tor Browser app
+- **11/4/2020** Add README badge
+- **11/6/2020** Enable multiselecting apps to install/uninstall with Ctrl + Click
 - **11/14/2020** Chromium Media Edition deprecated in favour of Chromium Widevine for Chrome v84
-- **11/16/2020** Added All Is Well app
-- **11/17/2020** Added PiGro app and updated Zoom 
-- **11/18/2020** Added Browsh app
 - **11/24/2020** Updated to now use terminal-run to fix pi-apps not working with some terminal types. Updated all scripts to use ~/ instead of /home/pi
-- **11/26/2020** Added Steam app and added a credits section in the app creator
+- **11/26/2020** Added a credits section in the app creator
 - **11/27/2020** Added beta xlunch GUI which is more flexible than YAD.
-- **11/28/2020** Switch TBOPlayer to master branch, added WPS Office for aarch64 and added Pycharm CE
-- **11/29/2020** Added testimonies, improved multi-installing apps, and added Puffin Browser Demo app along with Timeshift
+- **11/28/2020** Switch TBOPlayer to master branch.
+- **11/29/2020** Added testimonies, improved multi-installing apps.
 - **12/6/2020** Made Steam not install box86 on TwisterOS
 - **12/7/2020** Made Steam launch in Small mode by default
-- **12/11/2020** Updated Etcher and added Sublime Text app
-- **12/21/2020** Added Intellij Idea and Powerline Shell apps
-- **12/24/2020** Added Doom 3 app.
 - **12/27/2020** Boxy SVG app uses [Boxy-SVG-RPi](https://github.com/Botspot/Boxy-SVG-RPi) and Box86 app uses [box86-updater](https://github.com/Botspot/box86-updater)
-- **12/28/2020** Added Eagle and YouTubuddy apps
 - **12/29/2020** Changed Doom 3 app to not wget script and added the "a guy" story in the README :laughing:
-- **1/2/2021** Removed Cordless app due to users being banned by Discord and support being dropped. Added WhatsApp and Vivaldi browser
-- **1/3/2021** Added Lightpad, TLDR, and Mission Planner apps. Also improved Zoom.
+- **1/2/2021** Removed Cordless app due to users being banned by Discord and support being dropped.
 - **1/5/2021** Added app request templates
 - **1/8/2021** Removed Chromium Media Edition app and started work on categories
-- **1/9/2021** Added Ulauncher app
 - **1/10/2021** Added categories!
-- **1/11/2021** Added AndroidBuddy app amd fixed preload error
+- **1/11/2021** Fixed preload error
 - **1/12/2021** Improved xlunch compilation
-- **1/13/2021** Added Snap store, jGRASP IDE
-Minecraft Pi testing phase begins
-- **1/16/2021** Added Angry IP scanner app
-- **1/20/2021** Added AnyDesk app
+- **1/13/2021** Minecraft Pi testing phase begins
 - **1/21/2021** Updated BalenaEtcher to v1.5.113
-- **1/26/2021** Added Teamviewer Host app
 - **1/27/2021** Added OBS Studio app
-- **1/28/2021** Added VSCodium and VeraCrypt apps
-Added pi-apps terminal command (you can now run pi-apps with `pi-apps`). 
-- **1/30/2021** Minecraft Pi (Modded) official launch
-- **1/31/2021** Added Wine x86 app
-- **2/1/2021** Added Remarkable app and fixed Minecraft Pi (Modded) install
-- **2/3/2021** Updated Minecraft Pi (Modded) to v0.1.8 and added Node.js app
-- **2/8/2021** Added StackEdit and FreeTube apps, hid RetroPie and made Doom 3 visible.
-- **2/13/2021** Added credits button for apps and fixed Minecraft Pi (Modded) install issues
-- **2/17/2021** Updated BalenaEtcher, Cura, and WhatsApp apps, and also added QEMU app.
+- **1/28/2021** Added pi-apps terminal command (you can now run pi-apps with `pi-apps`). 
+- **2/13/2021** Added credits button for apps
 - **2/20/2021** Changed wine install scripts and fixed WhatsApp download bug.
-- **2/21/2021** Added Geany Dark Mode app, updated FreeTube, and more Wine install fixes.
 - **2/28/2021** Hidden Wine on Twister OS.
-- **3/4/2021** Added pi-apps terminal plugin and Mac OS theme apps, updated Minecraft Pi (Modded) and added info about getting better FPS on both Minecraft apps
-- **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports
-- **3/8/2021** Added Snapdrop app, updated intellij IDEA and Minecraft Pi (Modded) with a FPS counter and newer build
-- **3/10/2021** Added Decent 1/2 and ppsspp apps
-- **3/11/2021** Changed box86 install to use itai's apt repository
+- **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports- **3/11/2021** Changed box86 install to use itai's apt repository
 - **3/12/2021** Changed Node.js app to use nvm version manager and unhid BalenaEtcher on Twister OS
-- **3/14/2021** Added Stunt Rally app, and added a "Installed" category for installed apps
+- **3/14/2021** Added a "Installed" category for installed apps
 - **3/15/2021** Added Back to Chromium v86 app, and updated box86 to be installable on aarch64 OSes
-- **3/16/2021** Added Lokinet app and large upgrade to Zoom app
+- **3/16/2021** Large upgrade to Zoom app
 - **3/17/2021** Added 64-bit support for Vivaldi
-- **3/18/2021** Added Notepad++ app and made Doom 3 run in a 64-bit kernel with a 32-bit userland
+- **3/18/2021** Added Doom 3 run in a 64-bit kernel with a 32-bit userland
 - **3/19/2021** Redesign all program icons, the Pi-Apps logo, and all screenshots.
-- **3/20/2021** Updated eDEX-UI to v2.2.7, completely transitioned to Itai's box86 builds for all apps, added WACUP app and made a new "Multimedia" category
-- **3/24/2021** Added Libreoffice MS Theme app, and automarked box86/Wine as installed on Twister OS
 - **3/28/2021** Hide less apps on Twister OS Lite
-- **3/30/2021** Merge all Chromium downgrade apps into "Downgrade Chromium" and added Github-CLI app
+- **3/30/2021** Merge all Chromium downgrade apps into "Downgrade Chromium"
 - **3/31/2021** Updated Arduino IDE to change install location
 - **4/3/2021** Updated Update Buddy to show a update notification like pi-apps
-- **4/5/2021** Added Turbo Scratch app
-- **4/6/2021** Added WeChat app and bumped Github-CLI version
 - **4/7/2021** Bumped Discord version to renamed "WebCord"
-- **4/8/2021** Added new api script, improved icons, faster preloading. Updated whatsapp + stackedit. Added Bongo Cam and OpenSCAD apps.
+- **4/8/2021** Added new api script, improved icons, faster preloading. Updated whatsapp + stackedit.
 - **4/9/2021** Display user count for apps and squarify icons
-- **4/10/2021** Added flameshot, Processing IDE, Scratch 2 (with flash player fixes), Heroes 2 and Linux Mint's Web Apps
-- **4/12/2021** Added AstroMenace app
-- **4/13/2021** Added Lego Digital Designer app and changed Wine to add extra menu sortcuts
 - **4/14-15-20/2021** Changed pkg-install to use dummy debs for depends to let APT handle depend issues
 - **4/24/2021** Forced updater to not update Wine and Steam on Twister OS
-- **5/3/2021** Added PiSafe app
-- **5/4/2021** Added blockpi and Windows Screensavers apps, numerous changes to api script and removed up/down buttons in GUI
-- **5/5/2021** Added Drawing app and updated install/uninstall GUI icons
+- **5/4/2021** Numerous changes to api script and removed up/down buttons in GUI
+- **5/5/2021** Updated install/uninstall GUI icons
 - **5/6/2021** Updated trash icon
-- **5/7/2021** Added Chiaki app and fixed terminal title when multi-installing apps
+- **5/7/2021** Fixed terminal title when multi-installing apps
 - **5/9/2021** Added qterminal support to pi-apps and fix Wine precompiled kernel
 - **5/14/2021** Fixed update-exclusion and preload-daemon. Also added icon for disabled apps and made piKiss 32-bit only
 - **5/19/2021** Fixed Box86 multiarch on 64-bit
 - **5/24/2021** Allowed selecting apps to update in updater and added more api functions. 
 - **6/19/2021** Update MCPI Modded to v2.x and use APT repo instead of pi-apps updates to allow for faster package updates
 - **6/21/2021** Added support for STL thumbnails in file manager for Cura and 1.17 support to MC Java
-- **7/2/2021** Added Conky Rings, Pale Moon Browser, and HTTPS File Server apps
 - **7/3/2021** Added install/uninstall output logging system
 - **7/4/2021** Added note about what kind of distros Pi-Apps will work on to README
-- **7/10/2021** Added Min Browser and Box64 apps, and updated app screenshots in readme
-- **7/25/2021** Added "Never show again" option to updater notifications, and new Firefox Rapid Release app, as well as a 64-bit installation script for Sublime Text. Also changed updater to check for updates via `git pull` instead of old `git clone` system
+- **7/10/2021** Updated app screenshots in readme
+- **7/25/2021** Added "Never show again" option to updater notifications, and a 64-bit installation script for Sublime Text. Also changed updater to check for updates via `git pull` instead of old `git clone` system
 - **7/31/2021** Fixed writing update logs to home directory
 - **8/2/2021** Made Pi-Apps print support info at end of a script failure
 - **8/9/2021** Made 64-bit Zoom to use box64 and amd64 Zoom binaries, and updated install/uninstall code to mark scripts as executiable before running them
 - **8/10/2021** Added new bug reporting window after script failure, allowing users to send a bug report to the developers with the click of a button, added a bash-based terminal plugin app and auto sign unsigned APT repository. A ton of commits were made following the addition of the error reporter :)
-- **8/11/2021** Added AutoStar & CloudBuddy apps made by Botspot, (insert lots of bug fixes here too). Also added checks for non-arm architectures and also add semi-support for Chromebooks
+- **8/11/2021** Added checks for non-arm architectures and also add semi-support for Chromebooks
 - **8/13/2021** Added new "Search" button to search for apps
 - **8/15/2021** Added new startup splash screen to make the wait time a little less agonizing
 - **9/1/2021** Added Windows Flasher app, and translate all wget commands to aria2c for faster download speeds
 - **9/9/2021** Improve the "Get it on Pi-Apps" badge, and improve launch-time by optimizing the message of the day
 - **9/10/2021** All 3-month-old Pi-Apps installations are forcibly reinstalled
-- **9/15/2021** Added Zoom PWA app
-- **9/19/2021** Added Sysmon app
 - **9/21/2021** Rewrite the `updater` script for a better updating experience, and improve Pi-Apps launch-time with the genapplist-yad program
 - **9/22/2021** Optimize the update-checking time. Now it takes **2** seconds to check for updates instead of **15** seconds.
 - **9/23/2021** Add Microsoft Teams and XSnow apps; rename Whatsapp to WhatsApp
 - **9/24/2021** Improve the layout of the Pi-Apps README
 - **9/26/2021** Properly document Pi-Apps with the new DOCUMENTATION.md file
-- **9/27/2021** Added Telegram app
-- **10/4/2021** Added MultiMC5 Minecraft launcher app
 - **10/7/2021** Replaced legacy minecraft launcher with Lunar Client and added 64-bit version of PPSSPP
-- **10/8/2021** Added Quartz Browser and Falkon Browser
 - **10/9/2021** Added the ability for users to choose between dark mode and light mode for YAD
 - **10/10/2021** Changed the "Sent Log" feature to be available only for errors relating to the script itself and not system
-- **10/11/2021** Added Amiberry emulator app
-- **10/12/2021** Added BleachBit app
-- **10/17/2021** Added BlockBench app
-- **10/23/2021** Added LinuxCNC app
-- **10/24/2021** Added Geekbench app and a "Import App" button to settings
-- **10/26/2021** Added Temps app and individual icons for all categories
-- **10/28/2021** Added Deskreen app
-- **10/6/2021** Added Alacritty Terminal app
+- **10/24/2021** Added a "Import App" button to settings
+- **10/26/2021** Added individual icons for all categories
 - **5/16/2022** Major GUI updates and script modifications made. https://github.com/Botspot/pi-apps/pull/1580 https://github.com/Botspot/pi-apps/issues/1578
 
