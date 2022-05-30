@@ -9,25 +9,15 @@ sudo xdg-desktop-menu uninstall --mode system "/opt/worldpainter/.install4j/inst
 
 case "$arch" in
 "64") 
-# replace worldpainter .desktop to force java-11
-sudo tee /usr/share/applications/worldpainter.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=WorldPainter
-Exec=bash -c 'INSTALL4J_JAVA_HOME_OVERRIDE=/usr/lib/jvm/java-11-openjdk-arm64 /opt/worldpainter/worldpainter'
-StartupWMClass=install4j-org-pepsoft-worldpainter-Main
-Icon=/opt/worldpainter/.install4j/worldpainter.png
+# force java-11
+sudo tee /opt/worldpainter/.install4j/pref_jre.cfg <<EOF
+/usr/lib/jvm/java-11-openjdk-arm64
 EOF
 ;;
 "32") 
-# replace worldpainter .desktop to force java-11
-sudo tee /usr/share/applications/worldpainter.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=WorldPainter
-Exec=bash -c 'INSTALL4J_JAVA_HOME_OVERRIDE=/usr/lib/jvm/java-11-openjdk-armhf /opt/worldpainter/worldpainter'
-StartupWMClass=install4j-org-pepsoft-worldpainter-Main
-Icon=/opt/worldpainter/.install4j/worldpainter.png
+# force java-11
+sudo tee /opt/worldpainter/.install4j/pref_jre.cfg <<EOF
+/usr/lib/jvm/java-11-openjdk-armhf
 EOF
 ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
