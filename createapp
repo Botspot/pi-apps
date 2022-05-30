@@ -505,7 +505,7 @@ Here's a preview of the Details window:
       
     7) #All done
       echo "Your app is located at ${DIRECTORY}/apps/${name}
-To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue on the Pi-Apps repository: https://github.com/Botspot/pi-apps/issues/new" | yad "${yadflags[@]}" --text-info \
+To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue on the Pi-Apps repository: https://github.com/Botspot/pi-apps/issues/new/choose" | yad "${yadflags[@]}" --text-info \
         --text="Done!" \
         --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
