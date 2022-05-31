@@ -4,5 +4,10 @@
 purge_packages || exit 1
 
 # Uninstall Linux Wifi Hotspot
-cd "$HOME"/linux-wifi-hotspot || error "Failed to cd into 'linux-wifi-hotspot'!"
-sudo make uninstall || error "Failed to uninstall Linux Wifi Hotspot!"
+sudo rm -rf /usr/share/pixmaps/wihotspot.png /usr/share/icons/hicolor/48x48/apps/wihotspot.png \
+/usr/share/icons/hicolor/64x64/apps/wihotspot.png /usr/share/icons/hicolor/256x256/apps/wihotspot.png \
+/usr/share/icons/hicolor/512x512/apps/wihotspot.png /usr/share/icons/hicolor/scalable/apps/wihotspot.svg \
+/usr/share/applications/wihotspot.desktop /usr/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules \
+/usr/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy /usr/bin/wihotspot /usr/bin/wihotspot-gui \
+/etc/create_ap.conf /lib/systemd/system/create_ap.service /usr/share/bash-completion/completions/create_ap \
+/usr/share/doc/create_ap/README.md /usr/bin/create_ap
