@@ -1,7 +1,7 @@
 #!/bin/bash
 
-filepath_32=sdfsdf
-filepath_64=sdfsdf
+filepath_32="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_armhf.deb"
+filepath_64="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_arm64.deb"
 
 case "$arch" in
     "64") install_packages "${filepath_64}" ;;
