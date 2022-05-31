@@ -1,4 +1,6 @@
 #!/bin/bash
-rm -f ~/.local/share/applications/speedtest.desktop || error "failed to remove menu shortcut!"
-rm -rf ~/speedtest
-sudo rm -f /usr/local/bin/speedtest
+
+purge_packages || exit 1
+
+sudo rm -rf ~/.local/share/applications/speedtest.desktop /usr/share/applications/speedtest.desktop || error "failed to remove menu shortcut!"
+sudo rm -rf /usr/local/bin/speedtest ~/speedtest
