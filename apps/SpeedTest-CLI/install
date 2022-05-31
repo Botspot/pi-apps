@@ -10,7 +10,7 @@ case "$arch" in
 esac
 
 printf "Creating shortcut..."
-cat << "EOF" | sudo tee /usr/share/applications/speedtest.desktop
+cat << EOF | sudo tee /usr/share/applications/speedtest.desktop
 [Desktop Entry]
 Type=Application
 Name=Run Speedtest
