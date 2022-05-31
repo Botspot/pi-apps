@@ -254,7 +254,8 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **2/13/2021** Added credits button for apps
 - **2/20/2021** Changed wine install scripts and fixed WhatsApp download bug.
 - **2/28/2021** Hidden Wine on Twister OS.
-- **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports- **3/11/2021** Changed box86 install to use itai's apt repository
+- **3/7/2021** FreeCAD now uses precompiled debs, and added issue templates for Github bug reports
+- **3/11/2021** Changed box86 install to use itai's apt repository
 - **3/12/2021** Changed Node.js app to use nvm version manager and unhid BalenaEtcher on Twister OS
 - **3/14/2021** Added a "Installed" category for installed apps
 - **3/15/2021** Added Back to Chromium v86 app, and updated box86 to be installable on aarch64 OSes
