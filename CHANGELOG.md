@@ -204,7 +204,7 @@ Last updated: May 30, 2022 by [@theofficialgman](https://github.com/theofficialg
 - **05/26/2022** Added DDNet app
 
 
-## Other noteable changes:
+## Other notable changes:
 
 - **3/20/2020** Initial idea of an app store. https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=268455
 - **9/20/2020** Development begins.
