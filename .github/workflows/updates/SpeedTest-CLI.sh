@@ -1,7 +1,13 @@
 #!/bin/bash
 
-webVer=$(wget -qO- https://www.speedtest.net/apps/cli -U "Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.106 Safari/537.36" | grep -o ".*-linux-armhf.tgz" | sed 's+.*armel</a></li><li><a href="++g' | sed 's/.*ookla-speedtest-//g; s/-linux-armhf.tgz//g')
-armhf_url="https://install.speedtest.net/app/cli/ookla-speedtest-$webVer-linux-armhf.tgz"
-arm64_url="https://install.speedtest.net/app/cli/ookla-speedtest-$webVer-linux-aarch64.tgz"
+#!/bin/bash
 
-source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
+armhf_webPackages="https://packagecloud.io/ookla/speedtest-cli/ubuntu/dists/bionic/main/binary-armhf/Packages"
+arm64_webPackages="https://packagecloud.io/ookla/speedtest-cli/ubuntu/dists/bionic/main/binary-arm64/Packages"
+armhf_packagename="speedtest"
+arm64_packagename="speedtest"
+
+# The corresponding appname in pi-apps will have its corresponding filepath= variable update
+# the filepath variable will contain the full filepath of the debian package with the version included
+
+source $GITHUB_WORKSPACE/.github/workflows/update_debian_repo_script.sh
