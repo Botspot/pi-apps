@@ -1,7 +1,7 @@
 #!/bin/bash
 
-filepath_32=
-filepath_64=
+filepath_32=sdfsdf
+filepath_64=sdfsdf
 
 case "$arch" in
     "64") install_packages "${filepath_64}" ;;
