@@ -16,4 +16,9 @@ status "Installing Linux Wifi Hotspot..."
 sudo make install || error "Failed to install Linux Wifi Hotspot!"
 status_green "Done!"
 
+#Raspberry Pi  WiFi module may be disabled by the panel, and if it is, this program will fail. When launching, first unblock wifi.
+if [ -f /usr/sbin/rfkill ] && ! grep -q rfkill /usr/share/applications/wihotspot.desktop ;then
+  sudo sed -i "s+^Exec=sh -c '+Exec=sh -c '/usr/sbin/rfkill unblock wifi; +" /usr/share/applications/wihotspot.desktop
+fi
+
 rm -rf /tmp/linux-wifi-hotspot/
