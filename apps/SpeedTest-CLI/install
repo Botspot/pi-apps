@@ -11,7 +11,7 @@ esac
 
 printf "Creating shortcut..."
 cat << "EOF" | sudo tee /usr/share/applications/speedtest.desktop
-echo "[Desktop Entry]
+[Desktop Entry]
 Type=Application
 Name=Run Speedtest
 Comment=CLI internet speed test
