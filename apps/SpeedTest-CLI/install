@@ -15,7 +15,7 @@ cat << EOF | sudo tee /usr/share/applications/speedtest.desktop
 Type=Application
 Name=Run Speedtest
 Comment=CLI internet speed test
-Exec=bash -c 'speedtest;echo -e "\Close this window to exit.";sleep infinity'
+Exec=bash -c 'speedtest;read -p "Press any key to exit"'
 Icon=$HOME/pi-apps/apps/SpeedTest-CLI/icon-64.png
 Categories=Network;WebBrowser;
 Terminal=true
