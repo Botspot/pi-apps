@@ -157,7 +157,7 @@ if [ $reloadlist == 1 ];then
   DIRS="$(grep '/' <<<"$vfiles" | tr -d '/' | grep -vFx "hidden")"
   
   #shuffle the list if enabled
-  if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
+  if [ "$(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
     DIRS="$(echo "$DIRS" | shuf)"
   fi
@@ -209,7 +209,7 @@ $text_color"
     for app in $APPS
     do
       #get installation status of app
-      status="$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)"
+      status="$(while read line ; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/status/${app}")"
       
       #determine app icon
       if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
@@ -220,13 +220,15 @@ $text_color"
       
       #rest of list attributes
       if [ -z "$status" ];then
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/Discord/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
-$(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+$line"$'\n'
       else
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/Discord/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
-"\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+"\("$status"\)" $line"$'\n'
       fi
       
       #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
@@ -281,7 +283,7 @@ $prefix/$app
     for app in $APPS
     do
       if [ -f "${DIRECTORY}/data/status/${app}" ];then
-        echo "${app} ($(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
+        echo "${app} ($(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       else
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
