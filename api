@@ -221,7 +221,7 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   #determine what repo-urls are in the file
   local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
   
-  #there could be multiple urls in one file. Check each url and set the in_use variuable to 1 if any packages are found
+  #there could be multiple urls in one file. Check each url and set the in_use variable to 1 if any packages are found
   local IFS=$'\n'
   local in_use=0
   local url
