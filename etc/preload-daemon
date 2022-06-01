@@ -29,10 +29,10 @@ source "${DIRECTORY}/preload" "source"
 #variable 2 is 'once', if you only want this to run once and exit.
 
 #generate list of folders to preload, including special folders
-folders="$(read_category_files | awk -F '|' '{print $2}' | sort | uniq | grep .)
+folders="All Apps
+$(read_category_files | awk -F '|' '{print $2}' | sort | uniq | grep .)
 Installed
-Packages
-All Apps"
+Packages"
 #echo "$folders"
 
 IFS=$'\n'
