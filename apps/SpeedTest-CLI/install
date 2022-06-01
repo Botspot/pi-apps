@@ -3,6 +3,12 @@
 filepath_32="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_armhf.deb"
 filepath_64="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_arm64.deb"
 
+# remove speedtest-cli package if installed from ubuntu/debian repo as it conflicts with the official ookla package
+$(dpkg --status speedtest-cli &> /dev/null)
+if [[ $? -eq 0 ]]; then
+  sudo apt-get --yes --purge remove speedtest-cli || error "Could not remove non-official speedtest-cli package"
+fi
+
 case "$arch" in
     "64") install_packages "${filepath_64}" || exit 1 ;;
     "32") install_packages "${filepath_32}" || exit 1 ;;
