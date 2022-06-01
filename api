@@ -1070,8 +1070,12 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
     fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
-    echo "Marking $app as hidden"
-    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+    #only mark as hidden if its not already marked as hidden, this prevents changing the timestamp of the file, causing the preload script to re-load
+    #a common issue on All-Apps
+    if ! grep -Fxq "$app|hidden" "${DIRECTORY}/data/category-overrides" ;then
+      echo "Marking $app as hidden"
+      "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+    fi
   fi
 }
 
