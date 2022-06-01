@@ -2,5 +2,6 @@
 
 purge_packages || exit 1
 
+# cleanup after the old script as well as the added .desktop files
 sudo rm -rf ~/.local/share/applications/speedtest.desktop /usr/share/applications/speedtest.desktop || error "failed to remove menu shortcut!"
-sudo rm -rf /usr/local/bin/speedtest ~/speedtest
+sudo rm -rf /usr/local/bin/speedtest ~/speedtest || exit 1
