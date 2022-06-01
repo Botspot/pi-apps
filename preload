@@ -164,6 +164,8 @@ if [ $reloadlist == 1 ];then
   
   if [ "$format" == yad ];then
     IFS=$'\n'
+
+    listfile_tmp="$listfile-$(mktemp -u | sed 's:/tmp/tmp.::g')"
     
     #initial value of listfile: if within a prefix, start with a Back button
     if [ ! -z "$prefix" ];then
@@ -171,9 +173,9 @@ if [ $reloadlist == 1 ];then
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
 Return to the previous location
-$text_color" | tee "$listfile" 2&>/dev/null
+$text_color" | tee "$listfile_tmp" 2&>/dev/null
     else
-      echo -n '' > "$listfile"
+      echo -n '' > "$listfile_tmp"
     fi
     
     for dir in $DIRS
@@ -200,7 +202,7 @@ $dir/
 $text_color"
       fi
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile" 2&>/dev/null
+    done | sed 's/&/&amp;/g' | tee -a "$listfile_tmp" 2&>/dev/null
     #finished preloading categories
     
     #preload apps
@@ -244,21 +246,24 @@ $prefix/$app
       fi
       #output finished app lines
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile" 2&>/dev/null
+    done | sed 's/&/&amp;/g' | tee -a "$listfile_tmp" 2&>/dev/null
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    mv "$listfile_tmp" "$listfile"
     cat "$listfile"
     echo "Finished preload for $prefix" 1>&2
     #finished preloading apps
     
   elif [ "$format" == xlunch ];then
     #XLUNCH list format
+
+    listfile_tmp="$listfile-$(mktemp -u | sed 's:/tmp/tmp.::g')"
     
     #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
     if [ ! -z "$prefix" ];then
-      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile" 2&>/dev/null
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile_tmp" 2&>/dev/null
     else
-      echo -n '' > "$listfile"
+      echo -n '' > "$listfile_tmp"
     fi
     
     IFS=$'\n'
@@ -271,7 +276,7 @@ $prefix/$app
       fi
       
       echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
-    done | tee -a "$listfile" 2&>/dev/null
+    done | tee -a "$listfile_tmp" 2&>/dev/null
     
     for app in $APPS
     do
@@ -281,9 +286,10 @@ $prefix/$app
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       fi
-    done | tee -a "$listfile" 2&>/dev/null
+    done | tee -a "$listfile_tmp" 2&>/dev/null
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    mv "$listfile_tmp" "$listfile"    
     cat "$listfile"
     echo "Finished preload for $prefix" 1>&2
     
