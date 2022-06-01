@@ -135,14 +135,14 @@ fi
 if [ $reloadlist == 1 ];then
   echo "Generating list for '$prefix'..." 1>&2
   
-  #for app_categories() and app_status() functions
-  if ! command -v app_categories >/dev/null ;then
+  #for app_prefix_categories() and app_status() functions
+  if ! command -v app_prefix_category >/dev/null ;then
     source "${DIRECTORY}/api"
   fi
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
-    vfiles="$(app_categories | grep . | sort -f | uniq | grep "^$prefix/" | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
+    vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
   else
     vfiles="$(app_categories | grep . | sort -f | uniq)"
   fi

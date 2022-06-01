@@ -810,6 +810,37 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
   list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
 }
 
+app_prefix_category() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
+  
+  #Subtract a type of app if enabled
+  local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
+  local filter=()
+  if [ "$show_apps_setting" == 'standard' ];then
+    #if only showing standard apps, hide package apps
+    filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
+  elif [ "$show_apps_setting" == 'packages' ];then
+    #if only showing package apps, hide standard apps
+    filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
+  else
+    #is the setting is "all" or missing, don't filter.
+    filter=(cat)
+  fi
+  
+  #show special "Installed" category - don't filter it
+  if [ "$1" == "Installed" ]; then
+    list_apps installed | sed 's+^+Installed/+g'
+  #show special "Packages" category
+  elif [ "$1" == "Packages" ]; then
+    list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
+  #show special "All Apps" category
+  elif [ "$1" == "All Apps" ]; then
+    list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  #show normal categories
+  else
+    read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | grep "^$1/" | sed 's+^/++g' | "${filter[@]}"
+  fi
+}
+
 bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
   #This cannot possibly be used to identify you, or any information about you.
   #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
