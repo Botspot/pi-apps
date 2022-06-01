@@ -172,7 +172,7 @@ if [ $reloadlist == 1 ];then
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
 Return to the previous location
-$text_color" | tee "$listfile"
+$text_color" | tee "$listfile" 2&>/dev/null
     else
       echo -n '' > "$listfile"
     fi
@@ -201,7 +201,7 @@ $dir/
 $text_color"
       fi
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    done | sed 's/&/&amp;/g' | tee -a "$listfile" 2&>/dev/null
     #finished preloading categories
     
     #preload apps
@@ -245,7 +245,11 @@ $prefix/$app
       fi
       #output finished app lines
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    done | sed 's/&/&amp;/g' | tee -a "$listfile" 2&>/dev/null
+
+    # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    cat "$listfile"
+    echo "Finished preload for $prefix" 1>&2
     #finished preloading apps
     
   elif [ "$format" == xlunch ];then
@@ -253,7 +257,7 @@ $prefix/$app
     
     #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
     if [ ! -z "$prefix" ];then
-      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile"
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile" 2&>/dev/null
     else
       echo -n '' > "$listfile"
     fi
@@ -268,7 +272,7 @@ $prefix/$app
       fi
       
       echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
-    done | tee -a "$listfile"
+    done | tee -a "$listfile" 2&>/dev/null
     
     for app in $APPS
     do
@@ -278,7 +282,11 @@ $prefix/$app
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       fi
-    done | tee -a "$listfile"
+    done | tee -a "$listfile" 2&>/dev/null
+
+    # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    cat "$listfile"
+    echo "Finished preload for $prefix" 1>&2
     
   fi
   
