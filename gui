@@ -303,6 +303,15 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 #display the pi-apps logo in the terminal
 generate_logo &
 
+#install dependencies
+runonce <<"EOF"
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
+  # Install dependencies if necessary
+  if ! dpkg -s $dependencies >/dev/null 2>&1; then
+    sudo_popup apt install $dependencies -y -f --no-install-recommends
+  fi
+EOF
+
 #Various stuff to run in background (enclosed in brackets so Geany IDE can collapse the code)
 {
 
@@ -332,15 +341,6 @@ trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 #remove contents of ${DIRECTORY}/data/preload
 runonce <<"EOF"
   rm -rf  "${DIRECTORY}/data/preload"
-EOF
-
-#install dependencies
-runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
-  # Install dependencies if necessary
-  if ! dpkg -s $dependencies >/dev/null 2>&1; then
-    sudo_popup apt install $dependencies -y -f --no-install-recommends
-  fi
 EOF
 
 #regenerate package-app status for one-time migration
