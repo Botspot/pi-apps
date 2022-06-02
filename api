@@ -1090,13 +1090,12 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
 refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's installed, then mark it as installed.
   #repeat for every package-type app
   local IFS=$'\n'
+  local PIDS=()
   for app in $(list_apps package) ;do
-    refresh_pkgapp_status "$app" &  declare PID_$(TMP=${app//-/_};echo ${TMP// /_})=$!
+    refresh_pkgapp_status "$app" &
+    PIDS+=("$!")
   done
-  for app in $(list_apps package) ;do
-    varname=PID_$(TMP=${app//-/_};echo ${TMP// /_})
-    wait $(echo ${!varname})
-  done
+  wait "${PIDS[@]}" #wait for all subprocesses to complete
 }
 
 refresh_app_list() { #Force-regenerate the app list
