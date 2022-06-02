@@ -803,7 +803,7 @@ app_prefix_category() { #lists all apps in a category with formast "category/app
   elif [ "$1" == "All Apps" ]; then
     list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
   # show all categories
-  elif [ "$1" == "" ]; then
+  elif [ -z "$1" ];; then
     #show normal categories
     read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
     
