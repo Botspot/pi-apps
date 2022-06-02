@@ -777,7 +777,7 @@ read_category_files() { #Generates a combined categories-list from several sourc
   (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
-app_prefix_category() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
+app_prefix_category() { #lists all apps in a category with formast "category/app", or if $1 is left blank, then list the full structure of all categories
   
   #Subtract a type of app if enabled
   local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
