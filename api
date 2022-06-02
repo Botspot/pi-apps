@@ -122,10 +122,10 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   local package="$1"
   [ -z "$package" ] && error "package_installed(): no package specified!"
   #find the package listed in /var/lib/dpkg/status
-  #package_info "$package" | grep -q '^Status: install ok installed$'
+  #package_info "$package"
   
   #directly search /var/lib/dpkg/status
-  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -xF "Package: $package" --after 1 | grep -q 'Status: install ok installed'
+  grep "^Package: $package$" /var/lib/dpkg/status -A 1 | tail -n 1 | grep -q 'Status: install ok installed'
 }
 
 package_available() { #determine if the specified package-name exists in a repository
