@@ -57,7 +57,9 @@ set_category() { #place the $1 app in the $2 category - don't write to files, on
 }
 
 save_changes() { #writes the $local_categories variable to the category-overrides file
-  echo "$local_categories" > "${DIRECTORY}/data/category-overrides"
+  if [ "$local_categories" != "$(cat "${DIRECTORY}/data/category-overrides")" ];then
+    echo "$local_categories" > "${DIRECTORY}/data/category-overrides"
+  fi
 }
 APPS="$(list_apps local)"
 
