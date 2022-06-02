@@ -755,13 +755,11 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
 }
 
 list_intersect() { #Outputs only the apps that appear in both stdin and in $1
-  #                      change \n to \|     |   remove last "\|"
-  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+  comm -12 - <(echo "$1" | sort)
 }
 
 list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
-  #                       change \n to \|     |   remove last "\|"
-  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+  comm -23 - <(echo "$1" | sort)
 }
 
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
