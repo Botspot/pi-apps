@@ -201,7 +201,7 @@ $dir/
 $text_color"
       fi
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile_tmp" 2&>/dev/null
+    done | sed 's/&/&amp;/g' >> "$listfile_tmp"
     #finished preloading categories
     
     #preload apps
@@ -247,7 +247,7 @@ $prefix/$app
       fi
       #output finished app lines
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile_tmp" 2&>/dev/null
+    done | sed 's/&/&amp;/g' >> "$listfile_tmp"
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
     mv "$listfile_tmp" "$listfile"
@@ -278,7 +278,7 @@ $prefix/$app
       fi
       
       echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
-    done | tee -a "$listfile_tmp" 2&>/dev/null
+    done >> "$listfile_tmp"
     
     for app in $APPS
     do
@@ -288,7 +288,7 @@ $prefix/$app
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       fi
-    done | tee -a "$listfile_tmp" 2&>/dev/null
+    done >> "$listfile_tmp"
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
     mv "$listfile_tmp" "$listfile"
