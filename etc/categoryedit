@@ -9,6 +9,12 @@ function error {
   exit 1
 }
 
+#Only one instance of this script should run at a time. wait if another process other than this one is running
+while [[ $(pgrep categoryedit | sort |  head -n 1) != $$ ]]; do
+  # waiting for another instance of categoryedit to finish
+  sleep 0.02
+done
+
 #for read_category_files()
 if ! command -v read_category_files >/dev/null ;then
   source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
