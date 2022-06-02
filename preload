@@ -200,8 +200,9 @@ $dir/
 "${dir_lookup["$dir"]}"
 $text_color"
       fi
+      add="${add//[&]/&amp;}"
       echo "$add"
-    done | sed 's/&/&amp;/g' >> "$listfile_tmp"
+    done >> "$listfile_tmp"
     #finished preloading categories
     
     #preload apps
@@ -246,8 +247,9 @@ $prefix/$app
         add+="$text_color"
       fi
       #output finished app lines
+      add="${add//[&]/&amp;}"
       echo "$add"
-    done | sed 's/&/&amp;/g' >> "$listfile_tmp"
+    done >> "$listfile_tmp"
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
     mv "$listfile_tmp" "$listfile"
