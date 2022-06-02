@@ -143,17 +143,17 @@ if [ $reloadlist == 1 ];then
     echo "Showing apps within $prefix/" 1>&2
     vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
   else
-    vfiles="$(app_categories | grep . | sort -f | uniq)"
+    vfiles="$(app_categories | grep . | sort -f | uniq | grep -v '^hidden/')"
   fi
   
   #remove apps within categories - show this layer of stuff only.
-  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | sort -f | uniq)"
+  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | uniq)"
   
   #get list of apps - excluding folders and apps that are incompatible with CPU architecture
   APPS="$(grep -v '/' <<<"$vfiles" | list_intersect "$(list_apps cpu_installable)")"
   
-  #get list of folders - excluding apps - and hide the hidden folder.
-  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/' | grep -vFx "hidden")"
+  #get list of folders - excluding apps.
+  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/')"
   
   #shuffle the list if enabled
   if [ "$(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
