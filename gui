@@ -334,6 +334,25 @@ runonce <<"EOF"
   rm -rf  "${DIRECTORY}/data/preload"
 EOF
 
+#install dependencies
+runonce <<"EOF"
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
+  # Install dependencies if necessary
+  if ! dpkg -s $dependencies >/dev/null 2>&1; then
+    sudo_popup apt install $dependencies -y -f --no-install-recommends
+  fi
+EOF
+
+#regenerate package-app status for one-time migration
+runonce <<"EOF"
+  IFS=$'\n'
+  for app in $(list_apps package) ;do
+    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
+  done
+  
+  refresh_all_pkgapp_status
+EOF
+
 #mark wine and box86 as disabled, if twisteros
 runonce <<"EOF"
   if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
@@ -426,15 +445,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#install dependencies
-runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
-  # Install dependencies if necessary
-  if ! dpkg -s $dependencies >/dev/null 2>&1; then
-    sudo_popup apt install $dependencies -y -f --no-install-recommends
-  fi
-EOF
-
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
@@ -454,16 +464,6 @@ EOF
 runonce <<"EOF"
   rm -f "${DIRECTORY}/etc/bitlylink"
   rm -rf "${DIRECTORY}/data/categories"
-EOF
-
-#regenerate package-app status for one-time migration
-runonce <<"EOF"
-  IFS=$'\n'
-  for app in $(list_apps package) ;do
-    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
-  done
-  
-  refresh_all_pkgapp_status
 EOF
 
 #change settings icon
