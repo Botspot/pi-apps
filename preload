@@ -219,12 +219,12 @@ $text_color"
       
       #rest of list attributes
       if [ -z "$status" ];then
-        read -r 2>/dev/null line <"${DIRECTORY}/apps/Discord/description" || line="Description unavailable"
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/${app}/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
 $line"$'\n'
       else
-        read -r 2>/dev/null line <"${DIRECTORY}/apps/Discord/description" || line="Description unavailable"
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/${app}/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
 "\("$status"\)" $line"$'\n'
