@@ -251,6 +251,7 @@ $prefix/$app
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
     mv "$listfile_tmp" "$listfile"
+    # specifically use cat here so that all data enters the pipe at once
     cat "$listfile"
     echo "Finished preload for $prefix" 1>&2
     #finished preloading apps
@@ -290,7 +291,8 @@ $prefix/$app
     done | tee -a "$listfile_tmp" 2&>/dev/null
 
     # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
-    mv "$listfile_tmp" "$listfile"    
+    mv "$listfile_tmp" "$listfile"
+    # specifically use cat here so that all data enters the pipe at once
     cat "$listfile"
     echo "Finished preload for $prefix" 1>&2
     
@@ -303,6 +305,7 @@ $prefix/$app
   echo "$timestamps" > "$timestampfile"
 else
   echo "Reading list file for '$prefix'..." 1>&2
+  # specifically use cat here so that all data enters the pipe at once
   cat "$listfile"
 fi
 
