@@ -143,7 +143,7 @@ if [ $reloadlist == 1 ];then
     echo "Showing apps within $prefix/" 1>&2
     vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
   else
-    vfiles="$(app_categories | grep . | sort -f | uniq | grep -v '^hidden/')"
+    vfiles="$(app_prefix_category "" | grep . | sort -f | uniq | grep -v '^hidden/')"
   fi
   
   #remove apps within categories - show this layer of stuff only.

@@ -777,37 +777,6 @@ read_category_files() { #Generates a combined categories-list from several sourc
   (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
-app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
-  
-  #Subtract a type of app if enabled
-  local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
-  local filter=()
-  if [ "$show_apps_setting" == 'standard' ];then
-    #if only showing standard apps, hide package apps
-    filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
-  elif [ "$show_apps_setting" == 'packages' ];then
-    #if only showing package apps, hide standard apps
-    filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
-  else
-    #is the setting is "all" or missing, don't filter.
-    filter=(cat)
-  fi
-  
-  #show normal categories
-  read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
-  
-  #show special "Installed" category - don't filter it
-  list_apps installed | sed 's+^+Installed/+g'
-  
-  #show special "Packages" category
-  if [ "$show_apps_setting" != standard ];then
-    list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
-  fi
-  
-  #show special "All Apps" category
-  list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
-}
-
 app_prefix_category() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
   
   #Subtract a type of app if enabled
@@ -832,6 +801,20 @@ app_prefix_category() { #lists all apps in a virtual filesystem based on categor
     list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
   #show special "All Apps" category
   elif [ "$1" == "All Apps" ]; then
+    list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  # show all categories
+  elif [ "$1" == "" ]; then
+    #show normal categories
+    read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
+    
+    #show special "Installed" category - don't filter it
+    list_apps installed | sed 's+^+Installed/+g'
+    
+    #show special "Packages" category
+    if [ "$show_apps_setting" != standard ];then
+      list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
+    fi
+    #show special "All Apps" category
     list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
   #show normal categories
   else
