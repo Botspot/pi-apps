@@ -209,7 +209,7 @@ $text_color"
     for app in $APPS
     do
       #get installation status of app
-      status="$(while read line ; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/status/${app}")"
+      read -r 2>/dev/null status <"${DIRECTORY}/data/status/${app}"
       
       #determine app icon
       if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
