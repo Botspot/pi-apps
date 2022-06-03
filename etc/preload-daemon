@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#Only one instance of this script should run at a time. Exit now if another process other than this one is running
+if [ "$2" != 'once' ] && [ "$(pgrep preload-daemon | wc -l)" -gt 1 ];then
+  echo "Preload-daemon is already running." 1>&2
+  exit 0
+else
+  echo "Running preload-daemon..." 1>&2
+fi
+
 #runs in the background and refreshes all the list files
 
 DIRECTORY="$(dirname "$(readlink -f "$(dirname "$0")")")"
@@ -8,16 +16,6 @@ function error {
   echo -e "\e[91m$1\e[39m"
   exit 1
 }
-
-#Only one instance of this script should run at a time. Exit now if another process other than this one is running
-proc="$(pgrep preload-daemon)"
-num_proc="$(echo "$proc" | wc -l)"
-if [ "$2" != 'once' ] && [ "$num_proc" -gt 1 ];then
-  echo "Preload-daemon is already running." 1>&2
-  exit 0
-else
-  echo "Running preload-daemon..." 1>&2
-fi
 
 #for refresh_all_pkgapp_status function, and to prevent preload script from sourcing api
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
