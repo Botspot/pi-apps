@@ -2,8 +2,8 @@ Lunar Client is an all-in-one modpack integrated Launcher available for ONLY pop
 
 This installs a fork of Lunar Client with patched dependencies for ARMhf/ARM64 support.
 
-To run: Menu -> Games -> Minecraft Launcher (Lunar)
-To run in a terminal: MESA_GL_VERSION_OVERRIDE=3.3 ~/lunarassets/lunarclient.AppImage --no-sandbox
+To run: Menu -> Games -> Lunar Client
+To run in a terminal: ~/.local/bin/lunarclient.AppImage --no-sandbox
 
 NOTE: For best performance, we recommend an older version of Minecraft like 1.12.2 or 1.8
 
