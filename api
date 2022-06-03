@@ -767,14 +767,14 @@ read_category_files() { #Generates a combined categories-list from several sourc
   #remove app category if app folder not found
   local IFS=$'\n'
   local app
-  for app in $(cat "${DIRECTORY}/data/category-overrides"); do 
+  for app in $(cat "${DIRECTORY}/data/category-overrides" 2>/dev/null); do
     if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
       sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
     fi
   done
   
   #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
-  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" 2>/dev/null ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
 app_prefix_category() { #lists all apps in a category with format "category/app", or if $1 is left blank, then list the full structure of all categories
