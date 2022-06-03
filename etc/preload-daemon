@@ -81,10 +81,14 @@ for i in {1..20};do
   if [ "$timestamps" != "$pretimestamps" ];then
     
     "${DIRECTORY}/preload" "$guimode" &>/dev/null
+    local IFS=$'\n'
+    local PIDS=()
     for folder in $folders ; do
       echo "Preloading $folder..." 1>&2
-      "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null
+      "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null &
+      PIDS+=("$!")
     done
+    wait "${PIDS[@]}" #wait for all subprocesses to complete
     echo done 1>&2
   else
     echo "Preloading skipped; nothing was changed" 1>&2
