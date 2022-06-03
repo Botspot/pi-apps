@@ -7,17 +7,16 @@ unzip funkin-rewritten-lovefile.zip || error 'Failed to Extract the zip!'
 rm -f funkin-rewritten-lovefile.zip || error 'Failed to Remove the zip!'
 
 # Create the .desktop file in ~/.local/share/applications
+mkdir -p ~/.local/share/applications
 
-sh -c "cat > ~/.local/share/applications/fnfr.desktop << _EOF_
-[Desktop Entry]
+echo "[Desktop Entry]
 Type=Application
 Exec=love $HOME/.love_games/friday_night_funkin_rewritten/funkin-rewritten.love
 Hidden=false
 NoDisplay=false
 Name=Friday Night Funkin' Rewritten
 Icon=$(dirname "$0")/icon-64.png
-Categories=Game
-_EOF_"
+Categories=Game" > ~/.local/share/applications/fnfr.desktop
 
 # Install some packages that are necessary to run this app - no need for "error", as the install_packages function already handles errors.
 
