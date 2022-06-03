@@ -156,7 +156,7 @@ if [ $reloadlist == 1 ];then
   DIRS="$(grep '/' <<<"$vfiles" | tr -d '/')"
   
   #shuffle the list if enabled
-  if [ "$(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
+  if [ "$(< "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
     DIRS="$(echo "$DIRS" | shuf)"
   fi
@@ -285,7 +285,7 @@ $prefix/$app
     for app in $APPS
     do
       if [ -f "${DIRECTORY}/data/status/${app}" ];then
-        echo "${app} ($(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
+        echo "${app} ($(< "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       else
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
