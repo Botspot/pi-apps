@@ -315,8 +315,12 @@ EOF
 #Various stuff to run in background (enclosed in brackets so Geany IDE can collapse the code)
 {
 
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/preload" "${DIRECTORY}/data/settings" \
+  "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/categories"
+
 #check for updates
-mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 "${DIRECTORY}/updater" set-status &>/dev/null &
 trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
@@ -338,9 +342,11 @@ trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
 #runonce entries
 (
-#remove contents of ${DIRECTORY}/data/preload
+#generate settings
 runonce <<"EOF"
-  rm -rf  "${DIRECTORY}/data/preload"
+  if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
+    "${DIRECTORY}/settings" refresh
+  fi
 EOF
 
 #regenerate package-app status for one-time migration
