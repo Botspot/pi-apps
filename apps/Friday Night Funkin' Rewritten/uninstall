@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Remove the game
+rm -rf ~/.love_games/friday_night_funkin_rewritten
+rm -f ~/.local/share/applications/fnfr.desktop
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
