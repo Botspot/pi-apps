@@ -2,7 +2,7 @@
 
 
 mkdir -p ~/.love_games/friday_night_funkin_rewritten && cd ~/.love_games/friday_night_funkin_rewritten || error 'Failed to Create & Enter Directory!'
-wget https://github.com/HTV04/funkin-rewritten/releases/download/v1.0.1/funkin-rewritten-lovefile.zip || error 'Failed Download the zip!'
+wget https://github.com/HTV04/funkin-rewritten/releases/download/v1.1.0-beta.2/funkin-rewritten-lovefile.zip || error 'Failed Download the zip!'
 unzip funkin-rewritten-lovefile.zip || error 'Failed to Extract the zip!'
 rm -f funkin-rewritten-lovefile.zip || error 'Failed to Remove the zip!'
 
