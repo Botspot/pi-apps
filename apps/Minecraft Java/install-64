@@ -7,7 +7,7 @@ sudo rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64 /opt/jdk/jdk
 #Download client and assorted java stuff
 echo "Downloading lunarclient.AppImage"
 mkdir -p ~/.local/bin || error "Could not make directory"
-wget -O ~/.local/bin/lunarclient.AppImage 'https://github.com/gl91306/lunar/raw/master/lunarclient-2.10.1-arm64.AppImage' || error 'Failed to download lunarclient.AppImage'
+wget -O ~/.local/bin/lunarclient.AppImage 'https://github.com/gl91306/lunar/releases/download/v2.10.1/lunarclient-2.10.1-arm64.AppImage' || error 'Failed to download lunarclient.AppImage'
 chmod +x ~/.local/bin/lunarclient.AppImage || error 'Failed to make lunarclient.AppImage executable!'
 
 enable_module fuse || exit 1
