@@ -1766,11 +1766,11 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
-  script="$(cat /dev/stdin)"
+  script="$(< /dev/stdin)"
   
   runonce_hash="$(sha1sum <<<"$script" | awk '{print $1}')"
   
-  if grep -qxF "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
+  if [ -s "${DIRECTORY}/data/runonce_hashes" ] && while read line; do [[ $line == "$runonce_hash" ]] && break; done < "${DIRECTORY}/data/runonce_hashes"; then
     #hash found
     #echo "runonce: '$script' already run before. Skipping."
     true
