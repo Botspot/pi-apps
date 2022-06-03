@@ -255,7 +255,7 @@ $prefix/$app
     mv "$listfile_tmp" "$listfile"
     # specifically use cat here so that all data enters the pipe at once
     cat "$listfile"
-    echo "Finished preload for $prefix" 1>&2
+    echo "Finished preload for '$prefix'" 1>&2
     #finished preloading apps
     
   elif [ "$format" == xlunch ];then
