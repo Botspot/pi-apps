@@ -180,7 +180,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
         
         if [ $? == 0 ];then
           #if user clicked Yes, run the updater and avoid launching a second terminal
-          use_terminal=0 "${DIRECTORY}/updater" gui fast
+          use_terminal=0 "${DIRECTORY}/updater" gui fast &>/dev/stderr
           
           #now that the api script was potentially updated, source it again to get new functions
           source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
