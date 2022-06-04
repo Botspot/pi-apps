@@ -113,8 +113,8 @@ add_english() { #add en_US locale for more accurate error
 package_info() { #list everything dpkg knows about the $1 package. Note: the package has to be installed for this to show anything.
   local package="$1"
   [ -z "$package" ] && error "package_info(): no package specified!"
-  #list lines in /var/lib/dpkg/status between the package name and the next empty line
-  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status
+  #list lines in /var/lib/dpkg/status between the package name and the next empty line (empty line is then removed)
+  sed -n -e '/^Package: '"$package"'$/,/^$/p' /var/lib/dpkg/status | head -n -1
   true #this may exit with code 141 if the pipe was closed early (to be expected with grep -v)
 }
 
@@ -330,7 +330,7 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   
   #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
   sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
-
+  
   #hash the repository by creating a Release file
   (cd /tmp/pi-apps-local-packages && apt-ftparchive release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
@@ -379,6 +379,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   #handle regex, urls, local packages
   IFS=$'\n'
+  local package
   for package in $packages ;do
     
     #handle local packages (package-name starts with /)
@@ -386,7 +387,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #status "Handling local package $package"
       
-      [ -f "$package" ] || error "install_packages(): Package does not exist! $package"
+      [ -f "$package" ] || error "install_packages(): Local package does not exist! ($package)"
       
       #determine the package name from the filename
       packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
@@ -454,8 +455,6 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #add this repository to flags to add to apt
     apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
   fi
-  #run an apt update
-  apt_update "${apt_flags[@]}" || exit 1
   
   status "Creating an empty apt-package to install the necessary apt packages..."
   
@@ -470,7 +469,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     
     local existing_deps="$(package_dependencies "$package_name")"
     status "The $package_name package is already installed. Inheriting its dependencies: $(echo "$existing_deps")"
-    packages="$packages $existing_deps"
+    packages+=" $existing_deps"
   fi
   
   { #create dummy apt package that depends on the packages this app requires
@@ -494,43 +493,49 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     sudo chmod -R '0755' ~/$package_name
     
     #display the finished "Depends: " line to the user
-    cat ~/$package_name/DEBIAN/control | grep "^Depends: "
-    
+    grep --color=never "^Depends: " ~/$package_name/DEBIAN/control
+  }
+  
+  #Skip installing the dummy deb if it is already installed and has an identical control file
+  if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat ~/$package_name/DEBIAN/control | sort)" ];then
+    echo "$package_name is already installed and no changes would be made. Skipping..."
+  else
+    #Build .deb file for the dummy package
     local output="$(dpkg-deb --build ~/$package_name 2>&1)"
     if [ $? != 0 ];then
-      echo "$output"
       echo ""
       echo "$output"
-      error "install_packages(): failed to create dummy deb $package_name"
+      error "install_packages(): failed to create dummy deb ${package_name}!"
     fi
-  }
+    
+    #run an apt update
+    apt_update "${apt_flags[@]}" || exit 1
+    
+    #install dummy deb
+    status "Installing the $package_name package..."
+    
+    apt_lock_wait
+    local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+    status "Apt finished."
+    
+    errors="$(echo "$output" | grep '^[(E)|(Err]:')"
+    if [ ! -z "$errors" ];then
+      echo -e "\e[91mFailed to install the packages!\e[39m"
+      echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
+      echo "$output"
+      
+      #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
+      if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+        echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
+        cat /tmp/pi-apps-local-packages/Packages
+      fi
+      
+      exit 1
+    fi
+  fi
   
-  #install dummy deb
-  {
-  status "Installing the $package_name package..."
-  
-  apt_lock_wait
-  local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
   rm -f ~/$package_name.deb
   rm -rf ~/$package_name
-  
-  status "Apt finished."
-  
-  errors="$(echo "$output" | grep '^[(E)|(Err]:')"
-  if [ ! -z "$errors" ];then
-    echo -e "\e[91mFailed to install the packages!\e[39m"
-    echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
-    echo "$output"
-    
-    #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
-    if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
-      echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
-      cat /tmp/pi-apps-local-packages/Packages
-    fi
-    
-    exit 1
-  fi
-  }
   
   #delete the local repository if it was used
   if [ "$using_local_packages" == 1 ];then
@@ -1885,8 +1890,9 @@ get_device_info() { #returns information about current install and hardware
 }
 
 get_codename() { #get debian/ubuntu codename
-  if ! command -v lsb_release &>/dev/null; then
-    apt_update && sudo apt-get install -y lsb-release
+  if ! command -v lsb_release >/dev/null; then
+    apt_update &>/dev/null && \
+    sudo apt-get install -y lsb-release &>/dev/null
   fi
   
   # check if upstream-release is available
@@ -2007,23 +2013,21 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
   local module="$1"
   [ -z "$module" ] && error "enable_module(): The name of a kernel module must be specified!"
   
-  #This function is used most often to load the "fuse" module.
-  # Fuse is used for AppImages.
+  #This function is often to load the "fuse" module.
+  # Fuse is most often used for AppImages.
   #   AppImages need libfuse2 to be installed.
-  #    Install libs necessary to run AppImages.
+  #    Install libfuse2 to avoid AppImage launch failures.
   if [ "$module" == 'fuse' ];then
-    if package_installed libfuse2 || package_installed libfuse3-3 ;then
+    if [ ! -z "$app" ];then
+      #this function is being used within an app-installation. Make libfuse2 a dependency, whether or not it is already installed.
+      install_packages libfuse2 --no-install-recommends
+    elif package_installed libfuse2 ;then
+      #NOT being used within an app-installation and libfuse2 is already installed.
       true #nothing to do
     else
-      #install fuse
+      #NOT being used within an app-installation and libfuse2 is not installed.
       apt_update
-      if package_available fuse3 ;then
-        apt_lock_wait
-        sudo apt install -y fuse3
-      elif package_available fuse ;then
-        apt_lock_wait
-        sudo apt install -y fuse
-      fi
+      sudo apt install -y libfuse2
     fi
   fi
   
@@ -2057,7 +2061,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
   
   rm -rf "$repo_name" || sudo rm -rf "$repo_name"
   local errors
-  errors="$(git clone "$@" 2>&1)" 
+  errors="$(git clone "$@" 2>&1)"
   local exitcode=$?
   
   if [ "$exitcode" != 0 ]; then
