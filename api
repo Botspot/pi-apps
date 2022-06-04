@@ -1856,29 +1856,18 @@ get_device_info() { #returns information about current install and hardware
   # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-  elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
           -f /sys/devices/virtual/dmi/id/product_version ]]; then
     model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
     model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-  elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
     model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
-  elif [[ -f /tmp/sysinfo/model ]]; then
+  fi
+  if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
       model="$(tr -d '\0' < /tmp/sysinfo/model)"
   fi
-  # Remove dummy OEM info.
-  model=${model//To be filled by O.E.M.}
-  model=${model//To Be Filled*}
-  model=${model//OEM*}
-  model=${model//Not Applicable}
-  model=${model//System Product Name}
-  model=${model//System Version}
-  model=${model//Undefined}
-  model=${model//Default string}
-  model=${model//Not Specified}
-  model=${model//Type1ProductConfigId}
-  model=${model//INVALID}
-  model=${model//All Series}
-  model=${model//�}
   echo "Device model: $model"
   echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
