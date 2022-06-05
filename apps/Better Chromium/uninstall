@@ -24,6 +24,14 @@ sudo rm -f "${folder}/dark_mode" \
   "${folder}/performance_improvements" \
   "${folder}/reduce_writes"
 
+#Remove ~/.chromium-browser.init workaround for Snap Chromium
+if [ -f $HOME/.chromium-browser.init ] && [ "$(sha1sum $HOME/.chromium-browser.init | awk '{print $1}')" == 'cead3a7e98ddd3dbfeea285736c89409a7d426cd' ];then
+  echo "  - ~/.chromium-browser.init"
+  rm $HOME/.chromium-browser.init
+  #remove Chromium customizations folder, if empty.
+  sudo rmdir /etc/chromium.d &>/dev/null || true
+fi
+
 #clean up old symlinks from reduce_writes script - to avoid errors
 if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
   rm -rf "$HOME/.config/chromium/Default/Service Worker"
@@ -35,3 +43,4 @@ fi
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
 fi
+true

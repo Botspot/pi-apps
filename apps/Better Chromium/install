@@ -12,8 +12,34 @@ if [ -d /etc/chromium.d ];then
   folder=/etc/chromium.d
 elif [ -d /etc/chromium-browser/customizations ];then
   folder=/etc/chromium-browser/customizations
+elif [ -d /snap/chromium ] && [ -f /snap/bin/chromium ];then
+  #if Snap Chromium is installed, make the customizations folder and later make a script to source its contents
+  sudo mkdir -p /etc/chromium.d
+  folder=/etc/chromium.d
+  
 else
   error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
+fi
+
+#if Snap Chromium is installed, make a script to source the contents of /etc/chromium.d
+if [ -d /snap/chromium ] && [ -f /snap/bin/chromium ];then
+  if [ -f $HOME/.chromium-browser.init ] && [ "$(sha1sum $HOME/.chromium-browser.init | awk '{print $1}')" != 'cead3a7e98ddd3dbfeea285736c89409a7d426cd' ];then
+    warning "This script needs to create this file: ~/.chromium-browser.init, but it already exists!"
+    read -N 1 -p "Enter Y to replace this file, or N to exit now." answer
+    echo
+    
+    if [ "$answer" != Y ] && [ "$answer" != y ];then
+      echo "User error: $HOME/.chromium-browser.init already exists and the user did not want to overwrite it."
+      exit 1
+    fi
+  fi
+
+  #The ~/.chromium-browser.init file is the one single entrypoint for running scripts during a Snap Chromium's launch.
+  #I encountered significant difficulty making this work. Normal Chromium-browser uses bash to source things, but Snap /snap/chromium/2003/bin/chromium.launcher is /bin/sh
+  cat << "EOF" > $HOME/.chromium-browser.init
+#!/bin/sh
+eval "$(run-parts --list -- /etc/chromium.d | xargs cat)"
+EOF
 fi
 
 #detect if dark mode is currently enabled by this tool
@@ -280,3 +306,4 @@ fi
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
 fi
+true
