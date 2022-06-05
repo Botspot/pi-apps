@@ -2021,12 +2021,22 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
     if [ ! -z "$app" ];then
       #this function is being used within an app-installation. Make libfuse2 a dependency, whether or not it is already installed.
       install_packages libfuse2
-    elif package_installed libfuse2 ;then
-      #NOT being used within an app-installation and libfuse2 is already installed.
+      if package_available fuse3 ;then
+        install_packages fuse3
+      elif package_available fuse ;then
+        install_packages fuse
+      fi
+    elif package_installed libfuse2 && (package_installed fuse || package_installed fuse3) ;then
+      #NOT being used within an app-installation and libfuse2 and fuse or fuse3 is already installed.
       true #nothing to do
     else
       #NOT being used within an app-installation and libfuse2 is not installed.
       apt_update
+      if package_available fuse3 ;then
+        sudo apt install -y fuse3 --no-install-recommends
+      elif package_available fuse ;then
+        sudo apt install -y fuse --no-install-recommends
+      fi
       sudo apt install -y libfuse2 --no-install-recommends
     fi
   fi
