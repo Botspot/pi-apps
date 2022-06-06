@@ -2,4 +2,4 @@
 
 purge_packages || exit 1
 
-rm -f ~/.local/share/applications/shatteredpd.desktop ~/.local/share/bin/ShatteredPD-Desktop.jar
+rm -f ~/.local/share/applications/shatteredpd.desktop ~/.local/bin/ShatteredPD-Desktop.jar
