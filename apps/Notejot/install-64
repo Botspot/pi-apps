@@ -1,0 +1,5 @@
+#!/bin/bash
+
+install_packages flatpak || exit 1
+
+flatpak_install io.github.lainsce.Notejot || exit 1

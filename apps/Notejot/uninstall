@@ -1,0 +1,4 @@
+#!/bin/bash
+
+flatpak_uninstall io.github.lainsce.Notejot || exit 1
+purge_packages || exit 1
