@@ -363,6 +363,9 @@ update_app() { #first word is app name
   status "Updating \e[1m${app}\e[0m\e[96m..."
   echo
   
+  #Set terminal title
+  echo -ne "\e]0;Updating ${app}\a"
+  
   local newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   local oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
   

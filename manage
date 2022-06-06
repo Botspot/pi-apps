@@ -511,6 +511,9 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   failed_apps=''
   for app in $app_list ;do
     
+    #Set terminal title
+    echo -ne "\e]0;${action^}ing ${app}\a"
+    
     "${DIRECTORY}/manage" $action "$app"
     if [ $? != 0 ];then
       #this app failed to install - add it to the list of failed apps
@@ -603,6 +606,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt $(echo "$action" | sed 's/uninstall/purge --autoremove/g') -yf $(cat "${DIRECTORY}/apps/$app/packages") 2>&1 | less_apt")
   fi
   
+  #print to terminal
   status "${action^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
   echo
   cd $HOME
