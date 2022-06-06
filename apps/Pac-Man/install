@@ -2,7 +2,7 @@
 
 cd /tmp || error "Could not move to tmp folder"
 
-install_packages libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev || exit 1
+install_packages libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev automake || exit 1
 rm -rf /tmp/pacman
 
 git_clone https://github.com/ebuc99/pacman || exit 1
