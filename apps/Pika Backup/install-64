@@ -1,0 +1,5 @@
+#!/bin/bash
+
+install_packages flatpak || exit 1
+
+flatpak_install org.gnome.World.PikaBackup || exit 1
