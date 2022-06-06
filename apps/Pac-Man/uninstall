@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sudo rm -rf "/usr/local/bin/pacman" "/usr/local/share/pacman" "/usr/local/share/applications/pacman.desktop" "/usr/local/share/doc/pacman"
+
+sudo update-desktop-database -q
+
+purge_packages || exit 1
