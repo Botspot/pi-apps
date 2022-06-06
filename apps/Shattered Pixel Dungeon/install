@@ -4,8 +4,8 @@ version=1.2.3
 
 install_packages openjdk-11-jre || exit 1
 
-mkdir -p ~/.local/share/bin
-wget -O ~/.local/share/bin/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Desktop.jar || error "Could not download game"
+mkdir -p ~/.local/bin
+wget -O ~/.local/bin/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Desktop.jar || error "Could not download game"
 
 
 case "$arch" in
@@ -17,7 +17,7 @@ esac
 echo "[Desktop Entry]
 Encoding=UTF-8
 Name=Shattered Pixel Dungeon
-Exec=$path -jar $HOME/.local/share/bin/ShatteredPD-Desktop.jar
+Exec=$path -jar $HOME/.local/bin/ShatteredPD-Desktop.jar
 Terminal=false
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
