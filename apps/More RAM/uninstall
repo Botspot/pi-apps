@@ -40,4 +40,11 @@ if [ -f /usr/sbin/dphys-swapfile ];then
   sudo systemctl unmask dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
   sudo systemctl enable dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
 fi
+
+if [ -f /lib/systemd/system/mkswap.service ];then
+  status "Allowing mkswap.service to run on boot"
+  sudo systemctl unmask mkswap.service #see /lib/systemd/system/mkswap.service
+  sudo systemctl enable mkswap.service #see /lib/systemd/system/mkswap.service
+fi
+
 true

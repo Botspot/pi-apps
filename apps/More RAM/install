@@ -61,6 +61,16 @@ if [ -f /usr/sbin/dphys-swapfile ] && systemctl is-active --quiet dphys-swapfile
   sudo systemctl mask dphys-swapfile.service #see /lib/systemd/system/dphys-swapfile.service
 fi
 
+#Disable Ubuntu's mkswap service if running
+if systemctl is-active --quiet mkswap.service ;then
+  status "Disabling swap"
+  #swapoff and remove swapfile
+  sudo systemctl disable mkswap.service
+  
+  #prevent dphys-swapfile from running on boot
+  sudo systemctl mask mkswap.service
+fi
+
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 status -n "Checking system for compatibility... "
