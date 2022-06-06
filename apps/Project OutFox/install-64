@@ -1,0 +1,28 @@
+#!/bin/bash
+
+status "Downloading tarfile"
+
+version=https://github.com/TeamRizu/OutFox/releases/download/OF4.14.1/OutFox-alpha-0.4.14.1HF-RPi-Linux-arm64v8-date-20220327.tar.gz
+
+mkdir -p ~/ProjectOutFox && cd ~/ProjectOutFox || error "Could not create or move to directory"
+rm -rf ./*
+wget -O ProjectOutFox.tar.gz "$version" || error "Could not download tarfile"
+tar -xvf ProjectOutFox.tar.gz || error "Could not extract tarfile"
+rm -f ProjectOutFox.tar.gz
+folder_name="$(ls -t | grep 'OutFox-')"
+
+mkdir -p ~/.local/share/applications
+# add .desktop file
+echo "[Desktop Entry]
+Encoding=UTF-8
+Name=Project OutFox
+GenericName=Rhythm and dance game
+Exec=$HOME/ProjectOutFox/$folder_name/OutFox
+Terminal=false
+Icon=$(dirname "$0")/icon-64.png
+Type=Application
+Categories=Application;Game;ArcadeGame
+Comment=A cross-platform rhythm video game." | tee ~/.local/share/applications/projectoutfox.desktop || error "Could not created .desktop file"
+
+status_green "Install finished"
+

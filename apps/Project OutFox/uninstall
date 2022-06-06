@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# remove project outfox (saves stored elsewhere)
+rm -rf ~/ProjectOutFox ~/.local/share/applications/projectoutfox.desktop
