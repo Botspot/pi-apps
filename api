@@ -1991,6 +1991,7 @@ $(head -n1 "${DIRECTORY}/apps/$app/description")"
     
   fi
 }
+#end of miscellaneous low-level functions
 
 #command interceptors - functions that enhance a command
 enable_module() { #Permanent equivalent to modprobe, this will load the module on every future startup

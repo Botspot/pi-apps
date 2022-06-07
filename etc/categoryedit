@@ -9,25 +9,6 @@ function error {
   exit 1
 }
 
-#Only one instance of this script should run at a time. wait if another process other than this one is running
-#skip this check if this instance does not have an ARG (running as a GUI)
-if [ ! -z "$1" ];then
-  # processes which are using categoryedit for scripting (not a GUI) will have additional column 4 and 5 output (the arguments)
-  # output of below command is: PID ARG1
-  # pgrep categoryedit | xargs ps -o pid,cmd h | awk '{print $1, $4}'
-
-  # remove all output from the list if there is no second column (aka, there was not argument, meaning it is a GUI)
-  # pgrep categoryedit | xargs ps -o pid,cmd h | awk '{print $1, $4}' | awk '$2 != ""'
-
-  # now only print the first column (the PIDs)
-  # pgrep categoryedit | xargs ps -o pid,cmd h | awk '{print $1, $4}' | awk '$2 != ""' | awk '{print $1}'
-
-  while [[ $(pgrep categoryedit | xargs ps -o pid,cmd h | awk '{print $1, $4}' | awk '$2 != ""' | awk '{print $1}' | sort | head -n 1) != $$ ]]; do
-    # waiting for another instance of categoryedit to finish
-    sleep 0.02
-  done
-fi
-
 #for read_category_files()
 if ! command -v read_category_files >/dev/null ;then
   source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
@@ -82,9 +63,24 @@ set_category() { #place the $1 app in the $2 category - don't write to files, on
 }
 
 save_changes() { #writes the $local_categories variable to the category-overrides file
-  if [ "$local_categories" != "$(cat "${DIRECTORY}/data/category-overrides")" ];then
-    echo "$local_categories" > "${DIRECTORY}/data/category-overrides"
+  if [ "$local_categories" == "$(cat "${DIRECTORY}/data/category-overrides")" ];then
+    #no changes would be made, so exit now
+    return 0
   fi
+  
+  #Prevent category corruption with a lock file - if the file exists and contains a valid PID, wait.
+  if [ -f "${DIRECTORY}/data/category-overrides.lock" ];then
+    PID="$(cat "${DIRECTORY}/data/category-overrides.lock")"
+    echo -n "Waiting for categoryedit PID $PID to finish... "
+    while [ -d /proc/${PID} ];do
+      sleep 1
+    done
+    echo Done
+  fi
+  echo $$ > "${DIRECTORY}/data/category-overrides.lock"
+  sleep 1
+  echo "$local_categories" > "${DIRECTORY}/data/category-overrides"
+  rm -f "${DIRECTORY}/data/category-overrides.lock"
 }
 APPS="$(list_apps local)"
 
