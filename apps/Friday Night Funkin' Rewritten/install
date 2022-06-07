@@ -1,0 +1,35 @@
+#!/bin/bash
+
+
+mkdir -p ~/.love_games/friday_night_funkin_rewritten && cd ~/.love_games/friday_night_funkin_rewritten || error 'Failed to Create & Enter Directory!'
+wget https://github.com/HTV04/funkin-rewritten/releases/download/v1.1.0-beta.2/funkin-rewritten-lovefile.zip || error 'Failed Download the zip!'
+unzip funkin-rewritten-lovefile.zip || error 'Failed to Extract the zip!'
+rm -f funkin-rewritten-lovefile.zip || error 'Failed to Remove the zip!'
+
+love_version="$(apt-cache show love | sed -n 's/Version: //p' | head -1)"
+if dpkg --compare-versions "$love_version" lt 11.0; then
+  status "Love from the debian repos is too old, compiling love 11.4"
+  install_packages build-essential autotools-dev automake libtool pkg-config libfreetype6-dev libluajit-5.1-dev libphysfs-dev libsdl2-dev libopenal-dev libogg-dev libvorbis-dev libmodplug-dev libmpg123-dev libtheora-dev || exit 1
+  rm -rf love
+  git clone https://github.com/love2d/love.git --depth 1 -b 11.4 || error "Could not clone love repo"
+  cd love || error "could not enter folder"
+  ./platform/unix/automagic || error "automagic failed"
+  ./configure || error "configure script failed (missing a dependency maybe?)"
+  make -j$(nproc) || error "build failed"
+  love_path="$HOME/.love_games/friday_night_funkin_rewritten/love/src/love"
+else
+  install_packages love || exit 1
+  love_path="love"
+fi
+
+# Create the .desktop file in ~/.local/share/applications
+mkdir -p ~/.local/share/applications
+
+echo "[Desktop Entry]
+Type=Application
+Exec=$love_path $HOME/.love_games/friday_night_funkin_rewritten/funkin-rewritten.love
+Hidden=false
+NoDisplay=false
+Name=Friday Night Funkin' Rewritten
+Icon=$(dirname "$0")/icon-64.png
+Categories=Game" > ~/.local/share/applications/fnfr.desktop
