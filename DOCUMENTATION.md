@@ -224,13 +224,6 @@ Note: new functions are added often. If you don't see a function on this list bu
   - This function outputs to `stderr`.
 - `generate_logo` - Displays the Pi-Apps logo in a terminal.
   - Note: Some keen users may notice that the logo looks different on Debian ***Bullseye*** than on older releases. This is necessary to avoid trying to display missing characters. See: https://github.com/Botspot/pi-apps/issues/1441
-- `generate_splashscreen` - When Pi-Apps launches, it displays a splashscreen for a few moments while it loads. Each time you see it, new app-icons are placed in the 10 locations. This function is responsible for doing that.
-    The method for doing this is fairly straightforward:
-  - First, a vector image is created and images are embedded in it. (In this case, Botspot made the original image with Boxy SVG)
-  - Vector images are simply text-files. They store binary data by encoding it with `base64`.
-  - To replace an embedded image, use a text-editor to replace the existing base64-data with new base64-data from your desired PNG image.
-  - This function does exactly that - it takes `icons/vector/splashscreen-original.svg`, uses `sed` to insert 10 random app-icons, saves the resulting image to `icons/vector/splashscreen.svg`, and then converts that image to PNG and saves it to `icons/splashscreen.png`.
-  - For more details, see: https://github.com/Botspot/pi-apps/issues/1299
 - `add_english` - Ensures an English locale is installed so that log-diagnosing tools can function properly.
   - This was added in [PR #1031](https://github.com/Botspot/pi-apps/pull/1031)
 
@@ -542,15 +535,14 @@ To start Pi-Apps on a specific category:
 ~/pi-apps/gui 'All Apps/'
 ```
 #### How it works:
-1. The splash screen appears.
-2. The `api` script is sourced.
-3. The pi-apps logo is displayed in the terminal (using the `generate_logo` function)
-4. A series of `runonce` entries are executed in the background.
-5. The message of the day is determined.
+1. The `api` script is sourced.
+2. The pi-apps logo is displayed in the terminal (using the `generate_logo` function)
+3. A series of `runonce` entries are executed in the background.
+4. The message of the day is determined.
     - To save time, it's stored in `data/announcements`.
     - If that file is missing or it's more than a day old, it is downloaded from [the pi-apps-announcements repository](https://github.com/Botspot/pi-apps-announcements).
     - One random line is taken from the file and used as the message for this session.
-6. We now come to a `while` loop that runs the GUI. Inside is an `if` statement that obeys the following values of the `$action` variable:
+5. We now come to a `while` loop that runs the GUI. Inside is an `if` statement that obeys the following values of the `$action` variable:
     - `main-window` - Handles the app list.
       - This may be a yad window or an xlunch window, depending on the "App List Style" setting.
       - Xlunch is compiled, if necessary.
