@@ -27,7 +27,7 @@ set_category() { #place the $1 app in the $2 category - don't write to files, on
   
   #store the contents of the global categories file and the local category-overrides file
   #these are purposely not local-variables.
-  [ -z "$local_categories" ] && local_categories="$(cat "${DIRECTORY}/data/category-overrides" 2>/dev/null)"
+  [ -z "$local_categories" ] && local_categories="$(cat "${DIRECTORY}/data/category-overrides")"
   [ -z "$global_categories" ] && global_categories="$(cat "${DIRECTORY}/etc/categories")"
   
   #the app may be: in both files, in global file, in overrides file, or in neither file
@@ -63,7 +63,7 @@ set_category() { #place the $1 app in the $2 category - don't write to files, on
 }
 
 save_changes() { #writes the $local_categories variable to the category-overrides file
-  if [ "$local_categories" == "$(cat "${DIRECTORY}/data/category-overrides" 2>/dev/null)" ];then
+  if [ "$local_categories" == "$(cat "${DIRECTORY}/data/category-overrides")" ];then
     #no changes would be made, so exit now
     return 0
   fi
