@@ -4,7 +4,7 @@ status "Installing Dependencies"
 install_packages rsync cmake build-essential libasound2-dev libsdl2-dev ffmpeg libgl-dev libglew-dev libgtk-3-dev libjack-jackd2-dev libjsoncpp-dev libmad0-dev libpng-dev libpulse-dev libtomcrypt-dev libtommath-dev libudev-dev libva-dev libvorbis-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev || exit 1
 
 status "Cloning repo"
-git clone https://github.com/stepmania/stepmania.git || error "Could not clone repo"
+git_clone https://github.com/stepmania/stepmania.git || error "Could not clone repo"
 cd stepmania || error "Could not enter stepmania folder"
 git checkout 0faf106eb196fd7187edab0aaa8f9e043c5e6d19 || error "Could not checkout desired commit"
 
