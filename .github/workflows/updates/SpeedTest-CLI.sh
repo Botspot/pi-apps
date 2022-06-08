@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 armhf_webPackages="https://packagecloud.io/ookla/speedtest-cli/ubuntu/dists/bionic/main/binary-armhf/Packages"
 arm64_webPackages="https://packagecloud.io/ookla/speedtest-cli/ubuntu/dists/bionic/main/binary-arm64/Packages"
 armhf_packagename="speedtest"
