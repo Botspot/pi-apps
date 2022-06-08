@@ -6,25 +6,21 @@
 
 # for apps with an install-32 file, make sure that you supply the following variables before sourcing this script (examples for webcord shown below)
 # the ${webVer} variable within the url is important
+# it is assumed that your install script will contain a version variable with the version of the app you would like to keep updated automatically
 
 # webVer=$(get_release SpacingBat3/WebCord)
 # armhf_url="https://github.com/SpacingBat3/WebCord/releases/download/v${webVer}/webcord_${webVer}_armhf.deb"
-# pi_apps_ver_32="$(cat 'install-32' | grep 'version=' | sed 's/version=//')"
-
 
 # for apps with an install-64 file, make sure that you supply the following variables before sourcing this script (examples for webcord shown below)
 # if a variable is already set, no need to duplicate it
 
 # webVer=$(get_release SpacingBat3/WebCord)
 # arm64_url="https://github.com/SpacingBat3/WebCord/releases/download/v${webVer}/webcord_${webVer}_arm64.deb"
-# pi_apps_ver_64="$(cat 'install-64' | grep 'version=' | sed 's/version=//')"
-
 
 # for apps with a unified install file, make sure to supply the following variables before sourcing this script
 
 # webVer=$(get_release subhra74/xdm)
 # all_url="https://github.com/subhra74/xdm/releases/download/${webVer}/xdm-setup-${webVer}.tar.xz"
-# pi_apps_ver="$(cat 'install' | grep 'version=' | sed 's/version=//')"
 
 # make sure webVer variable is supplied by the sourcing script
 if [ -n "$webVer" ]; then
