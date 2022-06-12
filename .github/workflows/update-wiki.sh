@@ -31,7 +31,7 @@ conversion() {
                 script_credits=$(cat "$GITHUB_WORKSPACE/apps/$script/credits" 2>/dev/null)
                 echo ""
                 script_url=$(echo $script | sed -e 's/ /%20/g')
-                echo "### <img src=https://github.com/Botspot/pi-apps/blob/master/apps/$script_url/icon-64.png height=32> ***[$script](https://github.com/Botspot/pi-apps/tree/master/apps/$script_url)***"
+                echo "### <img src=\"https://github.com/Botspot/pi-apps/blob/master/apps/$script_url/icon-64.png\" height=32> ***[$script](https://github.com/Botspot/pi-apps/tree/master/apps/$script_url)***"
                 [[ ! -z "$script_website" ]] && [[ ! -z "$script_credits" ]] && echo "$script_website - $script_credits<br />"
                 [[ ! -z "$script_website" ]] && [[ -z "$script_credits" ]] && echo "$script_website<br />"
                 [[ -z "$script_website" ]] && [[ ! -z "$script_credits" ]] && echo "$script_credits<br />"
