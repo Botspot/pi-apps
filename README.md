@@ -17,10 +17,10 @@
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml">
     Make a general suggestion</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-suggestion.yml">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?assignees=&labels=App+Request&template=app-suggestion.yml&title=EDIT+ME+Include+the+app+name">
     Suggest new app</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/issues/new?template=app-submission.yml">
+  <a href="https://github.com/Botspot/pi-apps/issues/new?assignees=&labels=App+Request%2CZip%2FPR+included&template=app-submission.yml&title=EDIT+ME+Include+the+app+name+and+if+it+is+a+Package+app+or+an+Install+based+App">
     Submit a new app</a>
 
 <p align="center">
