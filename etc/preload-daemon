@@ -70,13 +70,9 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null)"
 if [ "$timestamps" != "$(cat "${DIRECTORY}/data/preload/timestamps-preload-daemon" 2>/dev/null)" ];then
   
   echo "Preload-daemon running..." 1>&2
-  IFS=$'\n'
-  PIDS=()
   for folder in $folders ; do
-    "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null &
-    PIDS+=("$!")
+    "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null
   done
-  wait "${PIDS[@]}" #wait for all subprocesses to complete
   echo done 1>&2
   
   echo "$timestamps" > "${DIRECTORY}/data/preload/timestamps-preload-daemon"
