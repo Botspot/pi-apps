@@ -1887,15 +1887,19 @@ get_device_info() { #returns information about current install and hardware
 
 get_model() {
   # obtain model name
+  # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-  elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
           -f /sys/devices/virtual/dmi/id/product_version ]]; then
     model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
     model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-  elif [[ -f /sys/firmware/devicetree/base/model ]]; then
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
     model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
-  elif [[ -f /tmp/sysinfo/model ]]; then
+  fi
+  if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
       model="$(tr -d '\0' < /tmp/sysinfo/model)"
   fi
   unset __platform
