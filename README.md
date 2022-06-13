@@ -52,7 +52,6 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 #### Supported systems:
 
 - [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): fully supported.
-- [Twister OS](https://twisteros.com/download.html): fully supported, preinstalled.
 - Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: Pi-Apps should mostly work but you may encounter errors for some apps.
 - Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 

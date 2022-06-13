@@ -57,40 +57,6 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
 \e[0m\e[0m"
   fi
 }
-
-generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
-  
-  #get 10 random apps. Some are exempted because they don't display well.
-  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
-  
-  local app1="$(sed -n 1p <<<"$apps")"
-  local app2="$(sed -n 2p <<<"$apps")"
-  local app3="$(sed -n 3p <<<"$apps")"
-  local app4="$(sed -n 4p <<<"$apps")"
-  local app5="$(sed -n 5p <<<"$apps")"
-  local app6="$(sed -n 6p <<<"$apps")"
-  local app7="$(sed -n 7p <<<"$apps")"
-  local app8="$(sed -n 8p <<<"$apps")"
-  local app9="$(sed -n 9p <<<"$apps")"
-  local app10="$(sed -n 10p <<<"$apps")"
-  
-  #display the chosen apps
-  #echo "$apps" | head -n 10
-  
-  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
-  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
-  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
-  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
-  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
-  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
-  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
-  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
-  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
-  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
-  
-  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
-  
-}
 #end of output functions
 
 add_english() { #add en_US locale for more accurate error
@@ -122,17 +88,17 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   local package="$1"
   [ -z "$package" ] && error "package_installed(): no package specified!"
   #find the package listed in /var/lib/dpkg/status
-  #package_info "$package" | grep -q '^Status: install ok installed$'
+  #package_info "$package"
   
   #directly search /var/lib/dpkg/status
-  grep '^Status: install ok installed$\|^Package:' /var/lib/dpkg/status | grep -xF "Package: $package" --after 1 | grep -q 'Status: install ok installed'
+  grep "^Package: $package$" /var/lib/dpkg/status -A 1 | tail -n 1 | grep -q 'Status: install ok installed'
 }
 
 package_available() { #determine if the specified package-name exists in a repository
   local package="$1"
   [ -z "$package" ] && error "package_available(): no package name specified!"
-  #using grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  grep -rqx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" 2>/dev/null
+  #using find and grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
+  find /var/lib/apt/lists -maxdepth 1 -name "*_Packages" | xargs grep -q "^Package: $package$"
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -760,13 +726,11 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
 }
 
 list_intersect() { #Outputs only the apps that appear in both stdin and in $1
-  #                      change \n to \|     |   remove last "\|"
-  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+  comm -12 - <(echo "$1" | sort)
 }
 
 list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
-  #                       change \n to \|     |   remove last "\|"
-  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+  comm -23 - <(echo "$1" | sort)
 }
 
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
@@ -774,17 +738,17 @@ read_category_files() { #Generates a combined categories-list from several sourc
   #remove app category if app folder not found
   local IFS=$'\n'
   local app
-  for app in $(cat "${DIRECTORY}/data/category-overrides"); do 
+  for app in $(cat "${DIRECTORY}/data/category-overrides" 2>/dev/null); do
     if ! [ -d "${DIRECTORY}/apps/$(echo "$app" | sed 's/|.*//')" ] &>/dev/null; then 
       sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
     fi
   done
   
   #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
-  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" 2>/dev/null ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
-app_categories() { #lists all apps in a virtual filesystem based on categories file. Format: "category/app"
+app_prefix_category() { #lists all apps in a category with format "category/app", or if $1 is left blank, then list the full structure of all categories
   
   #Subtract a type of app if enabled
   local show_apps_setting="$(cat "${DIRECTORY}/data/settings/Show apps")"
@@ -800,19 +764,33 @@ app_categories() { #lists all apps in a virtual filesystem based on categories f
     filter=(cat)
   fi
   
-  #show normal categories
-  read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
-  
   #show special "Installed" category - don't filter it
-  list_apps installed | sed 's+^+Installed/+g'
-  
+  if [ "$1" == "Installed" ]; then
+    list_apps installed | sed 's+^+Installed/+g'
   #show special "Packages" category
-  if [ "$show_apps_setting" != standard ];then
+  elif [ "$1" == "Packages" ]; then
     list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
-  fi
-  
   #show special "All Apps" category
-  list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  elif [ "$1" == "All Apps" ]; then
+    list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  # show all categories
+  elif [ -z "$1" ]; then
+    #show normal categories
+    read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | sed 's+^/++g' | "${filter[@]}"
+    
+    #show special "Installed" category - don't filter it
+    list_apps installed | sed 's+^+Installed/+g'
+    
+    #show special "Packages" category
+    if [ "$show_apps_setting" != standard ];then
+      list_apps package | list_subtract "$(list_apps hidden)" | sed 's+^+Packages/+g'
+    fi
+    #show special "All Apps" category
+    list_apps cpu_installable | list_subtract "$(list_apps hidden)" | sed 's+^+All Apps/+g' | "${filter[@]}"
+  #show normal categories
+  else
+    read_category_files | grep . | awk -F'|' '{print $2"/"$1}' | grep "^$1/" | sed 's+^/++g' | "${filter[@]}"
+  fi
 }
 
 bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
@@ -1083,9 +1061,12 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
 refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's installed, then mark it as installed.
   #repeat for every package-type app
   local IFS=$'\n'
+  local PIDS=()
   for app in $(list_apps package) ;do
-    refresh_pkgapp_status "$app"
+    refresh_pkgapp_status "$app" &
+    PIDS+=("$!")
   done
+  wait "${PIDS[@]}" #wait for all subprocesses to complete
 }
 
 refresh_app_list() { #Force-regenerate the app list
@@ -1756,11 +1737,11 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
 runonce() { #run command only if it's never been run before. Useful for one-time migration or setting changes.
   #Runs a script in the form of stdin
   
-  script="$(cat /dev/stdin)"
+  script="$(< /dev/stdin)"
   
   runonce_hash="$(sha1sum <<<"$script" | awk '{print $1}')"
   
-  if grep -qxF "$runonce_hash" "${DIRECTORY}/data/runonce_hashes" ;then
+  if [ -s "${DIRECTORY}/data/runonce_hashes" ] && while read line; do [[ $line == "$runonce_hash" ]] && break; done < "${DIRECTORY}/data/runonce_hashes"; then
     #hash found
     #echo "runonce: '$script' already run before. Skipping."
     true

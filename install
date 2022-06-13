@@ -101,61 +101,10 @@ X-GNOME-Autostart-enabled=true
 Hidden=false
 NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
 
-mkdir -p "${DIRECTORY}/data" && cd "${DIRECTORY}/data" || error "Failed to make and enter ${DIRECTORY}/data directory!"
-mkdir -p installed-packages preload settings status update-status categories
-cd $HOME
-
-#hide template app by default
-"${DIRECTORY}/etc/categoryedit" "template" 'hidden' &>/dev/null
-
-#hide duplicates if running in twisteros
-if [ -f /usr/local/bin/twistver ] && [[ $(twistver) == "Twister OS version"* ]]; then
-  #twisteros full
-  apps="CommanderPi
-Box86
-Discord
-piKiss
-Retropie
-Scrcpy
-Steam
-Windows 10 Theme
-Chromium Widevine
-Lightpad
-Wine (x86)
-Mac OS Theme"
-  PREIFS="$IFS"
-  IFS=$'\n'
-  for app in $apps ;do
-    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
-  done
-  IFS="$PREIFS"
-  
-elif [ -f /usr/local/bin/twistver ] && [[ $(twistver) != "Twister OS version"* ]]; then
-  #twisteros lite
-  PREIFS="$IFS"
-  IFS=$'\n'
-  apps="Chromium Widevine
-Box86
-Windows 10 Theme
-Lightpad
-Wine (x86)
-Mac OS Theme"
-  for app in $apps ;do
-    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
-  done
-  IFS="$PREIFS"
-  
-  #unhide some apps on twisteros lite that were hidden.
-  #This removes certain apps completely from the category file. Effectively resets them to online default.
-  "${DIRECTORY}/etc/categoryedit" CommanderPi --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Discord --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" piKiss --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Scrcpy --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" Steam --delete >/dev/null
-  "${DIRECTORY}/etc/categoryedit" 'Chromium Widevine' --delete >/dev/null
-  
-  echo "Finished hiding apps on TwisterOS."
-fi
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/preload" "${DIRECTORY}/data/settings" \
+  "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/categories"
 
 #pi-apps terminal command
 if [ ! -f /usr/local/bin/pi-apps ] || ! cat /usr/local/bin/pi-apps | grep -q "${DIRECTORY}/gui" ;then

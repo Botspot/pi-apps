@@ -14,7 +14,6 @@ ${DIRECTORY}/data/settings
 ${DIRECTORY}/data/status
 ${DIRECTORY}/etc
 ${DIRECTORY}/icons/categories
-${DIRECTORY}/apps
 ${DIRECTORY}/preload
 ${DIRECTORY}/api
 ${DIRECTORY}/data/category-overrides"
@@ -63,7 +62,7 @@ if [ -z "${text_color+x}" ] && [ "$format" == yad ];then
   #0400 is the latest version
   yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
   if [ $yad_version -lt 0400 ]; then
-    text_color=$(echo "import gi
+    export text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -77,10 +76,9 @@ textcolor = style.get_color(Gtk.StateType.NORMAL)
 print(Gdk.RGBA.to_string(textcolor))
 " | python -)
   else
-    text_color=""
+    export text_color=""
   fi
 fi
-export text_color
 
 timestampfile="${DIRECTORY}/data/preload/timestamps-$(echo "$prefix" | tr -d '/')"
 listfile="${DIRECTORY}/data/preload/LIST-$(echo "$prefix" | tr -d '/')"
@@ -136,35 +134,37 @@ fi
 if [ $reloadlist == 1 ];then
   echo "Generating list for '$prefix'..." 1>&2
   
-  #for app_categories() and app_status() functions
-  if ! command -v app_categories >/dev/null ;then
+  #for app_prefix_categories() and app_status() functions
+  if ! command -v app_prefix_category >/dev/null ;then
     source "${DIRECTORY}/api"
   fi
   
   if [ ! -z "$prefix" ];then
     echo "Showing apps within $prefix/" 1>&2
-    vfiles="$(app_categories | grep . | sort -f | uniq | grep "^$prefix/" | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
+    vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
   else
-    vfiles="$(app_categories | grep . | sort -f | uniq)"
+    vfiles="$(app_prefix_category "" | grep . | sort -f | uniq | grep -v '^hidden/')"
   fi
   
   #remove apps within categories - show this layer of stuff only.
-  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | sort -f | uniq)"
+  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | uniq)"
   
   #get list of apps - excluding folders and apps that are incompatible with CPU architecture
   APPS="$(grep -v '/' <<<"$vfiles" | list_intersect "$(list_apps cpu_installable)")"
   
-  #get list of folders - excluding apps - and hide the hidden folder.
-  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/' | grep -vFx "hidden")"
+  #get list of folders - excluding apps.
+  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/')"
   
   #shuffle the list if enabled
-  if [ "$(cat "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
+  if [ "$(< "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
     APPS="$(echo "$APPS" | shuf)"
     DIRS="$(echo "$DIRS" | shuf)"
   fi
   
   if [ "$format" == yad ];then
     IFS=$'\n'
+
+    listfile_tmp="$listfile-$(mktemp -u | sed 's:/tmp/tmp.::g')"
     
     #initial value of listfile: if within a prefix, start with a Back button
     if [ ! -z "$prefix" ];then
@@ -172,11 +172,13 @@ if [ $reloadlist == 1 ];then
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
 Return to the previous location
-$text_color" | tee "$listfile"
+$text_color" | tee "$listfile_tmp" 2&>/dev/null
     else
-      echo -n '' > "$listfile"
+      echo -n '' > "$listfile_tmp"
     fi
-    
+
+    declare -A dir_lookup
+    dir_lookup=( ["Browsers"]="Internet browsers." ["All Apps"]="All Pi-Apps Applications in one long list." ["Appearance"]="Applications and Themes which modify the look and feel of your OS." ["System Management"]="Apps that help you keep track of system resources and general system management." ["Games"]="Games and Emulators" ["Installed"]="All Pi-Apps Apps that you have installed." ["Internet"]="Browsers, Chat Clients, Email Clients, and so much more." ["Multimedia"]="Video playback and creation, audio playback and creation, and streaming alternatives." ["Packages"]="Simple Apps that install directly from APT repos." ["Tools"]="An assortment of helpful programs that don't already fit into another category." ["Terminals"]="Alternative terminal programs built for the modern age as well as to replicate your old vintage computer." ["Programming"]="Code editors, IDEs, and other applications to help you write and make other programs." ["Creative Arts"]="Drawing, Painting, and Photo and Movie Editors" ["Engineering"]="3D Printing slicers, CAD/modeling, and general design software" ["Office"]="Office suites (document and slideshow editors), and other office tools." ["Emulation"]="Applications that help you run non-ARM or non-Linux software." ["Communication"]="Internet messaging, calling, video chatting, and email clients.")
     for dir in $DIRS
     do
       if [ -f "${DIRECTORY}/icons/categories/${dir}.png" ];then
@@ -184,8 +186,6 @@ $text_color" | tee "$listfile"
       else
         diricon="${DIRECTORY}/icons/categories/default.png"
       fi
-      declare -A dir_lookup
-      dir_lookup=( ["Browsers"]="Internet browsers." ["All Apps"]="All Pi-Apps Applications in one long list." ["Appearance"]="Applications and Themes which modify the look and feel of your OS." ["System Management"]="Apps that help you keep track of system resources and general system management." ["Games"]="Games and Emulators" ["Installed"]="All Pi-Apps Apps that you have installed." ["Internet"]="Browsers, Chat Clients, Email Clients, and so much more." ["Multimedia"]="Video playback and creation, audio playback and creation, and streaming alternatives." ["Packages"]="Simple Apps that install directly from APT repos." ["Tools"]="An assortment of helpful programs that don't already fit into another category." ["Terminals"]="Alternative terminal programs built for the modern age as well as to replicate your old vintage computer." ["Programming"]="Code editors, IDEs, and other applications to help you write and make other programs." ["Creative Arts"]="Drawing, Painting, and Photo and Movie Editors" ["Engineering"]="3D Printing slicers, CAD/modeling, and general design software" ["Office"]="Office suites (document and slideshow editors), and other office tools." ["Emulation"]="Applications that help you run non-ARM or non-Linux software." ["Communication"]="Internet messaging, calling, video chatting, and email clients.")
 
       if [ ! -z "$prefix" ];then
         add="$diricon
@@ -200,15 +200,17 @@ $dir/
 "${dir_lookup["$dir"]}"
 $text_color"
       fi
+      add="${add//[&]/&amp;}"
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    done >> "$listfile_tmp"
     #finished preloading categories
     
     #preload apps
     for app in $APPS
     do
       #get installation status of app
-      status="$(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null)"
+      unset status
+      read -r 2>/dev/null status <"${DIRECTORY}/data/status/${app}"
       
       #determine app icon
       if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
@@ -219,13 +221,15 @@ $text_color"
       
       #rest of list attributes
       if [ -z "$status" ];then
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/${app}/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
-$(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+$line"$'\n'
       else
+        read -r 2>/dev/null line <"${DIRECTORY}/apps/${app}/description" || line="Description unavailable"
         add+="$app
 $prefix/$app
-"\("$status"\)" $(head -n1 "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")"$'\n'
+"\("$status"\)" $line"$'\n'
       fi
       
       #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
@@ -244,18 +248,27 @@ $prefix/$app
         add+="$text_color"
       fi
       #output finished app lines
+      add="${add//[&]/&amp;}"
       echo "$add"
-    done | sed 's/&/&amp;/g' | tee -a "$listfile"
+    done >> "$listfile_tmp"
+
+    # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    mv "$listfile_tmp" "$listfile"
+    # specifically use cat here so that all data enters the pipe at once
+    cat "$listfile"
+    echo "Finished preload for '$prefix'" 1>&2
     #finished preloading apps
     
   elif [ "$format" == xlunch ];then
     #XLUNCH list format
+
+    listfile_tmp="$listfile-$(mktemp -u | sed 's:/tmp/tmp.::g')"
     
     #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
     if [ ! -z "$prefix" ];then
-      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile"
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile_tmp" 2&>/dev/null
     else
-      echo -n '' > "$listfile"
+      echo -n '' > "$listfile_tmp"
     fi
     
     IFS=$'\n'
@@ -268,17 +281,23 @@ $prefix/$app
       fi
       
       echo "${dir};${diricon};:exec "\""echo '${prefix}${dir}/'"\"""
-    done | tee -a "$listfile"
+    done >> "$listfile_tmp"
     
     for app in $APPS
     do
       if [ -f "${DIRECTORY}/data/status/${app}" ];then
-        echo "${app} ($(cat "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
+        echo "${app} ($(while read line; do echo $line; done 2>/dev/null < "${DIRECTORY}/data/status/${app}" 2>/dev/null));${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       else
         #status file missing - app has never been installed
         echo "${app};${DIRECTORY}/apps/${app}/icon-64.png;:exec "\""echo '$prefix/${app}'"\"""
       fi
-    done | tee -a "$listfile"
+    done >> "$listfile_tmp"
+
+    # write to the pipe all at once instead of in breaking chunks. this prevents errors when user clicks the back button too quickly when the list file is still generating
+    mv "$listfile_tmp" "$listfile"
+    # specifically use cat here so that all data enters the pipe at once
+    cat "$listfile"
+    echo "Finished preload for $prefix" 1>&2
     
   fi
   
@@ -289,6 +308,7 @@ $prefix/$app
   echo "$timestamps" > "$timestampfile"
 else
   echo "Reading list file for '$prefix'..." 1>&2
+  # specifically use cat here so that all data enters the pipe at once
   cat "$listfile"
 fi
 

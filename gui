@@ -17,7 +17,7 @@ if [ -z "${text_color+x}" ];then
   #0400 is the latest version
   yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
   if [ $yad_version -lt 0400 ]; then
-    text_color=$(echo "import gi
+    export text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -31,10 +31,9 @@ textcolor = style.get_color(Gtk.StateType.NORMAL)
 print(Gdk.RGBA.to_string(textcolor))
 " | python -)
   else
-    text_color=""
+    export text_color=""
   fi
 fi
-export text_color
 
 terminal_manage() { #function to install/uninstall one app - uses a terminal and refreshes the app list
   if [ "$1" == 'uninstall' ];then
@@ -304,11 +303,24 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 #display the pi-apps logo in the terminal
 generate_logo &
 
+#install dependencies
+runonce <<"EOF"
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
+  # Install dependencies if necessary
+  if ! dpkg -s $dependencies >/dev/null 2>&1; then
+    sudo_popup apt install $dependencies -y -f --no-install-recommends
+  fi
+EOF
+
 #Various stuff to run in background (enclosed in brackets so Geany IDE can collapse the code)
 {
 
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/preload" "${DIRECTORY}/data/settings" \
+  "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/categories"
+
 #check for updates
-mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status"
 "${DIRECTORY}/updater" set-status &>/dev/null &
 trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
@@ -330,26 +342,21 @@ trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
 #runonce entries
 (
-#remove contents of ${DIRECTORY}/data/preload
+#generate settings
 runonce <<"EOF"
-  rm -rf  "${DIRECTORY}/data/preload"
-EOF
-
-#mark wine and box86 as disabled, if twisteros
-runonce <<"EOF"
-  if [ -f /usr/local/bin/twistver ] && command -v wine >/dev/null ;then
-    echo 'disabled' > "${DIRECTORY}/data/status/Wine (x86)"
-  fi
-  if [ -f /usr/local/bin/twistver ] && command -v box86 >/dev/null ;then
-    echo 'disabled' > "${DIRECTORY}/data/status/Box86"
+  if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
+    "${DIRECTORY}/settings" refresh
   fi
 EOF
 
-#re-run install script on twistos lite to re-show some previously hidden apps
+#regenerate package-app status for one-time migration
 runonce <<"EOF"
-if [ -f /usr/local/bin/twistver ] && [[ "$(twistver)" != 'Twister OS version'* ]];then
-  "${DIRECTORY}/install"
-fi
+  IFS=$'\n'
+  for app in $(list_apps package) ;do
+    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
+  done
+  
+  refresh_all_pkgapp_status
 EOF
 
 #remove old apps and migrate chromium downgrading apps to the new "Downgrade Chromium" app
@@ -427,15 +434,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#install dependencies
-runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
-  # Install dependencies if necessary
-  if ! dpkg -s $dependencies >/dev/null 2>&1; then
-    sudo_popup apt install $dependencies -y -f --no-install-recommends
-  fi
-EOF
-
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
@@ -455,16 +453,6 @@ EOF
 runonce <<"EOF"
   rm -f "${DIRECTORY}/etc/bitlylink"
   rm -rf "${DIRECTORY}/data/categories"
-EOF
-
-#regenerate package-app status for one-time migration
-runonce <<"EOF"
-  IFS=$'\n'
-  for app in $(list_apps package) ;do
-    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
-  done
-  
-  refresh_all_pkgapp_status
 EOF
 
 #change settings icon
