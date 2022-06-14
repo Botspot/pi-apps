@@ -1,0 +1,25 @@
+#!/bin/bash
+
+version=1.2.3
+
+install_packages openjdk-11-jre || exit 1
+
+mkdir -p ~/.local/bin
+wget -O ~/.local/bin/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Desktop.jar || error "Could not download game"
+
+
+case "$arch" in
+  "64") path=/usr/lib/jvm/java-11-openjdk-arm64/bin/java ;;
+  "32") path=/usr/lib/jvm/java-11-openjdk-armhf/bin/java ;;
+  *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
+echo "[Desktop Entry]
+Encoding=UTF-8
+Name=Shattered Pixel Dungeon
+Exec=$path -jar $HOME/.local/bin/ShatteredPD-Desktop.jar
+Terminal=false
+Icon=$(dirname "$0")/icon-64.png
+Type=Application
+Categories=Application;Game
+Comment=Roguelike Dungeon Crawler RPG with pixel art graphics." > ~/.local/share/applications/shatteredpd.desktop || error "Could not created .desktop file"
