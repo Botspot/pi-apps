@@ -744,9 +744,18 @@ read_category_files() { #Generates a combined categories-list from several sourc
       sed -i "/$app/d"  "${DIRECTORY}/data/category-overrides"
     fi
   done
+
+  # get device specific categories overrides (if they exist)
+  # obtain model and jetson_model
+  get_model &>/dev/null
+  version_id=$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')
+  unset device_override
+  if [[ ! -z "$jetson_model" ]] && [[ "$version_id" == "18.04" ]]; then
+    device_override="${DIRECTORY}/etc/category-overrides-jetson-18.04"
+  fi
   
-  #list the user-overrides file              and the global categories file          |-----and all apps------------|     filter out duplicates   no '\n\n'
-  (cat "${DIRECTORY}/data/category-overrides" "${DIRECTORY}/etc/categories" 2>/dev/null ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
+  #list the user-overrides file     and the device specific override  and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
+  (cat "${DIRECTORY}/data/category-overrides" "$device_override" "${DIRECTORY}/etc/categories" 2>/dev/null ; echo ; list_apps local | sed 's/$/|/g') | awk -F'|' '!seen[$1]++' | grep .
 }
 
 app_prefix_category() { #lists all apps in a category with format "category/app", or if $1 is left blank, then list the full structure of all categories
@@ -1876,6 +1885,58 @@ get_device_info() { #returns information about current install and hardware
   
 }
 
+get_model() { # populates the model and jetson_model variables with information about the current hardware
+  # obtain model name
+  if [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
+          -f /sys/devices/virtual/dmi/id/product_version ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
+  fi
+  if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
+      model="$(tr -d '\0' < /tmp/sysinfo/model)"
+  fi
+  unset __platform
+  unset jetson_model
+  # obtain jetson model name (if available)
+  # nvidia, in their official L4T (Linux for Tegra) releases 32.X and 34.X, set a distinct tegra family in the device tree /proc/device-tree/compatible
+  if [[ -e "/proc/device-tree/compatible" ]]; then
+    CHIP="$(tr -d '\0' < /proc/device-tree/compatible)"
+    if [[ ${CHIP} =~ "tegra186" ]]; then
+        __platform="tegra-x2"
+    elif [[ ${CHIP} =~ "tegra210" ]]; then
+        __platform="tegra-x1"
+    elif [[ ${CHIP} =~ "tegra194" ]]; then
+        __platform="xavier"
+    elif [[ ${CHIP} =~ "tegra234" ]]; then
+      __platform="orin"
+    fi
+    jetson_model="$__platform"
+  # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
+  elif [[ -e "/sys/devices/soc0/family" ]]; then
+    CHIP="$(tr -d '\0' < /sys/devices/soc0/family)"
+    if [[ ${CHIP} =~ "tegra20" ]]; then
+        __platform="tegra-2"
+    elif [[ ${CHIP} =~ "tegra30" ]]; then
+        __platform="tegra-3"
+    elif [[ ${CHIP} =~ "tegra114" ]]; then
+        __platform="tegra-4"
+    elif [[ ${CHIP} =~ "tegra124" ]]; then
+        __platform="tegra-k1-32"
+    elif [[ ${CHIP} =~ "tegra132" ]]; then
+        __platform="tegra-k1-64"
+    elif [[ ${CHIP} =~ "tegra210" ]]; then
+        __platform="tegra-x1"
+    fi
+    jetson_model="$__platform"
+  fi
+}
+
 get_codename() { #get debian/ubuntu codename
   if ! command -v lsb_release >/dev/null; then
     apt_update &>/dev/null && \
@@ -1886,7 +1947,7 @@ get_codename() { #get debian/ubuntu codename
   if [ -f /etc/upstream-release/lsb-release ]; then
     # this is a derivative, get the upstream release info
     lsb_release -suc
-else
+  else
     lsb_release -sc
   fi
 }
