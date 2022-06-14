@@ -248,6 +248,7 @@ if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_dat
     command -v git >/dev/null || sudo apt install -y git
     git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
     cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
+    cp -af "${DIRECTORY}/apps" ~/pi-apps-forced-update && \
     mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
     mv -f ~/pi-apps-forced-update "$DIRECTORY"
     sleep 10
@@ -256,6 +257,9 @@ if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_dat
     
     #run new manage script in background
     "${DIRECTORY}/manage" "$@"
+    
+    #run updater to update apps
+    "${DIRECTORY}/updater" gui
     exit $?
   fi
 fi
