@@ -1885,7 +1885,7 @@ get_device_info() { #returns information about current install and hardware
   
 }
 
-get_model() {
+get_model() { # populates the model and jetson_model variables with information about the current hardware
   # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
