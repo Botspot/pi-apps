@@ -466,16 +466,17 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat ~/$package_name/DEBIAN/control | sort)" ];then
     echo "$package_name is already installed and no changes would be made. Skipping..."
   else
+  
+    #run an apt update
+    apt_update "${apt_flags[@]}" || exit 1
+    
     #Build .deb file for the dummy package
     local output="$(dpkg-deb --build ~/$package_name 2>&1)"
-    if [ $? != 0 ];then
+    if [ $? != 0 ] || [ ! -f ~/$package_name.deb ];then
       echo ""
       echo "$output"
       error "install_packages(): failed to create dummy deb ${package_name}!"
     fi
-    
-    #run an apt update
-    apt_update "${apt_flags[@]}" || exit 1
     
     #install dummy deb
     status "Installing the $package_name package..."
@@ -1521,6 +1522,11 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
   
   if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
+    error_type="internet"
+  fi
+  
+  if grep -q "flathub: Error resolving .dl\.flathub\.org." <<<"$errors" ;then
+    error_caption+=("Flatpak failed to connect to dl.flathub.org. Check your Internet connection and try again.")
     error_type="internet"
   fi
   
