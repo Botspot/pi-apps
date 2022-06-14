@@ -22,4 +22,4 @@ Terminal=false
 Icon=$(dirname "$0")/icon-64.png
 Type=Application
 Categories=Application;Game
-Comment=Roguelike Dungeon Crawler RPG with pixel art graphics." | tee ~/.local/share/applications/shatteredpd.desktop || error "Could not created .desktop file"
+Comment=Roguelike Dungeon Crawler RPG with pixel art graphics." > ~/.local/share/applications/shatteredpd.desktop || error "Could not created .desktop file"
