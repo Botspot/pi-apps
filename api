@@ -1887,7 +1887,6 @@ get_device_info() { #returns information about current install and hardware
 
 get_model() {
   # obtain model name
-  # obtain model name
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
   fi
@@ -1904,6 +1903,8 @@ get_model() {
   fi
   unset __platform
   unset jetson_model
+  # obtain jetson model name (if available)
+  # nvidia, in their official L4T (Linux for Tegra) releases 32.X and 34.X, set a distinct tegra family in the device tree /proc/device-tree/compatible
   if [[ -e "/proc/device-tree/compatible" ]]; then
     CHIP="$(tr -d '\0' < /proc/device-tree/compatible)"
     if [[ ${CHIP} =~ "tegra186" ]]; then
@@ -1912,8 +1913,11 @@ get_model() {
         __platform="tegra-x1"
     elif [[ ${CHIP} =~ "tegra194" ]]; then
         __platform="xavier"
+    elif [[ ${CHIP} =~ "tegra234" ]]; then
+      __platform="orin"
     fi
     jetson_model="$__platform"
+  # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
   elif [[ -e "/sys/devices/soc0/family" ]]; then
     CHIP="$(tr -d '\0' < /sys/devices/soc0/family)"
     if [[ ${CHIP} =~ "tegra20" ]]; then
