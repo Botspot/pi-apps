@@ -32,28 +32,35 @@ status_green() { #announce the success of a major action
 generate_logo() { #display colorized Pi-Apps logo in terminal
   #generate pi-apps logo
   #https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  # foreground colors
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
   darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
+  white='\e[97m'
+  default='\e[39m'
+  # background colors
+  bg_default='\e[49m'
+  bg_black='\e[40m'
+  bg_white='\e[107m'
   
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
-    echo -e "\e[40m\e[97m    ${green}🭊${darkgreen}▅▅▅▅${green}🬿\e[40m\e[97m
- ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽\e[40m\e[97m
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀🭍 ▄
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄🭞 ▄ ${blue}▄▄\e[97m 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
- ${blue}🭓\e[107m🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭\e[40m🭞\e[40m\e[97m                  █    █
+    echo -e "${white}${bg_default}    ${green}🭊${darkgreen}▅▅▅▅${green}🬿
+ ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽${white}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀🭍 ▄
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
+ ${blue}🭓${bg_white}🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭${bg_default}🭞${white}                  █    █
 \e[0m\e[0m"
   else
-    echo -e "\e[40m\e[97m    ${green}▅${darkgreen}▅▅▅▅${green}▅\e[40m\e[97m
- ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂\e[40m\e[97m
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▀▀▆ ▄
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄\e[97m ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
- \e[107m${blue}▌  ${red}\e[40m▗▖▗▖▗▖\e[107m${blue}  ▐\e[40m\e[97m   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
- ${blue}\e[7m▂\e[27m\e[107m▃▃▃▃▃▃▃▃▃▃\e[40m\e[7m▂\e[27m\e[40m\e[40m\e[97m                  █    █
+    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
+ ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${white}                  █    █
 \e[0m\e[0m"
   fi
 }
