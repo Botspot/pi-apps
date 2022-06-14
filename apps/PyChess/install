@@ -1,0 +1,5 @@
+#!/bin/bash
+
+version=1.0.3
+
+install_packages "https://github.com/pychess/pychess/releases/download/${version}/python3-pychess_${version}-1_all.deb" || exit 1
