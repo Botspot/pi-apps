@@ -52,7 +52,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀🭍 ▄
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
- ${blue}🭓${bg_white}🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭${bg_default}🭞${white}                  █    █
+ ${blue}🭓${bg_white}🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭${bg_default}🭞${default}                  █    █
 \e[0m\e[0m"
   else
     echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅
@@ -60,7 +60,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
  ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
- ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${white}                  █    █
+ ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █
 \e[0m\e[0m"
   fi
 }
