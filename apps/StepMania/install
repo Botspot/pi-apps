@@ -1,0 +1,111 @@
+#!/bin/bash
+
+status "Installing Dependencies"
+install_packages rsync cmake build-essential libasound2-dev libsdl2-dev ffmpeg libgl-dev libglew-dev libgtk-3-dev libjack-jackd2-dev libjsoncpp-dev libmad0-dev libpng-dev libpulse-dev libtomcrypt-dev libtommath-dev libudev-dev libva-dev libvorbis-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev || exit 1
+
+status "Cloning repo"
+git_clone https://github.com/stepmania/stepmania.git || error "Could not clone repo"
+cd stepmania || error "Could not enter stepmania folder"
+git checkout 0faf106eb196fd7187edab0aaa8f9e043c5e6d19 || error "Could not checkout desired commit"
+
+# add patch
+# this format of writing to a file changes none of the output (does not mess up '', "", or any special character)
+# unfortunatly VSCODE does not do well with it for auto formatting but too bad
+
+cat << 'EOF' >> 0001-patch-upstream-for-ARM.patch
+From e7b9c1db0067915211741d1be436d086fa1a1410 Mon Sep 17 00:00:00 2001
+From: theofficialgman <28281419+theofficialgman@users.noreply.github.com>
+Date: Sat, 4 Jun 2022 17:11:35 -0400
+Subject: [PATCH] patch upstream for ARM
+
+---
+ extern/libpng/configure.ac                  | 4 ++++
+ extern/libpng/pngpriv.h                     | 4 ++--
+ src/arch/MovieTexture/MovieTexture_FFMpeg.h | 2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/extern/libpng/configure.ac b/extern/libpng/configure.ac
+index 52dba94..1b95047 100644
+--- a/extern/libpng/configure.ac
++++ b/extern/libpng/configure.ac
+@@ -363,17 +363,21 @@ AC_ARG_ENABLE([arm-neon],
+    [case "$enableval" in
+       no|off)
+          # disable the default enabling on __ARM_NEON__ systems:
++         AC_DEFINE([PNG_USE_ARM_NEON], [], [ARM NEON support])
+          AC_DEFINE([PNG_ARM_NEON_OPT], [0],
+                    [Disable ARM Neon optimizations])
+          # Prevent inclusion of the assembler files below:
+          enable_arm_neon=no;;
+       check)
++         AC_DEFINE([PNG_USE_ARM_NEON], [], [ARM NEON support])
+          AC_DEFINE([PNG_ARM_NEON_CHECK_SUPPORTED], [],
+                    [Check for ARM Neon support at run-time]);;
+       api)
++         AC_DEFINE([PNG_USE_ARM_NEON], [], [ARM NEON support])
+          AC_DEFINE([PNG_ARM_NEON_API_SUPPORTED], [],
+                    [Turn on ARM Neon optimizations at run-time]);;
+       yes|on)
++         AC_DEFINE([PNG_USE_ARM_NEON], [], [ARM NEON support])
+          AC_DEFINE([PNG_ARM_NEON_OPT], [2],
+                    [Enable ARM Neon optimizations])
+          AC_MSG_WARN([--enable-arm-neon: please specify 'check' or 'api', if]
+diff --git a/extern/libpng/pngpriv.h b/extern/libpng/pngpriv.h
+index 583c26f..0293a75 100644
+--- a/extern/libpng/pngpriv.h
++++ b/extern/libpng/pngpriv.h
+@@ -127,8 +127,8 @@
+     * associated assembler code, pass --enable-arm-neon=no to configure
+     * or put -DPNG_ARM_NEON_OPT=0 in CPPFLAGS.
+     */
+-#  if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && \
+-   defined(PNG_ALIGNED_MEMORY_SUPPORTED)
++#  if defined(PNG_USE_ARM_NEON) && (defined(__ARM_NEON__) || \
++     defined(__ARM_NEON)) && defined(PNG_ALIGNED_MEMORY_SUPPORTED)
+ #     define PNG_ARM_NEON_OPT 2
+ #  else
+ #     define PNG_ARM_NEON_OPT 0
+diff --git a/src/arch/MovieTexture/MovieTexture_FFMpeg.h b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+index c092b76..36a6cf1 100644
+--- a/src/arch/MovieTexture/MovieTexture_FFMpeg.h
++++ b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+@@ -14,7 +14,7 @@ namespace avcodec
+ 		#include <libswscale/swscale.h>
+ 		#include <libavutil/pixdesc.h>
+ 
+-		#if LIBAVCODEC_VERSION_MAJOR >= 58
++		#if LIBAVCODEC_VERSION_MAJOR >= 57
+ 		#define av_free_packet av_packet_unref
+ 		#define PixelFormat AVPixelFormat
+ 		#define PIX_FMT_YUYV422 AV_PIX_FMT_YUYV422
+-- 
+2.25.1
+
+EOF
+
+git apply 0001-patch-upstream-for-ARM.patch || error "Applying patch failed"
+mkdir build && cd build || error "Could not create or enter build directory"
+status "Running cmake"
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SDL=yes -DWITH_SYSTEM_GLEW=yes -DWITH_SYSTEM_TOMMATH=yes -DWITH_SYSTEM_MAD=yes -DWITH_SYSTEM_ZLIB=yes -DWITH_SYSTEM_JPEG=yes -DWITH_SYSTEM_PCRE=yes -DWITH_SYSTEM_OGG=yes -DWITH_SYSTEM_FFMPEG=yes -DWITH_FULL_RELEASE=yes -DWITH_CRASH_HANDLER=yes -DWITH_NETWORKING=yes -WITH_MINIMAID=no .. || error "Cmake ended with error"
+
+status "Starting build"
+make -j$(nproc) || "error Failed to build"
+# installs to /usr/local/stepmania-5.1 folder for everything
+status "Installing stepmania"
+sudo make install || error "Could not install"
+cd .. || error "could not move back directory"
+# install icons (the installer does not do this)
+sudo rsync -a ./icons/ /usr/local/share/icons/
+# add .desktop file (the one in the repo is not good and is not installed)
+echo "[Desktop Entry]
+Encoding=UTF-8
+Name=StepMania
+GenericName=Rhythm and dance game
+Exec=/usr/local/stepmania-5.1/stepmania
+Terminal=false
+Icon=stepmania-ssc
+Type=Application
+Categories=Application;Game;ArcadeGame
+Comment=A cross-platform rhythm video game." | sudo tee /usr/local/share/applications/stepmania.desktop || error "Could not created .desktop file"
+
+status_green "Install finished"

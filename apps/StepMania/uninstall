@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# remove dependencies
+purge_packages || exit 1
+# remove stepmania (saves stored elsewhere)
+sudo rm -rf /usr/local/stepmania-5.1 /usr/local/share/applications/stepmania.desktop /usr/local/share/icons/hicolor/*/apps/stepmania-ssc.png /usr/local/share/icons/hicolor/scalable/apps/stepmania-ssc.svg
