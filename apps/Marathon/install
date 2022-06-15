@@ -28,14 +28,8 @@ status_green "Done"
 status "Compilation..."
 cd AlephOne-${version}
 
-# get the $DISTRIB_RELEASE by calling lsb_release
-# check if upstream-release is available
-if [ -f /etc/upstream-release/lsb-release ]; then
-  echo "This is a Ubuntu Derivative, checking the upstream-release version info"
-  DISTRIB_CODENAME=$(lsb_release -s -u -c)
-else
-  DISTRIB_CODENAME=$(lsb_release -s -c)
-fi
+# get the $DISTRIB_RELEASE by calling get_codename function
+DISTRIB_CODENAME=$(get_codename)
 
 case "$arch" in
   "64")
