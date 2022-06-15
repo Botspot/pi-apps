@@ -1,16 +1,3 @@
 #!/bin/bash
-#change version to latest each time
-version="1.0.8"
-rm -rf ~/usbimager
-mkdir -p ~/usbimager
-cd ~/usbimager
 
-echo "Downloading..."
-wget -qO $(pwd)/usbimager.zip https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_${version}-armv7l-linux-x11.zip || error "Failed to download usbimager.zip!"
-echo "Extracting..."
-unzip $(pwd)/usbimager.zip || error "Failed to extract!"
-rm -f $(pwd)/usbimager.zip
-cd ~/
-echo "Copying files..."
-sudo cp -av ~/usbimager/* /usr || error "Failed to copy files to /usr!"
-rm -rf ~/usbimager
+install_packages https://github.com/Pi-Apps-Coders/files/raw/main/usbimager_1.0.8-armhf.deb libglib2.0-0 libgtk-3-0 || exit 1

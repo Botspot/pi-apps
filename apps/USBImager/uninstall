@@ -1,12 +1,6 @@
 #!/bin/bash
-rm -rf ~/usbimager
 
-files="/usr/bin/usbimager
-/usr/share/man/man8/usbimager.8.gz
-/usr/share/icons/hicolor/64x64/apps/usbimager.png
-/usr/share/icons/hicolor/128x128/apps/usbimager.png
-/usr/share/icons/hicolor/32x32/apps/usbimager.png
-/usr/share/icons/hicolor/16x16/apps/usbimager.png
-/usr/share/applications/usbimager.desktop"
+purge_packages || exit 1
 
-echo "$files" | sudo xargs rm -f
+# cleanup old files
+sudo rm -rf ~/usbimager /usr/share/applications/usbimager.desktop /usr/bin/usbimager /usr/share/man/man8/usbimager.8.gz /usr/share/icons/hicolor/64x64/apps/usbimager.png /usr/share/icons/hicolor/128x128/apps/usbimager.png /usr/share/icons/hicolor/32x32/apps/usbimager.png /usr/share/icons/hicolor/16x16/apps/usbimager.png
