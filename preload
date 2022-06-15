@@ -172,7 +172,7 @@ if [ $reloadlist == 1 ];then
 Back
 $(dirname "$prefix" | sed 's+^\.$++g')/
 Return to the previous location
-$text_color" | tee "$listfile_tmp" 2&>/dev/null
+$text_color" | tee "$listfile_tmp" &>/dev/null
     else
       echo -n '' > "$listfile_tmp"
     fi
@@ -266,7 +266,7 @@ $prefix/$app
     
     #initial value of listfile: if within a prefix, start with a Back button, or if on main page start with Updates
     if [ ! -z "$prefix" ];then
-      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile_tmp" 2&>/dev/null
+      echo "Back;${DIRECTORY}/icons/back-64.png;:exec "\""echo /"\""" | tee "$listfile_tmp" &>/dev/null
     else
       echo -n '' > "$listfile_tmp"
     fi
