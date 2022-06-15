@@ -1894,6 +1894,7 @@ get_device_info() { #returns information about current install and hardware
 
 get_model() { # populates the model and jetson_model variables with information about the current hardware
   # obtain model name
+  unset model
   if [[ -d /system/app/ && -d /system/priv-app ]]; then
     model="$(getprop ro.product.brand) $(getprop ro.product.model)"
   fi
@@ -1908,39 +1909,36 @@ get_model() { # populates the model and jetson_model variables with information 
   if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
       model="$(tr -d '\0' < /tmp/sysinfo/model)"
   fi
-  unset __platform
   unset jetson_model
   # obtain jetson model name (if available)
   # nvidia, in their official L4T (Linux for Tegra) releases 32.X and 34.X, set a distinct tegra family in the device tree /proc/device-tree/compatible
   if [[ -e "/proc/device-tree/compatible" ]]; then
     CHIP="$(tr -d '\0' < /proc/device-tree/compatible)"
     if [[ ${CHIP} =~ "tegra186" ]]; then
-        __platform="tegra-x2"
+      jetson_model="tegra-x2"
     elif [[ ${CHIP} =~ "tegra210" ]]; then
-        __platform="tegra-x1"
+      jetson_model="tegra-x1"
     elif [[ ${CHIP} =~ "tegra194" ]]; then
-        __platform="xavier"
+      jetson_model="xavier"
     elif [[ ${CHIP} =~ "tegra234" ]]; then
-      __platform="orin"
+      jetson_model="orin"
     fi
-    jetson_model="$__platform"
   # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
   elif [[ -e "/sys/devices/soc0/family" ]]; then
     CHIP="$(tr -d '\0' < /sys/devices/soc0/family)"
     if [[ ${CHIP} =~ "tegra20" ]]; then
-        __platform="tegra-2"
+      jetson_model="tegra-2"
     elif [[ ${CHIP} =~ "tegra30" ]]; then
-        __platform="tegra-3"
+      jetson_model="tegra-3"
     elif [[ ${CHIP} =~ "tegra114" ]]; then
-        __platform="tegra-4"
+      jetson_model="tegra-4"
     elif [[ ${CHIP} =~ "tegra124" ]]; then
-        __platform="tegra-k1-32"
+      jetson_model="tegra-k1-32"
     elif [[ ${CHIP} =~ "tegra132" ]]; then
-        __platform="tegra-k1-64"
+      jetson_model="tegra-k1-64"
     elif [[ ${CHIP} =~ "tegra210" ]]; then
-        __platform="tegra-x1"
+      jetson_model="tegra-x1"
     fi
-    jetson_model="$__platform"
   fi
 }
 
