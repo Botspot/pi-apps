@@ -79,6 +79,12 @@ terminal_manage() { #function to install/uninstall one app - uses a terminal and
       done
       ' "Terminal Output"
     
+    # check for special exit code from terminal-run that indicates it failed to launch. GUI users don't see any terminal output if it fails (since there is no terminal open) so we need to prompt them with a GUI window
+    if [[ "$?" == 126 ]]; then
+      echo -e "Unable to succesfully start terminal-run. \nPi-Apps has encountered a fatal error. \n\nPlease report this to the developers on Discord or via the GitHub." | yad "${yadflags[@]}" --width=700 --height=300 --text-info --title="Error occured when calling terminal-run" \
+      --image="${DIRECTORY}/icons/error.png" --image-on-top --fontname=12 \
+      --button='Exit'
+    fi
   fi
 }
 

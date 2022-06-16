@@ -13,6 +13,11 @@ function error {
   exit 1
 }
 
+function error_fatal {
+  echo -e "\e[91m$1\e[39m"
+  exit 126
+}
+
 #reset the GTK theme so terminals follow the system GTK theme
 export GTK_THEME=''
 
@@ -59,7 +64,7 @@ else
 fi
 
 if [ -z "$choice" ];then
-  error "Failed to locate any terminal emulators!!!"
+  error_fatal "Failed to locate any terminal emulators!!!"
 elif [ "$choice" == lxterminal ];then
   lxterminal -e bash -c "$commands" &
   
@@ -94,7 +99,7 @@ elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
     
 else
-  error "Failed to locate any terminal emulators!!!"
+  error_fatal "Failed to locate any terminal emulators!!!"
 fi
 
 #A terminal should now be launching and in a few seconds the pid file should appear
@@ -105,7 +110,7 @@ if [ ! -z "$temp_pid_file" ];then
   while [ ! -f "$temp_pid_file" ];do
     
     if [ "$attempts" -gt 5 ];then
-      error "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
+      error_fatal "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
     fi
     sleep 1
     attempts=$((attempts + 1))
