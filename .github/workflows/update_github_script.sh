@@ -74,7 +74,7 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
             echo "- $app_name-armhf: \`$pi_apps_ver_32\` -> \`${webVer}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist."
-            echo "**Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install-32 had been skipped, the upstream file \`$armhf_url\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -92,7 +92,7 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
             echo "- $app_name-arm64: \`$pi_apps_ver_64\` -> \`${webVer}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist."
-            echo "**Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install-64 had been skipped, the upstream file \`$arm64_url\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -110,7 +110,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name
             echo "- $app_name-all: \`$pi_apps_ver\` -> \`${webVer}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
-            echo "**Updating $app_name install had been skipped, the upstream file $all_url does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install had been skipped, the upstream file \`$all_url\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -128,7 +128,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "
             echo "- $app_name-all: \`$pi_apps_ver\` -> \`${webVer}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist."
-            echo "**Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install had been skipped, the upstream file \`$armhf_url\` or \`$arm64_url\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
