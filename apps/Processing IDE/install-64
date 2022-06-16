@@ -1,6 +1,10 @@
 #!/bin/bash
+
+version=processing-1283-4.0b8
+
 cd ~/.local/share/
-wget https://github.com/processing/processing/releases/download/processing-0270-3.5.4/processing-3.5.4-linux64.tgz || error "failed to download"
-tar -xf processing*.tgz || error "failed to extract"
-rm processing*.tgz
+rm -rf processing-*
+wget "https://github.com/processing/processing4/releases/download/${version}/processing-$(echo ${version} | awk '{n=split($1,A,"-"); print A[n]}')-linux-arm64.tgz" || error "failed to download"
+tar -xf processing-*.tgz || error "failed to extract"
+rm processing-*.tgz
 sudo ~/.local/share/processing*/install.sh
