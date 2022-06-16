@@ -13,11 +13,6 @@ function error {
   exit 1
 }
 
-function error_fatal {
-  echo -e "\e[91m$1\e[39m"
-  exit 126
-}
-
 #reset the GTK theme so terminals follow the system GTK theme
 export GTK_THEME=''
 
@@ -45,26 +40,28 @@ qterminal'
 #Try to honor the preference of update-alternatives x-terminal-emulator
 terminal="$(basename "$(readlink -f "$(command -v x-terminal-emulator)")")"
 
+[ $DEBUG == 1 ] && echo "Default x-terminal-emulator: $terminal"
+
 #if x-terminal-emulator is found and it matches an option in $choices, then we can use it.
 choice=''
 if [ ! -z "$terminal" ] && echo "$terminals" | grep -qFx "$terminal" ;then
   #choose the same terminal that x-terminal-emulator uses
   choice="$terminal"
-  [ $DEBUG == 1 ] && echo "Using $terminal from x-terminal-emulator"
+  [ $DEBUG == 1 ] && echo "Using $terminal"
 else
   #otherwise we have to run through each supported terminal, hoping that one is installed on the system
   IFS=$'\n'
   for terminal in $terminals ;do
     if command -v "$terminal" >/dev/null ;then
       choice="$terminal"
-      [ $DEBUG == 1 ] && echo "Found $terminal"
+      [ $DEBUG == 1 ] && echo "Using $terminal"
       break
     fi
   done
 fi
 
 if [ -z "$choice" ];then
-  error_fatal "Failed to locate any terminal emulators!!!"
+  error "Failed to locate any terminal emulators!!!"
 elif [ "$choice" == lxterminal ];then
   lxterminal -e bash -c "$commands" &
   
@@ -99,7 +96,7 @@ elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
     
 else
-  error_fatal "Failed to locate any terminal emulators!!!"
+  error "Failed to locate any terminal emulators!!!"
 fi
 
 #A terminal should now be launching and in a few seconds the pid file should appear
@@ -110,7 +107,7 @@ if [ ! -z "$temp_pid_file" ];then
   while [ ! -f "$temp_pid_file" ];do
     
     if [ "$attempts" -gt 5 ];then
-      error_fatal "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
+      error "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
     fi
     sleep 1
     attempts=$((attempts + 1))
@@ -124,3 +121,5 @@ if [ ! -z "$temp_pid_file" ];then
   rm -f "$temp_pid_file"
   
 fi
+
+true
