@@ -60,7 +60,7 @@ if [ -n "$pi_apps_filepath_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32"
         if validate_url "${repo_url}${armhf_package_path}"; then
             status_green "Updating pi-apps $app_name install-32 to: ${repo_url}${armhf_package_path}"
             sed -i "0,/filepath${version_number}=.*/s;;filepath${version_number}=\"${repo_url}${armhf_package_path}\";g" install-32
-            echo "- $app_name-armhf: $pi_apps_filepath_32 -> ${repo_url}${armhf_package_path} " >> /tmp/updated_apps
+            echo "- $app_name-armhf: \`$pi_apps_filepath_32\` -> \`${repo_url}${armhf_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-32 had been skipped, the upstream file ${repo_url}${armhf_package_path} does NOT exist."
             echo "**Updating $app_name install-32 had been skipped, the upstream file ${repo_url}${armhf_package_path} does NOT exist.**" >> /tmp/failed_apps
@@ -82,7 +82,7 @@ if [ -n "$pi_apps_filepath_64" ]  && [ -a "$DIRECTORY/apps/$app_name/install-64"
         if validate_url "${repo_url}${arm64_package_path}"; then
             status_green "Updating pi-apps $app_name install-64 to: ${repo_url}${arm64_package_path}"
             sed -i "0,/filepath${version_number}=.*/s;;filepath${version_number}=\"${repo_url}${arm64_package_path}\";g" install-64
-            echo "- $app_name-arm64: $pi_apps_filepath_64 -> ${repo_url}${arm64_package_path} " >> /tmp/updated_apps
+            echo "- $app_name-arm64: \`$pi_apps_filepath_64\` -> \`${repo_url}${arm64_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-64 had been skipped, the upstream file ${repo_url}${arm64_package_path} does NOT exist."
             echo "**Updating $app_name install-64 had been skipped, the upstream file ${repo_url}${arm64_package_path} does NOT exist.**" >> /tmp/failed_apps
@@ -104,7 +104,7 @@ if [ -n "$pi_apps_filepath" ]  && [ -n "$all_webPackages" ] && [ -a "$DIRECTORY/
         if validate_url "${repo_url}${all_package_path}"; then
             status_green "Updating pi-apps $app_name install to: ${repo_url}${all_package_path}"
             sed -i "0,/filepath${version_number}=.*/s;;filepath${version_number}=\"${repo_url}${all_package_path}\";g" install
-            echo "- $app_name-all: $pi_apps_filepath -> ${repo_url}${all_package_path} " >> /tmp/updated_apps
+            echo "- $app_name-all: \`$pi_apps_filepath\` -> \`${repo_url}${all_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file ${repo_url}${all_package_path} does NOT exist."
             echo "**Updating $app_name install had been skipped, the upstream file ${repo_url}${all_package_path} does NOT exist.**" >> /tmp/failed_apps
@@ -129,8 +129,8 @@ if [ -n "$pi_apps_filepath_32" ] && [ -n "$pi_apps_filepath_64" ] && [ -n "$armh
             status_green "Updating pi-apps $app_name install to: ${repo_url_armhf}${armhf_package_path} ${repo_url_arm64}${arm64_package_path}"
             sed -i "0,/filepath_32${version_number}=.*/s;;filepath_32${version_number}=\"${repo_url_armhf}${armhf_package_path}\";g" install
             sed -i "0,/filepath_64${version_number}=.*/s;;filepath_64${version_number}=\"${repo_url_arm64}${arm64_package_path}\";g" install
-            echo "- $app_name-all: $pi_apps_filepath_32 -> ${repo_url_armhf}${armhf_package_path} " >> /tmp/updated_apps
-            echo "- $app_name-all: $pi_apps_filepath_64 -> ${repo_url_arm64}${arm64_package_path} " >> /tmp/updated_apps
+            echo "- $app_name-all: \`$pi_apps_filepath_32\` -> \`${repo_url_armhf}${armhf_package_path}\` " >> /tmp/updated_apps
+            echo "- $app_name-all: \`$pi_apps_filepath_64\` -> \`${repo_url_arm64}${arm64_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file ${repo_url_armhf}${armhf_package_path} or  ${repo_url_arm64}${arm64_package_path} does NOT exist."
             echo "**Updating $app_name install had been skipped, the upstream file ${repo_url_armhf}${armhf_package_path} or  ${repo_url_arm64}${arm64_package_path} does NOT exist.**" >> /tmp/failed_apps
