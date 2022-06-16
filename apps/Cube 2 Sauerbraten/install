@@ -4,7 +4,7 @@ cd ~
 rm -rf download
 rm -rf sauerbraten
 
-install_packages zlib1g-dev libgeoip-dev build-essential libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev || error 'Install of sdl2 and opengl libraries failed!'
+install_packages zlib1g-dev libgeoip-dev build-essential libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev || exit 1
 # as strang as it is, downloading from the 'download' name directs to a faster download server
 # downloading the game code and assets
 wget https://sourceforge.net/projects/sauerbraten/files/sauerbraten/2020_11_29/sauerbraten_2020_12_29_linux.tar.bz2/download || error 'Download failed from sourceforge.net!'
