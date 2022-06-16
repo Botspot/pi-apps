@@ -494,6 +494,10 @@ runonce <<"EOF"
   fi
 EOF
 
+#Fix PiKiss-GUI messing up folder permissions
+runonce <<"EOF"
+  sudo chown $USER:$USER ~/.local/bin
+EOF
 ) &
 }
 
