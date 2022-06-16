@@ -63,7 +63,7 @@ if [ -n "$pi_apps_filepath_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32"
             echo "- $app_name-armhf: \`$pi_apps_filepath_32\` -> \`${repo_url}${armhf_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-32 had been skipped, the upstream file ${repo_url}${armhf_package_path} does NOT exist."
-            echo "**Updating $app_name install-32 had been skipped, the upstream file ${repo_url}${armhf_package_path} does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install-32 had been skipped, the upstream file \`${repo_url}${armhf_package_path}\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -85,7 +85,7 @@ if [ -n "$pi_apps_filepath_64" ]  && [ -a "$DIRECTORY/apps/$app_name/install-64"
             echo "- $app_name-arm64: \`$pi_apps_filepath_64\` -> \`${repo_url}${arm64_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-64 had been skipped, the upstream file ${repo_url}${arm64_package_path} does NOT exist."
-            echo "**Updating $app_name install-64 had been skipped, the upstream file ${repo_url}${arm64_package_path} does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install-64 had been skipped, the upstream file \`${repo_url}${arm64_package_path}\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -107,7 +107,7 @@ if [ -n "$pi_apps_filepath" ]  && [ -n "$all_webPackages" ] && [ -a "$DIRECTORY/
             echo "- $app_name-all: \`$pi_apps_filepath\` -> \`${repo_url}${all_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file ${repo_url}${all_package_path} does NOT exist."
-            echo "**Updating $app_name install had been skipped, the upstream file ${repo_url}${all_package_path} does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install had been skipped, the upstream file \`${repo_url}${all_package_path}\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
@@ -133,7 +133,7 @@ if [ -n "$pi_apps_filepath_32" ] && [ -n "$pi_apps_filepath_64" ] && [ -n "$armh
             echo "- $app_name-all: \`$pi_apps_filepath_64\` -> \`${repo_url_arm64}${arm64_package_path}\` " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file ${repo_url_armhf}${armhf_package_path} or  ${repo_url_arm64}${arm64_package_path} does NOT exist."
-            echo "**Updating $app_name install had been skipped, the upstream file ${repo_url_armhf}${armhf_package_path} or  ${repo_url_arm64}${arm64_package_path} does NOT exist.**" >> /tmp/failed_apps
+            echo "**Updating $app_name install had been skipped, the upstream file \`${repo_url_armhf}${armhf_package_path}\` or  \`${repo_url_arm64}${arm64_package_path}\` does NOT exist.**" >> /tmp/failed_apps
         fi
     fi
 fi
