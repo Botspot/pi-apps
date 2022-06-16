@@ -541,7 +541,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
       --geometry=260+$((screen_width-262))+$((screen_height-150)) \
       --image="${DIRECTORY}/icons/logo-64.png" \
       --field='Never show again':CHK FALSE \
-      --button="Details!${DIRECTORY}/icons/info.png":0 --button="Close!${DIRECTORY}/icons/exit.png":2)"
+      --button="Details!${DIRECTORY}/icons/info.png":0 --button="Skip!${DIRECTORY}/icons/exit.png":2)"
     button=$?
     
     #if Details not clicked, and checkbox clicked, launch a dialog to change the update interval
