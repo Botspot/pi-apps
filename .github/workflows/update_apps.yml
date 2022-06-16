@@ -96,8 +96,8 @@ jobs:
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Apps updated:
-
+            ```
             ${{ env.UPDATED_APPS }}
-
+            ```
             ${{ env.FAILED_APPS }}
             
