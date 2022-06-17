@@ -289,7 +289,6 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
     mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
   done
 }
-
 repo_refresh() { #index the pi-apps local apt repository
   
   [ -d /tmp/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /tmp/pi-apps-local-packages"
@@ -308,10 +307,10 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   (cd /tmp/pi-apps-local-packages && apt-ftparchive release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   
-  #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
+  #create a source.list for the repository - add pi-apps-local-packages to the top, then add lines from /etc/apt/sources.list
   rm -f /tmp/pi-apps-local-packages/source.list
-  cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" >> /tmp/pi-apps-local-packages/source.list
+  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
+  cat /etc/apt/sources.list >> /tmp/pi-apps-local-packages/source.list
 }
 
 repo_rm() { #remove the local apt repository
