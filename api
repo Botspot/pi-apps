@@ -304,14 +304,25 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
   sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
   
+  # set repo origin name to pi-apps-local-packages
+  echo 'APT::FTPArchive::Release {
+Origin "pi-apps-local-packages";
+};' > aptftp.conf
+
   #hash the repository by creating a Release file
-  (cd /tmp/pi-apps-local-packages && apt-ftparchive release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
+  (cd /tmp/pi-apps-local-packages && apt-ftparchive -c=aptftp.conf release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   
   #create a source.list for the repository - copy existing sources.list and then add the new line to bottom
   rm -f /tmp/pi-apps-local-packages/source.list
   cp -a /etc/apt/sources.list /tmp/pi-apps-local-packages/source.list
   echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" >> /tmp/pi-apps-local-packages/source.list
+
+  # add priority to all pi-apps-local-packages so that they always have higher priority than repo versions
+  # this has no affect when there the pi-apps-local-packages repo does not exist
+  echo 'Package: *
+Pin: Release o=pi-apps-local-packages
+Pin-Priority: 1001' | sudo tee /etc/apt/preferences.d/pi-apps-local-packages >/dev/null
 }
 
 repo_rm() { #remove the local apt repository
