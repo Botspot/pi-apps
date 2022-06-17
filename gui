@@ -502,7 +502,9 @@ EOF
 
 #Fix PiKiss-GUI messing up folder permissions
 runonce <<"EOF"
-  sudo chown $USER:$USER ~/.local/bin
+  if [ -d ~/.local/bin ] && [[ "$(stat -c "%U %G" ~/.local/bin)" != "$USER $USER" ]]; then
+    sudo_popup chown $USER:$USER ~/.local/bin
+  fi
 EOF
 ) &
 }
