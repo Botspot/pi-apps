@@ -734,11 +734,39 @@ list_apps() { # $1 can be: installed, uninstalled, corrupted, cpu_installable, h
 }
 
 list_intersect() { #Outputs only the apps that appear in both stdin and in $1
+  # for example, the following two inputs will be a match
+  # Audacity
+  # Audacity
+  # while these two will NOT be a match
+  # Multimedia/Audacity
+  # .*/Audacity
   comm -12 - <(echo "$1" | sort)
 }
 
+list_intersect_partial() { #Outputs only the apps that appear in both stdin and in $1 even with a partial match
+  # for example, the following two inputs will be a match
+  # Multimedia/Audacity
+  # .*/Audacity
+  #                      change \n to \|     |   remove last "\|"
+  grep -x "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
+}
+
 list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
+  # for example, the following two inputs will be a match
+  # Audacity
+  # Audacity
+  # while these two will NOT be a match
+  # Multimedia/Audacity
+  # .*/Audacity
   comm -23 - <(echo "$1" | sort)
+}
+
+list_subtract_partial() { #Outputs a list of apps from stdin, minus the ones that appear in $1 even with a partial match
+  # for example, the following two inputs will be a match
+  # Multimedia/Audacity
+  # .*/Audacity
+  #                       change \n to \|     |   remove last "\|"
+  grep -vx "$(echo "$1" | sed -z 's/\n/\\|/g' | sed -z 's/\\|$/\n/g')"
 }
 
 read_category_files() { #Generates a combined categories-list from several sources: category-overrides, global categories file, and unlisted apps. Format: "app|category"
@@ -772,10 +800,10 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
   local filter=()
   if [ "$show_apps_setting" == 'standard' ];then
     #if only showing standard apps, hide package apps
-    filter=(list_subtract "$(list_apps package | sed 's+^+.*/+g')")
+    filter=(list_subtract_partial "$(list_apps package | sed 's+^+.*/+g')")
   elif [ "$show_apps_setting" == 'packages' ];then
     #if only showing package apps, hide standard apps
-    filter=(list_subtract "$(list_apps standard | sed 's+^+.*/+g')")
+    filter=(list_subtract_partial "$(list_apps standard | sed 's+^+.*/+g')")
   else
     #is the setting is "all" or missing, don't filter.
     filter=(cat)
