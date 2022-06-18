@@ -10,6 +10,8 @@ install_packages libboost-all-dev libsdl2-dev \
   libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev \
   libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev build-essential unzip || exit 1
 
+# print installed sdl2 package versions for debugging
+dpkg -l | grep sdl2
 
 #creating a directory for game files and remove previous gamefiles
 rm -rf  ~/AlephOneData
@@ -20,7 +22,7 @@ cd /tmp
 wget https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${version}/AlephOne-${version}.tar.bz2 || exit 1
 
 status "Unzipping..."
-rm -f AlephOne-${version}
+rm -rf AlephOne-${version}
 tar xjvf AlephOne-${version}.tar.bz2 || error "Unable to decompress source code"
 rm -f AlephOne-*.tar.bz2
 status_green "Done"
