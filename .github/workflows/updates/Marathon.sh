@@ -9,6 +9,9 @@ all_url[3]="https://github.com/Aleph-One-Marathon/alephone/releases/download/rel
 
 # custom updater for checking multiple URLs and one version
 
+# echo the versions
+status "The latest online version is:  $webVer"
+
 version_number=""
 unset pi_apps_ver
 
