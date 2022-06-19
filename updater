@@ -344,14 +344,14 @@ $line"$'\n'
 ${mimeicon}
 $file ($mimetype)
 file:$file
-No description"$'\n'
+"$'\n'
     
   done
 
   # add special entry to list for compressed app updates
   if [ ! -z "$compressed_update" ];then
     LIST+="TRUE
-${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/categories/All Apps.png
 Pi-Apps Local App Install/Uninstall Scripts
 compressed_apps
 Applications in your local installation of Pi-Apps that you have not installed yet. This should always remain selected for pi-apps users."$'\n'
