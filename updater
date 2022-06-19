@@ -350,11 +350,20 @@ file:$file
 
   # add special entry to list for compressed app updates
   if [ ! -z "$compressed_update" ];then
+    # display all apps to be updated if less than 11 in number (-lt 12 lines due to the trailing newline)
+    if [[ $(wc -l <<< "$compressed_update") -lt 12 ]]; then
     LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
-Pi-Apps Local App Install/Uninstall Scripts
+Unused apps
 compressed_apps
-Applications in your local installation of Pi-Apps that you have not installed yet. This should always remain selected for pi-apps users."$'\n'
+Applications in your local installation of Pi-Apps that you have not installed yet $(echo ${compressed_update} | sed 's/app:/, /g')"$'\n'
+    else
+      LIST+="TRUE
+${DIRECTORY}/icons/categories/All Apps.png
+Unused apps
+compressed_apps
+Applications in your local installation of Pi-Apps that you have not installed yet."$'\n'
+    fi
   fi
 
   # remove trailing newline
