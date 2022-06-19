@@ -305,16 +305,20 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   fi
   
   for app in $updatable_apps ;do #generate a yad list for every updatable app
+    # get app tooltip
+    read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
     if [[ ! -d "${DIRECTORY}/apps/${app}" ]]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
-app:$app"$'\n'
+app:$app
+$line"$'\n'
     elif will_reinstall "$app"; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (app$(echo ', <b>will be reinstalled</b>'))
-app:$app"$'\n'
+app:$app
+$line"$'\n'
     else # app is not new or getting re-installed, add to compressed update list
       compressed_update+=$'\n'"app:${app}"
     fi
@@ -339,7 +343,8 @@ app:$app"$'\n'
     LIST+="TRUE
 ${mimeicon}
 $file ($mimetype)
-file:$file"$'\n'
+file:$file
+No description"$'\n'
     
   done
 
@@ -348,7 +353,8 @@ file:$file"$'\n'
     LIST+="TRUE
 ${DIRECTORY}/icons/none-24.png
 Pi-Apps Local App Install/Uninstall Scripts
-compressed_apps"$'\n'
+compressed_apps
+Applications in your local installation of Pi-Apps that you have not installed yet. This should always remain selected for pi-apps users."$'\n'
   fi
 
   # remove trailing newline
@@ -364,7 +370,7 @@ compressed_apps"$'\n'
     --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
     --list --checklist --separator='\n' --print-column=4 --no-headers \
     --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
-    --column=:CHK --column=:IMG --column=Name --column=ID:HD \
+    --column=:CHK --column=:IMG --column=Name --column=ID:HD --column=tip:HD --tooltip-column=5 \
     --button='Cancel'!"${DIRECTORY}/icons/exit.png"!"Close without updating anything":1 \
     --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
     "${args[@]}")" || exit 1
