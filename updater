@@ -315,8 +315,8 @@ app:$app"$'\n'
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (app$(echo ', <b>will be reinstalled</b>'))
 app:$app"$'\n'
-    else # app is not new or getting re-installed, so always update the local files without prompting the user
-      automated_update+=$'\n'"app:${app}"
+    else # app is not new or getting re-installed, add to compressed update list
+      compressed_update+=$'\n'"app:${app}"
     fi
   done
   
@@ -343,12 +343,12 @@ file:$file"$'\n'
     
   done
 
-  # add special entry to list for automated app updates
-  if [ ! -z "$automated_update" ];then
+  # add special entry to list for compressed app updates
+  if [ ! -z "$compressed_update" ];then
     LIST+="TRUE
 ${DIRECTORY}/icons/none-24.png
 Pi-Apps Local App Install/Uninstall Scripts
-automated_apps"$'\n'
+compressed_apps"$'\n'
   fi
 
   # remove trailing newline
@@ -369,9 +369,9 @@ automated_apps"$'\n'
     --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
     "${args[@]}")" || exit 1
 
-  # add automated_update apps to output
-  if echo "$output" | grep -q '^automated_apps' ;then
-    output+=$'\n'"${automated_update}"
+  # add compressed_update apps to output
+  if echo "$output" | grep -q '^compressed_apps' ;then
+    output+=$'\n'"${compressed_update}"
   fi
   
   #remove empty newlines from output
