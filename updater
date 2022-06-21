@@ -393,7 +393,7 @@ update_app() { #first word is app name
   
   if [ "$installback" == 'yes' ];then
     #install the app again
-    "${DIRECTORY}/manage" install "$app"
+    "${DIRECTORY}/manage" install "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
     if [ $? != 0 ]; then
       failed=true
     fi
