@@ -437,8 +437,14 @@ runonce <<"EOF"
   mv -f "${DIRECTORY}/data/status/KeePassX" "${DIRECTORY}/data/status/KeePassXC" 2>/dev/null
 
   #rename 'TeamViewer Host' to 'TeamViewer'
-  rm -rf "${DIRECTORY}/apps/TeamViewer Host"
-  mv -f "${DIRECTORY}/data/status/TeamViewer Host" "${DIRECTORY}/data/status/TeamViewer" 2>/dev/null
+  if [ -f "${DIRECTORY}/data/status/TeamViewer Host" ] && [ $(cat "${DIRECTORY}/data/status/TeamViewer Host") == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/apps/TeamViewer Host" "${DIRECTORY}/apps/TeamViewer Host"
+    mv -f "${DIRECTORY}/data/status/TeamViewer Host" "${DIRECTORY}/data/status/TeamViewer"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/TeamViewer Host"
+  fi
   true
 EOF
 
