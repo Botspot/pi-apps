@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# install teamviewer (host and client)
+install_packages https://download.teamviewer.com/download/linux/teamviewer_arm64.deb || exit 1
+
