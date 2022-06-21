@@ -435,7 +435,10 @@ runonce <<"EOF"
   #rename 'KeePassX' to 'KeePassXC'
   rm -rf "${DIRECTORY}/apps/KeePassX"
   mv -f "${DIRECTORY}/data/status/KeePassX" "${DIRECTORY}/data/status/KeePassXC" 2>/dev/null
-  
+
+  #rename 'TeamViewer Host' to 'TeamViewer'
+  rm -rf "${DIRECTORY}/apps/TeamViewer Host"
+  mv -f "${DIRECTORY}/data/status/TeamViewer Host" "${DIRECTORY}/data/status/TeamViewer" 2>/dev/null
   true
 EOF
 
