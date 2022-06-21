@@ -439,7 +439,7 @@ runonce <<"EOF"
   #rename 'TeamViewer Host' to 'TeamViewer'
   if [ -f "${DIRECTORY}/data/status/TeamViewer Host" ] && [ $(cat "${DIRECTORY}/data/status/TeamViewer Host") == "installed" ]; then
     # installed
-    mv -f "${DIRECTORY}/apps/TeamViewer Host" "${DIRECTORY}/apps/TeamViewer Host"
+    mv -f "${DIRECTORY}/apps/TeamViewer Host" "${DIRECTORY}/apps/TeamViewer"
     mv -f "${DIRECTORY}/data/status/TeamViewer Host" "${DIRECTORY}/data/status/TeamViewer"
   else
     # not installed
