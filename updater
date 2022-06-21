@@ -119,30 +119,7 @@ get_updatable_files() { #sets the updatable_files variable
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
     echo -n "Scanning files... " 1>&2
-    
-    #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
-    local file_list="$(list_files)" || exit 1
-    
-    local updatable_files='' #the variable to be returned
-    local IFS=$'\n'
-    for file in $file_list ;do
-      
-      echo -en "Scanning files... $file\e[0K\r" 1>&2
-      if [ ! -f "${DIRECTORY}/${file}" ];then
-        #file is missing locally - add to updatable_files list
-        updatable_files+=$'\n'"${file}"
-        
-      elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
-        #file is missing in the update folder - local
-        true #do not add to updatable_apps list
-        
-      elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
-        #files don't match - add to updatable_files list
-        updatable_files+=$'\n'"${file}"
-      fi
-    done
-    #remove initial newline character
-    updatable_files="${updatable_files:1}"
+    updatable_files=$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/.github/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")
   fi
   
   #If an updatable file is listed in update-exclusion, remove it from list and save notification text for later.
@@ -165,27 +142,13 @@ get_updatable_apps() { #return a list of updatable apps
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-apps" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
     local updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
-    
-  else #compare each file to the one in the update folder
-    local updatable_apps=''
-    local IFS=$'\n'
-    for app in $(list_apps online)
-    do
-      echo -en "Scanning apps... $app\e[0K\r" 1>&2
-      
-      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        #if app is missing locally, add to updatable list
-        updatable_apps+=$'\n'"${app}"
-        
-      elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
-        #if app-folder contents don't match, add to updatable list
-        updatable_apps+=$'\n'"${app}"
-      fi
-    done
-    updatable_apps="${updatable_apps:1}" #remove initial newline character
+    echo "$updatable_apps"
+  else #compare all apps to the ones in the update folder
+    # requires english locale to be properly enabled and for diff naming convention not to change
+    #diff -rq "${DIRECTORY}/apps" "${DIRECTORY}/update/pi-apps/apps" | sed "\|^Only in ${DIRECTORY}/apps|d" | sed "s;Only in ${DIRECTORY}/update/pi-apps/apps: ;;g" | sed "s;Files ${DIRECTORY}/apps/;;g" | awk -F '/' '{print $1}' | uniq
+    # same output, but with rsync which is much simpler. slightly slower
+    rsync -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/apps/" "${DIRECTORY}/apps/" | awk -F '/' '{print $1}' | uniq
   fi
-  echo -e "Scanning apps... Done\e[0K" 1>&2
-  echo "$updatable_apps"
 }
 
 generate_yad_list() { #input: updatable_apps and updatable_files variables
