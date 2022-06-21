@@ -624,7 +624,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #if app succeeded
   if [ $exitcode == 0 ];then
     
-    #Contribute to app install count
+    #Contribute to app install/uninstall count
     if [ $updating == 0 ];then
       bitly_link "$app" "$action" &
     fi
