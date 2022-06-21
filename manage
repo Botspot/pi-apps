@@ -612,10 +612,8 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   echo
   cd $HOME
   if [[ "$3" == "update" ]]; then
-    updating=1
     script_input="update"
   else
-    updating=0
     script_input=""
   fi
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
@@ -625,7 +623,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   if [ $exitcode == 0 ];then
     
     #Contribute to app install/uninstall count
-    if [ $updating == 0 ];then
+    if [[ "$4" != "no-bitly" ]];then
       bitly_link "$app" "$action" &
     fi
     

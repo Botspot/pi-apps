@@ -375,7 +375,7 @@ update_app() { #first word is app name
     installback=yes
     status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it
-    "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+    "${DIRECTORY}/manage" uninstall "$app" update no-bitly #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
     
     #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
     if [ "$(app_status "$app")" == installed ];then
@@ -393,7 +393,7 @@ update_app() { #first word is app name
   
   if [ "$installback" == 'yes' ];then
     #install the app again
-    "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
+    "${DIRECTORY}/manage" install "$app" update no-bitly #report to the app install script that this is an install for the purpose of updating by passing "update"
     if [ $? != 0 ]; then
       failed=true
     fi
