@@ -54,7 +54,7 @@ if [ -n "$pi_apps_filepath_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32"
     repo_url="$(echo "$armhf_webPackages" | sed 's/dists.*//')"
     if [[ "$pi_apps_filepath_32" = "${repo_url}${armhf_package_path}" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install-32 version for $app_name is current!"
+        status "Pi-Apps install-32 version for $app_name is current!"
     else
         #If version is not current do:
         if validate_url "${repo_url}${armhf_package_path}"; then
@@ -76,7 +76,7 @@ if [ -n "$pi_apps_filepath_64" ]  && [ -a "$DIRECTORY/apps/$app_name/install-64"
     repo_url="$(echo "$arm64_webPackages" | sed 's/dists.*//')"
     if [[ "$pi_apps_filepath_64" = "${repo_url}${arm64_package_path}" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install-64 version for $app_name is current!"
+        status "Pi-Apps install-64 version for $app_name is current!"
     else
         #If version is not current do:
         if validate_url "${repo_url}${arm64_package_path}"; then
@@ -98,7 +98,7 @@ if [ -n "$pi_apps_filepath" ]  && [ -n "$all_webPackages" ] && [ -a "$DIRECTORY/
     repo_url="$(echo "$all_webPackages" | sed 's/dists.*//')"
     if [[ "$pi_apps_filepath" = "${repo_url}${all_package_path}" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install version for $app_name is current!"
+        status "Pi-Apps install version for $app_name is current!"
     else
         #If version is not current do:
         if validate_url "${repo_url}${all_package_path}"; then
@@ -123,7 +123,7 @@ if [ -n "$pi_apps_filepath_32" ] && [ -n "$pi_apps_filepath_64" ] && [ -n "$armh
     repo_url_arm64="$(echo "$arm64_webPackages" | sed 's/dists.*//')"
     if [[ "$pi_apps_filepath_64" = "${repo_url_arm64}${arm64_package_path}" ]] && [[ "$pi_apps_filepath_32" = "${repo_url_armhf}${armhf_package_path}" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install version for $app_name is current!"
+        status "Pi-Apps install version for $app_name is current!"
     else
         if validate_url "${repo_url_armhf}${armhf_package_path}" && validate_url "${repo_url_arm64}${arm64_package_path}"; then
             status_green "Updating pi-apps $app_name install to: ${repo_url_armhf}${armhf_package_path} ${repo_url_arm64}${arm64_package_path}"

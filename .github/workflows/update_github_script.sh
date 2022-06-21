@@ -65,7 +65,7 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
     status "The current version in Pi-Apps install-32 is:  $pi_apps_ver_32"
     if [[ "$pi_apps_ver_32" = "$webVer" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install-32 version for $app_name is current!"
+        status "Pi-Apps install-32 version for $app_name is current!"
     else
         #If version is not current do:
         if validate_url "$armhf_url"; then
@@ -84,7 +84,7 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
     status "The current version in Pi-Apps install-64 is:  $pi_apps_ver_64"
     if [[ "$pi_apps_ver_64" = "$webVer" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install-64 version for $app_name is current!"
+        status "Pi-Apps install-64 version for $app_name is current!"
     else
         if validate_url "$arm64_url"; then
             status_green "Updating pi-apps $app_name install-64 to: $arm64_url"
@@ -102,7 +102,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name
     status "The current version in Pi-Apps install is:  $pi_apps_ver"
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install version for $app_name is current!"
+        status "Pi-Apps install version for $app_name is current!"
     else
         if validate_url "$all_url"; then
             status_green "Updating pi-apps $app_name install to: $all_url"
@@ -120,7 +120,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "
     status "The current version in Pi-Apps install is:  $pi_apps_ver"
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install version for $app_name is current!"
+        status "Pi-Apps install version for $app_name is current!"
     else
         if validate_url "$armhf_url" && validate_url "$arm64_url"; then
             status_green "Updating pi-apps $app_name install to: $armhf_url $arm64_url"

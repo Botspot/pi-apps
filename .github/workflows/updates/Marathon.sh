@@ -26,7 +26,7 @@ if [ -a "$DIRECTORY/apps/$app_name/install" ]; then
     status "The current version in Pi-Apps install is:  $pi_apps_ver"
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
-        status_green "Pi-Apps install version for $app_name is current!"
+        status "Pi-Apps install version for $app_name is current!"
     else
         status=""
         for (( iter=0; iter<${#all_url[@]}; iter++ )); do
