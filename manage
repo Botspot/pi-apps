@@ -592,9 +592,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     done
   fi
   
-  #analytics
-  bitly_link "$app" "$action" &
-  
   #if this app has scripts, determine which script to run
   if [ "$(app_type "$app")" == standard ];then
     if [ "$action" == install ];then
@@ -615,8 +612,10 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   echo
   cd $HOME
   if [[ "$3" == "update" ]]; then
+    updating=1
     script_input="update"
   else
+    updating=0
     script_input=""
   fi
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
@@ -624,6 +623,12 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   #if app succeeded
   if [ $exitcode == 0 ];then
+    
+    #Contribute to app install count
+    if [ $updating == 0 ];then
+      bitly_link "$app" "$action" &
+    fi
+    
     status_green "\n${action^}ed ${app} successfully." | tee -a "$logfile"
     echo "${action}ed" > "${DIRECTORY}/data/status/${app}"
     
