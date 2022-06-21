@@ -1,7 +1,11 @@
 #!/bin/bash
 
-#Remove any qemu packages first to prevent conflicting packages
-apt_lock_wait
-sudo apt purge -y --autoremove 'qemu*' sgabios || true
+if [[ "$(get_codename)" == "buster" ]]; then
+  #Remove any qemu packages first to prevent conflicting packages
+  apt_lock_wait
+  sudo apt purge -y --autoremove 'qemu*' sgabios || true
 
-install_packages https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.1.50/qemu-6.1.50-armhf.deb || exit 1
+  install_packages https://github.com/ryanfortner/qemu-arm-builds/releases/download/6.1.50/qemu-6.1.50-armhf.deb || exit 1
+else
+  install_packages qemu-user qemu-system qemu-system-gui qemu-block-extra qemu-utils || exit 1
+fi
