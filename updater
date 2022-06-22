@@ -541,6 +541,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   list_updates_gui
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "User did not allow anything to be updated."
+    "${DIRECTORY}/updater" set-status
     exit 0
   fi
   
@@ -553,6 +554,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     --image="${DIRECTORY}/icons/logo-64.png" \
     --button="Close!${DIRECTORY}/icons/exit.png":1 \
     --timeout=30
+  "${DIRECTORY}/updater" set-status
   
 elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
   
