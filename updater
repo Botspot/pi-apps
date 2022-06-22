@@ -489,6 +489,16 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
+  #write to updatable-apps file only if something was changed
+  if [ "$updatable_apps" != "$(cat "${DIRECTORY}/data/update-status/updatable-apps")" ];then
+    echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
+  fi
+  
+  #write to updatable-files file only if something was changed
+  if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files")" ];then
+    echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
+  fi
+
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
     exit 0
@@ -541,7 +551,6 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   list_updates_gui
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "User did not allow anything to be updated."
-    "${DIRECTORY}/updater" set-status
     exit 0
   fi
   
