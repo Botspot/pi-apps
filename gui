@@ -317,7 +317,7 @@ generate_logo &
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync'
+  dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils'
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     sudo_popup apt install $dependencies -y -f --no-install-recommends
