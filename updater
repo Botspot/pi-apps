@@ -112,39 +112,42 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
 }
 
 get_updatable_files() { #sets the updatable_files variable
-  
+  local updatable_files
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-files" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
-    local updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
+    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
-    echo -n "Scanning files... " 1>&2
-    
-    #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
-    local file_list="$(list_files)" || exit 1
-    
-    local updatable_files='' #the variable to be returned
-    local IFS=$'\n'
-    for file in $file_list ;do
-      
-      echo -en "Scanning files... $file\e[0K\r" 1>&2
-      if [ ! -f "${DIRECTORY}/${file}" ];then
-        #file is missing locally - add to updatable_files list
-        updatable_files+=$'\n'"${file}"
+    #Use rsync for faster speed, if available
+    if command -v rsync >/dev/null ;then
+      updatable_files=$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/.github/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")
+    fi
+    if [ "$?" != "0" ] || ! command -v rsync >/dev/null ;then
+      #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
+      local file_list="$(list_files)" || exit 1
+
+      updatable_files='' #the variable to be returned
+      local IFS=$'\n'
+      for file in $file_list ;do
         
-      elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
-        #file is missing in the update folder - local
-        true #do not add to updatable_apps list
-        
-      elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
-        #files don't match - add to updatable_files list
-        updatable_files+=$'\n'"${file}"
-      fi
-    done
-    #remove initial newline character
-    updatable_files="${updatable_files:1}"
+        echo -en "Scanning files... $file\e[0K\r" 1>&2
+        if [ ! -f "${DIRECTORY}/${file}" ];then
+          #file is missing locally - add to updatable_files list
+          updatable_files+=$'\n'"${file}"
+          
+        elif [ ! -f "${DIRECTORY}/update/pi-apps/${file}" ];then
+          #file is missing in the update folder - local
+          true #do not add to updatable_apps list
+          
+        elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
+          #files don't match - add to updatable_files list
+          updatable_files+=$'\n'"${file}"
+        fi
+      done
+      #remove initial newline character
+      updatable_files="${updatable_files:1}" 
+    fi
   fi
-  
   #If an updatable file is listed in update-exclusion, remove it from list and save notification text for later.
   for file in $(cat "${DIRECTORY}/data/update-exclusion" | grep "^[^#;]") ;do
     updatable_files="$(echo "$updatable_files" | grep -v "$file")"
@@ -161,28 +164,38 @@ get_updatable_files() { #sets the updatable_files variable
 }
 
 get_updatable_apps() { #return a list of updatable apps
-  
+  local updatable_apps
   if [ "$speed" == fast ] && [ -f "${DIRECTORY}/data/update-status/updatable-apps" ];then
     #speed is set to 'fast' - don't hash anything but rely on past results
-    local updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
-    
-  else #compare each file to the one in the update folder
-    local updatable_apps=''
-    local IFS=$'\n'
-    for app in $(list_apps online)
-    do
-      echo -en "Scanning apps... $app\e[0K\r" 1>&2
-      
-      if [ ! -d "${DIRECTORY}/apps/${app}" ];then
-        #if app is missing locally, add to updatable list
-        updatable_apps+=$'\n'"${app}"
-        
-      elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
-        #if app-folder contents don't match, add to updatable list
-        updatable_apps+=$'\n'"${app}"
-      fi
-    done
-    updatable_apps="${updatable_apps:1}" #remove initial newline character
+    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
+  else #compare all apps to the ones in the update folder
+
+    #Use rsync for faster speed, if available
+    if command -v rsync >/dev/null ;then
+      # requires english locale to be properly enabled and for diff naming convention not to change
+      #diff -rq "${DIRECTORY}/apps" "${DIRECTORY}/update/pi-apps/apps" | sed "\|^Only in ${DIRECTORY}/apps|d" | sed "s;Only in ${DIRECTORY}/update/pi-apps/apps: ;;g" | sed "s;Files ${DIRECTORY}/apps/;;g" | awk -F '/' '{print $1}' | uniq
+      # same output, but with rsync which is much simpler. slightly slower
+      updatable_apps=$(rsync -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/apps/" "${DIRECTORY}/apps/" | awk -F '/' '{print $1}' | uniq; exit ${PIPESTATUS[0]})
+    fi
+
+    if [ "$?" != "0" ] || ! command -v rsync >/dev/null; then
+      updatable_apps=''
+      local IFS=$'\n'
+      for app in $(list_apps online)
+      do
+        echo -en "Scanning apps... $app\e[0K\r" 1>&2
+
+        if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+          #if app is missing locally, add to updatable list
+          updatable_apps+=$'\n'"${app}"
+
+        elif ! diff -r "${DIRECTORY}/apps/${app}" "${DIRECTORY}/update/pi-apps/apps/${app}" -q >/dev/null ;then
+          #if app-folder contents don't match, add to updatable list
+          updatable_apps+=$'\n'"${app}"
+        fi
+      done
+      updatable_apps="${updatable_apps:1}" #remove initial newline character
+    fi
   fi
   echo -e "Scanning apps... Done\e[0K" 1>&2
   echo "$updatable_apps"
@@ -526,6 +539,16 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
+  #write to updatable-apps file only if something was changed
+  if [ "$updatable_apps" != "$(cat "${DIRECTORY}/data/update-status/updatable-apps")" ];then
+    echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
+  fi
+  
+  #write to updatable-files file only if something was changed
+  if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files")" ];then
+    echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
+  fi
+
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
     exit 0
@@ -590,6 +613,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     --image="${DIRECTORY}/icons/logo-64.png" \
     --button="Close!${DIRECTORY}/icons/exit.png":1 \
     --timeout=30
+  "${DIRECTORY}/updater" set-status
   
 elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
   
