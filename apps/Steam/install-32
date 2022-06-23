@@ -1,16 +1,20 @@
 #!/bin/bash
+
 install_packages libappindicator1 libnm0 || exit 1
 
-if dpkg -l steam-devices ;then
+if package_installed steam-devices ; then
   echo "Removing steam-devices package because it conflicts with steam-launcher..."
   sudo apt purge -y steam-devices
 fi
-if dpkg -l steamlink ;then
+
+if package_installed steamlink ; then
   echo "Removing steamlink package because it conflicts with steam-launcher..."
   sudo apt purge -y steamlink
 fi
+
 #fix error: "trying to overwrite '/lib/udev/rules.d/60-steam-input.rules', which is also in package steamlink 1.0.7"
 sudo rm /lib/udev/rules.d/60-steam-input.rules
+
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 echo "Downloading steam.deb"
@@ -26,4 +30,3 @@ mkdir -p ~/.local/share/Steam/config
 wget https://raw.githubusercontent.com/Botspot/Steam-RPi/main/DialogConfig.vdf -O ~/.local/share/Steam/config/DialogConfig.vdf
 
 exit 0
-

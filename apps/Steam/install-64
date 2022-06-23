@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# steam adds i386 dpkg as an architecture during its package install
+# to prevent breaking Ubuntu users installs (no i386 support in the ports repo), replace the default deb ports.ubuntu.com with deb [arch=arm64,armhf] http://ports.ubuntu.com
+
+# create backup of sources.list
+sudo cp /etc/apt/sources.list /tmp/sources.list
+
+# perform the change operation
+# this is the main repo used by ubuntu's images
+sudo sed -i "s;deb http://ports.ubuntu.com/;deb [arch=arm64,armhf] http://ports.ubuntu.com/;g" /etc/apt/sources.list
+
+#add armhf architecture (multiarch)
+if [[ $(dpkg --print-foreign-architectures) == *"armhf"* ]]; then
+  echo "armhf arcitecture already added..."
+else
+  sudo dpkg --add-architecture armhf
+  # perform an apt update to check for errors
+  # if apt update errors, assume that adding the foreign arch caused it and remove it
+  sudo apt update
+  if [[ "$?" != 0 ]]; then
+    sudo dpkg --remove-architecture armhf
+    # restore old sources.list
+    sudo cp /tmp/sources.list /etc/apt/sources.list
+    error "armhf architecture caused apt to error so it has been removed!"
+  fi
+fi
+
+#add i386 architecture (multiarch)
+if [[ $(dpkg --print-foreign-architectures) == *"i386"* ]]; then
+  echo "i386 arcitecture already added..."
+else
+  sudo dpkg --add-architecture i386
+  # perform an apt update to check for errors
+  # if apt update errors, assume that adding the foreign arch caused it and remove it
+  sudo apt update
+  if [[ "$?" != 0 ]]; then
+    sudo dpkg --remove-architecture i386
+    # restore old sources.list
+    sudo cp /tmp/sources.list /etc/apt/sources.list
+    error "i386 architecture caused apt to error so it has been removed!"
+  fi
+fi
+
+# check if any i386 packages are available from the current sources, if not, then add repos
+if apt-cache policy libc6:i386 --quiet=0 2>&1 | grep -q "N: Unable to locate package\|Candidate: (none)" ; then
+
+  # check if upstream-release is available
+  if [ -f /etc/upstream-release/lsb-release ]; then
+    # this is a derivative, get the upstream release info
+    distributor=$(lsb_release -sui)
+    codename=$(lsb_release -suc)
+  else
+    distributor=$(lsb_release -si)
+    codename=$(lsb_release -sc)
+  fi
+
+  if [[ "$distributor" == "Ubuntu" ]]; then
+    echo "deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-backports main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-security main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/steam-ubuntu-x86.list
+  else
+    sudo dpkg --remove-architecture i386
+    error "You are using an unsupported debian based release and do not have i386 packages available. Steam installation will fail so this script will exit now."
+  fi
+
+  # perform an apt update to check for errors
+  # if apt update errors, assume that adding the additional sources.list caused it and remove it
+  sudo apt update
+  if [[ "$?" != 0 ]]; then
+    sudo rm -f /etc/apt/sources.list.d/steam-ubuntu-x86.list
+    sudo dpkg --remove-architecture i386
+    error "/etc/apt/sources.list.d/steam-ubuntu-x86.list caused apt to error so it has been removed!"
+  fi
+fi
+
+install_packages libgl1-mesa-dri:i386 libgl1-mesa-glx:i386 libc6:i386 libnss3:armhf libnm0:armhf libdbus-glib-1-2:armhf libudev1:armhf libnspr4:armhf libgudev-1.0-0:armhf libxtst6:armhf libsm6:armhf libice6:armhf libusb-1.0-0:armhf libnss3 libnm0 libdbus-glib-1-2 libudev1 libnspr4 libgudev-1.0-0 libxtst6 libsm6 libice6 libusb-1.0-0 || exit 1
+
+if package_installed steam-devices ; then
+  echo "Removing steam-devices package because it conflicts with steam-launcher..."
+  sudo apt purge -y steam-devices
+fi
+
+if package_installed steamlink ; then
+  echo "Removing steamlink package because it conflicts with steam-launcher..."
+  sudo apt purge -y steamlink
+fi
+
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
+"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
+
+echo "Downloading steam.deb"
+wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
+
+sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
+
+rm ~/steam.deb
+
+echo "Editing steam script to run on Raspberry Pi..."
+sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1\nexport BOX86_NOGTK=1/' /usr/lib/steam/bin_steam.sh
+
+echo "Creating a Steam config file so it will launch in Small Mode..."
+mkdir -p ~/.local/share/Steam/config
+wget https://raw.githubusercontent.com/Botspot/Steam-RPi/main/DialogConfig.vdf -O ~/.local/share/Steam/config/DialogConfig.vdf
+
+exit 0

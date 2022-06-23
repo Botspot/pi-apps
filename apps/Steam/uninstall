@@ -4,4 +4,5 @@ purge_packages || exit 1
 sudo apt purge -y steam-launcher
 
 sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam ~/Desktop/steam.desktop
+remove_repofile_if_unused "/etc/apt/sources.list.d/steam-ubuntu-x86.list"
 exit 0
