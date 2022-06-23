@@ -119,12 +119,16 @@ get_updatable_files() { #returns a list of updatable files
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
-    echo -n "Scanning files... " 1>&2
+    echo -ne "Scanning files... \r" 1>&2
     
     #Use rsync for faster speed, if available
     if command -v rsync >/dev/null ;then
       updatable_files="$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/.github/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")"
-    else
+      false
+    fi
+    
+    if [ $? != 0 ] || ! command -v rsync >/dev/null ;then
+      
       #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
       local file_list="$(list_files)" || exit 1
       
@@ -179,7 +183,9 @@ get_updatable_apps() { #return a list of updatable apps
       #diff -rq "${DIRECTORY}/apps" "${DIRECTORY}/update/pi-apps/apps" | sed "\|^Only in ${DIRECTORY}/apps|d" | sed "s;Only in ${DIRECTORY}/update/pi-apps/apps: ;;g" | sed "s;Files ${DIRECTORY}/apps/;;g" | awk -F '/' '{print $1}' | uniq
       # same output, but with rsync which is much simpler. slightly slower
       rsync -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/apps/" "${DIRECTORY}/apps/" | awk -F '/' '{print $1}' | uniq
-    else
+    fi
+    
+    if [ ${PIPESTATUS[0]} != 0 ] || ! command -v rsync >/dev/null ;then
       local IFS=$'\n'
       for app in $(list_apps online)
       do
