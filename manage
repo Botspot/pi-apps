@@ -622,8 +622,9 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #if app succeeded
   if [ $exitcode == 0 ];then
     
-    #Contribute to app install/uninstall count
-    if [[ "$4" != "no-bitly" ]];then
+    #Contribute to app install/uninstall count as long as parent processes is NOT updater (during an app-reinstall)
+    #See: https://askubuntu.com/a/1012236
+    if [ $(cat /proc/$PPID/comm) != updater ];then
       bitly_link "$app" "$action" &
     fi
     
