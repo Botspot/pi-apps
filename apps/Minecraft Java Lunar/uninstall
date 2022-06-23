@@ -7,4 +7,8 @@ sudo rm -rf ~/lwjgl2arm32 ~/lwjgl3arm32 ~/lwjgl3arm64 ~/lwjgl2arm64 /opt/jdk/jdk
 echo "Removing Lunar Appimage"
 rm -rf ~/.local/share/applications/Lunar-Client.desktop ~/.local/bin/lunarclient.AppImage
 
+# purge old Minecraft Java dummy deb
+apt_lock_wait
+sudo apt purge -y pi-apps-c6dfb753
+
 purge_packages || exit 1
