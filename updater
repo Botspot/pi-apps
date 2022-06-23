@@ -201,47 +201,6 @@ get_updatable_apps() { #return a list of updatable apps
   echo "$updatable_apps"
 }
 
-generate_yad_list() { #input: updatable_apps and updatable_files variables
-  local IFS=$'\n'
-  
-  #If updatable_apps and updatable_files variables empty, set them to the results of the last update-check
-  if [ -z "$updatable_apps" ] && [ -z "$updatable_files" ];then
-    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
-    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
-  fi
-  
-  for app in $updatable_apps ;do #generate a yad list for every updatable app
-    echo "TRUE
-${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
-$app ($([ ! -d "${DIRECTORY}/apps/${app}" ] && echo 'new ')app$(will_reinstall "$app" && echo ', <b>will be reinstalled</b>'))
-app:$app"
-  
-  done
-  
-  for file in $updatable_files ;do #generate a yad list for every updatable file
-    
-    #determine mimetype of updatable_apps file to display an informative icon in the list
-    if [ "$(file -b --mime-type "${DIRECTORY}/${file}")" == 'text/x-shellscript' ];then
-      #if updatable_apps file in question is a shell script, then display shellscript icon.
-      mimeicon="${DIRECTORY}/icons/shellscript.png"
-      mimetype='script'
-    elif [[ "${DIRECTORY}/${file}" == *.png ]] || [[ "${DIRECTORY}/${file}" == *.svg ]];then
-      mimeicon="${DIRECTORY}/icons/image.png"
-      mimetype='image'
-    else
-      #otherwise display txt icon.
-      mimeicon="${DIRECTORY}/icons/txt.png"
-      mimetype='file'
-    fi
-    
-    echo "TRUE
-${mimeicon}
-$file ($mimetype)
-file:$file"
-    
-  done
-}
-
 list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
     # little helpers for terminal print control and key input
     ESC=$( printf "\033")
@@ -337,8 +296,78 @@ list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
 
 
 list_updates_gui() { #input: updatable_apps and updatable_files variables
-  LIST="$(generate_yad_list)"
-  #echo "List: ${LIST}EOL"
+  local IFS=$'\n'
+  
+  #If updatable_apps and updatable_files variables empty, set them to the results of the last update-check
+  if [ -z "$updatable_apps" ] && [ -z "$updatable_files" ];then
+    updatable_apps="$(cat "${DIRECTORY}/data/update-status/updatable-apps")"
+    updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
+  fi
+  
+  for app in $updatable_apps ;do #generate a yad list for every updatable app
+    # get app tooltip
+    read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
+    if [[ ! -d "${DIRECTORY}/apps/${app}" ]]; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (new app)
+app:$app
+$line"$'\n'
+    elif will_reinstall "$app"; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (app$(echo ', <b>will be reinstalled</b>'))
+app:$app
+$line"$'\n'
+    else # app is not new or getting re-installed, add to compressed update list
+      compressed_update+=$'\n'"app:${app}"
+    fi
+  done
+  
+  for file in $updatable_files ;do #generate a yad list for every updatable file
+    
+    #determine mimetype of updatable_apps file to display an informative icon in the list
+    if [ "$(file -b --mime-type "${DIRECTORY}/${file}")" == 'text/x-shellscript' ];then
+      #if updatable_apps file in question is a shell script, then display shellscript icon.
+      mimeicon="${DIRECTORY}/icons/shellscript.png"
+      mimetype='script'
+    elif [[ "${DIRECTORY}/${file}" == *.png ]] || [[ "${DIRECTORY}/${file}" == *.svg ]];then
+      mimeicon="${DIRECTORY}/icons/image.png"
+      mimetype='image'
+    else
+      #otherwise display txt icon.
+      mimeicon="${DIRECTORY}/icons/txt.png"
+      mimetype='file'
+    fi
+    
+    LIST+="TRUE
+${mimeicon}
+$file ($mimetype)
+file:$file
+"$'\n'
+    
+  done
+
+  # add special entry to list for compressed app updates
+  if [ ! -z "$compressed_update" ];then
+    # display all apps to be updated if less than 11 in number (-lt 12 lines due to the trailing newline)
+    if [[ $(wc -l <<< "$compressed_update") -lt 12 ]]; then
+    LIST+="TRUE
+${DIRECTORY}/icons/categories/All Apps.png
+Unused apps
+compressed_apps
+Applications in your local installation of Pi-Apps that you have not installed yet$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
+    else
+      LIST+="TRUE
+${DIRECTORY}/icons/categories/All Apps.png
+Unused apps
+compressed_apps
+Applications in your local installation of Pi-Apps that you have not installed yet."$'\n'
+    fi
+  fi
+
+  # remove trailing newline
+  LIST="${LIST%$'\n'}"
   
   if [ -z "$LIST" ];then
     status_green "Nothing to update. Nothing to do!"
@@ -350,10 +379,15 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
     --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
     --list --checklist --separator='\n' --print-column=4 --no-headers \
     --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
-    --column=:CHK --column=:IMG --column=Name --column=ID:HD \
+    --column=:CHK --column=:IMG --column=Name --column=ID:HD --column=tip:HD --tooltip-column=5 \
     --button='Cancel'!"${DIRECTORY}/icons/exit.png"!"Close without updating anything":1 \
     --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
     "${args[@]}")" || exit 1
+
+  # add compressed_update apps to output
+  if echo "$output" | grep -q '^compressed_apps' ;then
+    output+=$'\n'"${compressed_update}"
+  fi
   
   #remove empty newlines from output
   output="$(echo "$output" | grep .)"
@@ -657,6 +691,7 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   check_repo
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
+
   
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
