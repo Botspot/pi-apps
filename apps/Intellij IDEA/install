@@ -26,6 +26,11 @@ mv -f "$HOME/fsnotifier-pycharm-rpi/fsnotifier" "$HOME/.config/JetBrains/IdeaIC$
 [ -a "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" ] && echo "$(cat $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties | grep -v idea.filewatcher.executable.path)" > "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties"
 echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/fsnotifier" >> "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties."
 
+if [ $arch == 32 ] && [ ! -f "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/disabled_plugins.txt" ];then
+  # disable android plugin as it takes up too much ram on 32bit to start java
+  # users can re-enable this and disable other plugins at their choice through the GUI within the application
+  echo "org.jetbrains.android" >> "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/disabled_plugins.txt"
+fi
 
 echo "[Desktop Entry]
 Type=Application
