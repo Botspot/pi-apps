@@ -592,9 +592,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     done
   fi
   
-  #analytics
-  bitly_link "$app" "$action" &
-  
   #if this app has scripts, determine which script to run
   if [ "$(app_type "$app")" == standard ];then
     if [ "$action" == install ];then
@@ -614,7 +611,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   status "${action^}ing \e[1m${app}\e[0m\e[96m..." | tee -a "$logfile"
   echo
   cd $HOME
-  if [[ "$3" == "update" ]]; then
+  if [ "$3" == "update" ]; then
     script_input="update"
   else
     script_input=""
@@ -624,6 +621,13 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   
   #if app succeeded
   if [ $exitcode == 0 ];then
+    
+    #Contribute to app install/uninstall count as long as parent processes is NOT updater (during an app-reinstall)
+    #See: https://askubuntu.com/a/1012236
+    if [ "$(cat /proc/$PPID/comm)" != "updater" ] && [ "$3" != "update" ];then
+      bitly_link "$app" "$action" &
+    fi
+    
     status_green "\n${action^}ed ${app} successfully." | tee -a "$logfile"
     echo "${action}ed" > "${DIRECTORY}/data/status/${app}"
     
