@@ -118,8 +118,6 @@ get_updatable_files() { #sets the updatable_files variable
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
     
   else #speed was not set to 'fast', so compare each file to the one in the update folder
-    echo -n "Scanning files... " 1>&2
-
     #Use rsync for faster speed, if available
     if command -v rsync >/dev/null ;then
       updatable_files=$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/.github/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")
