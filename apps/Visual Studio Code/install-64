@@ -1,5 +1,3 @@
 #!/bin/bash
 
-version=1.68.1
-
-install_packages https://update.code.visualstudio.com/${version}/linux-deb-arm64/stable || exit 1
+install_packages https://aka.ms/linux-arm64-deb || exit 1
