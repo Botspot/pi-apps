@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_packages libappindicator1 libnm0 || exit 1
+install_packages libnss3 libnm0 libdbus-glib-1-2 libudev1 libnspr4 libgudev-1.0-0 libxtst6 libsm6 libice6 libusb-1.0-0 || exit 1
 
 if package_installed steam-devices ; then
   echo "Removing steam-devices package because it conflicts with steam-launcher..."
@@ -13,18 +13,37 @@ if package_installed steamlink ; then
 fi
 
 #fix error: "trying to overwrite '/lib/udev/rules.d/60-steam-input.rules', which is also in package steamlink 1.0.7"
-sudo rm /lib/udev/rules.d/60-steam-input.rules
+# sudo rm /lib/udev/rules.d/60-steam-input.rules
 
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
+
 echo "Downloading steam.deb"
 wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
-"${DIRECTORY}/api" apt_lock_wait
-sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
+
+# apt_lock_wait
+# sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
+
+mkdir -p ~/steam || error "Failed to make dir ~/steam" 
+dpkg-deb -X steam.deb ~/steam || error "Failed to extraxt steam.deb"
+cd ~/steam || error "Failed to cd to ~/steam"
+rm -rf ./etc
+sudo mv -r ./lib / || error "Failed to merge steam lib folder to /lib"
+mv ./usr/* ./ -r || error "Failed to move steam /usr folder to ~/steam"
+rm -rf ./usr
+
+sudo echo "#!/bin/bash
+export STEAMOS=1
+export STEAM_RUNTIME=1
+$HOME/steam/bin/steam steam://open/minigameslist" > /usr/local/bin/steam || error "Failed to create steam launch script"
+
+sudo cp ./lib/steam/steam.desktop /usr/share/applications/ || error "Failed to create steam launcher desktop entry"
+
 rm ~/steam.deb
 
-echo "Editing steam script to run on Raspberry Pi..."
-sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+# echo "Editing steam script to run on Raspberry Pi..."
+# sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+
 echo "Creating a Steam config file so it will launch in Small Mode..."
 mkdir -p ~/.local/share/Steam/config
 wget https://raw.githubusercontent.com/Botspot/Steam-RPi/main/DialogConfig.vdf -O ~/.local/share/Steam/config/DialogConfig.vdf
