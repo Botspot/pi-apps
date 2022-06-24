@@ -1,8 +1,9 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo apt purge -y steam-launcher
+# sudo apt purge -y steam-launcher
 
-sudo rm -rf /usr/bin/steam ~/.steam ~/.local/share/Steam /usr/lib/steam /usr/share/applications/steam.desktop /usr/share/doc/steam ~/Desktop/steam.desktop
-remove_repofile_if_unused "/etc/apt/sources.list.d/steam-ubuntu-x86.list"
+sudo rm /lib/udev/rules.d/60-steam-*.rules || error "Failed to remove /lib/udev/rules.d/60-steam-*.rules"
+sudo rm -rf /usr/local/bin/steam ~/.steam ~/.local/share/Steam /usr/share/applications/steam.desktop ~/steam || error "Failed to remove steam files and folders"
+# remove_repofile_if_unused "/etc/apt/sources.list.d/steam-ubuntu-x86.list"
 exit 0
