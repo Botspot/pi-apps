@@ -1548,6 +1548,13 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -qF "freedm : Depends: prboom-plus but it is not going to be installed" <<<"$errors" ;then
+    error_caption+=("The freedm package on your system is causing problems.
+
+Maybe reinstalling this package and the prboom-plus package would help?")
+    error_type="package"
+  fi
+  
   if grep -q "trying to overwrite .*, which is also in package sdl2-image" <<<"$errors" ;then
     error_caption+=("You had some problematic SDL2 packages installed from the Doom 3 app. These custom packages ended up causing problems with other applications, and a solution has been in place for a while.
 
