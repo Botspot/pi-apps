@@ -1548,6 +1548,17 @@ Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
+  if grep -q "trying to overwrite .*, which is also in package sdl2-image" <<<"$errors" ;then
+    error_caption+=("You had some problematic SDL2 packages installed from the Doom 3 app. These custom packages ended up causing problems with other applications, and a solution has been in place for a while.
+
+Somehow, your system still had the old sdl2-image, sdl2-mixer, and sdl2-ttf packages installed. These have been removed, so please try installing your other apps again.")
+    error_type="package"
+    
+    sudo apt -y purge sdl2-image
+    sudo apt -y purge sdl2-mixer
+    sudo apt -y purge sdl2-ttf
+  fi
+  
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
