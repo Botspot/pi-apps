@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version=11.0.0
+version=12.1.0
 install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-10.armhf.deb || exit 1
