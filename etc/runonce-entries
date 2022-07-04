@@ -1,5 +1,21 @@
 #!/bin/bash
 
+#This script contains various dirty fixes to keep Pi-Apps running smoothly as it matures.
+#It repairs mistakes that some apps have made, as well as fixing other system issues. Some apps have been removed or renamed.
+
+#This script uses the 'runonce' function - it avoids running any of these fixes more than once.
+#If a runonce entry is modified, then it will be run once more.
+
+#Set DIRECTORY variable if necessary
+if [ -z "$DIRECTORY" ];then
+  DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
+fi
+
+#Get pi-apps api functions if necessary
+if ! command -v runonce >/dev/null ;then
+  source "${DIRECTORY}/api"
+fi
+
 #generate settings
 runonce <<"EOF"
   if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
@@ -157,7 +173,7 @@ EOF
 
 #Fix PiKiss-GUI messing up folder permissions
 runonce <<"EOF"
-  if [ -d ~/.local/bin ] && [[ "$(stat -c "%U %G" ~/.local/bin)" != "$USER $USER" ]]; then
+  if [ -d ~/.local/bin ] && [ "$(stat -c "%U %G" ~/.local/bin)" != "$USER $USER" ]; then
     sudo_popup chown $USER:$USER ~/.local/bin
   fi
 EOF
