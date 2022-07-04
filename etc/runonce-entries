@@ -177,3 +177,13 @@ runonce <<"EOF"
     sudo_popup chown $USER:$USER ~/.local/bin
   fi
 EOF
+
+#generate settings
+runonce <<"EOF"
+  if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
+    echo "Generating default settings..."
+  fi
+  "${DIRECTORY}/settings" refresh
+EOF
+
+true
