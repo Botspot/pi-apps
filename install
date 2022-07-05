@@ -113,12 +113,6 @@ ${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
 fi
 
-#generate settings
-if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
-  echo "Generating default settings..."
-fi
-"${DIRECTORY}/settings" refresh
-
 #preload app list
 if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
   echo "Preloading app list..."
@@ -126,7 +120,7 @@ fi
 "${DIRECTORY}/preload" yad &>/dev/null
 
 #Run runonce entries
-"${DIRECTORY}/etc/runonce-entries"
+"${DIRECTORY}/etc/runonce-entries" &>/dev/null
 
 echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
 
