@@ -659,6 +659,10 @@ elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable
   
 elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable apps/files to "${DIRECTORY}/data/update-status"
   check_repo
+
+  #runonce entries
+  "${DIRECTORY}/etc/runonce-entries"
+
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
   
@@ -788,13 +792,12 @@ elif [ "$runmode" == cli ];then #return list of updatable apps, and ask the user
     printf "${ESC}[?25l"
     for i in {6..1}; do 
       echo -ne "Updating in: $i\r (Use Ctrl-C to abort) " && sleep 1
-      done
-      printf "${ESC}[?25h"
-
-      echo -e "\n"
+    done
+    printf "${ESC}[?25h"
+    echo -e "\n"
 
     update_now_cli
-       "${DIRECTORY}/updater" set-status 
+    "${DIRECTORY}/updater" set-status 
   else
     status "User did not allow anything to be updated."
     exit 0

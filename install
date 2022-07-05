@@ -125,5 +125,8 @@ if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
 fi
 "${DIRECTORY}/preload" yad &>/dev/null
 
+#Run runonce entries
+"${DIRECTORY}/etc/runonce-entries"
+
 echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
 
