@@ -107,6 +107,17 @@ runonce <<"EOF"
     # not installed
     rm -rf "${DIRECTORY}/apps/TeamViewer Host"
   fi
+
+  #rename 'Minecraft Java' to 'Minecraft Java Lunar'
+  if [ -f "${DIRECTORY}/data/status/Minecraft Java" ] && [ $(cat "${DIRECTORY}/data/status/Minecraft Java") == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/data/status/Minecraft Java" "${DIRECTORY}/data/status/Minecraft Java Lunar"
+    rm -rf "${DIRECTORY}/apps/Minecraft Java Lunar"
+    mv -f "${DIRECTORY}/apps/Minecraft Java" "${DIRECTORY}/apps/Minecraft Java Lunar"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/Minecraft Java"
+  fi
   true
 EOF
 
