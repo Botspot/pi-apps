@@ -1,4 +1,8 @@
 #!/bin/bash
+# purge old Minecraft Java dummy deb
+apt_lock_wait
+sudo apt purge -y pi-apps-c6dfb753
+
 install_packages kmod zip unzip libfuse2 || exit 1
 
 # cleanup any remaing old lunar stuff
