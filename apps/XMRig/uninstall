@@ -1,4 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -f /usr/local/bin/xmrig /usr/local/bin/xmrig-chroot $HOME/xmrig
+sudo rm -f /usr/local/bin/xmrig $HOME/xmrig/
