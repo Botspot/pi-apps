@@ -9,6 +9,14 @@ if ! command -v yad &>/dev/null; then
   error "YAD needs to be installed to run Pi-Apps."
 fi
 
+if [[ $(id -u) == 0 ]]; then
+  echo "Pi-Apps is not designed to be run as root! Please try again as a regular user." | yad --center --window-icon="${DIRECTORY}/icons/logo.png" \
+  --width=700 --height=300 --text-info --title="Error" \
+  --image="${DIRECTORY}/icons/error.png" --image-on-top --fontname=12 \
+  --button='OK'
+  error "Pi-Apps is not designed to be run as root! Please try again as a regular user."
+fi
+
 # set GUI format versioning
 export GUI_FORMAT_VERSION=2
 
