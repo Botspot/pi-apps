@@ -12,6 +12,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.event.pull_request.head.sha }}
       # Runs a set of commands using the runners shell
       - name: chmod all install/install-32/install-64/uninstall to 775
