@@ -15,6 +15,7 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
       # Runs a set of commands using the runners shell
       - name: chmod all install/install-32/install-64/uninstall to 775
         run: |
