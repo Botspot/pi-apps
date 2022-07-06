@@ -18,6 +18,8 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: chmod all install/install-32/install-64/uninstall to 775
         run: |
+          echo "Base ref is $GITHUB_BASE_REF"
+          echo "Head ref is $GITHUB_HEAD_REF"
           cd $GITHUB_WORKSPACE
           chmod 775 ./apps/*/install ./apps/*/install-32 ./apps/*/install-64 ./apps/*/uninstall
 
