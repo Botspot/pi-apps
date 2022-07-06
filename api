@@ -1131,7 +1131,8 @@ get_logfile() { #find the most recent logfile for the $1 app
 
 log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and categorize issue with error_type variable
   #errors="$(cat /dev/stdin)"
-  local errors="$(cat "$1")"
+  local logfile="$1"
+  local errors="$(cat "$logfile")"
   
   #store the user-friendly explanations for each type of error
   local error_caption=()
