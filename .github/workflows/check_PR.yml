@@ -25,12 +25,6 @@ jobs:
       - name: Push changes to repo
         uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
         with:
-
-          author_name: Botspot
-          committer_name: Botspot
-          author_email: 54716352+Botspot@users.noreply.github.com
-          committer_email: 54716352+Botspot@users.noreply.github.com
-          default_author: user_info
           # The message for the commit.
           # Default: 'Commit from GitHub Actions (name of the workflow)'
           message: |
