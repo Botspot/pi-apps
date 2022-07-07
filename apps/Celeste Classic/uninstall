@@ -1,0 +1,4 @@
+#!/bin/bash
+
+purge_packages || exit 1
+sudo rm -rf /usr/local/share/celeste /usr/local/share/applications/celeste.desktop || error "Could not uninstall celeste classic"
