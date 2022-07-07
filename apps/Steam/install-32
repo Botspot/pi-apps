@@ -19,30 +19,30 @@ fi
 
 
 echo "Downloading steam.deb"
+cd /tmp || error "could not move to tmp folder"
 wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
 
-# apt_lock_wait
-# sudo dpkg -i ~/steam.deb || error "dpkg failed to install steam.deb!"
+apt_lock_wait
+sudo dpkg -i /tmp/steam.deb || error "dpkg failed to install steam.deb!"
 
-mkdir -p ~/steam || error "Failed to make dir ~/steam" 
-dpkg-deb -X steam.deb ~/steam || error "Failed to extraxt steam.deb"
-cd ~/steam || error "Failed to cd to ~/steam"
-rm -rf ./etc
-sudo mv -r ./lib / || error "Failed to merge steam lib folder to /lib"
-mv ./usr/* ./ -r || error "Failed to move steam /usr folder to ~/steam"
-rm -rf ./usr
-
-sudo echo "#!/bin/bash
+# if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
+echo '#!/bin/bash
 export STEAMOS=1
 export STEAM_RUNTIME=1
-$HOME/steam/bin/steam steam://open/minigameslist" > /usr/local/bin/steam || error "Failed to create steam launch script"
+/usr/lib/steam/bin_steam.sh steam://open/minigameslist' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
 
-sudo cp ./lib/steam/steam.desktop /usr/share/applications/ || error "Failed to create steam launcher desktop entry"
+# set execution bit
+sudo chmod +x /usr/local/bin/steam
 
-rm ~/steam.deb
+# copy official steam.desktop file to /usr/local and edit it
+# we can't edit the official steam.desktop file since this will get overwritten on a steam update
+# if a matching name .desktop file is found in /usr/local/share/applications it takes priority over /usr/share/applications
+sudo cp /usr/share/applications/steam.desktop /usr/local/share/applications/steam.desktop
+sudo sed -i 's:Exec=/usr/bin/steam:Exec=/usr/local/bin/steam:' /usr/local/share/applications/steam.desktop
 
-# echo "Editing steam script to run on Raspberry Pi..."
-# sudo sed -i 's/set -e/set -e\nexport STEAMOS=1\nexport STEAM_RUNTIME=1/' /usr/lib/steam/bin_steam.sh
+# remove deb
+rm /tmp/steam.deb
+
 
 echo "Creating a Steam config file so it will launch in Small Mode..."
 mkdir -p ~/.local/share/Steam/config
