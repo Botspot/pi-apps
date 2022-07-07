@@ -18,12 +18,8 @@ fi
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
 
-echo "Downloading steam.deb"
-cd /tmp || error "could not move to tmp folder"
-wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Failed to download steam.deb!"
-
-apt_lock_wait
-sudo dpkg -i /tmp/steam.deb || error "dpkg failed to install steam.deb!"
+echo "Installing steam.deb"
+install_package https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
 
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
 echo '#!/bin/bash
