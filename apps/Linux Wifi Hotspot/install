@@ -14,6 +14,11 @@ make || error "Failed to build Linux Wifi Hotspot!"
 status_green "Done!"
 status "Installing Linux Wifi Hotspot..."
 sudo make install || error "Failed to install Linux Wifi Hotspot!"
+# correct service location, on debian we are not supposed to directly write any files to /usr/lib/systemd/system
+sudo mv -f /usr/lib/systemd/system/create_ap.service /lib/systemd/system/create_ap.service
+# remove /usr/lib/systemd/system if empty, older debian/ubuntu versions do not use this location and having it present causes issues with other programs
+[ ! "$(ls -A /usr/lib/systemd/system)" ] && sudo rm -rf /usr/lib/systemd/system
+
 status_green "Done!"
 
 #Raspberry Pi  WiFi module may be disabled by the panel, and if it is, this program will fail. When launching, first unblock wifi.
