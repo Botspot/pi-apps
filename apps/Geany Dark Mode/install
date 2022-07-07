@@ -9,38 +9,44 @@ git_clone --depth 1 https://github.com/geany/geany-themes || exit 1
 
 #copy theme files
 mkdir -p ~/.config/geany/colorschemes
-cp -a ~/geany-themes/colorschemes/. ~/.config/geany/colorschemes || error "Failed to copy colorschemes to $HOME/.config/geany/colorschemes"
+sudo cp -a ~/geany-themes/colorschemes/. /usr/share/geany/colorschemes || error "Failed to copy colorschemes to /usr/share/geany/colorschemes"
+
+#An earlier version of this script saved the colorschemes in ~/.config/geany. Remove those now.
+IFS=$'\n'
+files="$(cd ~/geany-themes/colorschemes ; ls)"
+for file in $files ;do
+  rm -f ~/".config/geany/colorschemes/$file"
+done
+
+#Wait for any geany processes to stop before writing config file
+if pidof geany -q ;then
+  echo -e "\nUnable to change Geany's config file because Geany is running.\nPlease close Geany."
+  
+  while pidof geany -q ;do
+    sleep 1
+    echo -n '.'
+  done
+  echo
+fi
 
 #Make geany use spyder-dark color scheme
-if [ -f ~/.config/geany/geany.conf ] && [ ! -z "$(cat ~/.config/geany/geany.conf)" ];then
+if [ -s ~/.config/geany/geany.conf ];then
   sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
   sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
 else
   echo -e '[geany]\ncolor_scheme=spyder-dark.conf' > ~/.config/geany/geany.conf
 fi
 
-#clean up
-if pidof geany -q; then
-  
-  echo -e "\nThis script was unable to change Geany's config file, because Geany is already running.\nPlease close Geany."
-  
-  while pidof geany -q;do
-    sleep 1
-    echo -n '.'
-  done
-  echo
-  
-  #Make geany use spyder-dark color scheme
-  if [ -f ~/.config/geany/geany.conf ] && [ ! -z "$(cat ~/.config/geany/geany.conf)" ];then
-    sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
-    sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
-  else
-    echo -e '[geany]\ncolor_scheme=spyder-dark.conf' > ~/.config/geany/geany.conf
-  fi
-  
+#Also change root geany.conf too
+if [ -s /root/.config/geany/geany.conf ];then
+  sudo sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' /root/.config/geany/geany.conf
+  sudo sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' /root/.config/geany/geany.conf
+else
+  sudo mkdir -p /root/.config/geany
+  echo -e '[geany]\ncolor_scheme=spyder-dark.conf' | sudo tee /root/.config/geany/geany.conf >/dev/null
 fi
 
 #tell user where to change theme
-status "Added $(ls  ~/geany-themes/colorschemes/ | wc -l) themes.\nYou can change theme by navigate to View → Editor → Change Color Scheme in Geany."
+status "Added $(ls ~/geany-themes/colorschemes/ | wc -l) themes.\nYou can change the theme by navigating to View -> Editor -> Change Color Scheme in Geany."
 
 rm -rf ~/geany-themes
