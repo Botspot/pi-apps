@@ -19,10 +19,10 @@ for file in $files ;do
 done
 
 #Wait for any geany processes to stop before writing config file
-if pidof geany -q ;then
+if pidof geany >/dev/null ;then
   echo -e "\nUnable to change Geany's config file because Geany is running.\nPlease close Geany."
   
-  while pidof geany -q ;do
+  while pidof geany >/dev/null ;do
     sleep 1
     echo -n '.'
   done
