@@ -34,6 +34,7 @@ fi
 echo "Installing steam.deb"
 install_packages https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
 
+sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
 echo '#!/bin/bash
 export STEAMOS=1
