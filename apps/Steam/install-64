@@ -18,11 +18,13 @@ install_packages libnss3:armhf libnm0:armhf libdbus-glib-1-2:armhf libudev1:armh
 
 if package_installed steam-devices ; then
   echo "Removing steam-devices package because it conflicts with steam-launcher..."
+  apt_lock_wait
   sudo apt purge -y steam-devices
 fi
 
 if package_installed steamlink ; then
   echo "Removing steamlink package because it conflicts with steam-launcher..."
+  apt_lock_wait
   sudo apt purge -y steamlink
 fi
 
