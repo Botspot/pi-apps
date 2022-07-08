@@ -32,7 +32,7 @@ fi
 "${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
 
 echo "Installing steam.deb"
-install_package https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
+install_packages https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
 
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
 echo '#!/bin/bash
