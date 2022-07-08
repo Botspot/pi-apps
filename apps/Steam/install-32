@@ -47,4 +47,8 @@ echo "Creating a Steam config file so it will launch in Small Mode..."
 mkdir -p ~/.local/share/Steam/config
 wget https://raw.githubusercontent.com/Botspot/Steam-RPi/main/DialogConfig.vdf -O ~/.local/share/Steam/config/DialogConfig.vdf
 
+if ! echo "$XDG_DATA_DIRS" | grep -q "/usr/local/share" || ! echo "$PATH" | grep -q "/usr/local/bin" ; then
+  warning "YOU NEED TO REBOOT before starting steam. This is because Steam is the first application on your system to be installed into the /usr/local folder."
+fi
+
 exit 0
