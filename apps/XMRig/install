@@ -150,6 +150,8 @@ if true;then
   
   mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
   
+  status "Preparing to compile..."
+  
   #Optimize for specific CPU architecture, if detected. Get full list with 'gcc --target-help -mtune=foo' 
   if lscpu | grep -q Cortex-A72 ;then
     #Host device is using cortex-a72 CPU - this includes Pi4
@@ -178,13 +180,17 @@ if true;then
   #More cmake flags that are specific to xmrig can be found at: https://xmrig.com/docs/miner/cmake-options
   
   #compile
+  status "Compiling..."
   make -j"$(nproc)" || error 'Failed to build XMRig!'
   
   #move binary to /usr/local/bin
-  sudo cp $HOME/xmrig/build/xmrig /usr/local/bin/xmrig || error "Failed to copy 'xmrig' executable to '/usr/local/bin/xmrig'!!"
+  sudo cp -f ./xmrig /usr/local/bin || error "Failed to copy 'xmrig' executable to '/usr/local/bin/xmrig'!!"
   
   #No need to keep the xmrig git repo anymore
+  cd
   rm -rf $HOME/xmrig
+  
+  status_green "xmrig program compiled and installed successfully."
 fi
 
 output=""
@@ -213,9 +219,12 @@ fi
 delay=60 #seconds of inactivity before starting
 
 #stop on exit
-trap 'killall -9 xmrig' EXIT
+trap 'killall -9 xmrig 2>/dev/null' EXIT
 
 sleep 1 #Prevents waiting 60*2 seconds by giving a 1-second grace period for mouse/keyboard action when starting the program
+
+#copy config but enable background process
+sed 's/"background": .*,/"background": true,/' $HOME/.config/xmrig.json > $HOME/.config/xmrig-daemon.json 2>/dev/null
 
 while true;do
   
@@ -225,7 +234,7 @@ while true;do
   done
   
   echo "Running..."
-  xmrig --background "$@" || exit 1
+  xmrig --config=$HOME/.config/xmrig-daemon.json "$@" || exit 1
   
   #Every second, check if user-action was less than 1 second ago, or if audio is playing (stackoverflow.com/a/17404952)
   while true ;do
@@ -244,6 +253,9 @@ while true;do
   killall -w -9 xmrig 2>/dev/null
   echo Done
   
+  #Update main xmrig config file, but disable background process mode
+  sed 's/"background": true,/"background": false,/' $HOME/.config/xmrig-daemon.json > $HOME/.config/xmrig.json 2>/dev/null
+  
 done
 EOF
   #make it executable
@@ -260,6 +272,7 @@ EOF
   
   status 'Running xmrig-daemon now...'
   #Run the xmrig-daemon now
+  killall xmrig-daemon 2>/dev/null
   setsid xmrig-daemon &
   
   sleep 1
