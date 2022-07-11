@@ -28,7 +28,7 @@ sudo mkdir -p /usr/local/bin /usr/local/share/applications
 echo '#!/bin/bash
 export STEAMOS=1
 export STEAM_RUNTIME=1
-/usr/lib/steam/bin_steam.sh steam://open/minigameslist' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
+/usr/lib/steam/bin_steam.sh steam://open/minigameslist "$@"' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
 
 # set execution bit
 sudo chmod +x /usr/local/bin/steam
