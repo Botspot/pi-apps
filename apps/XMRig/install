@@ -117,6 +117,7 @@ function setup_wizard() {
     cat <<EOT | tee $HOME/.config/xmrig.json 1>&2 || error 'Failed to create $HOME/.config/xmrig.json!'
 {
     "autosave": true,
+    "background": null,
     "cpu": true,
     "opencl": false,
     "cuda": false,
@@ -142,8 +143,8 @@ cd
 rm -rf $HOME/xmrig
 
 #Compile xmrig; set to false to skip compilation
-if false;then
-  install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev yad || exit 1
+if true;then
+  install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev yad xprintidle || exit 1
   
   git_clone https://github.com/MoneroOcean/xmrig || error 'Failed to clone repository!'
   
@@ -197,8 +198,77 @@ else #xmrig.json does not exist or is zero size, so run setup wizard
   setup_wizard
 fi
 
+userinput_func "Should XMRig run whenever this device is not being used?" "${default_table[@]}"
+if [ "$output" == "Yes" ]; then
+  echo -e "OK.\nThe new 'xmrig-daemon' command will run xmrig only when no sound is playing and when the mouse/keyboard have been stationary for a while.\n"
+  
+  status -n 'Creating script at /usr/local/bin/xmrig-daemon... '
+  cat << "EOF" | sudo tee /usr/local/bin/xmrig-daemon >/dev/null
+#!/bin/bash
+if [ "$(pgrep xmrig-daemon | grep -v $$ | wc -l)" -gt 1 ]; then
+  echo "Refusing to start another process."
+  exit 0
+fi
+
+delay=60 #seconds of inactivity before starting
+
+#stop on exit
+trap 'killall -9 xmrig' EXIT
+
+sleep 1 #Prevents waiting 60*2 seconds by giving a 1-second grace period for mouse/keyboard action when starting the program
+
+while true;do
+  
+  #wait for idle time to be greater than 1 minute, for no audio to be playing (stackoverflow.com/a/17404952), and for cpu usage to be less than 50%
+  while [ "$(xprintidle)" -lt "$((delay*1000))" ] || grep -rq RUNNING /proc/asound/card*/pcm*/sub*/status || [ "$(top -bn1 | grep "Cpu(s)" | tr '.' ' ' | awk '{print $2}')" -ge 50 ] ;do
+    sleep $delay
+  done
+  
+  echo "Running..."
+  xmrig --background "$@" || exit 1
+  
+  #Every second, check if user-action was less than 1 second ago, or if audio is playing (stackoverflow.com/a/17404952)
+  while true ;do
+    if [ "$(xprintidle)" -lt 1000 ];then
+      echo -n "Stopping xmrig because mouse/keyboard is active... "
+      break
+    elif grep -rq RUNNING /proc/asound/card*/pcm*/sub*/status ;then
+      echo -n "Stopping xmrig because audio is playing... "
+      break
+    fi
+    sleep 1
+  done
+  
+  killall xmrig 2>/dev/null
+  sleep 2
+  killall -w -9 xmrig 2>/dev/null
+  echo Done
+  
+done
+EOF
+  #make it executable
+  sudo chmod +x /usr/local/bin/xmrig-daemon
+
+  cat << EOF | sudo tee /etc/xdg/autostart/xmrig-daemon.desktop >/dev/null
+[Desktop Entry]
+Type=Application
+Name=Run xmrig miner whenever desktop is not in use
+Exec=xmrig-daemon
+EOF
+  
+  status_green 'Done'
+  
+  status 'Running xmrig-daemon now...'
+  #Run the xmrig-daemon now
+  setsid xmrig-daemon &
+  
+  sleep 1
+  echo 'It will run on system startup as well. To disable this, uninstall the XMRig app, or delete /etc/xdg/autostart/xmrig-daemon.desktop'
+fi
+
+
 if [ -s $HOME/.config/xmrig.json ];then
-  status "\nYou can run 'xmrig' in your Terminal to start the miner.\nOtherwize, you can use command-line flags to specify Wallet Address, mining pool, and so forth.\nHave fun!"
+  status "\nSince your configuration is ready to use, you can run 'xmrig' in a terminal to start the miner.\nOtherwize, you can use command-line flags to specify Wallet Address, mining pool, and so forth.\nHave fun!"
 else
   status "\nSince you don't have a configuration yet, you can either create one later at '$HOME/.config/xmrig.json', or run 'xmrig' with command-line flags specify Wallet Address, mining pool, and so forth.\nHave fun!"
 fi
