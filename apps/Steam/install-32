@@ -19,9 +19,11 @@ fi
 
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 
-
 echo "Installing steam.deb"
-install_packages https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
+# install_packages https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
+wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb -qO /tmp/steam.deb || error "Failed to download steam.deb"
+apt_lock_wait
+sudo dpkg -i /tmp/steam.deb || error "Failed to install setam.deb"
 
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
