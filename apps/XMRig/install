@@ -152,15 +152,6 @@ if true;then
   
   status "Preparing to compile..."
   
-  #Optimize for specific CPU architecture, if detected. Get full list with 'gcc --target-help -mtune=foo' 
-  if lscpu | grep -q Cortex-A72 ;then
-    #Host device is using cortex-a72 CPU - this includes Pi4
-    mtune='-mtune=cortex-a72'
-  elif lscpu | grep -q Cortex-A53 ;then
-    #Host device is using cortex-a53 CPU - this includes Pi3
-    mtune='-mtune=cortex-a53'
-  fi
-  
   if [ "$arch" == 32 ];then
     DARM_TARGET=7
   elif [ "$arch" == 64 ];then
@@ -171,12 +162,12 @@ if true;then
   
   #Cmake flags:
   # -O3: enables many performance optimizations at the expense of compilation time. From: https://www.youtube.com/watch?v=4e0fRKHG7Hk
-  # -mtune: tunes the program for current system's detected CPU. From: https://github.com/xmrig/xmrig/issues/446#issuecomment-373450600
-  # -ffast-math: speeds up math and seems to be stable for xmrig.
+  # -mcpu=native: tunes the program for current system's detected CPU. From: https://community.arm.com/arm-community-blogs/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
+  # -ffast-math: speeds up math and seems to be stable for xmrig. From: https://github.com/xmrig/xmrig/issues/446#issuecomment-373450600
   # -funsafe-loop-optimizations: Assume no overflowing loops
   # -DARM_TARGET: selects ARM processor major architecture - either 7 or 8
   
-  cmake .. -O3 -DCMAKE_CXX_FLAGS="$mtune -ffast-math -funsafe-loop-optimizations" -DCMAKE_C_FLAGS="$mtune -ffast-math -funsafe-loop-optimizations" -DARM_TARGET="$DARM_TARGET" || error 'Failed to generate build files!'
+  cmake .. -O3 -DCMAKE_CXX_FLAGS="-mcpu=native -ffast-math -funsafe-loop-optimizations" -DCMAKE_C_FLAGS="-mcpu=native -ffast-math -funsafe-loop-optimizations" -DARM_TARGET="$DARM_TARGET" || error 'Failed to generate build files!'
   #More cmake flags that are specific to xmrig can be found at: https://xmrig.com/docs/miner/cmake-options
   
   #compile
