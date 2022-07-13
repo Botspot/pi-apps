@@ -14,8 +14,6 @@ cd ~/LineRider || error "Could not move to folder"
 
 if [[ $(get_codename) == "buster" ]]; then
   use_version="$version2"
-elif [[ $(get_codename) == "bullseye" ]]; then
-  use_version="$version"
 else
   use_version="$version"
 fi
