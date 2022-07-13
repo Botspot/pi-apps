@@ -1,19 +1,35 @@
 #!/bin/bash
 
-version=2022.5.3
 #Bot automatically updates this when I make a new release.
+version=2022.5.3
+#Buster version
+version2=2022.5.1
 
+status "Installing Depends... "
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel unzip zip || exit 1
+status_green "Done."
 
 mkdir -p ~/LineRider
 cd ~/LineRider || error "Could not move to folder"
 
+if [[ $(get_codename) == "buster" ]]; then
+  use_version="$version2"
+elif [[ $(get_codename) == "bullseye" ]]; then
+  use_version="$version"
+else
+  warning "OS unknown, defaulting to Raspberry PI OS Bullseye install (If you do not have Raspberry Pi OS, ignore this.)"
+  use_version="$version"
+fi
+
 #Download LRA-Community-Edition build from repo
-wget -O linerider.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${version}/LineRider.game.auto-release.${version}-LR.zip || error "Could not download linerider"
+status "Downloading LineRider... "
+wget -O linerider.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${use_version}/LineRider.game.auto-release.${use_version}-LR.zip || error "Could not wget LineRider from GitHub!"
 
 #Install
+status "Unzipping... "
 unzip linerider.zip || error "Could not unzip the files"
 rm linerider.zip
+status_green "Done."
 
 #Add system ffmpeg to expected location
 mkdir -p ~/Documents/LRA/ffmpeg/linux
