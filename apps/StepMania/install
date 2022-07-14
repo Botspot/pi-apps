@@ -86,7 +86,7 @@ EOF
 git apply 0001-patch-upstream-for-ARM.patch || error "Applying patch failed"
 mkdir build && cd build || error "Could not create or enter build directory"
 status "Running cmake"
-cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SDL=yes -DWITH_SYSTEM_GLEW=yes -DWITH_SYSTEM_TOMMATH=yes -DWITH_SYSTEM_MAD=yes -DWITH_SYSTEM_ZLIB=yes -DWITH_SYSTEM_JPEG=yes -DWITH_SYSTEM_PCRE=yes -DWITH_SYSTEM_OGG=yes -DWITH_SYSTEM_FFMPEG=yes -DWITH_FULL_RELEASE=yes -DWITH_CRASH_HANDLER=yes -DWITH_NETWORKING=yes -WITH_MINIMAID=no .. || error "Cmake ended with error"
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SDL=yes -DWITH_SYSTEM_GLEW=yes -DWITH_SYSTEM_TOMMATH=yes -DWITH_SYSTEM_MAD=yes -DWITH_SYSTEM_ZLIB=yes -DWITH_SYSTEM_JPEG=yes -DWITH_SYSTEM_PCRE=yes -DWITH_SYSTEM_OGG=yes -DWITH_SYSTEM_FFMPEG=yes -DWITH_FULL_RELEASE=yes -DWITH_CRASH_HANDLER=no -DWITH_NETWORKING=yes -WITH_MINIMAID=no .. || error "Cmake ended with error"
 
 status "Starting build"
 make -j$(nproc) || "error Failed to build"

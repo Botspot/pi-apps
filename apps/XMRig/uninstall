@@ -1,0 +1,5 @@
+#!/bin/bash
+
+purge_packages || exit 1
+sudo rm -f /usr/local/bin/xmrig /usr/local/bin/xmrig-daemon /etc/xdg/autostart/xmrig-daemon.desktop
+rm -rf $HOME/xmrig

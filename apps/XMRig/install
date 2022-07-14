@@ -1,0 +1,278 @@
+#!/bin/bash
+version=6.18.0
+
+# userinput function to display yad prompts to the user
+function userinput_func {
+  unset uniq_selection
+  height=$(($(echo "$1" | grep -o '\\n' | wc -l) + 8))
+  height_gui=$(echo $(( height * 15 + ${#@} * 20 + 100 )))
+  height_gui_buttons=$(echo $(( height * 15 )))
+  if [ "${#@}" == "2" ];then
+    echo -e "$1" |  yad --fixed --no-escape --undecorated --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
+    --text-info --fontname="@font@ 11" --wrap --width=800 --height=$height_gui --window-icon="$(dirname "$0")/icon-64.png" \
+    --show-uri \
+    --button="$2":0
+    output="$2"
+  elif [ "${#@}" == "3" ];then
+    yad --image "dialog-question" \
+    --borders="20" --height=$height_gui_buttons --center --fixed \
+    --window-icon="$(dirname "$0")/icon-64.png" \
+    --text="$1" \
+    --button="$2":0 \
+    --button="$3":1
+    if [ $? -ne 0 ]; then
+    output="$3"
+    else
+    output="$2"
+    fi
+  else
+    for string in "${@:2}"; do
+    uniq_selection+=(FALSE "$string")
+    done
+    uniq_selection[0]=TRUE
+    output=$(
+    yad --no-escape --undecorated --center \
+      --borders="20" --height=$height_gui\
+      --window-icon="$(dirname "$0")/icon-64.png" \
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --fixed \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="OK":0 \
+      "${uniq_selection[@]}"
+    )
+  fi
+}
+
+default_table=("Yes" "No")
+
+function setup_wizard() {
+  
+  #For the setup wizard window, set initial values. Either these are the default, or derived from the config file.
+  miner_name="${USER^}"
+  wallet_address="42ppvRzPoJhUeTfW4xUNwWGBn36ssqhjFZqwCmqdmXHW6aG5rESJLzE1uHCXyZjgdLPD23Zng3AN6AEWtEBCVjUfDs3DvgV"
+  mining_pool="gulf.moneroocean.stream:10032"
+  tls=false
+  keepalive=false
+  
+  while true;do
+    #tls and keepalive lines are a yes/no format. Make the options list for them.
+    if [ "$tls" == false ];then
+      local tls_options='Disabled!Supported by mining pool'
+    else
+      local tls_options='Supported by mining pool!Disabled'
+    fi
+    
+    if [ "$keepalive" == false ];then
+      local keepalive_options='Disabled!Supported by mining pool'
+    else
+      local keepalive_options='Supported by mining pool!Disabled'
+    fi
+    
+    #One window to choose everything
+    local output
+    output="$(yad --center --no-escape --form --separator='\n' \
+      --title="Create miner config" \
+      --window-icon="$(dirname "$0")/icon-64.png" \
+      --button="Skip this setup":1 \
+      --button=OK:0 \
+      --field="Name your miner" "$miner_name" \
+      --field="Wallet address" "$wallet_address" \
+      --field="Mining pool" "$mining_pool" \
+      --field="SSL/TLS:CB" "$tls_options" \
+      --field="Keepalive packets:CB" "$keepalive_options")"
+    local button=$?
+    
+    if [ $button == 0 ];then
+      miner_name="$(sed -n 1p <<<"$output")"
+      wallet_address="$(sed -n 2p <<<"$output")"
+      mining_pool="$(sed -n 3p <<<"$output")"
+      tls="$(sed -n 4p <<<"$output" | sed 's/Disabled/false/' | sed 's/Supported by mining pool/true/')"
+      keepalive="$(sed -n 5p <<<"$output" | sed 's/Disabled/false/' | sed 's/Supported by mining pool/true/')"
+      
+      if [ -z "$wallet_address" ];then
+        warning "Wallet address cannot be left blank!"
+      elif [ -z "$mining_pool" ];then
+        warning "Mining pool cannot be left blank!"
+      else
+        local save_settings='yes'
+        break
+      fi
+    else
+      local save_settings='no'
+      break
+    fi
+  done
+  
+  if [ "$save_settings" == 'yes' ];then
+    # Save choices to xmrig.json
+    status "Saving to $HOME/.config/xmrig.json"
+    echo "Contents of file:"
+    cat <<EOT | tee $HOME/.config/xmrig.json 1>&2 || error 'Failed to create $HOME/.config/xmrig.json!'
+{
+    "autosave": true,
+    "background": null,
+    "cpu": true,
+    "opencl": false,
+    "cuda": false,
+    "rx": [-1, -1],
+    "pools": [
+        {
+            "url": "${mining_pool}",
+            "user": "${wallet_address}",
+            "rig-id": "${miner_name}",
+            "keepalive": ${keepalive},
+            "tls": ${tls}
+        }
+    ]
+}
+EOT
+  else #User skipped setup wizard
+    echo -e "You chose to not set up a configuration for xmrig."
+  fi
+  
+} # End setup_wizard()
+
+cd
+rm -rf $HOME/xmrig
+
+#Compile xmrig; set to false to skip compilation
+if true;then
+  install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev yad xprintidle || exit 1
+  
+  git_clone https://github.com/MoneroOcean/xmrig || error 'Failed to clone repository!'
+  
+  mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
+  
+  status "Preparing to compile..."
+  
+  if [ "$arch" == 32 ];then
+    DARM_TARGET=7
+  elif [ "$arch" == 64 ];then
+    DARM_TARGET=8
+  else
+    error "Failed to detect OS CPU architecture! Something is very wrong."
+  fi
+  
+  #Cmake flags:
+  # -O3: enables many performance optimizations at the expense of compilation time. From: https://www.youtube.com/watch?v=4e0fRKHG7Hk
+  # -mcpu=native: tunes the program for current system's detected CPU. From: https://community.arm.com/arm-community-blogs/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
+  # -ffast-math: speeds up math and seems to be stable for xmrig. From: https://github.com/xmrig/xmrig/issues/446#issuecomment-373450600
+  # -funsafe-loop-optimizations: Assume no overflowing loops
+  # -DARM_TARGET: selects ARM processor major architecture - either 7 or 8
+  
+  cmake .. -O3 -DCMAKE_CXX_FLAGS="-mcpu=native -ffast-math -funsafe-loop-optimizations" -DCMAKE_C_FLAGS="-mcpu=native -ffast-math -funsafe-loop-optimizations" -DARM_TARGET="$DARM_TARGET" || error 'Failed to generate build files!'
+  #More cmake flags that are specific to xmrig can be found at: https://xmrig.com/docs/miner/cmake-options
+  
+  #compile
+  status "Compiling..."
+  make -j"$(nproc)" || error 'Failed to build XMRig!'
+  
+  #move binary to /usr/local/bin
+  sudo cp -f ./xmrig /usr/local/bin || error "Failed to copy 'xmrig' executable to '/usr/local/bin/xmrig'!!"
+  
+  #No need to keep the xmrig git repo anymore
+  cd
+  rm -rf $HOME/xmrig
+  
+  status_green "xmrig program compiled and installed successfully."
+fi
+
+output=""
+if [ -s $HOME/.config/xmrig.json ];then
+  userinput_func "$HOME/.config/xmrig.json already exists. Do you want to use this configuration?" "${default_table[@]}"
+  if [ "$output" == "No" ]; then
+    setup_wizard #User may decide to 'skip' setup, in which case the pre-existing configuration will still be intact
+  fi
+  
+else #xmrig.json does not exist or is zero size, so run setup wizard
+  setup_wizard
+fi
+
+userinput_func "Should XMRig run whenever this device is not being used?" "${default_table[@]}"
+if [ "$output" == "Yes" ]; then
+  echo -e "OK.\nThe new 'xmrig-daemon' command will run xmrig only when no sound is playing and when the mouse/keyboard have been stationary for a while.\n"
+  
+  status -n 'Creating script at /usr/local/bin/xmrig-daemon... '
+  cat << "EOF" | sudo tee /usr/local/bin/xmrig-daemon >/dev/null
+#!/bin/bash
+if [ "$(pgrep xmrig-daemon | grep -v $$ | wc -l)" -gt 1 ]; then
+  echo "Refusing to start another process."
+  exit 0
+fi
+
+delay=60 #seconds of inactivity before starting
+
+#stop on exit
+trap 'killall -9 xmrig 2>/dev/null' EXIT
+
+sleep 1 #Prevents waiting 60*2 seconds by giving a 1-second grace period for mouse/keyboard action when starting the program
+
+#copy config but enable background process
+sed 's/"background": .*,/"background": true,/' $HOME/.config/xmrig.json > $HOME/.config/xmrig-daemon.json 2>/dev/null
+
+while true;do
+  
+  #wait for idle time to be greater than 1 minute, for no audio to be playing (stackoverflow.com/a/17404952), and for cpu usage to be less than 50%
+  while [ "$(xprintidle)" -lt "$((delay*1000))" ] || grep -rq RUNNING /proc/asound/card*/pcm*/sub*/status || [ "$(top -bn1 | grep "Cpu(s)" | tr '.' ' ' | awk '{print $2}')" -ge 50 ] ;do
+    sleep $delay
+  done
+  
+  echo "Running..."
+  xmrig --config=$HOME/.config/xmrig-daemon.json "$@" || exit 1
+  
+  #Every second, check if user-action was less than 1 second ago, or if audio is playing (stackoverflow.com/a/17404952)
+  while true ;do
+    if [ "$(xprintidle)" -lt 1000 ];then
+      echo -n "Stopping xmrig because mouse/keyboard is active... "
+      break
+    elif grep -rq RUNNING /proc/asound/card*/pcm*/sub*/status ;then
+      echo -n "Stopping xmrig because audio is playing... "
+      break
+    fi
+    sleep 1
+  done
+  
+  killall xmrig 2>/dev/null
+  sleep 2
+  killall -w -9 xmrig 2>/dev/null
+  echo Done
+  
+  #Update main xmrig config file, but disable background process mode
+  sed 's/"background": true,/"background": false,/' $HOME/.config/xmrig-daemon.json > $HOME/.config/xmrig.json 2>/dev/null
+  
+done
+EOF
+  #make it executable
+  sudo chmod +x /usr/local/bin/xmrig-daemon
+
+  cat << EOF | sudo tee /etc/xdg/autostart/xmrig-daemon.desktop >/dev/null
+[Desktop Entry]
+Type=Application
+Name=Run xmrig miner whenever desktop is not in use
+Exec=xmrig-daemon
+EOF
+  
+  status_green 'Done'
+  
+  status 'Running xmrig-daemon now...'
+  #Run the xmrig-daemon now
+  killall xmrig-daemon 2>/dev/null
+  setsid xmrig-daemon &
+  
+  sleep 1
+  echo 'It will run on system startup as well. To disable this, uninstall the XMRig app, or delete /etc/xdg/autostart/xmrig-daemon.desktop'
+fi
+
+
+if [ -s $HOME/.config/xmrig.json ];then
+  status "\nSince your configuration is ready to use, you can run 'xmrig' in a terminal to start the miner.\nOtherwize, you can use command-line flags to specify Wallet Address, mining pool, and so forth.\nHave fun!"
+else
+  status "\nSince you don't have a configuration yet, you can either create one later at '$HOME/.config/xmrig.json', or run 'xmrig' with command-line flags specify Wallet Address, mining pool, and so forth.\nHave fun!"
+fi
