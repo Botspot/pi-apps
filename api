@@ -289,6 +289,7 @@ repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
     mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
   done
 }
+
 repo_refresh() { #index the pi-apps local apt repository
   
   [ -d /tmp/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /tmp/pi-apps-local-packages"
@@ -515,7 +516,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     repo_rm
   fi
   
-  status "Package installation complete."
+  status_green "Package installation complete."
 }
 
 purge_packages() { #Allow dependencies of the $app app to be autoremoved.
@@ -1585,9 +1586,14 @@ Check your internet connection and try again.")
   fi
   
   if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
-    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of Internet connection and try again.
+    error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of your Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
+    error_type="internet"
+  fi
+  
+  if grep -qF "fatal: the remote end hung up unexpectedly" <<<"$errors" ;then
+    error_caption+=("The git command encountered this error: "\""fatal: the remote end hung up unexpectedly"\"" Check the stability of your Internet connection and try again.")
     error_type="internet"
   fi
   
