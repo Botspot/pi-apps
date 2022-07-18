@@ -1,0 +1,37 @@
+#!/bin/bash
+
+sudo rm -rf /tmp/flow /opt/flow
+
+wget -O /tmp/flow.zip "https://support.ekioh.com/download/binaries/ekioh_6.2.0_raspberry-pi${arch}-flow_20220630_r37162.zip" || exit 1
+
+unzip /tmp/flow.zip -d /tmp/flow
+rm /tmp/flow.zip
+
+status -n "Storing browser files in /opt... "
+#Move everything out of /tmp/flow/ekioh_.* folder
+mv /tmp/flow/*/* /tmp/flow
+rm -rf /tmp/flow/ekioh*
+
+#copy icon to global location
+cp "$(dirname "$0")/icon-64.png" /tmp/flow
+
+#Move flow to /opt
+sudo mv /tmp/flow /opt
+status_green Done
+
+status "Making terminal command..."
+echo '#!/bin/bash
+/opt/flow/flow "$@"' | sudo tee /usr/local/bin/flow >/dev/null
+sudo chmod +x /usr/local/bin/flow
+
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Flow Browser
+Comment=Fast, multithreaded web browser
+Exec=flow %U
+Icon=/opt/flow/icon-64.png
+Type=Application
+Terminal=false
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml_xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true" | sudo tee /usr/share/applications/flow-browser.desktop >/dev/null
