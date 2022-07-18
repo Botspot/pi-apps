@@ -1263,13 +1263,6 @@ Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device" <<<"$errors";then
-    error_caption+=("Your system has insufficient disk space.
-
-Please free up some space, then try again.")
-    error_type="system"
-  fi
-  
   if grep -qF "Command line option --allow-releaseinfo-change is not understood" <<<"$errors" ;then
     error_caption+=("The Debian Project recently upgraded from Buster to version Bullseye. As a result, all Raspberry Pi OS Buster users will receive APT errors saying the repositories changed from 'stable' to 'oldstable'.
 
@@ -1768,6 +1761,22 @@ See: https://raspberrypi.stackexchange.com/a/8423/107602")
 To repair it, please run this command in a terminal: flatpak repair --user
 
 If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/3479")
+    error_type="system"
+  fi
+  
+  if grep -q "You don't have enough free space in\|No space left on device" <<<"$errors";then
+    error_caption+=("Your system has insufficient disk space.
+
+Please free up some space, then try again.")
+    error_type="system"
+  fi
+  
+  if grep -q ": line .*: $HOME/\.config/autostart/.*\.desktop: Permission denied" <<<"$errors";then
+    error_caption+=("Failed to create an autostart entry because the folder is owned by user $(stat -c "%U" ~/.config/autostart)!
+Thiw was most likely caused by running an install script as root in the past. Don't do that.
+
+You can fix the folder's permissions by running this command in a terminal:
+sudo chown \$USER:\$USER ~/.config/autostart")
     error_type="system"
   fi
   
