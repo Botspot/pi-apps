@@ -11,6 +11,3 @@ sudo rm -rf /usr/share/pixmaps/wihotspot.png /usr/share/icons/hicolor/48x48/apps
 /usr/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy /usr/bin/wihotspot /usr/bin/wihotspot-gui \
 /etc/create_ap.conf /usr/lib/systemd/system/create_ap.service /lib/systemd/system/create_ap.service /usr/share/bash-completion/completions/create_ap \
 /usr/share/doc/create_ap/README.md /usr/bin/create_ap
-
-# remove /usr/lib/systemd/system if empty, older debian/ubuntu versions do not use this location and having it present causes issues with other programs
-[ ! "$(ls -A /usr/lib/systemd/system)" ] && sudo rm -rf /usr/lib/systemd/system
