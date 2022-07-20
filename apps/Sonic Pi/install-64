@@ -9,8 +9,7 @@ min="$(awk -F. '{print $2}' <<<"$glibc_ver")"
 
 #only use bullseye deb if glibc is 2.30 or greater
 if [ $maj -eq 2 ] && [ $min -ge 30 ] || [ $maj -gt 2 ];then
-  install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_bullseye.armhf.deb libconfig9 || exit 1
+  install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_bullseye.arm64.deb libconfig9 || exit 1
 else
-  #otherwise, use buster deb
-  install_packages https://sonic-pi.net/files/releases/v3.3.1/sonic-pi_3.3.1_1_armhf.deb libconfig9 || exit 1
+  error "User error: Sonic Pi is not available for 64-bit Debian Buster. Either switch to 32-bit Buster, or upgrade to 64-bit Bullseye."
 fi
