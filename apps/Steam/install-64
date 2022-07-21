@@ -2,13 +2,13 @@
 
 #add armhf architecture (multiarch)
 if [[ $(dpkg --print-foreign-architectures) == *"armhf"* ]]; then
-  echo "armhf arcitecture already added..."
+  echo "armhf architecture already added..."
 else
   sudo dpkg --add-architecture armhf
   # perform an apt update to check for errors
   # if apt update errors, assume that adding the foreign arch caused it and remove it
   sudo apt update
-  if [[ "$?" != 0 ]]; then
+  if [ "$?" != 0 ]; then
     sudo dpkg --remove-architecture armhf
     error "armhf architecture caused apt to error so it has been removed!"
   fi
