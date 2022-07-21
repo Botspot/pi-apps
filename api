@@ -2220,19 +2220,35 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   local IFS=$'\n'
   local opts="$(IFS=$'\n'; echo "$*")"
   for opt in $opts ;do
-    if [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
-      #this opt is a flag
-      if [ "$opt" == '-qO-' ] || [ "$opt" == '-' ] || [[ "$opt" == *'O-' ]];then
-        #writing to stdout, use wget and hide output
-        use=wget
+    
+    #check if this argument to wget begins with '--'
+    if [[ "$opt" == '--'* ]];then
+      if [ "$opt" == '--quiet' ];then
         quiet=1
-      elif [ "$opt" == '-O' ];then
-        true
-      elif [ "$opt" == '-q' ];then
-        quiet=1
-      else #any other wget command-flags
+      else #for any other arguments, fallback to wget
         use=wget
       fi
+      
+    elif [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
+      #this opt is a flag beginning with one '-'
+      
+      #check the value of every letter in this argument
+      local i
+      for i in $(fold -w1 <<<"$opt" | tail -n +2) ;do
+        
+        if [ "$i" == q ];then
+          quiet=1
+        elif [ "$i" == O ];then
+          true
+        elif [ "$i" == - ];then
+          #writing to stdout, use wget and hide output
+          use=wget
+          quiet=1
+        else #any other wget arguments
+          use=wget
+        fi
+      done
+      
     elif [[ "$opt" == *'://'* ]]; then
       #this opt is web address
       url="$opt"
@@ -2240,15 +2256,17 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       #this opt is file output
       if [ -z "$file" ];then
         file="$opt"
-        #if output file is /dev/stdout, enable quiet mode
-        if [ "$file" == /dev/stdout ];then
+        #if output file is /dev/stdout, /dev/null, etc, use wget
+        if [[ "$file" == /dev/* ]];then
+          use=wget
           quiet=1
         fi
       else #file var already populated
         use=wget
       fi
     else
-      #this opt does not begin with '-', contain '://', or begin with '/'. Assume output file specified shorthand
+      #This argument does not begin with '-', contain '://', or begin with '/'.
+      #Assume output file specified shorthand if file-argument is not already set
       if [ -z "$file" ];then
         file="$(pwd)/${opt}"
       else #file var already populated
@@ -2274,7 +2292,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   #now, perform the download using the chosen method
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
-    command wget "$@" --progress=bar:force:noscroll
+    command wget --progress=bar:force:noscroll "$@"
     local exitcode=$?
   elif [ "$use" == aria2c ];then
     
@@ -2293,7 +2311,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       local exitcode=$?
       
     else #run aria2c without quietness and format download-progress output
-      terminal_width="$(tput cols || echo 80)"
+      local terminal_width="$(tput cols || echo 80)"
       
       #run aria2c and reduce its output.
       aria2c "${aria2_flags[@]}" | while read -r line ;do
@@ -2309,13 +2327,13 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
             #hide cursor
             printf "\033[?25l"
             
-            #print the total data only, like: "1.1GiB/1.1GiB"
+            #print the total data only, like: "0.9GiB/1.1GiB"
             statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
             #get the length of statsline
             characters_subtract=${#statsline}
             
             #determine how many characters are available for the progress bar
-            available_width=$(($terminal_width - ${#statsline} + 1))
+            available_width=$(($terminal_width - $characters_subtract))
             #make sure available_width is a positove number (in case bash-variable COLUMNS is empty)
             [ "$available_width" -le 0 ] && available_width=20
             
@@ -2347,13 +2365,21 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   
   #display a "download complete" message
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
+    
     #show cursor
     printf "\033[?25h"
     
-    echo
-    status_green "Done" 1>&2
+    #display "done" message
+    if [ "$use" == aria2c ];then
+      local progress_characters=$(($terminal_width - 5))
+      local statsline="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
+      echo -e "\e[0KDone ${statsline}" #clear and print over previous line
+    else
+      echo
+      status_green "Done" 1>&2
+    fi
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
-    echo -e "\n\e[91mFailed to download: $url\e[0m" 1>&2
+    echo -e "\n\e[91mFailed to download: $url\nPlease review errors above.\e[0m" 1>&2
   fi
   
   return $exitcode
