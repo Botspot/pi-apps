@@ -3,6 +3,8 @@
 #This script contains various dirty fixes to keep Pi-Apps running smoothly as it matures.
 #It repairs mistakes that some apps have made, as well as fixing other system issues. Some apps have been removed or renamed.
 
+#This script is executed by the updater script as well as the main Pi-Apps installation script.
+
 #This script uses the 'runonce' function - it avoids running any of these fixes more than once.
 #If a runonce entry is modified, then it will be run once more.
 
@@ -195,6 +197,17 @@ runonce <<"EOF"
     echo "Generating default settings..."
   fi
   "${DIRECTORY}/settings" refresh
+EOF
+
+#remove old mcpi repositories
+runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
+    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+  fi
+  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ];then
+    sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
+    sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+  fi
 EOF
 
 true
