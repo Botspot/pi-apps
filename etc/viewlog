@@ -13,7 +13,14 @@ echo "$file" > "$DIRECTORY/data/current-viewed-logfile"
 echo "viewlog: Viewing file: $file" 1>&2
 
 if command -v mousepad ;then
-  mousepad "$file" -o window --disable-server &
+  
+  #Mousepad on Bullseye uses DBus and a tabbed interface to combine instances.
+  #Use command-line flags to prevent this, but only if they are available. (Don't break Buster)
+  if mousepad --help | grep -q '\--opening-mode' ;then
+    mousepad "$file" -o window --disable-server &
+  else
+    mousepad "$file"
+  fi
   pid=$!
 elif command -v leafpad ;then
   leafpad "$file" &
