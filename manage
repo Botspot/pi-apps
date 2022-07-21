@@ -447,10 +447,10 @@ $app"
       else
         queue+=$'\n'"$new_lines"
       fi
-      echo "queue is '$queue'"
+      #echo "queue is '$queue'"
       
       for line in $new_lines ;do
-        echo "Received '$line'"
+        #echo "Received '$line'"
         
         #indicate current action in current line of $queue
         queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
@@ -462,7 +462,7 @@ $app"
         action="$(echo "$line" | awk -F';' '{print $1}')"
         app="$(echo "$line" | awk -F';' '{print $2}')"
         
-        echo "Action is $action, app is $app"
+        #echo "Action is $action, app is $app"
         
         "${DIRECTORY}/manage" "$action" "$app"
         exitcode=$?
