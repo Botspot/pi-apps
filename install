@@ -122,5 +122,10 @@ fi
 #Run runonce entries
 "${DIRECTORY}/etc/runonce-entries" &>/dev/null
 
+#Determine message of the day. If announcements file missing or over a day old, download it.
+if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
+  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
+fi
+
 echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
 
