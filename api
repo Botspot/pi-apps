@@ -2410,6 +2410,21 @@ sudo_popup() { #just like sudo on passwordless systems like PiOS, but displays a
     pkexec "$@"
   fi
 }
+
+nproc() { #Reduce the number of compile threads on low-RAM systems
+  #The Pi02 and Pi3A+ have 4 cores but 500MB of RAM. This function reduces the number of threads to use if RAM is low.
+  
+  local free="$(free | grep 'Mem:' | awk '{print $4}')"
+  
+  if [ "$free" -gt $((500*1024)) ];then
+    #Free memory >500MB, use normal number of threads
+    command nproc
+  else
+    #Free memory <500MB, use 1 thread
+    echo 1
+    warning "Your system has less than 500MB of free RAM, so this will compile with only 1 thread."
+  fi
+}
 #end of command interceptors
 
 trap "exit 1" INT
