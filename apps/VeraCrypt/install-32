@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.25.9
+version=                <span class="sub-label">VeraCrypt Setup 1.25.9.exe (22.2 MB)</span>
 
 install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-armhf.deb || exit 1
 
