@@ -10,6 +10,16 @@ sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.
 
 install_packages adb android-sdk-platform-tools-common ffmpeg libsdl2-2.0-0 gcc git pkg-config meson ninja-build libsdl2-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libusb-1.0-0-dev || exit 1
 
+hash -r
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+if [ $(version $(meson --version)) -lt $(version "0.48") ]; then
+  status "Apt meson version is too old to build Scrcpy. Installing up to date meson from pip"
+  install_packages python3 python3-pip || exit 1
+  hash -r
+  sudo -H python3 -m pip install meson || error "Could not install updated meson"
+  hash -r
+fi
+
 #Add user to plugdev group
 status -n "Addung user '$USER' to the 'plugdev' group..."
 sudo usermod -aG plugdev "$USER" || error "Failed to add user '$USER' to the 'plugdev' group!"
