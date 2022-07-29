@@ -635,6 +635,8 @@ session is restarted."
   elif [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] ;then
     sudo rm -rf /usr/share/applications/flatpak-temporary
   fi
+  #Additionally, PiOS Buster had a bug where XDG_DATA_DIRS was missing flatpak's entries due to PiOS mods. Pi-Apps fixes this with a runonce.
+  
   true
 }
 
@@ -2229,18 +2231,24 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
         use=wget
       fi
       
-    elif [[ "$opt" == '-'* ]] || [ "$opt" == '-' ];then
+    elif [ "$opt" == '-' ];then
+      #writing to stdout, use wget and hide output
+      use=wget
+      quiet=1
+    elif [[ "$opt" == '-'* ]];then
       #this opt is a flag beginning with one '-'
       
       #check the value of every letter in this argument
       local i
       for i in $(fold -w1 <<<"$opt" | tail -n +2) ;do
         
+        echo "i is $i" 1>&2
+        
         if [ "$i" == q ];then
           quiet=1
         elif [ "$i" == O ];then
           true
-        elif [ "$i" == - ];then
+        elif [ "$i" == '-' ];then
           #writing to stdout, use wget and hide output
           use=wget
           quiet=1
@@ -2292,9 +2300,13 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   #now, perform the download using the chosen method
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
+    
+    status "using wget"
     command wget --progress=bar:force:noscroll "$@"
     local exitcode=$?
   elif [ "$use" == aria2c ];then
+    
+    status "using aria2c"
     
     #if $file empty, generate it based on url
     if [ -z "$file" ];then
@@ -2347,7 +2359,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
             progress_characters=$(((percent*available_width)/100))
             
             statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
-            echo -ne "\e[0K${statsline}\r\033\e[0m" #clear and print over previous line
+            echo -ne "\e[0K${statsline}\r\033\e[0m" 1>&2 #clear and print over previous line
             
             #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
             #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
@@ -2372,8 +2384,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     #display "done" message
     if [ "$use" == aria2c ];then
       local progress_characters=$(($terminal_width - 5))
-      local statsline="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
-      echo -e "\e[0KDone ${statsline}" #clear and print over previous line
+      echo -e "\e[0KDone \e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m\e[0m" 1>&2 #clear and print over previous line
     else
       echo
       status_green "Done" 1>&2
