@@ -84,7 +84,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
     
     echo "$error_caption" | yad "${yadflags[@]}" --text-info --width=700 --height=300 --title="Error occured when ${action}ing $app" \
       --image="${DIRECTORY}/icons/error.png" --image-on-top \
-      --text="$text" --fontname=12 \
+      --text="$text" --wrap --fontname=12 \
       --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
       "${send_button[@]}" \
       "${close_button[@]}"
