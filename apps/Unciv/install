@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.2.0
+version=4.2.1-itch.io
 
 ### Install dependencies
 install_packages lsb-release wget gpg || error "Failed to install dependencies"
