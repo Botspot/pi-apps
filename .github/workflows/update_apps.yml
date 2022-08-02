@@ -2,9 +2,9 @@ name: Update_Apps
 
 # Controls when the workflow will run
 on:
-  # run at 21:00 UTC every day
+  # run at 00:00 UTC every Wednesday
   schedule:
-     - cron: '0 */6 * * *'
+     - cron: '0 0 * * 3'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
