@@ -164,7 +164,7 @@ case "$__os_id" in
                 if printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
                     status "Skipping OpenJDK PPA, $__os_codename already has openjdk-17 in the default repositories"
                 else
-                    error_user "$__os_codename appears to be too old to run/compile MultiMC5"
+                    error "$__os_codename appears to be too old to run/compile MultiMC5"
                 fi
                 ;;
         esac
