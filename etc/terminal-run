@@ -106,7 +106,7 @@ if [ ! -z "$temp_pid_file" ];then
   attempts=0
   while [ ! -f "$temp_pid_file" ];do
     
-    if [ "$attempts" -gt 5 ];then
+    if [ "$attempts" -gt 10 ];then
       error "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
     fi
     sleep 1
