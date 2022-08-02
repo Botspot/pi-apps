@@ -2,18 +2,7 @@
 # NOTE: This build is NOT a fork BUT it does use a custom native library repo for the arm64/armhf builds, which is necessary as microsoft and the multimc5 devs do not provide arm64/armhf native libraries
 
 # obtain model name
-if [[ -d /system/app/ && -d /system/priv-app ]]; then
-    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-
-elif [[ -f /sys/devices/virtual/dmi/id/product_name ||
-        -f /sys/devices/virtual/dmi/id/product_version ]]; then
-    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
-    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-elif [[ -f /sys/firmware/devicetree/base/model ]]; then
-    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
-elif [[ -f /tmp/sysinfo/model ]]; then
-    model="$(tr -d '\0' < /tmp/sysinfo/model)"
-fi
+get_model
 # Remove dummy OEM info.
 model=${model//To be filled by O.E.M.}
 model=${model//To Be Filled*}
@@ -32,51 +21,29 @@ model=${model//�}
 # adapted/inspired from retropie setup script system.sh https://github.com/RetroPie/RetroPie-Setup/blob/master/scriptmodules/system.sh
 # armbian uses a minimal shell script replacement for lsb_release with basic
 # parameter parsing that requires the arguments split rather than using -sidrc
-mapfile -t os < <(lsb_release -s -i -d -r -c)
-__os_id="${os[0]}"
-__os_desc="${os[1]}"
-__os_release="${os[2]}"
-__os_codename="${os[3]}"
+# set each variable individually since Fedora prints all output to one line
+if [ -f /etc/upstream-release/lsb-release ]; then
+    # This is a Ubuntu Derivative, checking the upstream-release version info
+    __os_id="$(lsb_release -s -i -u)"
+    __os_desc="$(lsb_release -s -d -u)"
+    __os_release="$(lsb_release -s -r -u)"
+    __os_codename="$(lsb_release -s -c -u)"
+else
+    __os_id="$(lsb_release -s -i)"
+    __os_desc="$(lsb_release -s -d)"
+    __os_release="$(lsb_release -s -r)"
+    __os_codename="$(lsb_release -s -c)"
+fi
 #to set $arch variable
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 status "Installing Necessary Dependencies"
 case "$__os_id" in
+    # Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
     Raspbian|Debian)
         case "$__os_codename" in
             bullseye|buster|stretch|jessie)
-                install_packages lsb-release wget apt-transport-https gnupg || error "Failed to install dependencies"
+                install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
                 hash -r
-                status "Adding AdoptOpenJDK repository:"
-
-                echo "- public key -> keyring"
-
-                rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
-                wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key
-                rm -f /tmp/adoptopenjdk-public-key
-
-                echo " - keyring -> GPG key"
-                gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg 
-                rm -f /tmp/adoptopenjdk-keyring.gpg
-
-                echo " - Moving GPG key to /usr/share/keyrings"
-                sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings
-
-                echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
-                echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
-
-                echo " - Installing adoptopenjdk-16-hotspot-jre"
-                #try to install adoptopenjdk java version; if it fails, remove repository to avoid breaking user's system
-                (install_packages adoptopenjdk-16-hotspot-jre)
-                if [ $? != 0 ]; then
-                    anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb"
-                    if [ $? != 0 ]; then
-                        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-                        # safe to remove
-                        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
-                    fi
-                    warning "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed." && warning "It is up to you to download and install a working java 16 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 16"
-                fi
 
                 status "Adding Adoptium repository:"
 
@@ -112,11 +79,11 @@ case "$__os_id" in
                 # remove old java installs to free up space
                 rm -rf ~/MultiMC/install/java
                 # install normal dependencies from raspbian/debian repos
-                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies on $__os_codename"
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
                 ;;
             bookworm|sid)
                 # install normal dependencies from raspbian/debian repos
-                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev || error "Failed to install dependencies on $__os_codename"
+                install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
                 warning "You are running Debian $__os_codename which is an unstable repo, you may not have Java 8 or 17 installed by this script."
                 java_8=""
                 package_available openjdk-8-jre
@@ -138,18 +105,48 @@ case "$__os_id" in
                 ;;
         esac
         ;;
-    LinuxMint|Linuxmint|Ubuntu|[Nn]eon|Pop|Zorin|[eE]lementary|[jJ]ing[Oo][sS])
-        # get the $DISTRIB_RELEASE and $DISTRIB_CODENAME by calling lsb_release
-        # check if upstream-release is available
-        if [ -f /etc/upstream-release/lsb-release ]; then
-            echo "This is a Ubuntu Derivative, checking the upstream-release version info"
-            DISTRIB_CODENAME=$(lsb_release -uc | awk '{print $2}')
-            DISTRIB_RELEASE=$(lsb_release -ur | awk '{print $2}')
-        else
-            DISTRIB_CODENAME=$(lsb_release -c | awk '{print $2}')
-            DISTRIB_RELEASE=$(lsb_release -r | awk '{print $2}')
+    Kali)
+        install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
+        hash -r
+
+        status "Adding Adoptium repository:"
+
+        echo "- public key -> keyring"
+        rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+        wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+        gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+        rm -f /tmp/adoptium-public-key
+
+        echo " - keyring -> GPG key"
+        gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+        rm -f /tmp/adoptium-keyring.gpg
+
+        echo " - Moving GPG key to /usr/share/keyrings"
+        sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+        echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+        echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+        echo " - Installing temurin-8-jdk temurin-17-jdk"
+        #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
+        (install_packages temurin-8-jdk temurin-17-jdk)
+        if [ $? != 0 ]; then
+            anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+            if [ $? != 0 ]; then
+                # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+                # safe to remove
+                sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+            fi
+            warning "Failed to install temurin packages. Adoptium repository has been removed."  && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
         fi
-        case "$DISTRIB_CODENAME" in
+
+        # remove old java installs to free up space
+        rm -rf ~/MultiMC/install/java
+        # install normal dependencies from raspbian/debian repos
+        install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
+        ;;
+    Ubuntu)
+        case "$__os_codename" in
             bionic|focal|groovy)
                 ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep openjdk-r | wc -l)
                 if [[ $ppa_added -eq "1" ]]; then
@@ -164,20 +161,15 @@ case "$__os_id" in
                 ;;
             *)
                 requiredver="18.04"
-                if printf '%s\n' "$requiredver" "$DISTRIB_RELEASE" | sort -CV; then
-                    status "Skipping OpenJDK PPA, $DISTRIB_CODENAME already has openjdk-16 in the default repositories"
+                if printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
+                    status "Skipping OpenJDK PPA, $__os_codename already has openjdk-17 in the default repositories"
                 else
-                    error "$DISTRIB_CODENAME appears to be too old to run/compile MultiMC5"
+                    error_user "$__os_codename appears to be too old to run/compile MultiMC5"
                 fi
                 ;;
         esac
         # install dependencies
-        java_16=""
-        package_available openjdk-16-jre
-        if [[ $? == "0" ]]; then
-            java_16="openjdk-16-jre"
-        fi
-        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre $java_16 qtbase5-dev || error "Failed to install dependencies on $__os_codename"
+        install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
         hash -r
         ;;
     *)
@@ -198,7 +190,7 @@ cd src || error "Could not move to directory"
 git remote set-url origin https://github.com/MultiMC/Launcher.git
 git checkout --recurse-submodules develop || error "Could not checkout develop branch"
 git pull --recurse-submodules || error "Could Not Pull Latest MultiMC Source Code, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error and run this script again."
-git checkout --recurse-submodules 0f41bea58a52503963415d3c0a888c6c3db55a45 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error and run this script again."
+git checkout --recurse-submodules b5e81bbb0d17e551ae4164f9282f0182c6d4edb3 || error "Could Not Checkout MultiMC Source Code commit, verify your ~/MultiMC/src directory hasn't been modified. You can detete the  ~/MultiMC/src folder to attempt to fix this error and run this script again."
 # add secrets files
 mkdir -p secrets
 tee secrets/Secrets.h <<'EOF' >>/dev/null
@@ -285,10 +277,12 @@ mkdir -p  ~/.local/share/icons/MultiMC
 # copy icon to .local folder
 cp "${DIRECTORY}/apps/Minecraft Java MultiMC5/icon-64.png" "$HOME/.local/share/icons/MultiMC/icon-64.png"
 
-# detect if script is running on RPi and if so override MESA GL Version
-if grep -iE 'raspberry' <<< $model > /dev/null; then
-    warning "You are running a Raspberry Pi, note that OpenGL 3.3 is not fully supported but it necessary to run Minecraft 1.17+."
-    warning "Vannilla 1.17.1 and 1.17 have been tested to work but there is no guarantee that future versions and rendering mods will continute to work"
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+# detect if script is running on a system with OpenGL lower than 3.3
+if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
+    warning "You are running a device that is not OpenGL 3.3 compliant or the OpenGL version could not be determined."
+    warning "Adding a MESA_GL_VERSION_OVERRIDE to 3.3"
+    warning "Vannilla up to 1.19.1 has been tested to work on Raspberry PI but there is no guarantee that future Minecraft versions and mods like Sodium/Optifine will continute to work."
     sh -c "cat > ~/.local/share/applications/MultiMC.desktop << _EOF_
 [Desktop Entry]
 Type=Application
