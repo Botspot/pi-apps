@@ -1,0 +1,66 @@
+name: Create_Shlink_Links
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'apps/**'
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  create-links:
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        env:
+          SHLINK_KEY: ${{ secrets.SHLINK_KEY }}
+        run: |
+          # get all available URLs
+          online_shortcodes="$(curl -s -X 'GET' \
+            'https://analytics.pi-apps.io/rest/v2/short-urls' \
+            -H 'accept: application/json' \
+            -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
+          #create links
+          applist="$(ls $GITHUB_WORKSPACE/apps | grep .)"
+          # get local shortcodes
+          local_shortcodes="$(echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-install-"$0}')"
+          local_shortcodes+="$(echo ""; echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-uninstall-"$0}')"
+
+          # add pi-apps function (this is all that is needed so don't source the whole api)
+          list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
+            # for example, the following two inputs will be a match
+            # Audacity
+            # Audacity
+            # while these two will NOT be a match
+            # Multimedia/Audacity
+            # .*/Audacity
+            comm -23 - <(echo "$1" | sort)
+          }
+
+          # needed shortcodes
+          new_shortcodes="$(echo "$local_shortcodes" | list_subtract "$online_shortcodes")"
+          IFS=$'\n'
+          for shortcode in $new_shortcodes ;do
+            curl -X 'POST' \
+              'https://analytics.pi-apps.io/rest/v2/short-urls' \
+              -H 'accept: application/json' \
+              -H "X-Api-Key: $SHLINK_KEY" \
+              -H 'Content-Type: application/json' \
+              -d '{
+              "longUrl": "https://github.com/Botspot/pi-apps",
+              "validateUrl": true,
+              "title": "You are not supposed to be here",
+              "crawlable": false,
+              "forwardQuery": true,
+              "customSlug": "$shortcode",
+              "findIfExists": true
+            }'
+          done
