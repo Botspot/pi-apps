@@ -384,11 +384,11 @@ End of Flatpak functions. App functions below.
 - `read_category_files` - Generates a list of categories; data compiled from the `data/category-overrides` and `etc/categories` files, with added support for unlisted apps.
 - `app_categories` - Format the categories file, then list all apps, as if they were inside folders, based on the categories file. Also lists all apps under special "Installed" and "All Apps" categories.
 
-- `bitly_link` - Increase/decrease the "number of users" a certain app has.
-  - Botspot creates [bitly](https://bitly.com) links for every app: one link for installing it, and one link for uninstalling it.
-  - Bitly will track how many times each link has been clicked.
+- `shlink_link` - Increase/decrease the "number of users" a certain app has.
+  - A GitHub Actions script creates [shlink](https://shlink.io/) links for every app: one link for installing it, and one link for uninstalling it.
+  - The Pi-Apps server running a shlink instance will track how many times each link has been clicked.
   - Assuming the "Enable Analytics" setting was not turned off, this function will "click" one of those links.
-  - Botspot uses a script to upload bitly's statistics to the [pi-apps-analytics](https://github.com/Botspot/pi-apps-analytics) repository.
+  - Botspot and theofficialgman created a script to upload shlink's statistics to the [pi-apps-analytics](https://github.com/Botspot/pi-apps-analytics) repository.
 - `usercount` - returns the number of users an app has, based on the current number in the [pi-apps-analytics](https://github.com/Botspot/pi-apps-analytics) repository.
   To display the number of users for the Arduino app:
   ```
