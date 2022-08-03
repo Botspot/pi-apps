@@ -46,7 +46,7 @@ jobs:
           }
 
           # needed shortcodes
-          new_shortcodes="$(echo "$local_shortcodes" | list_subtract "$online_shortcodes")"
+          new_shortcodes="$(echo "$local_shortcodes" | sort | list_subtract "$(echo "$online_shortcodes" | sort)")"
           IFS=$'\n'
           for shortcode in $new_shortcodes ;do
             curl -X 'POST' \
