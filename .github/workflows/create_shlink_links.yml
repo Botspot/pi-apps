@@ -25,7 +25,7 @@ jobs:
         run: |
           # get all available URLs
           online_shortcodes="$(curl -s -X 'GET' \
-            'https://analytics.pi-apps.io/rest/v2/short-urls' \
+            'https://analytics.pi-apps.io/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
           #create links
@@ -46,7 +46,7 @@ jobs:
           }
 
           # needed shortcodes
-          new_shortcodes="$(echo "$local_shortcodes" | sort | list_subtract "$(echo "$online_shortcodes" | sort)")"
+          new_shortcodes="$(echo "$local_shortcodes" | sort | list_subtract "$online_shortcodes")"
           IFS=$'\n'
           for shortcode in $new_shortcodes ;do
             echo "Creating missing shortcode: $shortcode"
