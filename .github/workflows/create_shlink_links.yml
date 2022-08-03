@@ -60,7 +60,7 @@ jobs:
               "title": "You are not supposed to be here",
               "crawlable": false,
               "forwardQuery": true,
-              "customSlug": "$shortcode",
+              "customSlug": "'$shortcode'",
               "findIfExists": true
             }'
           done
