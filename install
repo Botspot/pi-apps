@@ -28,6 +28,7 @@ dependencies='yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-
 if ! dpkg -s $dependencies &>/dev/null ;then
   sudo apt install $dependencies -y -f --no-install-recommends
 fi
+echo
 
 #remove annoying "YAD icon browser" launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
@@ -36,16 +37,49 @@ sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
   DIRECTORY="$HOME/pi-apps"
-  
-  #if directory does not exist, download it
-  if [ ! -d "$DIRECTORY" ];then
-    echo "Downloading Pi-Apps..."
-    output="$(git clone --depth 1 https://github.com/Botspot/pi-apps "$DIRECTORY" 2>&1)"
-    if [ $? != 0 ] || [ ! -d "$DIRECTORY" ];then
-      error "Pi-Apps download failed!\ngit clone output was: $output"
+fi
+downloaded=0 #track if pi-apps was downloaded this time
+
+#Re-download pi-apps folder if local git repo is over 1 months out of date
+if [ -d "$DIRECTORY" ];then
+  #first compare local git repo's last-commit-time with the current system time (Unix epoch time format)
+  current_git_date="$(cd "$DIRECTORY"; git show -s --format=%ct)"
+  current_local_date="$(date +%s)"
+  if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_date + 30*60*60*24)) ];then
+    
+    #if local git repo's last-commit-time is 3 months older than current system time, now compare the local git repo's last-commit-time with the online repo's modification time to avoid false positives.
+    #This two-tiered approach prevents unnecessary GitHub API calls and speeds up script's execution for normal usage.
+    
+    command -v curl >/dev/null || sudo apt install -y curl
+    upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
+    
+    if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 30*60*60*24)) ]);then
+      rm -rf ~/pi-apps-forced-update
+      
+      echo "Reinstalling Pi-Apps..."
+      downloaded=1
+      output="$(git clone --depth 1 https://github.com/Botspot/pi-apps ~/pi-apps-forced-update 2>&1)"
+      if [ $? != 0 ] || [ ! -d "$DIRECTORY" ];then
+        error "Pi-Apps download failed!\ngit clone output was: $output"
+      fi
+      cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update
+      cp -af "${DIRECTORY}/apps" ~/pi-apps-forced-update
+      rm -rf "$DIRECTORY"
+      mv -f ~/pi-apps-forced-update "$DIRECTORY"
     fi
   fi
-fi #Past this point, DIRECTORY variable populated with valid pi-apps directory
+  
+#if pi-apps folder does not exist, download it
+elif [ ! -d "$DIRECTORY" ];then
+  echo "Downloading Pi-Apps..."
+  downloaded=1
+  output="$(git clone --depth 1 https://github.com/Botspot/pi-apps "$DIRECTORY" 2>&1)"
+  if [ $? != 0 ] || [ ! -d "$DIRECTORY" ];then
+    error "Pi-Apps download failed!\ngit clone output was: $output"
+  fi
+fi
+
+#Past this point, DIRECTORY variable populated with valid pi-apps directory
 
 #if ChromeOS, install lxterminal
 if command -v garcon-terminal-handler >/dev/null ;then
@@ -127,5 +161,8 @@ if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/da
   wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
 fi
 
-echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
-
+if [ $downloaded == 1 ];then
+  echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
+else
+  echo -e "Please note that Pi-Apps has NOT been freshly downloaded, because $DIRECTORY already exists."
+fi
