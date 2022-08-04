@@ -629,7 +629,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     #Contribute to app install/uninstall count as long as parent processes is NOT updater (during an app-reinstall)
     #See: https://askubuntu.com/a/1012236
     if [ "$(cat /proc/$PPID/comm)" != "updater" ] && [ "$3" != "update" ];then
-      bitly_link "$app" "$action" &
+      shlink_link "$app" "$action" &
     fi
     
     status_green "\n${action^}ed ${app} successfully." | tee -a "$logfile"

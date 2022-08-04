@@ -840,21 +840,25 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
   fi
 }
 
-bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+bitly_link() { #compatibility function pointing to shlink_link (incase old manage script is running with new api)
+  shlink_link "$@"
+}
+
+shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
   #This cannot possibly be used to identify you, or any information about you.
-  #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+  #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
   app="$1"
   trigger="$2"
   
-  [ -z "$app" ] && error "bitly_link(): requires an app argument"
-  [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
+  [ -z "$app" ] && error "shlink_link(): requires an app argument"
+  [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
   
   #if the 'Enable Analytics' setting is enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
     #determine the name of the link to "click"
-    bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
+    shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
     #click it
-    curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
+    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
   fi
 }
 
@@ -1088,7 +1092,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
     if [ "$(app_status "$app")" != 'installed' ];then
       echo "Marking $app as installed"
       echo 'installed' > "${DIRECTORY}/data/status/${app}"
-      bitly_link "$app" install &
+      shlink_link "$app" install &
     fi
   #if that package is not installed, check if it even exists on the repositories
   elif package_available "$package" ;then
@@ -1096,7 +1100,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
     if [ "$(app_status "$app")" != 'uninstalled' ];then
       echo "Marking $app as uninstalled"
       rm -f "${DIRECTORY}/data/status/${app}"
-      bitly_link "$app" uninstall &
+      shlink_link "$app" uninstall &
     fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
