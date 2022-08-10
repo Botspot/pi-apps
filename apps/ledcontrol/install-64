@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
+
+sudo wget https://github.com/Strawberry-Software-Industries/ledcontrol/raw/main/build/ledcontrol-arm64 -O /usr/bin/ledcontrol || error 'Failed to download Binary!'
+sudo chmod +x /usr/bin/ledcontrol
