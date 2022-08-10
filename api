@@ -2246,8 +2246,6 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       local i
       for i in $(fold -w1 <<<"$opt" | tail -n +2) ;do
         
-        echo "i is $i" 1>&2
-        
         if [ "$i" == q ];then
           quiet=1
         elif [ "$i" == O ];then
