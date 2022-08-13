@@ -367,7 +367,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$package'"
       
       #add this local package to the pi-apps-local-packages repository
-      repo_add "$package"
+      repo_add "$package" || return 1
       using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
       
       #replace package filename with name of package
@@ -393,7 +393,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
       
       #add this local package to the pi-apps-local-packages repository
-      repo_add "$filename"
+      repo_add "$filename" || return 1
       using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
       
       #replace package url with name of package
@@ -424,7 +424,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   if [ "$using_local_packages" == 1 ];then
     #Initialize the pi-apps-local-packages repository
-    repo_refresh
+    repo_refresh || return 1
     #add this repository to flags to add to apt
     apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
   fi
@@ -473,9 +473,19 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
   if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat ~/$package_name/DEBIAN/control | sort)" ];then
     echo "$package_name is already installed and no changes would be made. Skipping..."
   else
-  
+    
+    #Before apt update, check if local repo still exists
+    if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
+      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+    fi
+    
     #run an apt update
     apt_update "${apt_flags[@]}" || exit 1
+    
+    #After apt update, check again if local repo still exists
+    if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
+      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+    fi
     
     #Build .deb file for the dummy package
     local output="$(dpkg-deb --build ~/$package_name 2>&1)"
@@ -499,7 +509,9 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
       echo "$output"
       
       #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
-      if [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
+      if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
+        echo "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+      elif [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
         cat /tmp/pi-apps-local-packages/Packages
       fi
