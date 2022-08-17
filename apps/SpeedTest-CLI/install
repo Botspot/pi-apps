@@ -1,7 +1,7 @@
 #!/bin/bash
 
-filepath_32="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_armhf.deb"
-filepath_64="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.1.1.28-1.c732eb82cf_arm64.deb"
+filepath_32="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.2.0.84-1.ea6b6773cf_armhf.deb"
+filepath_64="https://packagecloud.io/ookla/speedtest-cli/ubuntu/pool/bionic/main/s/speedtest/speedtest_1.2.0.84-1.ea6b6773cf_arm64.deb"
 
 # remove speedtest-cli package if installed from ubuntu/debian repo as it conflicts with the official ookla package
 $(dpkg --status speedtest-cli &> /dev/null)
