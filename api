@@ -852,27 +852,47 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
   fi
 }
 
-bitly_link() { #compatibility function pointing to shlink_link (incase old manage script is running with new api)
-  shlink_link "$@"
-}
-
-shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+#reverted to use bitly again due to hosting issues
+bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
   #This cannot possibly be used to identify you, or any information about you.
-  #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+  #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
   app="$1"
   trigger="$2"
   
-  [ -z "$app" ] && error "shlink_link(): requires an app argument"
-  [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
+  [ -z "$app" ] && error "bitly_link(): requires an app argument"
+  [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
   
   #if the 'Enable Analytics' setting is enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
     #determine the name of the link to "click"
-    shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+    bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
     #click it
-    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+    curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
   fi
 }
+
+# temporarily disable shlink until a new domain can be made for the pi-apps shlink server
+shlink_link() { #compatibility function pointing to bitly_link (incase old manage script is running with new api)
+  bitly_link "$@"
+}
+
+# shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+#   #This cannot possibly be used to identify you, or any information about you.
+#   #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+#   app="$1"
+#   trigger="$2"
+  
+#   [ -z "$app" ] && error "shlink_link(): requires an app argument"
+#   [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
+  
+#   #if the 'Enable Analytics' setting is enabled
+#   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+#     #determine the name of the link to "click"
+#     shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+#     #click it
+#     curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+#   fi
+# }
 
 usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
   #If clicklist file missing or over a day old, download it.
