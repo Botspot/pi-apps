@@ -75,7 +75,7 @@ add_english() { #add en_US locale for more accurate error
       sudo locale-gen
     fi
   else
-      warning "en_US locale is not available on your system. This may cause bad logging experience."
+    warning "en_US locale is not available on your system. This may cause bad logging experience."
   fi
   export LANG="en_US.UTF-8"
   export LANGUAGE="en_US.UTF-8"
@@ -2315,12 +2315,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   if [ "$use" == wget ];then
     #run the true wget binary with all this function's args
     
-    status "using wget"
     command wget --progress=bar:force:noscroll "$@"
     local exitcode=$?
   elif [ "$use" == aria2c ];then
-    
-    status "using aria2c"
     
     #if $file empty, generate it based on url
     if [ -z "$file" ];then
