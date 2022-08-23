@@ -34,7 +34,7 @@ fi
 echo
 install_packages schroot debootstrap || exit 1
 
-chroot_dependencies="sudo ttf-mscorefonts-installer wget strace file python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd systemd systemd-sysv"
+chroot_dependencies="sudo ttf-mscorefonts-installer wget strace file python3-minimal libcups2 libglib2.0-0 libglu1-mesa libsm6 libxrender1 libfontconfig1 libxext6 libxcb1 libbz2-1.0 xdg-utils libglu1-mesa bsdmainutils locales libxkbcommon-x11-0 libxss1 libxslt1.1 libnspr4 libxcomposite1 libsqlite3-0 libxcursor1 libxi6 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 dbus dbus-user-session dmsetup libapparmor1 libargon2-1 libcap2 libcryptsetup12 libdevmapper1.02.1 libip4tc2 libjson-c5 libkmod2 libpam-systemd libgbm1 systemd systemd-sysv"
 
 #Generate the chroot
 status "\nGenerating chroot... this will take a while."
@@ -76,7 +76,7 @@ sudo mv /tmp/wps-office.deb /opt/wps-office-chroot/wps-office.deb
 
 status "Installing wps package in the chroot..."
 sudo schroot -c wps-office-chroot -- apt install -fy --no-install-recommends /wps-office.deb || error "Failed to install wps-office.deb"
-sudo schroot -c wps-office-chroot -- rm /wps-office.deb
+sudo rm -f /opt/wps-office-chroot/wps-office.deb
 
 #copy mimetype files from guest to host
 sudo cp -f /opt/wps-office-chroot/usr/share/mime/packages/wps-office-wpp.xml /usr/share/mime/packages
