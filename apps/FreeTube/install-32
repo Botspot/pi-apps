@@ -2,5 +2,5 @@
 
 version=0.16.0
 
-install_packages https://apt.raspbian-addons.org/debian/pool/main/f/freetube/freetube_${version}_armhf.deb || exit 1
+install_packages https://osdn.net/projects/raspbian-addons/storage/debian/pool/main/f/freetube/freetube_${version}_armhf.deb || exit 1
 
