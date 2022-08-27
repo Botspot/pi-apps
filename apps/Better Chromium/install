@@ -220,8 +220,8 @@ if [ "$google_sync" == TRUE ];then
 # API keys assigned to Debian by Google for access to their services like sync and gmail.
 
 export GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k"
-export GOOGLE_DEFAULT_CLIENT_ID="811574891467.apps.googleusercontent.com"
-export GOOGLE_DEFAULT_CLIENT_SECRET="kdloedMFGdGla2P1zacGjAQh"
+export GOOGLE_DEFAULT_CLIENT_ID="77185425430.apps.googleusercontent.com"
+export GOOGLE_DEFAULT_CLIENT_SECRET="OTJgUOQcT7lO7GsGZq2G4IlT"
 EOF
 else
   #google sync set to false, so remove the file
