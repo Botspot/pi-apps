@@ -91,15 +91,8 @@ Raspbian | Debian)
       fi
       warning "Failed to install temurin packages. Adoptium repository has been removed." && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
     fi
-
-    # remove old java installs to free up space
-    rm -rf ~/MultiMC/install/java
-    # install normal dependencies from raspbian/debian repos
-    install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
     ;;
   bookworm | sid)
-    # install normal dependencies from raspbian/debian repos
-    install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
     warning "You are running Debian $__os_codename which is an unstable repo, you may not have Java 8 or 17 installed by this script."
     java_8=""
     package_available openjdk-8-jre
@@ -120,6 +113,9 @@ Raspbian | Debian)
     error "Debian version ($__os_codename) is too old, update to debian Jessie or newer"
     ;;
   esac
+
+  # install normal dependencies from raspbian/debian repos
+  install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
   ;;
 Kali)
   install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
@@ -184,12 +180,13 @@ Ubuntu)
   esac
   # install dependencies
   install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre qtbase5-dev || error "Failed to install dependencies"
-  hash -r
   ;;
 *)
   error "$__os_id appears to be an unsupported OS"
   ;;
 esac
+
+hash -r
 
 # make all the folders
 cd "$HOME"
