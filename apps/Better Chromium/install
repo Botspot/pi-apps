@@ -217,7 +217,7 @@ if [ "$google_sync" == TRUE ];then
   echo "Adding GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID, and GOOGLE_DEFAULT_CLIENT_SECRET to ${folder}/apikeys"
   
   cat << EOF | sudo tee "${folder}/apikeys" >/dev/null
-# API keys assigned to Debian by Google for access to their services like sync and gmail.
+# API keys found in chromium source code https://chromium.googlesource.com/experimental/chromium/src/+/b08bf82b0df37d15a822b478e23ce633616ed959/google_apis/google_api_keys.cc
 
 export GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k"
 export GOOGLE_DEFAULT_CLIENT_ID="77185425430.apps.googleusercontent.com"
