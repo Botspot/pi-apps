@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.0.3_1
+version=4.1.0_1
 
 #get version of glibc
 glibc_ver="$(ldd --version | head -n1 | awk '{print $NF}')" # example value: 2.30
