@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #determine if chromium is installed
-if command -v chromium >/dev/null || command -v chromium-browser >/dev/null ;then
+if command -v chromium >/dev/null || command -v chromium-browser >/dev/null || [ -d /snap/chromium ] || [ -d /var/lib/flatpak/app/org.chromium.Chromium ];then
   echo "Chromium is installed. Continuing..."
 else
   error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
@@ -10,19 +10,37 @@ fi
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
   folder=/etc/chromium.d
-elif [ -d /etc/chromium-browser/customizations ];then
-  folder=/etc/chromium-browser/customizations
+  
 elif [ -d /snap/chromium ] && [ -f /snap/bin/chromium ];then
   #if Snap Chromium is installed, make the customizations folder and later make a script to source its contents
-  sudo mkdir -p /etc/chromium.d
+  if [ ! -d /etc/chromium.d ];then
+    sudo mkdir -p /etc/chromium.d
+  fi
   folder=/etc/chromium.d
+  
+elif [ -d /etc/chromium-browser/customizations ];then
+  folder=/etc/chromium-browser/customizations
   
 else
   error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
 fi
 
-#if Snap Chromium is installed, make a script to source the contents of /etc/chromium.d
-if [ -d /snap/chromium ] && [ -f /snap/bin/chromium ];then
+#Fix edge case where both an old version of chromium and a newer version are installed simultaneously
+if [ -d /etc/chromium-browser/customizations ] && [ -d /etc/chromium.d ] && [ ! -L /etc/chromium-browser/customizations ];then
+  #The $folder variable is /etc/chromium.d, but make /etc/chromium-browser/customizations pick up changes in /etc/chromium.d by using a symlink
+  
+  status -n "There are two Chromium customization folders on your system: /etc/chromium.d and /etc/chromium-browser/customizations.\nCreating a symlink to keep both locations synchronized..."
+  
+  #Move any customization files from /etc/chromium-browser/customizations to /etc/chromium.d, without overwriting anything
+  sudo cp -nr /etc/chromium-browser/customizations /etc/chromium.d && \
+  sudo rm -rf /etc/chromium-browser/customizations && \
+  sudo ln -s /etc/chromium.d /etc/chromium-browser/customizations
+  
+  status_green Done
+fi
+
+#if Chromium is installed from Snap or Flatpak, make a script to source the contents of /etc/chromium.d
+if [ -d /snap/chromium ] || [ -d /var/lib/flatpak/app/org.chromium.Chromium ];then
   if [ -f $HOME/.chromium-browser.init ] && [ "$(sha1sum $HOME/.chromium-browser.init | awk '{print $1}')" != 'cead3a7e98ddd3dbfeea285736c89409a7d426cd' ];then
     warning "This script needs to create this file: ~/.chromium-browser.init, but it already exists!"
     read -N 1 -p "Enter Y to replace this file, or N to exit now." answer
@@ -70,6 +88,13 @@ else
   google_sync=FALSE
 fi
 
+#detect if tab previews is currently enabled by this tool
+if [ -f "${folder}/tab_previews" ];then
+  tab_previews=TRUE
+else
+  tab_previews=FALSE
+fi
+
 #detect if various performance improvements are currently enabled by this tool
 if [ -f "${folder}/performance_improvements" ];then
   performance_improvements=TRUE
@@ -93,7 +118,7 @@ fi
 #detect if Widevine can be enabled
 if [ $arch == 32 ];then
   widevine_possible=TRUE
-  widevine_message=(--field="Enable Widevine DRM":CHK "$widevine")
+  widevine_message=(--field="Enable Widevine DRM (for Netflix, Spotify)":CHK "$widevine")
 else
   widevine_possible=FALSE
   widevine_message=()
@@ -113,7 +138,9 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --text="$text" \
   --field="Enable Dark Mode":CHK "$dark_mode" \
   --field="Dark Mode for all websites":CHK "$site_dark_mode" \
+  --field="<a href="\""https://chrome.google.com/webstore/search/neon%20kingdom%20-tabs?_category=themes"\"">Click to see more themes</a>:LBL" '' \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
+  --field="Tab previews":CHK "$tab_previews" \
   --field="Enable Google Sync":CHK "$google_sync" \
   --field="Performance Improvements":CHK "$performance_improvements" \
   --field="Reduce SD card writes":CHK "$reduce_writes" \
@@ -130,15 +157,18 @@ dark_mode="$(sed -n 1p <<<"$output")"
 echo "dark_mode: $dark_mode"
 site_dark_mode="$(sed -n 2p <<<"$output")"
 echo "site_dark_mode: $site_dark_mode"
-ui_scale="$(sed -n 3p <<<"$output")"
+#skip line 3 because that was an empty field from "Click to see more themes" links
+ui_scale="$(sed -n 4p <<<"$output")"
 echo "ui_scale: $ui_scale"
-google_sync="$(sed -n 4p <<<"$output")"
+tab_previews="$(sed -n 5p <<<"$output")"
+echo "tab_previews: $tab_previews"
+google_sync="$(sed -n 6p <<<"$output")"
 echo "google_sync: $google_sync"
-performance_improvements="$(sed -n 5p <<<"$output")"
+performance_improvements="$(sed -n 7p <<<"$output")"
 echo "performance_improvements: $performance_improvements"
-reduce_writes="$(sed -n 6p <<<"$output")"
+reduce_writes="$(sed -n 8p <<<"$output")"
 echo "reduce_writes: $reduce_writes"
-widevine="$(sed -n 7p <<<"$output")"
+widevine="$(sed -n 9p <<<"$output")"
 echo "widevine: $widevine"
 echo
 
@@ -182,7 +212,7 @@ fi
 #dark mode for all websites
 if [ "$site_dark_mode" == TRUE ];then
   #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
-  echo "Adding ---enable-features=WebContentsForceDark:increase_text_contrast/true to ${folder}/site_dark_mode"
+  echo "Adding --enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none/foreground_lightness_threshold/150/background_lightness_threshold/150 to ${folder}/site_dark_mode"
   
   cat << EOF | sudo tee "${folder}/site_dark_mode" >/dev/null
 export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none/foreground_lightness_threshold/150/background_lightness_threshold/150" #WebContentsForceDark:increase_text_contrast/true"
@@ -211,6 +241,22 @@ else
   sudo rm -f "${folder}/ui_scale"
 fi
 
+#Tab previews
+if [ "$tab_previews" == TRUE ];then
+  #I found this flag after experimenting with chrome://flags and chrome://version
+  echo "Adding --enable-features=TabHoverCardImages to ${folder}/tab_previews"
+  
+  cat << EOF | sudo tee "${folder}/tab_previews" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=TabHoverCardImages"
+EOF
+else
+  #tab previews set to false - so remove the file
+  if [ -f "${folder}/tab_previews" ];then
+    status "Removing ${folder}/tab_previews"
+  fi
+  sudo rm -f "${folder}/tab_previews"
+fi
+
 #google_sync
 if [ "$google_sync" == TRUE ];then
   #add a file from official Debian version of the chromium package
@@ -233,9 +279,13 @@ fi
 
 #performance improvements
 if [ "$performance_improvements" == TRUE ];then
-  #various chromium flags from https://forums.raspberrypi.com/viewtopic.php?t=199543
-  #I removed a few because they reduced WebGL performance or stability
-  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --answers-in-suggest --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder --enable-accelerated-video-decode"
+  #various chromium flags from https://forums.raspberrypi.com/viewtopic.php?t=199543 - I removed a few because they reduced stability or WebGL performance
+  #More flags added from https://www.ghacks.net/2017/02/13/how-to-speed-up-the-vivaldi-web-browser/
+  #Some VA-API flags from https://ubuntuhandbook.org/index.php/2022/07/chromium-snap-package-to-finally-get-back-vaapi-hardware-decoding/
+  
+  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder,VaapiVideoEncoder --disable-features=UseChromeOSDirectVideoDecoder --enable-accelerated-video-decode --enable-low-res-tiling --process-per-site"
+  #The --process-per-site flag significantly decreases RAM usage and number of chromium processes, without any noticeable disadvantages.
+  #Not using --enable-low-end-device-mode even though it helps, because scrolling image-heavy pages would crash with "background allocation failure" error.
   
   echo "Adding $flags to ${folder}/performance_improvements"
   cat << EOF | sudo tee "${folder}/performance_improvements" >/dev/null
@@ -257,19 +307,24 @@ if [ "$reduce_writes" == TRUE ];then
   cat << "EOF" | sudo tee "${folder}/reduce_writes" >/dev/null
 #!/bin/bash
 
-rm -rf /dev/shm/chromium
-rm -rf "$HOME/.config/chromium/Default/Service Worker"
-rm -rf "$HOME/.cache/chromium"
-
-mkdir -p /dev/shm/chromium
-
-mkdir -p /dev/shm/chromium/serviceWorker
-rm -rf "$HOME/.config/chromium/Default/Service Worker"
-ln -s /dev/shm/chromium/serviceWorker/ "$HOME/.config/chromium/Default/Service Worker"
-
-mkdir -p /dev/shm/chromium/cache
-rm -rf "$HOME/.cache/chromium"
-ln -s /dev/shm/chromium/cache/ "$HOME/.cache/chromium"
+if [ ! -d /dev/shm ];then
+  echo 'Better chromium "Reduce Writes" script: cannot mount folders to /dev/shm because that folder is missing!'
+else
+  
+  rm -rf /dev/shm/chromium
+  rm -rf "$HOME/.config/chromium/Default/Service Worker"
+  rm -rf "$HOME/.cache/chromium"
+  
+  mkdir -p /dev/shm/chromium
+  
+  mkdir -p /dev/shm/chromium/serviceWorker
+  rm -rf "$HOME/.config/chromium/Default/Service Worker"
+  ln -s /dev/shm/chromium/serviceWorker/ "$HOME/.config/chromium/Default/Service Worker"
+  
+  mkdir -p /dev/shm/chromium/cache
+  rm -rf "$HOME/.cache/chromium"
+  ln -s /dev/shm/chromium/cache/ "$HOME/.cache/chromium"
+fi
 EOF
 else
   if [ -f "${folder}/reduce_writes" ];then

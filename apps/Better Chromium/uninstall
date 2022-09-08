@@ -14,17 +14,20 @@ echo "Removing these files:
   - ${folder}/dark_mode
   - ${folder}/site_dark_mode
   - ${folder}/ui_scale
+  - ${folder}/tab_previews
   - ${folder}/apikeys
   - ${folder}/performance_improvements
   - ${folder}/reduce_writes"
+
 sudo rm -f "${folder}/dark_mode" \
   "${folder}/site_dark_mode" \
   "${folder}/ui_scale" \
+  "${folder}/tab_previews" \
   "${folder}/apikeys" \
   "${folder}/performance_improvements" \
   "${folder}/reduce_writes"
 
-#Remove ~/.chromium-browser.init workaround for Snap Chromium
+#Remove ~/.chromium-browser.init workaround for Snap/Flatpak Chromium
 if [ -f $HOME/.chromium-browser.init ] && [ "$(sha1sum $HOME/.chromium-browser.init | awk '{print $1}')" == 'cead3a7e98ddd3dbfeea285736c89409a7d426cd' ];then
   echo "  - ~/.chromium-browser.init"
   rm $HOME/.chromium-browser.init
