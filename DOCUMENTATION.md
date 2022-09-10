@@ -334,6 +334,7 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
 End of apt functions. Flatpak functions below.
 
 - `flatpak_install` - Install an app from Flatpak. This function simplifies the process for script-writers and improves terminal-output.
+  - This should only be used in install-64 scripts as there is no arm32 support on flathub anymore
   - Example usage:
     ```bash
     flatpak_install librepcb || exit 1
