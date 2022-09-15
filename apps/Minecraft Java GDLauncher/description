@@ -1,0 +1,11 @@
+GDLauncher is simple, yet powerful Minecraft launcher with a strong focus on the user experience. Includes Microsoft, Mojang, and PC GamePass Account support as well as CurseForge Mod and Modpack installation. This is a CUSTOM BUILD of GDLauncher for ARM64 support.
+
+NOTE: The use of performance enhancing mods is highly encouraged, such as optifine with Optifabric and Fabric/Forge or Sodium/Lithium/Phosphor Fabric Mods.
+
+To run: Menu -> Games -> GDLauncher
+To run in a terminal: MESA_GL_VERSION_OVERRIDE=3.3 gdlauncher
+
+A custom meta repo is used for arm64 lwjgl 2.9.4, 3.1.2(fake), 3.1.6, 3.2.1, 3.2.2, and 3.3.1 native libraries. (https://github.com/theofficialgman/piston-meta-arm64)
+This supports all currently released versions of minecraft.
+
+Note: GDLauncher github/discord does support this CUSTOM BUILD, any issues should be directed to the Pi-Apps Discord or Pi-Apps github issues.
