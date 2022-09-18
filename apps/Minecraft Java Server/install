@@ -172,7 +172,7 @@ case "$java_selection" in
     sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
 
     echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
     ;;
   "Java 16")
     # add old adoptopenjdk for java 16
@@ -193,7 +193,7 @@ case "$java_selection" in
     sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
 
     echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
     ;;
   *)
     error "No java version selected, exiting the script"

@@ -18,7 +18,7 @@ grey='\033[0;37m'
 echo "Installing public key and adding packages..."
 sudo modprobe tun || exit 1
 sudo wget -qO /etc/apt/trusted.gpg.d/oxen.gpg https://deb.oxen.io/pub.gpg || error "Failed to download /etc/apt/trusted.gpg.d/oxen.gpg"
-echo "deb https://deb.oxen.io $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/oxen.list
+echo "deb https://deb.oxen.io $(get_codename) main" | sudo tee /etc/apt/sources.list.d/oxen.list
 echo "Installing Lokinet-GUI and resolvconf..."
 install_packages lokinet-gui resolvconf || exit 1
 if [ ! -e /etc/systemd/system/lokinet.service.d/override.conf ]; then

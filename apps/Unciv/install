@@ -35,7 +35,7 @@ echo " - Moving GPG key to /usr/share/keyrings"
 sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
 
 echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
 
 status "Installing temurin-8-jdk"
 #try to install temurin-8-jdk; if it fails, remove repository to avoid breaking user's system
