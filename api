@@ -1364,9 +1364,9 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
 This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing, but you may have deleted other files as well.
 The raspi.list file should contain this:
 
-deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
+deb http://archive.raspberrypi.org/debian/ $(get_codename) main
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main")
+#deb-src http://archive.raspberrypi.org/debian/ $(get_codename) main")
     error_type="system"
   fi
   
@@ -1376,20 +1376,20 @@ deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 32-bit, so the sources.list file should contain this:
-deb http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi
+deb http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-deb-src http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi")
+deb-src http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi")
     elif [ -f /etc/rpi-issue ] && [ "$arch" == 64 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 64-bit, so the sources.list file should contain this:
-deb http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
-deb http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
-deb http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free
+deb http://deb.debian.org/debian $(get_codename) main contrib non-free
+deb http://security.debian.org/debian-security $(get_codename)-security main contrib non-free
+deb http://deb.debian.org/debian $(get_codename)-updates main contrib non-free
 # Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
-#deb-src http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
-#deb-src http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free")
+#deb-src http://deb.debian.org/debian $(get_codename) main contrib non-free
+#deb-src http://security.debian.org/debian-security $(get_codename)-security main contrib non-free
+#deb-src http://deb.debian.org/debian $(get_codename)-updates main contrib non-free")
     else
       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
@@ -2056,12 +2056,27 @@ get_codename() { #get debian/ubuntu codename
     sudo apt-get install -y lsb-release &>/dev/null
   fi
   
-  # check if upstream-release is available
-  if [ -f /etc/upstream-release/lsb-release ]; then
-    # this is a derivative, get the upstream release info
-    lsb_release -suc
+  # first check if lsb_release has an upstream option -u
+  # if not, check if there is an upstream-release file
+  # if not, check if there is a lsb-release.diverted file
+  # if not, assume that this is not a ubuntu derivative
+  if lsb_release -a -u &>/dev/null; then
+    # This is a Ubuntu Derivative, checking the upstream-release version info
+    lsb_release -s -c -u
+  elif [ -f /etc/upstream-release/lsb-release ]; then
+    # ubuntu 22.04+ linux mint no longer includes the lsb_release -u option
+    # add a parser for the /etc/upstream-release/lsb-release file
+    source /etc/upstream-release/lsb-release
+    echo "$DISTRIB_CODENAME"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+  elif [ -f /etc/lsb-release.diverted ]; then
+    # ubuntu 22.04+ popOS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
+    # add a parser for the new /etc/lsb-release.diverted file
+    source /etc/lsb-release.diverted
+    echo "$DISTRIB_CODENAME"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
   else
-    lsb_release -sc
+    lsb_release -s -c
   fi
 }
 
