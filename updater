@@ -18,7 +18,9 @@ if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];t
   return 1
 fi
 
+# runonce-entries is run in the updater, runonce requires that all api functions be available to subprocess (like is done in the gui script)
 #for the will_reinstall() and list_intersect() functions
+set -a #make all functions in the api available to subprocesses
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 get_date() {
