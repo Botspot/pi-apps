@@ -390,7 +390,7 @@ End of Flatpak functions. App functions below.
   - Assuming the "Enable Analytics" setting was not turned off, this function will "click" one of those links.
   - How this link system works:
     - A Github Actions [script](https://github.com/Botspot/pi-apps/blob/master/.github/workflows/create_shlink_links.yml) on the main Pi-Apps repository automatically creates install/uninstall shlinks for every new app that is added.
-    - The Pi-Apps server running a shlink instance (at https://analytics.pi-apps.io) will record the number of "clicks" for each link.
+    - The Pi-Apps server running a shlink instance (at https://pi-apps-analytics.linkpc.net) will record the number of "clicks" for each link.
     - Another Github Actions script uploads shlink's statistics to the [pi-apps-analytics](https://github.com/Botspot/pi-apps-analytics) repository, which can then be retrieved by Pi-Apps clients through the `usercount` function, explained below. 
 - `usercount` - returns the number of users an app has, based on the current number in the [pi-apps-analytics](https://github.com/Botspot/pi-apps-analytics) repository.
   To display the number of users for the Arduino app:

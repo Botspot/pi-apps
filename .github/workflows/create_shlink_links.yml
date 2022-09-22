@@ -25,7 +25,7 @@ jobs:
         run: |
           # get all available URLs
           online_shortcodes="$(curl -s -X 'GET' \
-            'https://analytics.pi-apps.io/rest/v2/short-urls?itemsPerPage=0' \
+            'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
           #create links
@@ -51,7 +51,7 @@ jobs:
           for shortcode in $new_shortcodes ;do
             echo "Creating missing shortcode: $shortcode"
             curl -s -X 'POST' \
-              'https://analytics.pi-apps.io/rest/v2/short-urls' \
+              'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls' \
               -H 'accept: application/json' \
               -H "X-Api-Key: $SHLINK_KEY" \
               -H 'Content-Type: application/json' \
