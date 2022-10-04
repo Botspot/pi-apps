@@ -344,6 +344,12 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
 "${DIRECTORY}/updater" set-status &
 trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 
+#Click pi-apps usage link every time the GUI is run only if the 'Enable Analytics' setting is enabled
+if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+  #click it
+  curl -s -X 'GET' "https://pi-apps-analytics.linkpc.net/pi-apps-active-usage" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+fi
+
 #check mission-critical scripts and re-download them if they contain a syntax error
 (
   sleep 10
