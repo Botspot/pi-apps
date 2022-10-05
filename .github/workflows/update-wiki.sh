@@ -27,7 +27,7 @@ conversion() {
         else
           arch="Package app"
         fi
-        num_users="$(echo "$clicklist" | grep "[0-9] $app"'$' | awk '{print $1}' | head -n1)"
+        num_users="$(echo "$clicklist" | grep "[0-9] $script"'$' | awk '{print $1}' | head -n1)"
         if [ ! -z "$num_users" ] && [ "$num_users" -gt 20 ];then
           #list the number of users, using this printf command to add commas (,) for every thousand number
           arch_users="$arch - $(printf "%'d" "$num_users") Users"
