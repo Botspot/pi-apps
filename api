@@ -463,7 +463,8 @@ Depends: $depends
 Package: $package_name" > ~/$package_name/DEBIAN/control
     
     #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
-    sudo chmod -R '0755' ~/$package_name
+    #The two zeros fix error report "dpkg-deb: error: control directory has bad permissions 2755 (must be >=0755 and <=0775)"
+    sudo chmod -R '00755' ~/$package_name
     
     #display the finished "Depends: " line to the user
     grep --color=never "^Depends: " ~/$package_name/DEBIAN/control
