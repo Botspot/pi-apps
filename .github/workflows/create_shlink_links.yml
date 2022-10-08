@@ -64,4 +64,5 @@ jobs:
               "customSlug": "'$shortcode'",
               "findIfExists": true
             }'
+            echo ""
           done
