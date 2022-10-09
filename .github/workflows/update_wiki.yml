@@ -11,6 +11,7 @@ on:
     paths:
       - 'etc/categories'
       - 'apps/**/description'
+      - 'apps/**/credits'
       - 'apps/**/website'
       - '.github/workflows/update-wiki.sh'
       - '.github/workflows/update_wiki.yml'
