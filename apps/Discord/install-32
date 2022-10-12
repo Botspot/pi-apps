@@ -1,5 +1,5 @@
 #!/bin/bash
-version=3.8.6
+version=3.8.8
 
 killall webcord &>/dev/null && echo "Closing Discord first..."
 
