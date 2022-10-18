@@ -30,8 +30,9 @@ status_green() { #announce the success of a major action
 }
 
 generate_logo() { #display colorized Pi-Apps logo in terminal
-  #generate pi-apps logo
-  #https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  #ANSI color codes: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  #Search for unicode characters: https://unicode-search.net - search for "block" and "quadrant"
+  
   # foreground colors
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
@@ -53,7 +54,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
  ${blue}🮉${bg_white}  ${black}${bg_white}🬞🬭🬭🬭🬭🬏${blue}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
  ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬰🬠🬐🬰${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
  ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬋🬇🬃🬋${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue}🭦${bg_white}🭏🬭🬭🬭🬭🬭🬭🬭🬭🭆${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+ ${blue}🭦${bg_white}🭏🬭🬭🬭🬭🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                     ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
