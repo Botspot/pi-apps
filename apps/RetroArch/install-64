@@ -1,0 +1,5 @@
+#!/bin/bash
+version=1.12.0
+release=2
+
+install_packages "https://github.com/Ninoh-FOX/RetroArch-rpi-raspbian/releases/download/rpi/retroarch-rpi400_${version}-${release}_armhf.deb" || error "Failed to download retroarch deb package"
