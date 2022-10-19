@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.2.12
+version=4.2.13
 
 ### Install dependencies
 install_packages lsb-release wget gpg || error "Failed to install dependencies"
