@@ -50,7 +50,7 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "${bg_default}    ${green}🭊${darkgreen}▅▅▅▅${green}🬿${default}                                          ${darkgreen}                ${default}
- ${blue}🭇🬭🬭${green}█${blue}🬭🬭🬭🬭${green}█${blue}🬭🬭🬼${default}${default}                                       ${darkgreen}                ${default}
+ ${blue}🭇🬭🬭${green}█${blue}🬭🬭🬭🬭${green}█${blue}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
  ${blue}🮉${bg_white}  ${black}${bg_white}🬞🬭🬭🬭🬭🬏${blue}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
  ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬰🬠🬐🬰${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
  ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬋🬇🬃🬋${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
@@ -58,13 +58,14 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
 \e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                     ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
-    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅
- ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
- ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █
-\e[0m\e[0m"
+    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+\e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
+                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
 }
 #end of output functions
