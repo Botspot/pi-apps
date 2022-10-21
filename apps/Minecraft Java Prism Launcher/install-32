@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/prismlauncher_5.0-3_armhf.deb || exit 1
+install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/prismlauncher_5.0-4_armhf.deb || exit 1
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
 # detect if script is running on a system with OpenGL lower than 3.3
