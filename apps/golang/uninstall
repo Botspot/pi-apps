@@ -1,0 +1,4 @@
+#!/bin/bash
+# Uses the the script from the following commit:
+# https://github.com/canha/golang-tools-install-script/commit/258f94f6120bbf99f4c9133c9ab5826dcd359fbe
+wget -q -O - https://raw.githubusercontent.com/canha/golang-tools-install-script/258f94f6120bbf99f4c9133c9ab5826dcd359fbe/goinstall.sh | bash -s -- --remove
