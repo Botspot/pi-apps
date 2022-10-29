@@ -1,4 +1,51 @@
-#!/bin/bash
-# Uses the the script from the following commit:
-# https://github.com/canha/golang-tools-install-script/commit/258f94f6120bbf99f4c9133c9ab5826dcd359fbe
-wget -q -O - https://raw.githubusercontent.com/canha/golang-tools-install-script/258f94f6120bbf99f4c9133c9ab5826dcd359fbe/goinstall.sh | bash -s -- --remove
+OS="$(uname -s)"
+ARCH="$(uname -m)"
+
+case $OS in
+    "Linux")
+        case $ARCH in
+        "aarch64")
+            ARCH=arm64
+            ;;
+        "armv6" | "armv7l")
+            ARCH=armv6l
+            ;;
+        "armv8")
+            ARCH=arm64
+            ;;
+        esac
+        PLATFORM="linux-$ARCH"
+    ;;
+
+esac
+
+rm -rf "$GOROOT"
+    if [ "$OS" == "Darwin" ]; then
+        if [ "$shell" == "fish" ]; then
+            sed -i "" '/# GoLang/d' "$shell_profile"
+            sed -i "" '/set GOROOT/d' "$shell_profile"
+            sed -i "" '/set GOPATH/d' "$shell_profile"
+            sed -i "" '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shell_profile"
+        else
+            sed -i "" '/# GoLang/d' "$shell_profile"
+            sed -i "" '/export GOROOT/d' "$shell_profile"
+            sed -i "" '/$GOROOT\/bin/d' "$shell_profile"
+            sed -i "" '/export GOPATH/d' "$shell_profile"
+            sed -i "" '/$GOPATH\/bin/d' "$shell_profile"
+        fi
+    else
+        if [ "$shell" == "fish" ]; then
+            sed -i '/# GoLang/d' "$shell_profile"
+            sed -i '/set GOROOT/d' "$shell_profile"
+            sed -i '/set GOPATH/d' "$shell_profile"
+            sed -i '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shell_profile"
+        else
+            sed -i '/# GoLang/d' "$shell_profile"
+            sed -i '/export GOROOT/d' "$shell_profile"
+            sed -i '/$GOROOT\/bin/d' "$shell_profile"
+            sed -i '/export GOPATH/d' "$shell_profile"
+            sed -i '/$GOPATH\/bin/d' "$shell_profile"
+        fi
+    fi
+    echo "Go removed."
+    exit 0
