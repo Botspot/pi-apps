@@ -11,7 +11,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
@@ -23,7 +23,7 @@ jobs:
 
 
       - name: Push changes to repo
-        uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
+        uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
         with:
           default_author: github_actions
           # The message for the commit.
