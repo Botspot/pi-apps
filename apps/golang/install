@@ -4,26 +4,18 @@ VERSION="1.19.2"
 [ -z "$GOROOT" ] && GOROOT="$HOME/.go"
 [ -z "$GOPATH" ] && GOPATH="$HOME/go"
 
-OS="$(uname -s)"
-ARCH="$(uname -m)"
-
-case $OS in
-    "Linux")
-        case $ARCH in
-        "aarch64")
-            ARCH=arm64
-            ;;
-        "armv6" | "armv7l")
-            ARCH=armv6l
-            ;;
-        "armv8")
-            ARCH=arm64
-            ;;
-        esac
-        PLATFORM="linux-$ARCH"
+case "$arch" in
+  "64")
+    ARCH="arm64"
     ;;
-
-esac
+  "32")
+    ARCH="armv6l"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    PLATFORM="linux-$ARCH"
+    ;;
+    esac
 
 if [ -z "$PLATFORM" ]; then
     echo "Your operating system is not supported by the script."
