@@ -31,7 +31,6 @@ body:
     attributes:
       label: What are your system specs (run the following command in your terminal)?
       description: ~/pi-apps/api get_device_info
-      render: bash
       placeholder: |
         OS: Raspbian GNU/Linux 10 (buster)
         OS architecture: 32-bit
