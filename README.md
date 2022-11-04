@@ -36,6 +36,7 @@
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
 
 ## Introduction
+    
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
 There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
 Surely there is a better way! **There is.**  
@@ -44,10 +45,13 @@ Introducing Pi-Apps, a well-maintained collection of app installation-scripts th
 Pi-Apps now serves **over 1,000,000 people** and hosts [over 200 apps](https://github.com/Botspot/pi-apps/wiki/Apps-List).
 
 ## Install Pi-Apps
+
 Open a terminal and run this command:
+
 ```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
+
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
 
 #### Supported systems:
@@ -75,16 +79,19 @@ This will not uninstall any apps that you installed through Pi-Apps.
 </details>
 
 ## To run Pi-Apps
+
 - From the start menu: Accessories -> Pi Apps
 - Use the terminal-command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
 
 ## To Update Pi-Apps
+
 - Pi-apps will automatically check for updates on boot and display a notification to update.
 - To manually run the updater, use this command: `~/pi-apps/updater gui`
 - It also supports a cli interface: `~/pi-apps/updater cli`
 
 ## What do others say about Pi-Apps?
+
 > Message from a **[pi-top](https://pi-top.com)** employee: "Happy to say that I recommend pi-apps to almost every school I work with when they start using Raspberry Pi"
 
 > [Video by **ETA Prime**](https://www.youtube.com/watch?v=oqNWJ52DLes): "It's an awesome Raspberry Pi app store and it works really well and there's lots of great stuff in here and it's super easy to install. I want to give the devs of Pi-Apps a big shout-out."
@@ -103,6 +110,7 @@ This will not uninstall any apps that you installed through Pi-Apps.
 > Message from one of our many satisfied users: "Thank you for making pi-apps, it has helped me a ton (no more searching hours to find how to install etcher) and I cannot thank you enough."
 
 ## Basic usage
+
 Pi-Apps is very easy to use.  
 - This is the **main window**.  
 ![main window](icons/screenshots/main%20window.png?raw=true)  
@@ -135,6 +143,7 @@ In addition to changeable settings, this window also gives access to these tools
 To learn more about Pi-Apps, read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki).
 
 ## :raised_hands: Contributing
+
 You don't need to be a programmer to help!  
 - The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
 - If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... `¯\_(ツ)_/¯`
@@ -143,6 +152,7 @@ You don't need to be a programmer to help!
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
 ## Badge
+
 If your application is on Pi-Apps, please consider adding this pretty badge/hyperlink to your README (dark and light modes available):  
 
 [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge.png?raw=true)](https://github.com/Botspot/pi-apps)  [![badge](https://github.com/Botspot/pi-apps/blob/master/icons/badge-light.png?raw=true)](https://github.com/Botspot/pi-apps)
@@ -157,6 +167,7 @@ Embed code (Light):
 ```
 
 ### Q&A with Botspot
+
  - Why did you make Pi-Apps?  
 > For a long time I have been saddened by how difficult it is to install software on Linux. In that regard, nearly all other operating systems put us to shame.  
 > How will people discover useful, free software?  
