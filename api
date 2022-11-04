@@ -1973,21 +1973,8 @@ get_device_info() { #returns information about current install and hardware
   [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
-  if [[ -d /system/app/ && -d /system/priv-app ]]; then
-    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
-          -f /sys/devices/virtual/dmi/id/product_version ]]; then
-    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
-    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
-    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
-      model="$(tr -d '\0' < /tmp/sysinfo/model)"
-  fi
-  echo "Device model: $model"
+  get_model
+  echo "Device model: $model $jetson_model"
   echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
@@ -2033,6 +2020,10 @@ get_model() { # populates the model and jetson_model variables with information 
       jetson_model="xavier"
     elif [[ ${CHIP} =~ "tegra234" ]]; then
       jetson_model="orin"
+    elif [[ ${CHIP} =~ "tegra239" ]]; then
+      jetson_model="switch-pro-chip"
+    elif [[ ${CHIP} =~ "tegra" ]]; then
+      jetson_model="jetson-unknown"
     fi
   # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
   elif [[ -e "/sys/devices/soc0/family" ]]; then
