@@ -6,14 +6,13 @@ VERSION="1.19.2"
 
 case "$arch" in
   "64")
-    ARCH="arm64"
+    PLATFORM="linux-arm64"
     ;;
   "32")
-    ARCH="armv6l"
+    PLATFORM="linux-armv6l"
     ;;
   *)
     error "arch variable is not set, can not continue"
-    PLATFORM="linux-$ARCH"
     ;;
     esac
 
