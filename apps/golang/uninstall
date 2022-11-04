@@ -1,24 +1,4 @@
-OS="$(uname -s)"
-ARCH="$(uname -m)"
-
-case $OS in
-    "Linux")
-        case $ARCH in
-        "aarch64")
-            ARCH=arm64
-            ;;
-        "armv6" | "armv7l")
-            ARCH=armv6l
-            ;;
-        "armv8")
-            ARCH=arm64
-            ;;
-        esac
-        PLATFORM="linux-$ARCH"
-    ;;
-
-esac
-
+#!/bin/bash
 rm -rf "$GOROOT"
     if [ "$OS" == "Darwin" ]; then
         if [ "$shell" == "fish" ]; then

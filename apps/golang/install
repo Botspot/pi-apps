@@ -1,4 +1,4 @@
-
+#!/bin/bash
 VERSION="1.19.2"
 
 [ -z "$GOROOT" ] && GOROOT="$HOME/.go"
@@ -14,7 +14,7 @@ case "$arch" in
   *)
     error "arch variable is not set, can not continue"
     ;;
-    esac
+esac
 
 if [ -z "$PLATFORM" ]; then
     echo "Your operating system is not supported by the script."
