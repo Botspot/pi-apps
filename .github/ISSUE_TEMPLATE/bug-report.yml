@@ -1,11 +1,7 @@
 name: Bug Report
-description: If an application does not start/launch, or you can not install an application without errors, or any other bugs you believe are in pi-apps. File a bug report under this category.
+description:  App failing to install? Is it still around after uninstalling? Let us know!
 labels: ["bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        App failing to install? It's still around after uninstalling? Let us know!
   - type: checkboxes
     attributes:
       label: Confirmations
