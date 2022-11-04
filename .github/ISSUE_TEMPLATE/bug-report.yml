@@ -26,7 +26,7 @@ body:
       placeholder: Tell us more!
     validations: 
       required: true
-  - type: input
+  - type: textarea
     id: os
     attributes:
       label: What are your system specs (run the following command in your terminal)?
@@ -42,6 +42,7 @@ body:
         Ram size: 7.78 GB
         Raspberry Pi OS image version: 2021-01-11
         Language: en_US.UTF-8
+      render: bash
     validations:
       required: true
   - type: textarea
