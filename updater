@@ -444,6 +444,7 @@ update_app() { #first word is app name
   #copy new version from update/ to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   
+  failed=false
   if [ "$installback" == 'yes' ];then
     #install the app again
     "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
