@@ -450,6 +450,9 @@ update_app() { #first word is app name
     "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
     if [ $? != 0 ]; then
       failed=true
+    else
+      # click update link only if app is already installed and the update succeeded
+      shlink_link "$app" update &
     fi
   fi
   
