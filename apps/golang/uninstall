@@ -1,4 +1,6 @@
 #!/bin/bash
+[ -z "$GOROOT" ] && GOROOT="$HOME/.go"
+
 if [ -n "$($SHELL -c 'echo $ZSH_VERSION')" ]; then
     shell_profile="$HOME/.zshrc"
 elif [ -n "$($SHELL -c 'echo $BASH_VERSION')" ]; then

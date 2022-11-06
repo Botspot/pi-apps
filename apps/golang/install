@@ -1,4 +1,5 @@
 #!/bin/bash
+version=1.19.3
 
 [ -z "$GOROOT" ] && GOROOT="$HOME/.go"
 [ -z "$GOPATH" ] && GOPATH="$HOME/go"
@@ -47,11 +48,7 @@ PACKAGE_NAME="go$version.$PLATFORM.tar.gz"
 TEMP_DIRECTORY=$(mktemp -d)
 
 echo "Downloading $PACKAGE_NAME ..."
-if hash wget 2>/dev/null; then
-    wget https://storage.googleapis.com/golang/$PACKAGE_NAME -O "$TEMP_DIRECTORY/go.tar.gz"
-else
-    curl -o "$TEMP_DIRECTORY/go.tar.gz" https://storage.googleapis.com/golang/$PACKAGE_NAME
-fi
+wget https://storage.googleapis.com/golang/$PACKAGE_NAME -O "$TEMP_DIRECTORY/go.tar.gz" || error "Failed to download"
 
 if [ $? -ne 0 ]; then
     echo "Download failed! Exiting."
@@ -61,7 +58,7 @@ fi
 echo "Extracting File..."
 mkdir -p "$GOROOT"
 
-tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz"
+tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz" || error "Failed to extract"
 
 echo "Configuring shell profile in: $shell_profile"
 touch "$shell_profile"
