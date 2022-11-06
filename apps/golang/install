@@ -1,5 +1,4 @@
 #!/bin/bash
-VERSION="1.19.2"
 
 [ -z "$GOROOT" ] && GOROOT="$HOME/.go"
 [ -z "$GOPATH" ] && GOPATH="$HOME/go"
@@ -44,7 +43,7 @@ if [ -d "$GOROOT" ]; then
     exit 1
 fi
 
-PACKAGE_NAME="go$VERSION.$PLATFORM.tar.gz"
+PACKAGE_NAME="go$version.$PLATFORM.tar.gz"
 TEMP_DIRECTORY=$(mktemp -d)
 
 echo "Downloading $PACKAGE_NAME ..."
@@ -84,7 +83,7 @@ else
 fi
 
 mkdir -p "${GOPATH}/"{src,pkg,bin}
-echo -e "\nGo $VERSION was installed into $GOROOT.\nMake sure to relogin into your shell or run:"
+echo -e "\nGo $version was installed into $GOROOT.\nMake sure to relogin into your shell or run:"
 echo -e "\n\tsource $shell_profile\n\nto update your environment variables."
 echo "Tip: Opening a new terminal window usually just works. :)"
 rm -f "$TEMP_DIRECTORY/go.tar.gz"
