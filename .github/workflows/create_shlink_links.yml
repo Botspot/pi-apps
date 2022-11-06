@@ -33,6 +33,7 @@ jobs:
           # get local shortcodes
           local_shortcodes="$(echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-install-"$0}')"
           local_shortcodes+="$(echo ""; echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-uninstall-"$0}')"
+          local_shortcodes+="$(echo ""; echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-update-"$0}')"
 
           # add pi-apps function (this is all that is needed so don't source the whole api)
           list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1

@@ -1,11 +1,7 @@
 name: Bug Report
-description: File a bug report
+description:  App failing to install? Is it still around after uninstalling? Let us know!
 labels: ["bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        App failing to install? It's still around after uninstalling? Let us know!
   - type: checkboxes
     attributes:
       label: Confirmations
@@ -30,12 +26,23 @@ body:
       placeholder: Tell us more!
     validations: 
       required: true
-  - type: input
+  - type: textarea
     id: os
     attributes:
-      label: What is your operating system?
-      description: Let us know what is your OS to better solve your problem.
-      placeholder: Ex. Raspberry Pi OS armhf, Ubuntu 18.04 arm64
+      label: What are your system specs (run the following command in your terminal)?
+      description: ~/pi-apps/api get_device_info
+      placeholder: |
+        OS: Raspbian GNU/Linux 10 (buster)
+        OS architecture: 32-bit
+        Last updated Pi-Apps on: 11/04/2022
+        Latest Pi-Apps version: 11/04/2022
+        Kernel: armv7l 5.15.55-v7l+
+        Device model: Raspberry Pi 4 Model B Rev 1.4 
+        Cpu name: Cortex-A72
+        Ram size: 7.78 GB
+        Raspberry Pi OS image version: 2021-01-11
+        Language: en_US.UTF-8
+      render: bash
     validations:
       required: true
   - type: textarea
