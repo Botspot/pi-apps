@@ -53,6 +53,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 #### Supported systems:
 
 - [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): fully supported.
+- [Switchroot L4T Ubuntu](https://wiki.switchroot.org/en/Linux/Ubuntu-Install-Guide): fully supported (incompatible apps are hidden)
 - Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: Pi-Apps should mostly work but you may encounter errors for some apps.
 - Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
 
