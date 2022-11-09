@@ -1,13 +1,15 @@
 #!/bin/bash
-version=1.2.12
+version=1.2.13
 
 install_packages make || exit 1
 
-mkdir btop && cd btop
+cd /tmp
+rm -rf btop
 wget https://github.com/aristocratos/btop/releases/download/v${version}/btop-armv7l-linux-musleabihf.tbz || error 'Failed to download "btop-armv7l-linux-musleabihf.tbz"!'
-tar -xjf btop-armv7l-linux-musleabihf.tbz|| error 'Failed to decompress "btop-armv7l-linux-musleabihf.tbz"!'
+tar -xjf btop-armv7l-linux-musleabihf.tbz || error 'Failed to decompress "btop-armv7l-linux-musleabihf.tbz"!'
+cd btop || error 'Could not enter btop directory'
 sudo make -B install || error 'Failed to install btop with "sudo make install"!'
-rm -rf $HOME/btop || sudo rm -rf $HOME/btop || error 'Failed to remove install directory!'
+rm -rf /tmp/btop /tmp/btop-armv7l-linux-musleabihf.tbz || sudo rm -rf /tmp/btop /tmp/btop-armv7l-linux-musleabihf.tbz || error 'Failed to remove install directory!'
 
 echo "[Desktop Entry]
 Name=btop++
