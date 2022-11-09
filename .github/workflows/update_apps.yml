@@ -79,8 +79,19 @@ jobs:
             cat /tmp/failed_apps | sed '0~1 a\\' >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
           fi
-          
-          
+
+      - name: Test installing updated apps 
+        uses: pguyot/arm-runner-action@v2
+        with:
+          # this is a buster armhf image
+          base_image: raspios_lite:2021-05-07
+          # the action by default copies the repository already instead of mounting it
+          # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
+
+          import_github_env: true
+          commands: |
+            # list filenames changed from last commit to working directory
+            git diff --name-only
           
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
