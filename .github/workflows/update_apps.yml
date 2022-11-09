@@ -88,6 +88,9 @@ jobs:
           # the action by default copies the repository already instead of mounting it
           # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
 
+          # give the image more space
+          image_additional_mb: 5000
+          
           import_github_env: true
           commands: |
             # install pi-apps dependencies
