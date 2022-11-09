@@ -90,6 +90,9 @@ jobs:
 
           import_github_env: true
           commands: |
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
             # list filenames changed from last commit to working directory
             git diff --name-only
           
