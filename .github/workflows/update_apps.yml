@@ -22,6 +22,9 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run app update scripts
         run: |
+          # print user info
+          echo $USER $USERNAME $(id) $(whoami)
+          
           #source pi-apps functions
 
           #export all functions and variables
@@ -93,6 +96,9 @@ jobs:
 
           import_github_env: true
           commands: |
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+
             # install pi-apps dependencies
             sudo apt update
             sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
