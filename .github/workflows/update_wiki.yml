@@ -10,6 +10,9 @@ on:
       - master
     paths:
       - 'etc/categories'
+      - 'apps/**/install'
+      - 'apps/**/install-32'
+      - 'apps/**/install-64'
       - 'apps/**/description'
       - 'apps/**/credits'
       - 'apps/**/website'
@@ -50,6 +53,10 @@ jobs:
           echo "ACTION_NAME=Botspot" >> $GITHUB_ENV
           echo "OWNER=Botspot" >> $GITHUB_ENV
           echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+
+      - name: "Trigger analytics repo actions"
+        run: |
+          curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Botspot/pi-apps-analytics/dispatches --data '{"event_type": "update analytics"}'
       
       - name: Upload scripts page to wiki
         uses: docker://decathlon/wiki-page-creator-action:latest
