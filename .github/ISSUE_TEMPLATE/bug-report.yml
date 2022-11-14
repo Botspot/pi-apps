@@ -10,6 +10,8 @@ body:
         required: true
       - label: I tried updating Pi Apps and the issue is still not fixed. [How to update Pi Apps?](https://github.com/Botspot/pi-apps#to-update-pi-apps)
         required: false
+      - label: 'IMPORTANT: I promise to respond to comments on this issue and write a good bug report https://www.softwaretestinghelp.com/how-to-write-good-bug-report/'
+        required: true
   - type: input
     id: desc
     attributes:
@@ -48,7 +50,7 @@ body:
   - type: textarea
     id: log
     attributes:
-      label: (Optional) Error log? Terminal output? Debug messages?
+      label: (Recommended) Error log? Terminal output? Debug messages?
       description: Please provide error log or terminal output, if available.
       placeholder: Paste your terminal output/error log here
       render: bash
