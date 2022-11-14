@@ -55,10 +55,10 @@ jobs:
           cd $GITHUB_WORKSPACE
           apps=( .github/workflows/updates/*.sh )
           for app_directory in "${apps[@]}"; do
+            # make sure we are still in the main workspace (incase an update script left off elsewhere)
+            cd $GITHUB_WORKSPACE
             # check if this is a raspbian addons application by checking for string https://apt.raspbian-addons.org
             if grep -q "https://apt.raspbian-addons.org" "$app_directory"; then
-              # make sure we are still in the main workspace (incase an update script left off elsewhere)
-              cd $GITHUB_WORKSPACE
               export app_name="$(echo ${app_directory%.*} | sed 's:.*/::')"
               echo "$app_name"
               status "Checking $app_name for updates from apt.raspbian-addons.org"
