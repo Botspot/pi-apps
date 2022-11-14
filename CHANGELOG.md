@@ -202,7 +202,25 @@ Last updated: May 30, 2022 by [@theofficialgman](https://github.com/theofficialg
 - **05/24/2022** Added AbiWord app
 - **05/24/2022** Added PeaZip app
 - **05/26/2022** Added DDNet app
-
+- **05/31/2022** Added Linux Wifi Hotspot app
+- **05/31/2022** Added Xfburn app
+- **06/06/2022** Added Notejot app
+- **06/06/2022** Added Pac-Man app
+- **06/06/2022** Added Pika Backup app
+- **06/07/2022** Added Friday Night Funkin' Rewritten app
+- **06/13/2022** Added Project OutFox app
+- **06/13/2022** Added PyChess app
+- **06/13/2022** Added Shattered Pixel Dungeon app
+- **06/13/2022** Added StepMania app
+- **06/17/2022** Added Marathon app
+- **06/21/2022** Added ArmCord app
+- **07/05/2022** Added Minecraft Java Lunar app
+- **07/07/2022** Added Celeste Classic app
+- **07/12/2022** Added XMRig app
+- **07/18/2022** Added Flow app
+- **09/15/2022** Added Minecraft Java GDLauncher app
+- **09/17/2022** Added Mu app
+- **10/19/2022** Added Minecraft Java Prism Launcher app
 
 ## Other notable changes:
 
