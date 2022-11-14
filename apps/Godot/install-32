@@ -2,7 +2,7 @@
 rm -rf ~/Godot
 mkdir -p ~/Godot
 cd ~/Godot || error "Could not change to directory"
-wget -O godot.zip https://github.com/hiulit/Unofficial-Godot-Engine-Raspberry-Pi/releases/download/v1.12.0/godot_3.4.4-stable_rpi4.zip || error "failed to download!"
+wget -O godot.zip https://github.com/hiulit/Unofficial-Godot-Engine-Raspberry-Pi/releases/download/v1.14.0/godot_3.5.1-stable_rpi4.zip || error "failed to download!"
 unzip godot.zip
 rm -f godot.zip
 echo "[Desktop Entry]
