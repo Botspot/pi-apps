@@ -319,6 +319,21 @@ ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
 app:$app
 $line"$'\n'
+    # if install-${arch} is in the new update and was not previously, then this app is new to the users architecture
+    # unless it was called install and has been changed to install-${arch}
+    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (new app)
+app:$app
+$line"$'\n'
+    # similar to the above. if an app has an install script in the update folder but not an install script or install-${arch} script in the pi-apps folder, then this app is new to the users architecture
+    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (new app)
+app:$app
+$line"$'\n'
     elif will_reinstall "$app"; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
