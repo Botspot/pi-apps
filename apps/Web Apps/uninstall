@@ -1,7 +1,3 @@
 #!/bin/bash
-if command -v webapp-manager >/dev/null ;then
-  sudo apt purge webapp-manager -y || error "Failed to uninstall webapp-manager"
-fi
-
 
 purge_packages || exit 1
