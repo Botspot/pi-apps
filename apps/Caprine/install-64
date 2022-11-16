@@ -1,2 +1,4 @@
 #!/bin/bash
-install_packages https://github.com/Pi-Apps-Coders/files/raw/main/caprine_2.55.0_arm64.deb
+version=2.56.1
+
+install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/caprine_${version}_arm64.deb
