@@ -1,4 +1,14 @@
-Lunar Client is an all-in-one modpack integrated Launcher available for ONLY popular versions of Minecraft 
+Lunar Client is an all-in-one modpack integrated Launcher available for ONLY popular versions of Minecraft.
+
+Features of the launcher:
+- Microsoft, Mojang, and PC GamePass Account support
+- Automatic Java 8/17 installation
+- Supports a selected list of minecraft versions with with a highly modified client geared toward PVP
+
+Features NOT in this launcher (but available in others):
+- Modloading support
+- Mod/Modpack installation and updating
+- Support for many versions of Minecraft
 
 This installs a fork of Lunar Client with patched dependencies for ARMhf/ARM64 support.
 
@@ -6,11 +16,5 @@ To run: Menu -> Games -> Lunar Client
 To run in a terminal: ~/.local/bin/lunarclient.AppImage --no-sandbox
 
 NOTE: For best performance, we recommend an older version of Minecraft like 1.12.2 or 1.8
-
-Why lunar?
-- It's easy to use and to setup.
-- It supports Microsoft and Mojang accounts.
-- This fork of Lunar for ARM automatically switches lwjgl2/3 libraries (for playing older versions)
-- It's easy to install in a self contained AppImage.
 
 Need help? Please open an issue on this repository: https://github.com/gl91306/lunar

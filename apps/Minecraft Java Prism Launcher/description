@@ -1,7 +1,22 @@
 Prism Launcher is an Open Source Minecraft launcher with the ability to manage multiple instances, accounts and mods. Focused on user freedom and free redistributability.
-Includes Microsoft, Mojang, and PC GamePass Account support as well as Curseforge Modrinth FTB ATLauncher and Technic Mod and Modpack installation.
+
+Features of the launcher:
+- Microsoft, Mojang, and PC GamePass Account support
+- Curseforge Modrinth FTB ATLauncher and Technic Mod and Modpack installation and updating
+- Automatic Java 8/17 installation
+- Fabric, Forge, and Quilt mod loading
+- Supports minecraft versions from the old beta/alphas and old snapshots all the way up the latest snapshots
+
+Features NOT in this launcher (but available in others):
+- NONE
 
 NOTE: The use of performance enhancing mods is highly encouraged, such as optifine with Optifabric and Fabric/Forge or Sodium/Lithium/Starlight Fabric Mods.
 
 To run: Menu -> Games -> Prism Launcher
 To run in a terminal: MESA_GL_VERSION_OVERRIDE=3.3 prismlauncher
+
+The Prism Launcher Wiki can be found here: https://prismlauncher.org/wiki/
+Optifine alternatives: https://prismlauncher.org/wiki/getting-started/install-of-alternatives/
+If you need help installing Optifine: https://prismlauncher.org/wiki/getting-started/installing-optifine/
+
+Note: Prism Launcher officially supports Linux and MacOS ARM through community collaboration.
