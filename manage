@@ -419,7 +419,7 @@ $app"
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -F "${DIRECTORY}/data/manage-daemon/yadlist" | yad "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text --width=330 --height=200 \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \

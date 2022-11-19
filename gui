@@ -567,7 +567,7 @@ if [[ "$guimode" == yad* ]];then
     
     #constantly read from the pipe and send all output to yad
     #if an item is selected, this script will be run with the row's contents
-    tail -F $pipe | yad --center --title='Pi-Apps' \
+    tail -f --retry $pipe | yad --center --title='Pi-Apps' \
       --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
       --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -652,7 +652,7 @@ elif [[ "$guimode" == xlunch* ]];then
     echo "$("${DIRECTORY}/preload" xlunch '')" > $pipe) &
   
   #read pipe      pipe to xlunch               read output of xlunch
-  tail -F $pipe | xlunch "${xlunchflags[@]}" | while read -r line; do
+  tail -f --retry $pipe | xlunch "${xlunchflags[@]}" | while read -r line; do
     echo "Received '$line'"
     
     if [ "$line" == 'Updates/' ];then
