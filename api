@@ -1898,6 +1898,12 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
   
   #find the best text editor
   preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+  # map friendly name of editors to binary name
+  if [ "$preferrededitor" == "Visual Studio Code" ];then
+    preferrededitor="code"
+  elif [ "$preferrededitor" == "VSCodium" ];then
+    preferrededitor="codium"
+  fi
   
   #change preferred editor if user-default doesn't exist
   if ! command -v "$preferrededitor" >/dev/null;then
