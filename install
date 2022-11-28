@@ -35,7 +35,7 @@ sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #download pi-apps if folder missing
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
-if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ];then
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
   DIRECTORY="$HOME/pi-apps"
 fi
 downloaded=0 #track if pi-apps was downloaded this time

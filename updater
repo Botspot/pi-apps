@@ -13,7 +13,7 @@ fi
 [ -z "$DIRECTORY" ] && DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #if being sourced, ensure DIRECTORY variable set
-if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
   return 1
 fi
