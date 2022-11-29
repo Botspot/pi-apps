@@ -1047,8 +1047,7 @@ app_search_gui() { #graphical interface to search for apps
   
   local query="$(echo "$output" | sed -n 1p)"
   
-  search_files='description website credits scripts'
-  
+  local search_files='description website credits scripts'
   search_files=''
   echo "$output" | sed -n 2p | grep -q 'TRUE' && search_files+='description '
   echo "$output" | sed -n 3p | grep -q 'TRUE' && search_files+='website '
@@ -1059,14 +1058,14 @@ app_search_gui() { #graphical interface to search for apps
   
   results="$(app_search "$query" "$search_files")"
   
-  if [ "$(echo "$results" | wc -l)" == 1 ];then
+  if [ ! -z "$results" ] && [ "$(echo "$results" | wc -l)" == 1 ];then
     #if only one result, don't ask user to select it
-    echo "$results"
+    echo "$results" #return result to outside world
     
   elif [ ! -z "$results" ];then
     
-    IFS=$'\n'
-    LIST=''
+    local IFS=$'\n'
+    local LIST=''
     for app in $results ;do
       LIST="$LIST
 ${DIRECTORY}/apps/${app}/icon-24.png
@@ -1075,11 +1074,17 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
+    local app=''
     app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
       --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3)" || exit 0
     
-    echo "$app"
+    #if nothing selected but OK button (or Enter key) was pressed, choose first result.
+    if [ -z "$app" ];then
+      app="$(head -n1 <<<"$results")"
+    fi
+    
+    echo "$app" #return result to outside world
   else
     yad "${yadflags[@]}" --title=Results --width=310 \
       --text="No results found for "\""<b>$query</b>"\""." \
