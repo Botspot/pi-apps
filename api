@@ -1023,8 +1023,11 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
-  #search app names
-  results="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | grep -i "$query" | sort)
+  local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
+  
+  #search app names - first prioritize results starting with query, then show results containing query, then show other pre-existing results.
+  results="$(grep -i "^$query" <<<"$app_list" | sort)
+$(grep -i "$query" <<<"$app_list" | sort)
 $results"
   
   #remove duplicate entries
