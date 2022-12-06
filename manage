@@ -57,7 +57,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       text+=$'\n'"Error report cannot be sent because your system is unsupported."
     else
       #if all of the above checks evaluate to FALSE, then display the "Send report" button.
-      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/send-error-report.png":2)
     fi
     
     #display support links, depending on if this was a package-app or a script-app
