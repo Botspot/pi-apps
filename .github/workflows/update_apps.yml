@@ -4,7 +4,7 @@ name: Update_Apps
 on:
   # run at 00:00 UTC every Wednesday
   schedule:
-     - cron: '0 0 * * 3'
+    - cron: "0 0 * * 3"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -22,6 +22,9 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run app update scripts
         run: |
+          # print user info
+          echo $USER $USERNAME $(id) $(whoami)
+          
           #source pi-apps functions
 
           #export all functions and variables
@@ -49,7 +52,7 @@ jobs:
 
           #stop exporting functions
           set +a
-          
+
           #make sure all update scripts are executable
           chmod +x $GITHUB_WORKSPACE/.github/workflows/updates/*.sh
           cd $GITHUB_WORKSPACE
@@ -73,17 +76,45 @@ jobs:
             cat /tmp/updated_apps_sorted >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
           fi
-          
+
           if test -f /tmp/failed_apps; then
             echo "FAILED_APPS<<EOF" >> $GITHUB_ENV
             cat /tmp/failed_apps | sed '0~1 a\\' >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
           fi
-          
-          
-          
+
+      # - name: Test installing updated apps
+      #   uses: pguyot/arm-runner-action@v2
+      #   with:
+      #     # this is a buster armhf image
+      #     base_image: raspios_lite:2021-05-07
+      #     # the action by default copies the repository already instead of mounting it
+      #     # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
+
+      #     # give the image more space
+      #     image_additional_mb: 5000
+
+      #     import_github_env: true
+      #     commands: |
+      #       # print user info
+      #       echo $USER $USERNAME $(id) $(whoami)
+
+      #       # install pi-apps dependencies
+      #       sudo apt update
+      #       sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+
+      #       # store apps changed from last commit to working directory in varaible
+      #       changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+
+      #       # attempt to install updated apps using manage script loop
+      #       # if any app fails, checkout the previous version and add it to the FAILED_APPS variable
+      #       for app in $changed_apps; do
+      #         ./manage install "$app" || git checkout -- "apps/$app"
+      #       done
+
+
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: |
@@ -100,4 +131,3 @@ jobs:
             ${{ env.UPDATED_APPS }}
             ```
             ${{ env.FAILED_APPS }}
-            

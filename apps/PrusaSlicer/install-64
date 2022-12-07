@@ -1,8 +1,9 @@
 #!/bin/bash
 
-version=2.5.0-rc1
+version=2.5.0
 
-install_packages git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-gtk3-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev || exit 1
+install_packages git libcurl4 libgtk-3-0 libwxgtk3.0-gtk3-0v5 libtbb2 zlib1g libdbus-1-3 libxcb1 libxi6 libxfixes3 libatk-bridge2.0-0 libepoxy0 libxinerama1 libxrandr2 libxcursor1 libxcomposite1 libxdamage1 libxkbcommon0 libxcb-shm0 libxcb-render0 libpcre3 libxau6 libxdmcp6 libatspi2.0-0 libexpat1 liblzma5 libbsd0 libgpg-error0 || exit 1
+# note, libffi.so.6 is linked by the binary and not provided in the appimage (appimage contains libffi.so.7). this appimage probably never worked on bullseye
 
 wget "https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_${version}/PrusaSlicer-version_${version}-aarch64.AppImage" -O ~/PrusaSlicer.AppImage || error "Failed to download appimage!"
 chmod +x ~/PrusaSlicer.AppImage || error "Failed to mark as executable!"

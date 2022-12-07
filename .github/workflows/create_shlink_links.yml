@@ -25,7 +25,7 @@ jobs:
         run: |
           # get all available URLs
           online_shortcodes="$(curl -s -X 'GET' \
-            'https://analytics.pi-apps.io/rest/v2/short-urls?itemsPerPage=0' \
+            'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
           #create links
@@ -33,6 +33,7 @@ jobs:
           # get local shortcodes
           local_shortcodes="$(echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-install-"$0}')"
           local_shortcodes+="$(echo ""; echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-uninstall-"$0}')"
+          local_shortcodes+="$(echo ""; echo "$applist" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g' | awk '{print "pi-apps-update-"$0}')"
 
           # add pi-apps function (this is all that is needed so don't source the whole api)
           list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1
@@ -51,7 +52,7 @@ jobs:
           for shortcode in $new_shortcodes ;do
             echo "Creating missing shortcode: $shortcode"
             curl -s -X 'POST' \
-              'https://analytics.pi-apps.io/rest/v2/short-urls' \
+              'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls' \
               -H 'accept: application/json' \
               -H "X-Api-Key: $SHLINK_KEY" \
               -H 'Content-Type: application/json' \
@@ -64,4 +65,5 @@ jobs:
               "customSlug": "'$shortcode'",
               "findIfExists": true
             }'
+            echo ""
           done

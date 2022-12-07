@@ -1,4 +1,6 @@
-Latest version of Arduino IDE. Not outdated like the repository's Arduino IDE.
+Arduino IDE 1.8.X. Now called Arduino IDE Legacy, based on the Java and Python Frameworks.
+Arduino IDE 2.X has not been released for ARMhf/ARM64 Linux, based on the Electron and Javascript/Typescript Frameworks.
+
 Use this to flash your code to Arduino microprocessors.
 To run: Menu -> Programming -> Arduino IDE.
-To run in a terminal: /home/pi/arduino-1.8.13/arduino
+To run in a terminal: arduino

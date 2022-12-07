@@ -1,3 +1,2 @@
 #!/bin/bash
 purge_packages || exit 1
-sudo rm -rf /etc/timeshift

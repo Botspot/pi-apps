@@ -1,6 +1,10 @@
 #!/bin/bash
 
-version=1.25.1
+version=1.26.0
+
+if ! package_installed min ;then
+  sudo rm -f /usr/bin/min
+fi
 
 install_packages https://github.com/minbrowser/min/releases/download/v${version}/min-${version}-armv7l.deb || exit 1
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=16.3.1
+version=16.5
 
 #Dependencies
 install_packages build-essential cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev || exit 1

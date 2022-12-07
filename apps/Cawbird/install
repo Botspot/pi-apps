@@ -1,0 +1,27 @@
+#!/bin/bash
+
+case $(get_codename) in
+buster)
+  echo 'deb http://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/ /' | sudo tee /etc/apt/sources.list.d/home:IBBoard:cawbird.list
+  curl -fsSL https://download.opensuse.org/repositories/home:IBBoard:cawbird/Raspbian_10/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_IBBoard_cawbird.gpg >/dev/null
+  ;;
+bullseye)
+  echo 'deb http://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Debian_11/ /' | sudo tee /etc/apt/sources.list.d/home:IBBoard:cawbird.list
+  curl -fsSL https://download.opensuse.org/repositories/home:IBBoard:cawbird/Debian_11/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_IBBoard_cawbird.gpg >/dev/null
+  ;;
+focal)
+  echo 'deb http://download.opensuse.org/repositories/home:/IBBoard:/cawbird/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/home:IBBoard:cawbird.list
+  curl -fsSL https://download.opensuse.org/repositories/home:IBBoard:cawbird/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_IBBoard_cawbird.gpg >/dev/null
+  ;;
+bionic)
+  echo 'deb http://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Ubuntu_18.04_Ports/ /' | sudo tee /etc/apt/sources.list.d/home:IBBoard:cawbird.list
+  curl -fsSL https://download.opensuse.org/repositories/home:IBBoard:cawbird/Ubuntu_18.04_Ports/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_IBBoard_cawbird.gpg >/dev/null
+  ;;
+*)
+  warning "OS unknown, defaulting to raspbian buster packages"
+  echo 'deb http://download.opensuse.org/repositories/home:/IBBoard:/cawbird/Raspbian_10/ /' | sudo tee /etc/apt/sources.list.d/home:IBBoard:cawbird.list
+  curl -fsSL https://download.opensuse.org/repositories/home:IBBoard:cawbird/Raspbian_10/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_IBBoard_cawbird.gpg >/dev/null
+  ;;
+esac
+
+install_packages cawbird gstreamer1.0-libav || exit 1

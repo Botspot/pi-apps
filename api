@@ -30,14 +30,16 @@ status_green() { #announce the success of a major action
 }
 
 generate_logo() { #display colorized Pi-Apps logo in terminal
-  #generate pi-apps logo
-  #https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  #ANSI color codes: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+  #Search for unicode characters: https://unicode-search.net - search for "block" and "quadrant"
+  
   # foreground colors
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   green='\e[38;5;46m'
   darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
   white='\e[97m'
+  black='\e[30m'
   default='\e[39m'
   # background colors
   bg_default='\e[49m'
@@ -47,21 +49,23 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
-    echo -e "${white}${bg_default}    ${green}🭊${darkgreen}▅▅▅▅${green}🬿
- ${blue}🭈▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂🬽${white}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀🭍 ▄
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞
- ${blue}🭓${bg_white}🬭🬭🬰🬰🬰🬰🬰🬰🬭🬭${bg_default}🭞${default}                  █    █
-\e[0m\e[0m"
+    echo -e "${bg_default}    ${green}🭊${darkgreen}▅▅▅▅${green}🬿${default}                                          ${darkgreen}                ${default}
+ ${blue}🭇🬭🬭${green}█${blue}🬭🬭🬭🬭${green}█${blue}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
+ ${blue}🮉${bg_white}  ${black}${bg_white}🬞🬭🬭🬭🬭🬏${blue}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬰🬠🬐🬰${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬋🬇🬃🬋${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue}🭦${bg_white}🭏🬭🬭🬭🬭🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+\e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
+                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
-    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅
- ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m
- ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █
-\e[0m\e[0m"
+    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
+ ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+\e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
+                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
 }
 #end of output functions
@@ -463,7 +467,8 @@ Depends: $depends
 Package: $package_name" > ~/$package_name/DEBIAN/control
     
     #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
-    sudo chmod -R '0755' ~/$package_name
+    #The two zeros fix error report "dpkg-deb: error: control directory has bad permissions 2755 (must be >=0755 and <=0775)"
+    sudo chmod -R '00755' ~/$package_name
     
     #display the finished "Depends: " line to the user
     grep --color=never "^Depends: " ~/$package_name/DEBIAN/control
@@ -852,47 +857,45 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
   fi
 }
 
-#reverted to use bitly again due to hosting issues
-bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
-  #This cannot possibly be used to identify you, or any information about you.
-  #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
-  app="$1"
-  trigger="$2"
-  
-  [ -z "$app" ] && error "bitly_link(): requires an app argument"
-  [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
-  
-  #if the 'Enable Analytics' setting is enabled
-  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
-    #determine the name of the link to "click"
-    bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
-    #click it
-    curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
-  fi
-}
-
-# temporarily disable shlink until a new domain can be made for the pi-apps shlink server
-shlink_link() { #compatibility function pointing to bitly_link (incase old manage script is running with new api)
-  bitly_link "$@"
-}
-
-# shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+# bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
 #   #This cannot possibly be used to identify you, or any information about you.
-#   #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+#   #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
 #   app="$1"
 #   trigger="$2"
   
-#   [ -z "$app" ] && error "shlink_link(): requires an app argument"
-#   [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
+#   [ -z "$app" ] && error "bitly_link(): requires an app argument"
+#   [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
   
 #   #if the 'Enable Analytics' setting is enabled
 #   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
 #     #determine the name of the link to "click"
-#     shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+#     bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
 #     #click it
-#     curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+#     curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
 #   fi
 # }
+
+bitly_link() { #compatibility function pointing to shlink_link (incase old manage script is running with new api)
+  shlink_link "$@"
+}
+
+shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+  #This cannot possibly be used to identify you, or any information about you.
+  #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
+  app="$1"
+  trigger="$2"
+  
+  [ -z "$app" ] && error "shlink_link(): requires an app argument"
+  [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
+  
+  #if the 'Enable Analytics' setting is enabled
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+    #determine the name of the link to "click"
+    shlinklink="https://pi-apps-analytics.linkpc.net/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+    #click it
+    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+  fi
+}
 
 usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
   #If clicklist file missing or over a day old, download it.
@@ -1020,8 +1023,11 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)" | sort)"
   
-  #search app names
-  results="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)" | grep -i "$query" | sort)
+  local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
+  
+  #search app names - first prioritize results starting with query, then show results containing query, then show other pre-existing results.
+  results="$(grep -i "^$query" <<<"$app_list" | sort)
+$(grep -i "$query" <<<"$app_list" | sort)
 $results"
   
   #remove duplicate entries
@@ -1041,8 +1047,7 @@ app_search_gui() { #graphical interface to search for apps
   
   local query="$(echo "$output" | sed -n 1p)"
   
-  search_files='description website credits scripts'
-  
+  local search_files='description website credits scripts'
   search_files=''
   echo "$output" | sed -n 2p | grep -q 'TRUE' && search_files+='description '
   echo "$output" | sed -n 3p | grep -q 'TRUE' && search_files+='website '
@@ -1053,14 +1058,14 @@ app_search_gui() { #graphical interface to search for apps
   
   results="$(app_search "$query" "$search_files")"
   
-  if [ "$(echo "$results" | wc -l)" == 1 ];then
+  if [ ! -z "$results" ] && [ "$(echo "$results" | wc -l)" == 1 ];then
     #if only one result, don't ask user to select it
-    echo "$results"
+    echo "$results" #return result to outside world
     
   elif [ ! -z "$results" ];then
     
-    IFS=$'\n'
-    LIST=''
+    local IFS=$'\n'
+    local LIST=''
     for app in $results ;do
       LIST="$LIST
 ${DIRECTORY}/apps/${app}/icon-24.png
@@ -1069,11 +1074,17 @@ $(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavai
     done
     LIST="${LIST:1}" #remove first empty newline
     
+    local app=''
     app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
       --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
       --print-column=2 --tooltip-column=3)" || exit 0
     
-    echo "$app"
+    #if nothing selected but OK button (or Enter key) was pressed, choose first result.
+    if [ -z "$app" ];then
+      app="$(head -n1 <<<"$results")"
+    fi
+    
+    echo "$app" #return result to outside world
   else
     yad "${yadflags[@]}" --title=Results --width=310 \
       --text="No results found for "\""<b>$query</b>"\""." \
@@ -1364,9 +1375,9 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
 This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing, but you may have deleted other files as well.
 The raspi.list file should contain this:
 
-deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
+deb http://archive.raspberrypi.org/debian/ $(get_codename) main
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main")
+#deb-src http://archive.raspberrypi.org/debian/ $(get_codename) main")
     error_type="system"
   fi
   
@@ -1376,20 +1387,20 @@ deb http://archive.raspberrypi.org/debian/ $(lsb_release -sc) main
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 32-bit, so the sources.list file should contain this:
-deb http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi
+deb http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-deb-src http://raspbian.raspberrypi.org/raspbian/ $(lsb_release -sc) main contrib non-free rpi")
+deb-src http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi")
     elif [ -f /etc/rpi-issue ] && [ "$arch" == 64 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 64-bit, so the sources.list file should contain this:
-deb http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
-deb http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
-deb http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free
+deb http://deb.debian.org/debian $(get_codename) main contrib non-free
+deb http://security.debian.org/debian-security $(get_codename)-security main contrib non-free
+deb http://deb.debian.org/debian $(get_codename)-updates main contrib non-free
 # Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://deb.debian.org/debian $(lsb_release -sc) main contrib non-free
-#deb-src http://security.debian.org/debian-security $(lsb_release -sc)-security main contrib non-free
-#deb-src http://deb.debian.org/debian $(lsb_release -sc)-updates main contrib non-free")
+#deb-src http://deb.debian.org/debian $(get_codename) main contrib non-free
+#deb-src http://security.debian.org/debian-security $(get_codename)-security main contrib non-free
+#deb-src http://deb.debian.org/debian $(get_codename)-updates main contrib non-free")
     else
       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
@@ -1895,6 +1906,12 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
   
   #find the best text editor
   preferrededitor="$(cat "${DIRECTORY}/data/settings/Preferred text editor")"
+  # map friendly name of editors to binary name
+  if [ "$preferrededitor" == "Visual Studio Code" ];then
+    preferrededitor="code"
+  elif [ "$preferrededitor" == "VSCodium" ];then
+    preferrededitor="codium"
+  fi
   
   #change preferred editor if user-default doesn't exist
   if ! command -v "$preferrededitor" >/dev/null;then
@@ -1970,21 +1987,8 @@ get_device_info() { #returns information about current install and hardware
   [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
-  if [[ -d /system/app/ && -d /system/priv-app ]]; then
-    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
-          -f /sys/devices/virtual/dmi/id/product_version ]]; then
-    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
-    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
-    model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
-      model="$(tr -d '\0' < /tmp/sysinfo/model)"
-  fi
-  echo "Device model: $model"
+  get_model
+  echo "Device model: $model $jetson_model"
   echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
@@ -2030,6 +2034,10 @@ get_model() { # populates the model and jetson_model variables with information 
       jetson_model="xavier"
     elif [[ ${CHIP} =~ "tegra234" ]]; then
       jetson_model="orin"
+    elif [[ ${CHIP} =~ "tegra239" ]]; then
+      jetson_model="switch-pro-chip"
+    elif [[ ${CHIP} =~ "tegra" ]]; then
+      jetson_model="jetson-unknown"
     fi
   # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
   elif [[ -e "/sys/devices/soc0/family" ]]; then
@@ -2056,12 +2064,27 @@ get_codename() { #get debian/ubuntu codename
     sudo apt-get install -y lsb-release &>/dev/null
   fi
   
-  # check if upstream-release is available
-  if [ -f /etc/upstream-release/lsb-release ]; then
-    # this is a derivative, get the upstream release info
-    lsb_release -suc
+  # first check if lsb_release has an upstream option -u
+  # if not, check if there is an upstream-release file
+  # if not, check if there is a lsb-release.diverted file
+  # if not, assume that this is not a ubuntu derivative
+  if lsb_release -a -u &>/dev/null; then
+    # This is a Ubuntu Derivative, checking the upstream-release version info
+    lsb_release -s -c -u
+  elif [ -f /etc/upstream-release/lsb-release ]; then
+    # ubuntu 22.04+ linux mint no longer includes the lsb_release -u option
+    # add a parser for the /etc/upstream-release/lsb-release file
+    source /etc/upstream-release/lsb-release
+    echo "$DISTRIB_CODENAME"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+  elif [ -f /etc/lsb-release.diverted ]; then
+    # ubuntu 22.04+ popOS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
+    # add a parser for the new /etc/lsb-release.diverted file
+    source /etc/lsb-release.diverted
+    echo "$DISTRIB_CODENAME"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
   else
-    lsb_release -sc
+    lsb_release -s -c
   fi
 }
 
@@ -2513,7 +2536,7 @@ if [[ "$0" == */api ]];then
   "$@"
   exit $?
 #if being sourced, ensure DIRECTORY variable set
-elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
   return 1
 fi

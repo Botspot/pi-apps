@@ -1,0 +1,19 @@
+#!/bin/bash
+# NOTE: This build uses a custom native library repo for the arm32 builds, which is necessary as microsoft and the gdlauncher devs do not provide arm32 native libraries
+
+install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/GDLauncher-linux-arm32-1.1.29-setup.deb || exit 1
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+# detect if script is running on a system with OpenGL lower than 3.3
+if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
+  warning "You are running a device that is not OpenGL 3.3 compliant or the OpenGL version could not be determined."
+  warning "Adding a MESA_GL_VERSION_OVERRIDE to 3.3"
+  warning "Vanilla up to 1.19.2 has been tested to work on Raspberry Pi but there is no guarantee that future Minecraft versions and mods like Sodium/Optifine will continute to work."
+  #add the MESA override to the .desktop file
+  sudo sed -i "s:^Exec=/opt/GDLauncher/gdlauncher:Exec=env MESA_GL_VERSION_OVERRIDE=3.3 /opt/GDLauncher/gdlauncher:g" /usr/share/applications/gdlauncher.desktop
+fi
+status_green 'Installation is now done! You can open the launcher by going to Menu > Games > GDLauncher'
+
+warning "The upstream, GDLauncher, does not give support for custom builds"
+warning "Bugs which appear on this build should only be posted to https://github.com/Botspot/pi-apps/issues or ask for help in the Pi-Apps Discord Server"
+

@@ -1,14 +1,21 @@
 #!/bin/bash
+version=3.5.1
+version2=1.14.0
+
 rm -rf ~/Godot
 mkdir -p ~/Godot
 cd ~/Godot || error "Could not change to directory"
-wget -O godot.zip https://github.com/hiulit/Unofficial-Godot-Engine-Raspberry-Pi/releases/download/v1.12.0/godot_3.4.4-stable_rpi4.zip || error "failed to download!"
+wget -O godot.zip https://github.com/hiulit/Unofficial-Godot-Engine-Raspberry-Pi/releases/download/v${version2}/godot_${version}-stable_rpi4.zip || error "failed to download!"
 unzip godot.zip
 rm -f godot.zip
+# IMPORTANT: 32bit arm is packaged differently than 64bit arm and contains a subfolder with the binaries. Check this whenever bumping releases
+mv godot_${version}-stable_rpi4/* ./
+rm -rf godot_${version}-stable_rpi4
 echo "[Desktop Entry]
 Name=Godot Engine
-Comment=Best Opensource Game Engine 
-Exec=bash -c 'cd $HOME/Godot ; MESA_GL_VERSION_OVERRIDE=3.3 $HOME/Godot/godot_3.4.4-stable_rpi4_editor_lto.bin'
+Comment=Best Opensource Game Engine
+Path=$HOME/Godot
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 $HOME/Godot/godot_${version}-stable_rpi4_editor_lto.bin
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application

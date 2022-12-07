@@ -57,7 +57,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       text+=$'\n'"Error report cannot be sent because your system is unsupported."
     else
       #if all of the above checks evaluate to FALSE, then display the "Send report" button.
-      send_button=(--button='Send report'!"${DIRECTORY}/icons/upload.png":2)
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/send-error-report.png":2)
     fi
     
     #display support links, depending on if this was a package-app or a script-app
@@ -419,7 +419,7 @@ $app"
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -F "${DIRECTORY}/data/manage-daemon/yadlist" | yad "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text --width=330 --height=200 \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \

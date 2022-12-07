@@ -13,12 +13,14 @@ fi
 [ -z "$DIRECTORY" ] && DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #if being sourced, ensure DIRECTORY variable set
-if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ];then
+if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
   echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
   return 1
 fi
 
+# runonce-entries is run in the updater, runonce requires that all api functions be available to subprocess (like is done in the gui script)
 #for the will_reinstall() and list_intersect() functions
+set -a #make all functions in the api available to subprocesses
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 get_date() {
@@ -317,6 +319,21 @@ ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
 app:$app
 $line"$'\n'
+    # if install-${arch} is in the new update and was not previously, then this app is new to the users architecture
+    # unless it was called install and has been changed to install-${arch}
+    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (new app)
+app:$app
+$line"$'\n'
+    # similar to the above. if an app has an install script in the update folder but not an install script or install-${arch} script in the pi-apps folder, then this app is new to the users architecture
+    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (new app)
+app:$app
+$line"$'\n'
     elif will_reinstall "$app"; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
@@ -442,11 +459,15 @@ update_app() { #first word is app name
   #copy new version from update/ to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   
+  failed=false
   if [ "$installback" == 'yes' ];then
     #install the app again
     "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
     if [ $? != 0 ]; then
       failed=true
+    else
+      # click update link only if app is already installed and the update succeeded
+      shlink_link "$app" update &
     fi
   fi
   

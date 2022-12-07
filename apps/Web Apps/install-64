@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if package_installed libxapp1-dbgsym ;then
+  apt_lock_wait
+  sudo apt-get remove -y libxapp1-dbgsym
+fi
+
+if package_installed libxapp-dev ;then
+  apt_lock_wait
+  sudo apt-get remove -y libxapp-dev
+fi
+
+install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/gir1.2-xapp-1.0_1.6.10-2_arm64.deb https://github.com/Pi-Apps-Coders/files/releases/download/large-files/libxapp1_1.6.10-2_arm64.deb https://github.com/Pi-Apps-Coders/files/releases/download/large-files/xapps-common_1.6.10-2_all.deb https://github.com/Pi-Apps-Coders/files/releases/download/large-files/webapp-manager_1.2.5_all.deb || exit 1

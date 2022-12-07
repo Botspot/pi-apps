@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2022.2.1
+version=2022.2.4
 
 install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
 
@@ -18,7 +18,8 @@ status "Compiling file watcher ..."
 wget https://github.com/Pi-Apps-Coders/files/raw/main/fsnotifier-pycharm-rpi.zip || exit 1
 unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rpi.zip."
 cd $HOME/fsnotifier-pycharm-rpi/
-bash ./make.sh || error "Failed to compile file watcher."
+gcc -O2 -Wall -Wextra -Wpedantic -std=c11 -o fsnotifier main.c inotify.c util.c || error "Failed to compile file watcher."
+chmod 755 fsnotifier || error "Failed to set file watcher as executable."
 mkdir -p "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/options"
 mv -f "$HOME/fsnotifier-pycharm-rpi/fsnotifier" "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/" || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/."
 [ -a "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties | grep -v idea.filewatcher.executable.path)" > "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties"
