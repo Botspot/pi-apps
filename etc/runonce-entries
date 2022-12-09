@@ -202,11 +202,19 @@ EOF
 #remove old mcpi repositories
 runonce <<"EOF"
   if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
-    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+    sudo_popup rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
   fi
   if [ -f /etc/apt/sources.list.d/mcpi-revival.list ];then
-    sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
-    sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+    sudo_popup rm -f /etc/apt/sources.list.d/mcpi-revival.list
+    sudo_popup rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+  fi
+EOF
+
+#remove EOL Raspbian Addons repository
+runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/rpirepo.list ];then
+    sudo_popup rm -f /etc/apt/sources.list.d/rpirepo.list
+    sudo_popup rm -f /usr/share/keyrings/raspbian-addons-archive-keyring.gpg
   fi
 EOF
 
