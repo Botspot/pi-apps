@@ -3,7 +3,7 @@ version=3.5.1
 version2=1.14.0
 
 case $(get_codename) in
-buster)
+buster|bionic)
   error "Godot ARM64 precompiled binaries do not support Debian Buster. Canceling the install." ;;
 esac
 
