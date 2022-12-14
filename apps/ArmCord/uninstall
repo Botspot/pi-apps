@@ -1,3 +1,5 @@
 #!/bin/bash
 
+killall armcord &>/dev/null && echo "Closing ArmCord before uninstalling..."
+
 purge_packages || exit 1
