@@ -2,6 +2,8 @@
 
 purge_packages || exit 1
 
+remove_repofile_if_unused /etc/apt/sources.list.d/rust-ubuntu.list
+
 sudo rm -rf /usr/local/share/ddnet \
 /usr/local/bin/DDNet \
 /usr/local/bin/DDNet-Server \

@@ -2,6 +2,20 @@
 
 version=16.6
 
+if ! package_is_new_enough rustc 1.60.0 ;then
+  # Add repository source to apt sources.list
+  status "Adding Rust PPA repository..."
+  echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/ubuntu-mozilla-security/rust-next/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/rust-ubuntu.list
+
+  # Add Rust ppa keyring
+  status "Signing Rust PPA repository..."
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AF316E81A155146718A6FBD7A6DCF7707EBC211F
+  if [ $? != 0 ];then
+    sudo rm -f /etc/apt/sources.list.d/rust-ubuntu.list
+    error "Failed to sign the Rust PPA!"
+  fi
+fi
+
 #Dependencies
 install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc || exit 1
 
