@@ -1,5 +1,5 @@
 #!/bin/bash
 
-filepath="https://github.com/ryanfortner/snapdrop-rpi/raw/master/snapdrop_20220605_armv7l.deb"
+filepath="https://github.com/ryanfortner/snapdrop-rpi/raw/master/snapdrop_20221216_armhf.deb"
 
 install_packages "${filepath}" || exit 1
