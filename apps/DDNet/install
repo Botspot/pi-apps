@@ -3,7 +3,17 @@
 version=16.6
 
 #Dependencies
-install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc-mozilla || exit 1
+if package_is_new_enough rustc 1.48.0 ;then
+  #if rustc is 1.48.0 or newer, install dependencies and rustc (rustc may or may not be already installed)
+  install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc || exit 1
+elif package_installed rustc && ! package_is_new_enough rustc 1.48.0 ;then
+  #if a too old version of rustc is already installed, exit with error
+  error "User error: DDNet cannot install because your operating system has too old of a version of Rust installed. You can try removing the rustc package, then installing DDNet again."
+elif ! package_is_new_enough rustc 1.48.0 ;then
+  #rustc is not new enough, but it is not installed either
+  #install dependencies and rustc-mozilla
+  install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc-mozilla || exit 1
+fi
 
 package_available glslang-tools
 if [[ $? == "0" ]]; then
