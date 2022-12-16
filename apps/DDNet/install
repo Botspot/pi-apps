@@ -17,7 +17,7 @@ if ! package_is_new_enough rustc 1.60.0 ;then
 fi
 
 #Dependencies
-install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc || exit 1
+install_packages build-essential cargo cmake git libcurl4-openssl-dev libssl-dev libfreetype6-dev libgles2-mesa-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpnglite-dev libsdl2-dev libsqlite3-dev libwavpack-dev python3 google-mock libx264-dev libavfilter-dev libavdevice-dev libavformat-dev libavcodec-dev libavutil-dev rustc || exit 1
 
 package_available glslang-tools
 if [[ $? == "0" ]]; then
