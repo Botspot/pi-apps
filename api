@@ -124,7 +124,9 @@ package_latest_version() { #returns the latest available versions of the specifi
   local package="$1"
   [ -z "$package" ] && error "package_version(): no package specified!"
   
-  grep -rx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" --after 4 | grep -o 'Version: .*' | awk '{print $2}' | sort -rV | head -n1
+  # use slower but more accurate apt list command to get package version for current architecture
+  apt list -a "$package" 2>/dev/null | grep "$(dpkg --print-architecture)" | awk '{print $2}' | sort -rV | head -n1
+  #grep -rx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" --after 4 | grep -o 'Version: .*' | awk '{print $2}' | sort -rV | head -n1
 }
 
 package_is_new_enough() { #check if the $1 package has an available version greater than $2
