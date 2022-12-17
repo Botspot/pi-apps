@@ -122,7 +122,7 @@ package_dependencies() { #outputs the list of dependencies for the $1 package
 
 package_latest_version() { #returns the latest available versions of the specified package-name. Doesn't matter if it's installed or not.
   local package="$1"
-  [ -z "$package" ] && error "package_version(): no package specified!"
+  [ -z "$package" ] && error "package_latest_version(): no package specified!"
   
   # use slower but more accurate apt list command to get package version for current architecture
   apt list -a "$package" 2>/dev/null | grep "$(dpkg --print-architecture)" | awk '{print $2}' | sort -rV | head -n1
@@ -483,7 +483,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     
     #Before apt update, check if local repo still exists
     if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
-      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
     fi
     
     #run an apt update
@@ -491,7 +491,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     
     #After apt update, check again if local repo still exists
     if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
-      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
     fi
     
     #Build .deb file for the dummy package
@@ -517,7 +517,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
       
       #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
       if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
-        echo "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages. This usually happens if you try to install several apps at the same time in multiple terminals."
+        echo "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
       elif [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
         cat /tmp/pi-apps-local-packages/Packages
@@ -1831,9 +1831,18 @@ sudo chown \$USER:\$USER ~/.config/autostart")
     error_type="system"
   fi
   
+  if grep -q "The directory '$HOME/\.cache/pip' or its parent directory is not owned by the current user" <<<"$errors";then
+    error_caption+=("The Python package manager (pip3) could not make changes to its own cache folder: $HOME/.cache/pip
+Most likely, you tried running pip3 with sudo in the past, or you tried running a Pi-Apps script with sudo in the past. (not recommended!)
+
+To fix this, run this command:
+sudo chown -R $USER:$USER $HOME/.cache/pip")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
-    error_caption+=("$(grep "^User error: " <<<"$errors" | sed 's/^User error: //g')")
+    error_caption+=("$(sed -ne '/^User error: /,$ p' <<<"$errors" | sed 's/^User error: //g')")
     error_type="system"
   fi
   
