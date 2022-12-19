@@ -36,7 +36,7 @@ elif [ "$(get_codename)" == "bionic" ]; then
   apt_lock_wait
   sudo add-apt-repository ppa:okirby/qt6-backports -y
 
-  install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-28.1.2-1-arm64-bionic.deb || exit 1
+  install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-28.1.2-1-arm64-bionic.deb || exit 1
   exit 0
 else 
   #install buster version
