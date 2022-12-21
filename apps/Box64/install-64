@@ -13,4 +13,16 @@ if [ $? != 0 ];then
   error "Failed to add KEY.gpg to APT keyring!"
 fi
 
-install_packages box64 || exit 1
+# obtain SOC_ID
+get_model
+if [[ "$SOC_ID" == "tegra-x1" ]] || [[ "$SOC_ID" == "tegra-x2" ]]; then
+  install_packages box64-tegrax1 || exit 1
+elif [[ "$SOC_ID" == "rk3399" ]]; then
+  install_packages box64-rk3399 || exit 1
+elif [[ "$SOC_ID" == "bcm2711" ]]; then
+  install_packages box64 || exit 1
+else
+  warning "There is no box64 pre-build for your device $SOC_ID $model"
+  warning "Installing the RPI4 tuned box64 build as a fallback (no crypto extensions enabled)"
+  install_packages box64 || exit 1
+fi
