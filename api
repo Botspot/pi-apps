@@ -2033,6 +2033,7 @@ get_model() { # populates the model and jetson_model variables with information 
       model="$(tr -d '\0' < /tmp/sysinfo/model)"
   fi
   unset jetson_model
+  unset SOC_ID
   # obtain jetson model name (if available)
   # nvidia, in their official L4T (Linux for Tegra) releases 32.X and 34.X, set a distinct tegra family in the device tree /proc/device-tree/compatible
   if [[ -e "/proc/device-tree/compatible" ]]; then
@@ -2049,6 +2050,34 @@ get_model() { # populates the model and jetson_model variables with information 
       jetson_model="switch-pro-chip"
     elif [[ ${CHIP} =~ "tegra" ]]; then
       jetson_model="jetson-unknown"
+    elif [[ ${CHIP} =~ "rk3399" ]]; then
+      SOC_ID="rk3399"
+    elif [[ ${CHIP} =~ "rk3308" ]]; then
+      SOC_ID="rk3308"
+    elif [[ ${CHIP} =~ "rk3326" ]]; then
+      SOC_ID="rk3326"
+    elif [[ ${CHIP} =~ "rk3328" ]]; then
+      SOC_ID="rk3328"
+    elif [[ ${CHIP} =~ "rk3368" ]]; then
+      SOC_ID="rk3368"
+    elif [[ ${CHIP} =~ "rk3566" ]]; then
+      SOC_ID="rk3566"
+    elif [[ ${CHIP} =~ "rk3568" ]]; then
+      SOC_ID="rk3568"
+    elif [[ ${CHIP} =~ "g12b" ]]; then
+      SOC_ID="g12b"
+    elif [[ ${CHIP} =~ "g12b" ]]; then
+      SOC_ID="g12b"
+    elif [[ ${CHIP} =~ "g12b" ]]; then
+      SOC_ID="g12b"
+    elif [[ ${CHIP} =~ "bcm2711" ]]; then
+      SOC_ID="bcm2711"
+    elif [[ ${CHIP} =~ "bcm2837" ]]; then
+      SOC_ID="bcm2837"
+    elif [[ ${CHIP} =~ "bcm2836" ]]; then
+      SOC_ID="bcm2836"
+    elif [[ ${CHIP} =~ "bcm2835" ]]; then
+      SOC_ID="bcm2835"
     fi
   # as part of the 2X.X L4T releases, the kernel is older and the tegra family is found in /sys/devices/soc0/family
   elif [[ -e "/sys/devices/soc0/family" ]]; then
@@ -2066,6 +2095,9 @@ get_model() { # populates the model and jetson_model variables with information 
     elif [[ ${CHIP} =~ "tegra210" ]]; then
       jetson_model="tegra-x1"
     fi
+  fi
+  if [ -n "$jetson_model" ]; then
+    SOC_ID="$jetson_model"
   fi
 }
 
