@@ -2487,6 +2487,9 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
       status_green "Done" 1>&2
     fi
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
+    #show cursor
+    printf "\033[?25h"
+    
     echo -e "\n\e[91mFailed to download: $url\nPlease review errors above.\e[0m" 1>&2
   fi
   
