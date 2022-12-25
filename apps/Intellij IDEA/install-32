@@ -1,0 +1,48 @@
+#!/bin/bash
+
+version=2022.1.4
+
+# Get dependencies
+install_packages build-essential openjdk-11-jdk || exit 1
+
+java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+
+sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
+sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
+wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz /tmp/ideaIC.tar.gz || error "Failed to download!"
+
+cd /opt/ideaIC
+sudo tar xf /tmp/ideaIC.tar.gz --strip-components=1 || error "Failed to extract ideaIC.tar.gz!"
+rm -f /tmp/ideaIC.tar.gz
+
+cd $HOME
+status "Compiling file watcher ..."
+wget https://github.com/Pi-Apps-Coders/files/raw/main/fsnotifier-pycharm-rpi.zip || exit 1
+unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rpi.zip."
+cd $HOME/fsnotifier-pycharm-rpi/
+gcc -O2 -Wall -Wextra -Wpedantic -std=c11 -o fsnotifier main.c inotify.c util.c || error "Failed to compile file watcher."
+chmod 755 fsnotifier || error "Failed to set file watcher as executable."
+mkdir -p "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/options"
+mv -f "$HOME/fsnotifier-pycharm-rpi/fsnotifier" "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/" || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/."
+[ -a "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" ] && echo "$(cat $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties | grep -v idea.filewatcher.executable.path)" > "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties"
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/fsnotifier" >> "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties."
+
+if [ $arch == 32 ] && [ ! -f "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/disabled_plugins.txt" ];then
+  # disable android plugin as it takes up too much ram on 32bit to start java
+  # users can re-enable this and disable other plugins at their choice through the GUI within the application
+  echo "org.jetbrains.android" >> "$HOME/.config/JetBrains/IdeaIC$(echo "$version" | sed 's/\.[^.]*//2g')/disabled_plugins.txt"
+fi
+
+echo "[Desktop Entry]
+Type=Application
+Version=${version}
+Name=IntelliJ IDEA
+Path=/opt/ideaIC/bin
+Exec=bash -c "\""JAVA_HOME=$java_home PATH=$java_home/bin/:$PATH /opt/ideaIC/bin/idea.sh"\""
+Comment=A fast and lightweight IDE using GTK+
+Icon=/opt/ideaIC/bin/idea.png
+Categories=Development;IDE;
+StartupNotify=true" | sudo tee /usr/share/applications/intellijidea.desktop >/dev/null
+
+#cleanup
+rm -rf $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip

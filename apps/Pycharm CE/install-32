@@ -1,0 +1,48 @@
+#!/bin/bash
+
+version=2022.1.4
+
+install_packages python3-pip python3-dev openjdk-11-jdk build-essential clang || exit 1
+
+java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+
+wget https://download.jetbrains.com/python/pycharm-community-${version}.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
+status "Extracting pycharm-community.tar.gz to /opt"
+sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
+sudo tar xzf pycharm-community.tar.gz -C /opt/pycharm-community || error "Failed to extract pycharm-community.tar.gz"
+sudo mv /opt/pycharm-community/*/* /opt/pycharm-community/
+sudo chmod +x /opt/pycharm-community/bin/pycharm.sh
+
+cd $HOME
+status "Compiling file watcher ..."
+wget https://github.com/Pi-Apps-Coders/files/raw/main/fsnotifier-pycharm-rpi.zip || exit 1
+unzip fsnotifier-pycharm-rpi.zip || error "Failed to unzip fsnotifier-pycharm-rpi.zip."
+cd $HOME/fsnotifier-pycharm-rpi/
+gcc -O2 -Wall -Wextra -Wpedantic -std=c11 -o fsnotifier main.c inotify.c util.c || error "Failed to compile file watcher."
+chmod 755 fsnotifier || error "Failed to set file watcher as executable."
+mkdir -p "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/options"
+mv -f "$HOME/fsnotifier-pycharm-rpi/fsnotifier" "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/" || error "Failed to move fsnotifier binary to $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/."
+[ -a "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" ] && echo "$(cat $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties | grep -v idea.filewatcher.executable.path)" > "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties"
+echo "idea.filewatcher.executable.path = $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/fsnotifier" >> "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties" || error "Failed to add file watcher executable path to $HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/idea.properties."
+
+status "Remove bundled JRE version message ..."
+echo '<application>
+  <component name="PropertiesComponent">
+    <property name="ignore.bundled.jre.version.message" value="true" />
+  </component>
+</application>' > "$HOME/.config/JetBrains/PyCharmCE$(echo "$version" | sed 's/\.[^.]*//2g')/options/other.xml"
+
+status "Creating desktop shortcut ..."
+echo "[Desktop Entry]
+Type=Application
+Name=PyCharm Community Edition
+Icon=$(dirname "$0")/icon-64.png
+Exec=bash -c "\""JAVA_HOME=$java_home PATH=$java_home/bin/:$PATH /opt/pycharm-community/bin/pycharm.sh"\""
+Comment=Python IDE
+Categories=Development;IDE;Programming;
+Terminal=false
+StartupWMClass=jetbrains-pycharm-ce
+StartupNotify=true" > ~/.local/share/applications/jetbrains-pycharm-ce.desktop
+
+#cleanup
+rm -rf $HOME/pycharm-community.tar.gz $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
