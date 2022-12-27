@@ -38,6 +38,7 @@ fi
 
 status "Adding to applications menu"
 
+sudo mkdir -p /usr/local/share/applications
 sudo tee /usr/local/share/applications/celeste.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
