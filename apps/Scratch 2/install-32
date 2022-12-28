@@ -6,3 +6,4 @@ install_packages https://github.com/Botspot/scratch2/raw/main/scratch2_0.25_armh
 
 echo "Holding scratch2 package version so it won't upgrade..."
 echo "scratch2 hold" | sudo dpkg --set-selections
+
