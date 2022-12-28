@@ -311,7 +311,7 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
   
   # set repo origin name to pi-apps-local-packages - see PR #1986
-￼ echo 'APT::FTPArchive::Release {
+  echo 'APT::FTPArchive::Release {
 Origin "pi-apps-local-packages";
 };' > /tmp/pi-apps-local-packages/aptftp.conf
   
