@@ -2,10 +2,140 @@
 
 version=2022.1.4
 
-# Get dependencies
-install_packages build-essential openjdk-11-jdk || exit 1
+status "Installing Java 17"
+# first check if lsb_release has an upstream option -u
+# if not, check if there is an upstream-release file
+# if not, check if there is a lsb-release.diverted file
+# if not, assume that this is not a ubuntu derivative
+if lsb_release -a -u &>/dev/null; then
+  # This is a Ubuntu Derivative, checking the upstream-release version info
+  __os_id="$(lsb_release -s -i -u)"
+  __os_desc="$(lsb_release -s -d -u)"
+  __os_release="$(lsb_release -s -r -u)"
+  __os_codename="$(lsb_release -s -c -u)"
+elif [ -f /etc/upstream-release/lsb-release ]; then
+  # ubuntu 22.04+ linux mint no longer includes the lsb_release -u option
+  # add a parser for the /etc/upstream-release/lsb-release file
+  source /etc/upstream-release/lsb-release
+  __os_id="$DISTRIB_ID"
+  __os_desc="$DISTRIB_DESCRIPTION"
+  __os_release="$DISTRIB_RELEASE"
+  __os_codename="$DISTRIB_CODENAME"
+  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+elif [ -f /etc/lsb-release.diverted ]; then
+  # ubuntu 22.04+ popOS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
+  # add a parser for the new /etc/lsb-release.diverted file
+  source /etc/lsb-release.diverted
+  __os_id="$DISTRIB_ID"
+  __os_desc="$DISTRIB_DESCRIPTION"
+  __os_release="$DISTRIB_RELEASE"
+  __os_codename="$DISTRIB_CODENAME"
+  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+else
+  __os_id="$(lsb_release -s -i)"
+  __os_desc="$(lsb_release -s -d)"
+  __os_release="$(lsb_release -s -r)"
+  __os_codename="$(lsb_release -s -c)"
+fi
+case "$__os_id" in
+# Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
+Raspbian | Debian)
+  case "$__os_codename" in
+  bullseye | buster)
+    install_packages lsb-release wget apt-transport-https gnupg || error "Failed to install dependencies"
+    hash -r
 
-java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+    status "Adding Adoptium repository:"
+
+    echo "- public key -> keyring"
+    rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+    wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+    rm -f /tmp/adoptium-public-key
+
+    echo " - keyring -> GPG key"
+    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+    rm -f /tmp/adoptium-keyring.gpg
+
+    echo " - Moving GPG key to /usr/share/keyrings"
+    sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+    echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+    echo " - Installing temurin-17-jdk"
+    #try to install temurin java versions; if it fails, remove repository to avoid breaking user's system
+    (install_packages temurin-17-jdk)
+    if [ $? != 0 ]; then
+      anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+      if [ $? != 0 ]; then
+        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+        # safe to remove
+        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+      fi
+      error "Failed to install temurin packages. Adoptium repository has been removed."
+    fi
+    java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+    ;;
+  bookworm | sid)
+    warning "You are running Debian $__os_codename which is an unstable repo."
+    install_packages openjdk-17-jdk || exit 1
+    java_home="$(dpkg -L openjdk-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+    ;;
+  *)
+    error "Debian version ($__os_codename) is too old, update to debian Buster or newer"
+    ;;
+  esac
+  ;;
+Kali)
+  install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
+  hash -r
+
+  status "Adding Adoptium repository:"
+
+  echo "- public key -> keyring"
+  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+  rm -f /tmp/adoptium-public-key
+
+  echo " - keyring -> GPG key"
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+  rm -f /tmp/adoptium-keyring.gpg
+
+  echo " - Moving GPG key to /usr/share/keyrings"
+  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+  echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+
+  echo " - Installing temurin-17-jdk"
+  #try to install temurin java versions; if it fails, remove repository to avoid breaking user's system
+  (install_packages temurin-17-jdk)
+  if [ $? != 0 ]; then
+    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+    if [ $? != 0 ]; then
+      # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+      # safe to remove
+      sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+    fi
+    error "Failed to install temurin packages. Adoptium repository has been removed."
+  fi
+  java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  ;;
+Ubuntu)
+  # ubuntu default repositories now include openjdk-17
+  # install java
+  install_packages openjdk-17-jdk || exit 1
+  java_home="$(dpkg -L openjdk-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  ;;
+*)
+  error "$__os_id appears to be an unsupported OS"
+  ;;
+esac
+
+# Get dependencies
+install_packages build-essential || exit 1
 
 sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
 sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
