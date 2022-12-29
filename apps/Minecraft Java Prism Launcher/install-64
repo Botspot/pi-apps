@@ -145,26 +145,7 @@ Kali)
   fi
   ;;
 Ubuntu)
-  case "$__os_codename" in
-  bionic | focal | groovy)
-    ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep openjdk-r | wc -l)
-    if [[ $ppa_added -eq "1" ]]; then
-      status "Skipping OpenJDK PPA, already added"
-    else
-      status "Adding OpenJDK PPA, needed for Minecraft 1.17+"
-      ppa_name="openjdk-r/ppa" && ppa_installer
-    fi
-    ;;
-  *)
-    requiredver="18.04"
-    if printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
-      status "Skipping OpenJDK PPA, $__os_codename already has openjdk-17 in the default repositories"
-    else
-      error_user "$__os_codename appears to be too old to run/compile MultiMC5"
-    fi
-    ;;
-
-  esac
+  # ubuntu default repositories now include openjdk-8 openjdk-11 and openjdk-17
   # install java
   install_packages openjdk-8-jre openjdk-17-jre || error "Failed to install java 8 and 17"
   ;;
