@@ -194,8 +194,8 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   local file="$1"
   local testmode="$2"
   [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
-  #exit now if the list file does not exist
-  [ -f "$file" ] || exit 0
+  #return now if the list file does not exist
+  [ -f "$file" ] || return 0
   
   #determine what repo-urls are in the file
   local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
