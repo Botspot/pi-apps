@@ -1,6 +1,9 @@
 #!/bin/bash
 
 purge_packages || exit 1
+
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+  
 sudo rm -rf /opt/ideaIC /usr/share/applications/intellijidea.desktop
 # cleanup files leftover from potential failed install
 rm -rf  $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
