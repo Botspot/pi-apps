@@ -225,19 +225,20 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #make sure english locale is added first
   add_english
   
-  #in a background subprocess, after 3 seconds, say "Waiting until APT locks are released... "
-  (sleep 3; echo -n "Waiting until APT locks are released... ") &
+  #in a background subprocess, after 5 seconds, say "Waiting until APT locks are released... "
+  (sleep 5; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
+  
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+    sleep 1
+  done
   
   #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
-  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
-    sleep 1
-  done
   
-  #If the background process finished, then that means the "waitint until" message was displayed. This means the kill command will return 1, so echo Done
+  #If the background process finished, then that means the "waiting until" message was displayed. This means the kill command will return 1, so echo Done
   kill $pid &>/dev/null || echo "Done"
 }
 
