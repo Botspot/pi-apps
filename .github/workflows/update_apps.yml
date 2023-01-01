@@ -101,7 +101,7 @@ jobs:
 
       #       # install pi-apps dependencies
       #       sudo apt update
-      #       sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+      #       sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
       #       # store apps changed from last commit to working directory in varaible
       #       changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
