@@ -1,0 +1,5 @@
+#!/bin/bash
+
+purge_packages || exit 1
+
+sudo rm -rf /usr/bin/neofetch /usr/man1/neofetch.1*
