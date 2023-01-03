@@ -313,7 +313,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   for app in $updatable_apps ;do #generate a yad list for every updatable app
     # get app tooltip
     read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
-    if [[ ! -d "${DIRECTORY}/apps/${app}" ]]; then
+    if [ ! -d "${DIRECTORY}/apps/${app}" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
@@ -321,14 +321,14 @@ app:$app
 $line"$'\n'
     # if install-${arch} is in the new update and was not previously, then this app is new to the users architecture
     # unless it was called install and has been changed to install-${arch}
-    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+    elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
 app:$app
 $line"$'\n'
-    # similar to the above. if an app has an install script in the update folder but not an install script or install-${arch} script in the pi-apps folder, then this app is new to the users architecture
-    elif [[ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ]] && [[ ! -f "${DIRECTORY}/apps/${app}/install" ]]; then
+    # similar to the above. if an app has an install script in the update folder but not an install/install-${arch}/packages script in the pi-apps folder, then this app is new to the users architecture
+    elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
@@ -561,22 +561,15 @@ fi
 
 #runmode values: autostarted, get-status, set-status, gui, gui-yes, cli, cli-yes
 
+mkdir -p "${DIRECTORY}/data/update-status"
+
 status "\nUpdater mode: $runmode\n"
 if [ "$runmode" == autostarted ];then #if update-interval allows, and one app installed, display notification on boot
-
-  screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
-  if [ -z "$screen_dimensions" ];then
-    # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
-    # workaround is to get the first output returned for the connected display
-    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
-  fi
-  screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
-  screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
   
   #check if update interval allows update-checks, otherwise exit
   check_update_interval
   if [ $? != 0 ];then
-    status "Won't check for updates today, because of the update interval is set to '$(cat "${DIRECTORY}/data/settings/Check for updates")' in Settings."
+    status "Won't check for updates today, because the update interval is set to '$(cat "${DIRECTORY}/data/settings/Check for updates")' in Settings."
     exit 0
   fi
   
@@ -599,15 +592,15 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   updatable_files="$(get_updatable_files)"
 
   #write to updatable-apps file only if something was changed
-  if [ "$updatable_apps" != "$(cat "${DIRECTORY}/data/update-status/updatable-apps")" ];then
+  if [ "$updatable_apps" != "$(cat "${DIRECTORY}/data/update-status/updatable-apps" 2>/dev/null)" ];then
     echo "$updatable_apps" | grep . > "${DIRECTORY}/data/update-status/updatable-apps"
   fi
   
   #write to updatable-files file only if something was changed
-  if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files")" ];then
+  if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files" 2>/dev/null)" ];then
     echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
   fi
-
+  
   if [ -z "$updatable_files" ] && [ -z "$updatable_apps" ];then
     status "Nothing is updatable."
     exit 0
@@ -615,6 +608,16 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
     status "No installed apps are updatable."
     exit 0
   fi
+  
+  #get dimensions of primary screen
+  screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
+  if [ -z "$screen_dimensions" ];then
+    # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
+    # workaround is to get the first output returned for the connected display
+    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+  fi
+  screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
+  screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
   
   status "Displaying notification in lower-right of screen..."
   { #display notification in lower-right
