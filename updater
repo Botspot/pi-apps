@@ -319,15 +319,14 @@ ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
 app:$app
 $line"$'\n'
-    # if install-${arch} is in the new update and was not previously, then this app is new to the users architecture
-    # unless it was called install and has been changed to install-${arch}
-    elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ]; then
+    # if install-${arch} is in the new update and it was not installable on this system before, then this is a "new app".
+    elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
 app:$app
 $line"$'\n'
-    # similar to the above. if an app has an install script in the update folder but not an install/install-${arch}/packages script in the pi-apps folder, then this app is new to the users architecture
+    # similar to the above. if install script is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
