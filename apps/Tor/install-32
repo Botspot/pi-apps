@@ -12,6 +12,11 @@ wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${
 tar -xf ~/tor.tar.xz || error "Failed to extract!"
 rm -f ~/tor.tar.xz
 
+#if ~/tor-browser exists, rename it to ~/tor-browser
+if [ -d ~/tor-browser/ ];then
+  mv ~/tor-browser ~/tor-browser_en-US
+fi
+
 #if ~/tor-browser_en-US.temp folder exists, import its user-data
 if [ -d ~/tor-browser_en-US.temp ];then
   rm -rf ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser
