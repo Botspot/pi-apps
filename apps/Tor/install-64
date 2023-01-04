@@ -1,21 +1,26 @@
 #!/bin/bash
 
-version=11.5.8
+version=12.0
 
 #if ~/tor-browser_en-US folder exists, prepare to import its user-data
 if [ -d ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser ];then
-  mv -f ~/tor-browser_en-US ~/tor-browser_en-US.temp
+  mv -f ~/tor-browser_en-US ~/tor-browser.temp
+fi
+
+#if ~/tor-browser folder exists, prepare to import its user-data
+if [ -d ~/tor-browser/Browser/TorBrowser/Data/Browser ];then
+  mv -f ~/tor-browser ~/tor-browser.temp
 fi
 
 rm -f ~/tor.tar.xz
-wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-arm64-${version}_en-US.tar.xz/download || error "Failed to download!"
+wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-arm64-${version}_ALL.tar.xz/download || error "Failed to download!"
 tar -xf ~/tor.tar.xz || error "Failed to extract!"
 rm -f ~/tor.tar.xz
 
-#if ~/tor-browser_en-US.temp folder exists, import its user-data
-if [ -d ~/tor-browser_en-US.temp ];then
-  rm -rf ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser
-  mv -f ~/tor-browser_en-US.temp/Browser/TorBrowser/Data/Browser ~/tor-browser_en-US/Browser/TorBrowser/Data && rm -rf ~/tor-browser_en-US.temp
+#if ~/tor-browser.temp folder exists, import its user-data
+if [ -d ~/tor-browser.temp ];then
+  rm -rf ~/tor-browser/Browser/TorBrowser/Data/Browser
+  mv -f ~/tor-browser.temp/Browser/TorBrowser/Data/Browser ~/tor-browser/Browser/TorBrowser/Data && rm -rf ~/tor-browser.temp
 fi
 
 echo "[Desktop Entry]
@@ -24,7 +29,7 @@ Name=Tor Browser
 GenericName=Web Browser
 Comment=Tor Browser is +1 for privacy and −1 for mass surveillance
 Categories=Network;WebBrowser;Security;
-Exec=$HOME/tor-browser_en-US/Browser/start-tor-browser
+Exec=$HOME/tor-browser/Browser/start-tor-browser
 X-TorBrowser-ExecShell=./Browser/start-tor-browser --detach
 Icon=$(dirname "$0")/icon-64.png
 StartupWMClass=Tor Browser" > ~/.local/share/applications/tor.desktop
