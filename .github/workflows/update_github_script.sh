@@ -66,6 +66,10 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
     if [[ "$pi_apps_ver_32" = "$webVer" ]]; then
         #If the version is current do:
         status "Pi-Apps install-32 version for $app_name is current!"
+        if ! validate_url "$armhf_url"; then
+            warning "Current $app_name install-32 may be broken, the upstream file $armhf_url does NOT exist."
+            echo "**Current $app_name install-32 may be broken, the upstream file $armhf_url does NOT exist.**" >> /tmp/failed_apps
+        fi
     else
         #If version is not current do:
         if validate_url "$armhf_url"; then
@@ -85,6 +89,10 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
     if [[ "$pi_apps_ver_64" = "$webVer" ]]; then
         #If the version is current do:
         status "Pi-Apps install-64 version for $app_name is current!"
+        if ! validate_url "$arm64_url"; then
+            warning "Current $app_name install-64 may be broken, the upstream file $arm64_url does NOT exist."
+            echo "**Current $app_name install-64 may be broken, the upstream file $arm64_url does NOT exist.**" >> /tmp/failed_apps
+        fi
     else
         if validate_url "$arm64_url"; then
             status_green "Updating pi-apps $app_name install-64 to: $arm64_url"
@@ -103,6 +111,10 @@ if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
         status "Pi-Apps install version for $app_name is current!"
+        if ! validate_url "$all_url"; then
+            warning "Current $app_name install may be broken, the upstream file $all_url does NOT exist."
+            echo "**Current $app_name install may be broken, the upstream file $all_url does NOT exist.**" >> /tmp/failed_apps
+        fi
     else
         if validate_url "$all_url"; then
             status_green "Updating pi-apps $app_name install to: $all_url"
@@ -121,6 +133,10 @@ if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "
     if [[ "$pi_apps_ver" = "$webVer" ]]; then
         #If the version is current do:
         status "Pi-Apps install version for $app_name is current!"
+        if ! ( validate_url "$armhf_url" && validate_url "$arm64_url" ); then
+            warning "Current $app_name install may be broken, the upstream file $armhf_url or $arm64_url does NOT exist."
+            echo "**Current $app_name install may be broken, the upstream file $armhf_url or $arm64_url does NOT exist.**" >> /tmp/failed_apps
+        fi
     else
         if validate_url "$armhf_url" && validate_url "$arm64_url"; then
             status_green "Updating pi-apps $app_name install to: $armhf_url $arm64_url"
