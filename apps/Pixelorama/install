@@ -1,0 +1,35 @@
+#!/bin/bash
+
+case "$arch" in
+"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.10.3_aarch64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.10.3_armv7l.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
+sudo rm -rf /usr/share/Pixelorama
+sudo unzip /tmp/pixelorama.zip -d /usr/share/Pixelorama
+rm -f /tmp/pixelorama.zip
+
+case "$arch" in
+"64") sudo ln -s /usr/share/Pixelorama/Pixelorama.aarch64 /usr/bin/pixelorama || error "Could not create symbolic link" ;;
+"32") sudo ln -s /usr/share/Pixelorama/Pixelorama.armv7l /usr/bin/pixelorama || error "Could not create symbolic link" ;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
+echo "[Desktop Entry]
+Name=Pixelorama
+GenericName=2D sprite editor
+GenericName[el]=Επεξεργαστής δισδιάστατων εικόνων
+GenericName[fr]=Éditeur de sprites 2D
+GenericName[pt_BR]=Editor de sprites 2D
+GenericName[zh_CN]=2D 精灵编辑器
+Comment=Create and edit static or animated 2D sprites
+Comment[el]=Δημιουργήστε και επεξεργαστείτε στατικές ή κινούμενες δισδιάστατες εικόνες
+Comment[fr]=Créez et modifiez des sprites 2D statiques ou animées
+Comment[pt_BR]=Crie e edite sprites 2D estáticos ou animados
+Comment[zh_CN]=创建并编辑 2D 精灵图片或动画
+Exec=pixelorama
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+Type=Application
+Categories=Graphics;2DGraphics;RasterGraphics;" | sudo tee /usr/share/applications/com.orama_interactive.Pixelorama.desktop
