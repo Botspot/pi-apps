@@ -1771,7 +1771,7 @@ Try following the suggestions proposed on this website: https://stackoverflow.co
 
 Try reinstalling the package:
 sudo apt install --reinstall libaria2-0")
-    error_type="internet"
+    error_type="system"
   fi
   
   if grep -q "errorCode=16 Failed to open the file .*, cause: Permission denied" <<<"$errors" ;then
@@ -1852,8 +1852,18 @@ sudo chown -R $USER:$USER $HOME/.cache/pip")
     error_type="system"
   fi
   
+  if grep -qF "collect2: fatal error: ld terminated with signal 11 [Segmentation fault]" ;then
+    error_caption+=("Failed to compile! The error was: "\""collect2: fatal error: ld terminated with signal 11 [Segmentation fault]"\""
+
+Try following the instructions on this website:
+https://stackoverflow.com/questions/57051568/collect2-fatal-error-ld-terminated-with-signal-11-segmentation-fault
+If this ends up fixing the problem, please notify the Pi-Apps developers. If you continue to encounter this error, please reach out to the Pi-Apps developers.")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
+    #return all lines of output after a line mentions "User error: "
     error_caption+=("$(sed -ne '/^User error: /,$ p' <<<"$errors" | sed 's/^User error: //g')")
     error_type="system"
   fi
