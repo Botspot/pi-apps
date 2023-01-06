@@ -87,7 +87,7 @@ jobs:
         uses: theofficialgman/arm-runner-action@v4
         with:
           # this is a buster armhf image
-          base_image: raspios_lite:2021-05-07
+          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2022-09-26/2022-09-22-raspios-buster-armhf.img.xz
           # the action by default copies the repository already instead of mounting it
           # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
 
@@ -106,6 +106,9 @@ jobs:
 
             # store apps changed from last commit to working directory in varaible
             changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+
+            # debugging, set changed_apps to Arduino as a test app
+            changed_apps="Arduino"
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the FAILED_APPS variable
