@@ -83,34 +83,35 @@ jobs:
             echo "EOF" >> $GITHUB_ENV
           fi
 
-      # - name: Test installing updated apps
-      #   uses: pguyot/arm-runner-action@v2
-      #   with:
-      #     # this is a buster armhf image
-      #     base_image: raspios_lite:2021-05-07
-      #     # the action by default copies the repository already instead of mounting it
-      #     # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
+      - name: Test installing updated apps
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          # this is a buster armhf image
+          base_image: raspios_lite:2021-05-07
+          # the action by default copies the repository already instead of mounting it
+          # changes are not saved after the chroot is exited so it is safe to operate within the pi-apps directory
 
-      #     # give the image more space
-      #     image_additional_mb: 5000
+          # give the image more space
+          image_additional_mb: 5000
 
-      #     import_github_env: true
-      #     commands: |
-      #       # print user info
-      #       echo $USER $USERNAME $(id) $(whoami)
+          import_github_env: true
+          commands: |
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
 
-      #       # install pi-apps dependencies
-      #       sudo apt update
-      #       sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
-      #       # store apps changed from last commit to working directory in varaible
-      #       changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+            # store apps changed from last commit to working directory in varaible
+            changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
 
-      #       # attempt to install updated apps using manage script loop
-      #       # if any app fails, checkout the previous version and add it to the FAILED_APPS variable
-      #       for app in $changed_apps; do
-      #         ./manage install "$app" || git checkout -- "apps/$app"
-      #       done
+            # attempt to install updated apps using manage script loop
+            # if any app fails, checkout the previous version and add it to the FAILED_APPS variable
+            for app in $changed_apps; do
+              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "Failed to install $app, reverting to previous version" )
+            done
 
 
       - name: Create Pull Request
