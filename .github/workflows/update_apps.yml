@@ -102,6 +102,7 @@ jobs:
 
           import_github_env: true
           commands: |
+            sudo chown runner:docker /home/runner
             # print user info
             echo $USER $USERNAME $(id) $(whoami)
             sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
