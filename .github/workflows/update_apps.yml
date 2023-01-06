@@ -123,7 +123,7 @@ jobs:
 
             # debugging, set changed_apps to Fake-app as a test app
             changed_apps="Fake-app"
-            echo "test" > ./app/test.txt
+            echo "debug test" > ./apps/test.txt
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
