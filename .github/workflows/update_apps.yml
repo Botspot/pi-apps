@@ -94,11 +94,21 @@ jobs:
           # give the image more space
           image_additional_mb: 5000
 
+          # set CPUs to use
+          cpu: cortex-a7:cortex-a72
+
+          # user runner name as default path
+          copy_repository_path: /home/runner/pi-apps
+
           import_github_env: true
           commands: |
             # print user info
             echo $USER $USERNAME $(id) $(whoami)
             sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+
+            # create standard directories
+            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+            sudo mkdir -p /usr/local/bin /usr/local/share/applications
 
             # install pi-apps dependencies
             sudo apt update
