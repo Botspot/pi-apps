@@ -83,7 +83,7 @@ jobs:
             echo "EOF" >> $GITHUB_ENV
           fi
 
-      - name: Test installing updated apps
+      - name: Test installing updated apps on buster armhf
         uses: theofficialgman/arm-runner-action@v4
         with:
           # this is a buster armhf image
@@ -133,11 +133,65 @@ jobs:
             done
 
             if test -f /tmp/failed_update_apps; then
-              echo "FAILED_UPDATE_APPS<<EOF" >> $GITHUB_ENV
+              echo "FAILED_UPDATE_APPS_ARM32<<EOF" >> $GITHUB_ENV
               cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
 
+      - name: Test installing updated apps on bullseye arm64
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          # this is a bullseye arm64 image
+          base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2022-09-26/2022-09-22-raspios-bullseye-arm64.img.xz
+          # bind mount the directory so any changes propogate to outside the chroot
+          bind_mount_repository: yes
+
+          # give the image more space
+          image_additional_mb: 5000
+
+          # set CPUs to use
+          cpu: cortex-a7:cortex-a72
+
+          # user runner name as default path
+          copy_repository_path: /home/runner/pi-apps
+
+          # export github env back to outside the chroot
+          export_github_env: yes
+
+          import_github_env: true
+          commands: |
+            sudo chown runner:docker /home/runner
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+
+            # create standard directories
+            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+            sudo mkdir -p /usr/local/bin /usr/local/share/applications
+
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+
+            # store apps changed from last commit to working directory in varaible
+            changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+
+            # # debugging, set changed_apps to Arduino as a test app
+            # changed_apps="Arduino"
+            # echo "exit 1" > ./apps/Arduino/install-64
+            # echo "debug output" > ./apps/debug_output.txt
+
+            # attempt to install updated apps using manage script loop
+            # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
+            for app in $changed_apps; do
+              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+            done
+
+            if test -f /tmp/failed_update_apps; then
+              echo "FAILED_UPDATE_APPS_ARM64<<EOF" >> $GITHUB_ENV
+              cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            fi
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
@@ -157,4 +211,5 @@ jobs:
             ${{ env.UPDATED_APPS }}
             ```
             ${{ env.FAILED_APPS }}
-            ${{ env.FAILED_UPDATE_APPS }}
+            ${{ env.FAILED_UPDATE_APPS_ARM32 }}
+            ${{ env.FAILED_UPDATE_APPS_ARM64 }}
