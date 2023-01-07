@@ -2530,6 +2530,7 @@ unzip() { #say what is being extracted
   [ -f "$1" ] && status "Extracting: $1"
   [ -f "$2" ] && status "Extracting: $2"
   
+  #The -o flag means to overwrite without prompting
   command unzip -o "$@"
   return $?
 }
