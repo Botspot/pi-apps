@@ -130,6 +130,7 @@ jobs:
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in $changed_apps; do
               ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+              ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
 
             if test -f /tmp/failed_update_apps; then
@@ -185,6 +186,7 @@ jobs:
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in $changed_apps; do
               ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+              ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
 
             if test -f /tmp/failed_update_apps; then
