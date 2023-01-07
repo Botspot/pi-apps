@@ -1,4 +1,7 @@
 #!/bin/bash
+
+version=v1.25
+
 echo -e "==============\n"
 echo " · More info: run "\""scrcpy --help"\"" or visit https://github.com/Genymobile/scrcpy"
 echo " · The Android device requires at least API 21 (Android 5.0)."
@@ -26,7 +29,7 @@ sudo usermod -aG plugdev "$USER" || error "Failed to add user '$USER' to the 'pl
 status_green Done
 
 cd /tmp
-git_clone https://github.com/Genymobile/scrcpy || error "Failed to download repo!"
+git_clone https://github.com/Genymobile/scrcpy -b $version || error "Failed to download repo!"
 cd scrcpy
 status "Compiling and installing..."
 ./install_release.sh || error "Failed to install!"
