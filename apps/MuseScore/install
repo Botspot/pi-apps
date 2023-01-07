@@ -15,16 +15,12 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O /tmp/musescore.zip 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/artifact.zip' || exit 1
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage" || exit 1
 
-unzip /tmp/musescore.zip "MuseScore-4.0.0.3856641905-${url_arch}.AppImage" -d /tmp || error "Failed to extract musescore!"
-rm /tmp/musescore.zip
-
-chmod +x "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage"
-sudo mv -f "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage" /opt/MuseScore.AppImage
+chmod +x "/tmp/MuseScore.AppImage"
 
 #Use built-in install procedure
-sudo /opt/MuseScore.AppImage install || error "MuseScore.AppImage failed to run its own installation procedure. Please review errors above."
+sudo /tmp/MuseScore.AppImage install || error "MuseScore.AppImage failed to run its own installation procedure. Please review errors above."
 #this moves itself to /usr/local/bin/MuseScore.AppImage
 
 #make terminal command
