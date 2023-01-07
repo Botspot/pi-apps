@@ -23,39 +23,14 @@ rm /tmp/musescore.zip
 chmod +x "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage"
 sudo mv -f "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage" /opt/MuseScore.AppImage
 
-wget -O /tmp/icons.zip 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/icons.zip' || exit 1
-unzip -q /tmp/icons.zip -d /tmp || error "Failed to extract icons!"
-sudo cp -r /tmp/hicolor /usr/share/icons || error "Failed to move icons from /tmp/hicolor to /usr/share/icons!"
-rm -r /tmp/icons.zip /tmp/hicolor
+#Use built-in install procedure
+sudo /opt/MuseScore.AppImage install || error "MuseScore.AppImage failed to run its own installation procedure. Please review errors above."
+#this moves itself to /usr/local/bin/MuseScore.AppImage
 
-#update icon database
-sudo update-icon-caches /usr/share/icons/*
-sudo xdg-icon-resource forceupdate --mode system
+#make terminal command
+sudo rm -f /usr/local/bin/mscore
+sudo ln -s /usr/local/bin/MuseScore.AppImage /usr/local/bin/mscore
 
-#Add mimetypes
-wget -O /tmp/musescore.xml 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/musescore.xml' || exit 1
-sudo mv -f /tmp/musescore.xml /usr/share/mime/packages/musescore.xml
-#update mime database
-sudo update-mime-database /usr/share/mime
-
-echo '[Desktop Entry]
-Version=1.0
-Name=MuseScore 4
-GenericName=Music notation
-GenericName[de]=Notensatz
-GenericName[fr]=Notation musicale
-Comment=Create, play and print sheet music
-Comment[ru]=Визуальный редактор нотных партитур
-Comment[fr]=Gravure de partitions musicales
-Exec=mscore %F
-Icon=mscore
-StartupNotify=true
-StartupWMClass=mscore
-Terminal=false
-Type=Application
-Categories=Qt;Audio;Sequencer;Midi;AudioVideoEditing;Music;AudioVideo;
-Keywords=music;notation;composition;composing;arranging;making;sheet music;music notation software;lead sheet;leadsheet;score;full score;scorewriter;MIDI;musicxml;playback;instrument;
-Keywords[de]=Musik;Noten;Musiknoten;Komposition;Komponieren;Arrangieren;Notenblatt;Notenblätter;Notationsprogramm;Musiknotationsprogramm;Musiknotation;Tabulatur;MIDI;musicxml;Instrument;
-MimeType=application/x-musescore;application/x-musescore+xml;application/vnd.recordare.musicxml;application/vnd.recordare.musicxml+xml;' | sudo tee /usr/share/applications/mscore.desktop >/dev/null
-
-
+#change menu button label to 'MuseScore 4'
+sudo sed -i 's/MU 4.0 Portable/MuseScore 4/g' /usr/local/share/applications/org.musescore.MuseScore4portable.desktop
+true #in case sed fails
