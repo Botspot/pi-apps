@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+icons='/usr/share/icons/hicolor/128x128/apps/mscore.png
+/usr/share/icons/hicolor/16x16/apps/mscore.png
+/usr/share/icons/hicolor/24x24/apps/mscore.png
+/usr/share/icons/hicolor/32x32/apps/mscore.png
+/usr/share/icons/hicolor/48x48/apps/mscore.png
+/usr/share/icons/hicolor/48x48/mimetypes/application-vnd.recordare.musicxml+xml.png
+/usr/share/icons/hicolor/48x48/mimetypes/application-vnd.recordare.musicxml.png
+/usr/share/icons/hicolor/48x48/mimetypes/application-x-musescore+xml.png
+/usr/share/icons/hicolor/48x48/mimetypes/application-x-musescore.png
+/usr/share/icons/hicolor/512x512/apps/mscore.png
+/usr/share/icons/hicolor/64x64/apps/mscore.png
+/usr/share/icons/hicolor/96x96/apps/mscore.png
+/usr/share/icons/hicolor/scalable/apps/mscore.svg
+/usr/share/icons/hicolor/scalable/mimetypes/application-vnd.recordare.musicxml+xml.svg
+/usr/share/icons/hicolor/scalable/mimetypes/application-vnd.recordare.musicxml.svg
+/usr/share/icons/hicolor/scalable/mimetypes/application-x-musescore+xml.svg
+/usr/share/icons/hicolor/scalable/mimetypes/application-x-musescore.svg'
+IFS=$'\n'
+
+status -n "Removing icons... "
+for icon in $icons ;do
+  sudo rm -f "$icon"
+done
+status_green Done
+
+sudo rm -f /usr/share/applications/mscore.desktop
+sudo rm -f /usr/share/mime/packages/musescore.xml
+
+status -n "Removing MuseScore.AppImage... "
+sudo rm -f /opt/MuseScore.AppImage
+status_green Done

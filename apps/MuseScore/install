@@ -1,0 +1,61 @@
+#!/bin/bash
+
+if [ $arch == 32 ];then
+  url_arch=armhf
+elif [ $arch == 64 ];then
+  url_arch=aarch64
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+
+if package_installed musescore ;then
+  status "First removing musescore package with APT..."
+  sudo apt purge musescore -y --autoremove || exit 1
+fi
+
+enable_module fuse || exit 1
+
+wget -O /tmp/musescore.zip 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/artifact.zip' || exit 1
+
+unzip /tmp/musescore.zip "MuseScore-4.0.0.3856641905-${url_arch}.AppImage" -d /tmp || error "Failed to extract musescore!"
+rm /tmp/musescore.zip
+
+chmod +x "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage"
+sudo mv -f "/tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage" /opt/MuseScore.AppImage
+
+wget -O /tmp/icons.zip 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/icons.zip' || exit 1
+unzip -q /tmp/icons.zip -d /tmp || error "Failed to extract icons!"
+sudo cp -r /tmp/hicolor /usr/share/icons || error "Failed to move icons from /tmp/hicolor to /usr/share/icons!"
+rm -r /tmp/icons.zip /tmp/hicolor
+
+#update icon database
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#Add mimetypes
+wget -O /tmp/musescore.xml 'https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/musescore.xml' || exit 1
+sudo mv -f /tmp/musescore.xml /usr/share/mime/packages/musescore.xml
+#update mime database
+sudo update-mime-database /usr/share/mime
+
+echo '[Desktop Entry]
+Version=1.0
+Name=MuseScore 4
+GenericName=Music notation
+GenericName[de]=Notensatz
+GenericName[fr]=Notation musicale
+Comment=Create, play and print sheet music
+Comment[ru]=Визуальный редактор нотных партитур
+Comment[fr]=Gravure de partitions musicales
+Exec=mscore %F
+Icon=mscore
+StartupNotify=true
+StartupWMClass=mscore
+Terminal=false
+Type=Application
+Categories=Qt;Audio;Sequencer;Midi;AudioVideoEditing;Music;AudioVideo;
+Keywords=music;notation;composition;composing;arranging;making;sheet music;music notation software;lead sheet;leadsheet;score;full score;scorewriter;MIDI;musicxml;playback;instrument;
+Keywords[de]=Musik;Noten;Musiknoten;Komposition;Komponieren;Arrangieren;Notenblatt;Notenblätter;Notationsprogramm;Musiknotationsprogramm;Musiknotation;Tabulatur;MIDI;musicxml;Instrument;
+MimeType=application/x-musescore;application/x-musescore+xml;application/vnd.recordare.musicxml;application/vnd.recordare.musicxml+xml;' | sudo tee /usr/share/applications/mscore.desktop >/dev/null
+
+
