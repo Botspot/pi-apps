@@ -38,8 +38,16 @@ jobs:
             curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/v//g
           }
 
+          get_release_raw() {
+            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name'
+          }
+
           get_prerelease() {
             curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/v//g
+          }
+
+          get_prerelease_raw() {
+            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name'
           }
 
           function validate_url(){
