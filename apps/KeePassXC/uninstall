@@ -2,3 +2,9 @@
 
 #Allow packages required by this app to be uninstalled
 purge_packages || exit 1
+
+case $(get_codename) in
+bionic|focal|jammy|kinetic)
+  remove_repofile_if_unused /etc/apt/sources.list.d/phoerious-ubuntu-keepassxc-$(get_codename).list
+  ;;
+esac
