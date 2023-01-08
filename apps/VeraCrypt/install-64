@@ -2,5 +2,11 @@
 
 version=1.25.9
 
-install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-arm64.deb || exit 1
-
+case $(get_codename) in
+bionic)
+  install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/veracrypt-1.25.9-Ubuntu-18.04-arm64.deb || exit 1
+  ;;
+*)
+  install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-arm64.deb || exit 1
+  ;;
+esac
