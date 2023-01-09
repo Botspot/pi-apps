@@ -124,7 +124,10 @@ Pi-Apps is very easy to use.
   - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
   - ![icon](icons/screenshots/buttons/credits.png?raw=true) See who played a part in adding the app.
   - ![icon](icons/screenshots/buttons/errors.png?raw=true) If the selected app failed to install, this button will allow you to see its error log.
-    
+
+- If you install/uninstall an app, you will see the **progress window**, keep installing/uninstalling apps to add them to the queue:  
+![details](icons/screenshots/manage.png?raw=true)
+
 - Pi-Apps Settings can be configured by launching Menu -> Preferences -> Pi-Apps Settings.  
 ![settings](icons/screenshots/settings.png?raw=true)  
 In addition to changeable settings, this window also gives access to these tools:
