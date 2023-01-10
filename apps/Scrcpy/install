@@ -29,7 +29,7 @@ sudo usermod -aG plugdev "$USER" || error "Failed to add user '$USER' to the 'pl
 status_green Done
 
 cd /tmp
-git_clone https://github.com/Genymobile/scrcpy -b $version || error "Failed to download repo!"
+git_clone https://github.com/Genymobile/scrcpy || error "Failed to download repo!"
 cd scrcpy
 status "Compiling and installing..."
 ./install_release.sh || error "Failed to install!"
@@ -43,13 +43,15 @@ status_green Done
 #menu entry
 sudo mkdir -p /usr/local/share/applications
 status -n "Making menu entry..."
-cat << "EOF" | sudo tee /usr/local/share/applications/scrcpy.desktop
+cat << "EOF" | sudo tee /usr/local/share/applications/scrcpy.desktop >/dev/null
 [Desktop Entry]
 Name=Scrcpy
-Exec=bash -c "errors="\""$(scrcpy 2>&1)"\"" || yad --text-info --center --width=500 --height=300 --font-name=12 --button=Close --text="\""Scrcpy failed to launch. Errors below."\"" <<<"\""$errors"\"""
+Exec=bash -c "errors="\""$(scrcpy --turn-screen-off --stay-awake --power-off-on-close 2>&1)"\"" || yad --text-info --center --width=500 --height=300 --font-name=12 --button=Close --text="\""Scrcpy failed to launch. Errors below."\"" <<<"\""$errors"\"""
 Icon=/usr/local/share/icons/hicolor/256x256/apps/scrcpy.png
 Type=Application
 Comment=Display and control of Android devices connected on USB
 Categories=ConsoleOnly;Utility;System;
 EOF
 status_green Done
+
+sudo rm -f /usr/local/share/applications/scrcpy-console.desktop
