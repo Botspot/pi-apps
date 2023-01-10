@@ -136,10 +136,15 @@ jobs:
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
+            # loop using newline as the delimiter. reset it back to the previous value once entering the loop (to not affect any pi-apps scripts) and set it back after loop exits 
+            PRE_IFS="$IFS"
+            IFS=$'\n'
             for app in $changed_apps; do
+              IFS="$PRE_IFS"
               ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
               ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
+            IFS="$PRE_IFS"
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM32<<EOF" >> $GITHUB_ENV
@@ -192,10 +197,15 @@ jobs:
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
+            # loop using newline as the delimiter. reset it back to the previous value once entering the loop (to not affect any pi-apps scripts) and set it back after loop exits 
+            PRE_IFS="$IFS"
+            IFS=$'\n'
             for app in $changed_apps; do
+              IFS="$PRE_IFS"
               ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
               ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
+            IFS="$PRE_IFS"
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM64<<EOF" >> $GITHUB_ENV
