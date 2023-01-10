@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v1.25
+version=v1.24
 
 echo -e "==============\n"
 echo " · More info: run "\""scrcpy --help"\"" or visit https://github.com/Genymobile/scrcpy"
@@ -29,16 +29,25 @@ sudo usermod -aG plugdev "$USER" || error "Failed to add user '$USER' to the 'pl
 status_green Done
 
 cd /tmp
-git_clone https://github.com/Genymobile/scrcpy || error "Failed to download repo!"
+git_clone https://github.com/Genymobile/scrcpy -b ${version} || error "Failed to download repo!"
 cd scrcpy
-status "Compiling and installing..."
-./install_release.sh || error "Failed to install!"
+
+status "Downloading prebuilt scrcpy-server that gets pushed to the android device"
+wget https://github.com/Genymobile/scrcpy/releases/download/${version}/scrcpy-server-${version} -O scrcpy-server || error "Failed to download scrcpy-server prebuilt!"
+
+status "Compiling scrcpy-client"
+rm -rf build
+meson build --buildtype=release --strip -Db_lto=true -Dprebuilt_server=scrcpy-server || error "Could not generate build options"
+cd build || error "Could not move to build directory"
+ninja || error "Error while building scrcpy client"
+status "Installing scrcpy-client"
+sudo ninja install || error "Could not install scrcpy"
 
 #clean up
 status -n "Cleaning up..."
-cd ..
-rm -rf ./scrcpy
-status_green Done
+cd
+rm -rf /tmp/scrcpy
+status_green "Done"
 
 #menu entry
 sudo mkdir -p /usr/local/share/applications
