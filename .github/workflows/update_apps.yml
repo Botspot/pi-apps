@@ -127,7 +127,7 @@ jobs:
             sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
             # store apps changed from last commit to working directory in varaible
-            changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+            mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
 
             # # debugging, set changed_apps to Arduino as a test app
             # changed_apps="Arduino"
@@ -136,15 +136,10 @@ jobs:
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
-            # loop using newline as the delimiter. reset it back to the previous value once entering the loop (to not affect any pi-apps scripts) and set it back after loop exits 
-            PRE_IFS="$IFS"
-            IFS=$'\n'
-            for app in $changed_apps; do
-              IFS="$PRE_IFS"
+            for app in "${changed_apps[@]}"; do
               ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
               ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
-            IFS="$PRE_IFS"
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM32<<EOF" >> $GITHUB_ENV
@@ -188,7 +183,7 @@ jobs:
             sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
             # store apps changed from last commit to working directory in varaible
-            changed_apps="$(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)"
+            mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
 
             # # debugging, set changed_apps to Arduino as a test app
             # changed_apps="Arduino"
@@ -197,15 +192,9 @@ jobs:
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
-            # loop using newline as the delimiter. reset it back to the previous value once entering the loop (to not affect any pi-apps scripts) and set it back after loop exits 
-            PRE_IFS="$IFS"
-            IFS=$'\n'
-            for app in $changed_apps; do
-              IFS="$PRE_IFS"
-              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+            for app in "${changed_apps[@]}"; do              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
               ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
             done
-            IFS="$PRE_IFS"
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM64<<EOF" >> $GITHUB_ENV
