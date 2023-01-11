@@ -153,8 +153,11 @@ jobs:
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
-              ./manage install "$app" || { git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-              ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              # skip checking DDNet (due to Rust) if on arm32 under QEMU: https://github.com/rust-lang/cargo/issues/8719
+              if [ "$app" != "DDNet" ]; then
+                ./manage install "$app" || { git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+                ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              fi
             done
 
             if test -f /tmp/failed_update_apps; then
