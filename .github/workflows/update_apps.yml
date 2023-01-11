@@ -140,13 +140,16 @@ jobs:
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
-              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
-              ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+              ./manage install "$app" || { git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
             done
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM32<<EOF" >> $GITHUB_ENV
               cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+              echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
+              echo "$UPDATED_APPS" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
 
@@ -198,13 +201,17 @@ jobs:
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
-            for app in "${changed_apps[@]}"; do              ./manage install "$app" || ( git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps )
-              ./manage uninstall "$app" || ( git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps )
+            for app in "${changed_apps[@]}"; do
+              ./manage install "$app" || { git checkout -- "apps/$app"; echo "**Failed to install $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo "**Failed to uninstall $app, reverting to previous version.**" >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
             done
 
             if test -f /tmp/failed_update_apps; then
               echo "FAILED_UPDATE_APPS_ARM64<<EOF" >> $GITHUB_ENV
               cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+              echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
+              echo "$UPDATED_APPS" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
 
