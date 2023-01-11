@@ -112,6 +112,9 @@ jobs:
           export_github_env: yes
 
           import_github_env: true
+
+          # set shell to bash
+          shell: /bin/bash
           commands: |
             sudo chown runner:docker /home/runner
             # print user info
@@ -168,6 +171,9 @@ jobs:
           export_github_env: yes
 
           import_github_env: true
+
+          # set shell to bash
+          shell: /bin/bash
           commands: |
             sudo chown runner:docker /home/runner
             # print user info
