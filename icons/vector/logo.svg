@@ -1,187 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="layer" x="0px" y="0px" viewBox="0 0 652 652" style="enable-background:new 0 0 652 652;" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://greentree.cf">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:bx="https://boxy-svg.com">
+  <style>
+        /* if preferred theme is dark mode */
+        .background {
+            /* top left to bottom right 212121 to 000000 */
+            fill: url(#paint3_linear_12_937);
+        }
+        @media (prefers-color-scheme: dark) {
+            .background {
+                /* top left to bottom right 212121 to 000000 */
+                fill: url(#paint3_linear_14_946);
+            }
+        }
+    </style>
   <defs>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-1" gradientTransform="matrix(0.144074, 0.989567, -0.315078, 0.045874, 233.494156, -173.68145)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
+    <linearGradient id="gradient-0" bx:pinned="true">
+      <title>pink</title>
+      <stop offset="0" style="stop-color: rgb(255, 47, 106);"/>
+      <stop offset="0.491" style="stop-color: rgb(255, 5, 76);"/>
+      <stop offset="1" style="stop-color: rgb(223, 0, 63);"/>
     </linearGradient>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-2" gradientTransform="matrix(0.144074, 0.989567, -0.315078, 0.045874, -414.779709, -173.681923)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
+    <linearGradient id="gradient-0-0" gradientUnits="userSpaceOnUse" x1="256" y1="176" x2="256" y2="432" gradientTransform="matrix(0.922824, -0.544635, 0.596556, 1.128032, -160.115604, 119.804918)" xlink:href="#gradient-0"/>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="256" y1="109.578" x2="256" y2="512" id="gradient-1" gradientTransform="matrix(0.851751, -0.500013, 0.57409, 0.892842, -182.474014, 187.884277)">
+      <stop offset="0" style="stop-color: rgb(39, 39, 39);"/>
+      <stop offset="1" style="stop-color: rgb(4, 4, 4);"/>
     </linearGradient>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-5" gradientTransform="matrix(0.013747, 0.462034, -0.543285, 0.00119, 536.939941, -323.788818)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
-    </linearGradient>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-6" gradientTransform="matrix(0.013747, 0.462034, -0.543285, 0.00119, -359.223267, 95.066528)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
-    </linearGradient>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-7" gradientTransform="matrix(0.013747, 0.462034, -0.543287, 0.00119, 292.773651, -323.566833)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
-    </linearGradient>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-8" gradientTransform="matrix(0.013747, 0.462034, -0.543285, 0.00119, -115.056702, 95.066589)">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 0);"/>
-      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
-    </linearGradient>
-    <radialGradient gradientUnits="userSpaceOnUse" cx="324.136" cy="-75.686" r="90.082" id="gradient-9">
-      <stop offset="0" style="stop-color: rgba(6, 136, 30, 1)"/>
-      <stop offset="1" style="stop-color: rgb(6, 136, 30);"/>
-    </radialGradient>
-    <filter id="drop-shadow-filter-0" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 14 0.73 rgba(0,0,0,0.4)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
-      <feOffset dx="0" dy="10"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="spread-ctrl" type="linear" slope="1.46"/>
-      </feComponentTransfer>
-      <feFlood flood-color="rgba(0,0,0,0.4)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="drop-shadow-filter-2" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 16 0.58 rgba(0,0,0,0.3)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="16"/>
-      <feOffset dx="0" dy="10"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="spread-ctrl" type="linear" slope="1.16"/>
-      </feComponentTransfer>
-      <feFlood flood-color="rgba(0,0,0,0.3)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
     <clipPath id="clip-0">
       <path d="M 234.054 230.974 L 170.054 230.974 L 170.054 124.652 C 170.828 113.872 175.107 103.629 182.239 95.501 L 220.622 57.118 C 229.054 49.157 240 44.414 251.538 43.686 L 396.445 43.686 C 408.036 44.343 419.05 49.052 427.54 57.007 L 466.124 95.591 C 473.139 103.618 477.379 113.695 478.219 124.313 L 478.219 230.974 L 414.219 230.974 L 414.219 107.686 L 234.054 107.686 Z" style="filter: none;">
         <title>shadow handle</title>
       </path>
     </clipPath>
-    <filter id="drop-shadow-filter-4" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 7 7 0.36 rgba(255,255,255,0.3)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
-      <feOffset dx="0" dy="7"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="spread-ctrl" type="linear" slope="0.72"/>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="324.136" cy="-75.686" r="90.082" id="gradient-9">
+      <stop offset="0" style="stop-color: rgba(6, 136, 30, 1)"/>
+      <stop offset="1" style="stop-color: rgb(6, 136, 30);"/>
+    </radialGradient>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-5" gradientTransform="matrix(0.235049, 0.992536, -1.144542, 0.055825, 296.983429, -176.121595)">
+      <stop offset="0" style="stop-opacity: 0; stop-color: rgb(9, 191, 44);"/>
+      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
+    </linearGradient>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="256" y1="139.645" x2="256" y2="499.111" id="gradient-6" gradientTransform="matrix(0.83283, -0.598847, 0.696875, 0.97352, -174.700954, 161.044677)">
+      <stop offset="0" style="stop-color: rgb(83, 213, 255);"/>
+      <stop offset="1" style="stop-color: rgb(92, 56, 207);"/>
+    </linearGradient>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="196.94" cy="15.774" r="154.082" id="gradient-4" gradientTransform="matrix(-0.053568, 1.75092, -2.580057, -0.078937, 214.819174, -334.606125)">
+      <stop offset="0" style="stop-color: rgb(94, 255, 188);"/>
+      <stop offset="1" style="stop-color: rgb(124, 124, 124);"/>
+    </radialGradient>
+    <filter id="inner-shadow-filter-0" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="inner-shadow 1 0 5 6 0.15 rgba(255,255,255,0.7)">
+      <feOffset dx="0" dy="5"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feComposite operator="out" in="SourceGraphic"/>
+      <feComponentTransfer result="choke">
+        <feFuncA type="linear" slope="0.3"/>
       </feComponentTransfer>
-      <feFlood flood-color="rgba(255,255,255,0.3)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feFlood flood-color="rgba(255,255,255,0.7)" result="color"/>
+      <feComposite operator="in" in="color" in2="choke" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
     </filter>
-    <filter id="filter-2" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 -10 5 0.5 rgba(0,0,0,0.3)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
-      <feOffset dx="0" dy="-10"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="feFuncA-2" type="linear" slope="1"/>
+    <filter id="inner-shadow-filter-1" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="inner-shadow 1 0 -5 6 0.5 rgba(0,0,0,0.7)">
+      <feOffset dx="0" dy="-5"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feComposite operator="out" in="SourceGraphic"/>
+      <feComponentTransfer result="choke">
+        <feFuncA type="linear" slope="1"/>
       </feComponentTransfer>
-      <feFlood flood-color="rgba(0,0,0,0.3)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feFlood flood-color="rgba(0,0,0,0.7)" result="color"/>
+      <feComposite operator="in" in="color" in2="choke" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
     </filter>
-    <clipPath id="clip-1">
-      <rect x="179.785" y="270.48" width="292.43" height="292.43" style="" rx="62.1" ry="62.1">
-        <title>black</title>
-      </rect>
-    </clipPath>
-    <filter id="filter-1" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 15 0.48 rgba(0,0,0,0.56)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="15"/>
-      <feOffset dx="0" dy="10"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="feFuncA-1" type="linear" slope="0.96"/>
-      </feComponentTransfer>
-      <feFlood flood-color="rgba(0,0,0,0.56)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="filter-3" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 15 0.48 rgba(0,0,0,0.56)">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="15"/>
-      <feOffset dx="0" dy="10"/>
-      <feComponentTransfer result="offsetblur">
-        <feFuncA id="feFuncA-3" type="linear" slope="0.96"/>
-      </feComponentTransfer>
-      <feFlood flood-color="rgba(0,0,0,0.56)" x="10" y="10"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <linearGradient gradientUnits="userSpaceOnUse" x1="325.999" y1="205.284" x2="325.999" y2="617.816" id="gradient-10" gradientTransform="matrix(1, 0, 0, 1, 0, 0)">
-      <stop offset="0" style="stop-color: rgb(53, 59, 255);"/>
-      <stop offset="1" style="stop-color: rgb(8, 0, 166);"/>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="246.487" y1="43.686" x2="246.487" y2="107.686" id="gradient-2" gradientTransform="matrix(0.19221, 0.99675, -1.060395, 0.035923, -349.524277, -175.017197)">
+      <stop offset="0" style="stop-opacity: 0; stop-color: rgb(9, 191, 44);"/>
+      <stop offset="1" style="stop-color: rgba(0, 0, 0, 0.38);"/>
     </linearGradient>
   </defs>
-  <style type="text/css">
-	.st0{fill:#020203;}
-	.st1{fill:#6ABF4B;}
-	.st2{fill:#C31C4A;}
-</style>
-  <path d="M 244.51 233.83 L 186.614 233.83 L 186.614 137.649 C 187.315 127.898 191.186 118.632 197.637 111.28 L 232.359 76.558 C 239.987 69.356 249.889 65.065 260.326 64.407 L 391.411 64.407 C 401.896 65.001 411.86 69.261 419.54 76.457 L 454.444 111.361 C 460.79 118.622 464.625 127.738 465.385 137.343 L 465.385 233.83 L 407.489 233.83 L 407.489 122.302 L 244.51 122.302 Z" style="fill: rgb(6, 176, 37); filter: url(#drop-shadow-filter-2);">
-    <title>shadow handle</title>
-  </path>
-  <path style="stroke-width: 30px; filter: url(#filter-3); fill: url(#gradient-10);" d="M 81.843 205.284 H 570.155 A 46.477 46.477 0 0 1 616.632 251.761 V 501.721 A 116.095 116.095 0 0 1 500.537 617.816 H 151.461 A 116.095 116.095 0 0 1 35.366 501.721 V 251.761 A 46.477 46.477 0 0 1 81.843 205.284 Z" bx:shape="rect 35.366 205.284 581.266 412.532 46.477 46.477 116.095 116.095 1@f5441ab0">
-    <title>basket</title>
-  </path>
-  <path style="fill: rgb(255, 255, 255); stroke-width: 30px; filter: url(#filter-1);" d="M 81.794 233.403 H 570.236 A 17.131 17.131 0 0 1 587.367 250.534 V 495.86 A 92.154 92.154 0 0 1 495.213 588.014 H 156.817 A 92.154 92.154 0 0 1 64.663 495.86 V 250.534 A 17.131 17.131 0 0 1 81.794 233.403 Z" bx:shape="rect 64.663 233.403 522.704 354.611 17.131 17.131 92.154 92.154 1@9bc2279a">
-    <title>white cover</title>
-  </path>
-  <g transform="matrix(0.904613, 0, 0, 0.904613, 32.781208, 24.887253)" style="filter: none; clip-path: url(#clip-0);">
+  <g transform="matrix(0.863504, 0, 0, 0.863504, -23.893173, -37.692394)" style="filter: none; clip-path: url(#clip-0);">
     <title>handle</title>
-    <rect x="170.054" y="107.686" width="64" height="123.288" style="fill: rgb(6, 176, 37);"/>
-    <rect x="414.219" y="107.686" width="64" height="123.288" style="fill: rgb(6, 176, 37);"/>
+    <rect x="170.054" y="106.528" width="64" height="116.193" style="fill: rgb(6, 176, 60);"/>
+    <rect x="414.219" y="106.528" width="64" height="116.193" style="fill: rgb(6, 176, 60);"/>
     <rect x="234.054" y="-107.686" width="180.165" height="64" style="fill: url(#gradient-9);" transform="matrix(1, 0, 0, -1, 0, 0)"/>
-    <path d="M 170.054 107.686 L 234.054 43.686 L 234.054 107.686 L 170.054 107.686 Z" style="fill: rgb(6, 176, 37);"/>
-    <path d="M 414.219 43.686 L 478.219 107.686 L 414.219 107.686 L 414.219 43.686 Z" style="fill: rgb(6, 176, 37);"/>
-    <rect x="234.054" y="43.686" width="21.139" height="64" style="fill: url(#gradient-1);"/>
-    <rect x="-414.219" y="43.686" width="21.139" height="64" style="fill: url(#gradient-2);" transform="matrix(-1, 0, 0, 1, 0, 0)"/>
-  </g>
-  <g transform="matrix(0.78414, 0, 0, 0.78414, 73.326454, 101.673027)" style="filter: url(#drop-shadow-filter-0);">
-    <title>logo</title>
-    <rect x="144.58" y="218.624" width="355.3" height="355.3" style="" rx="62.1" ry="62.1">
-      <title>black</title>
-    </rect>
-    <rect x="167.679" y="241.723" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="277.266" y="241.723" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="386.825" y="241.723" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="167.679" y="350.4" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="277.252" y="351.296" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="386.825" y="350.4" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="167.679" y="460.869" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="277.266" y="460.869" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-    <rect x="386.825" y="460.869" width="89.958" height="89.958" style="fill: rgb(247, 13, 78);" rx="28.994" ry="28.994"/>
-  </g>
-  <g style="visibility: hidden;" transform="matrix(0.904613, 0, 0, 0.904613, 31.095921, 31.09601)">
-    <title>crescents</title>
-    <path style="fill: rgb(255, 255, 255);" transform="matrix(-0.923872, -0.382702, 0.382702, -0.923872, 309.233303, 504.10176)" d="M 272.93 299.782 A 20.596 20.596 0 0 1 272.93 340.218 A 49.59 49.59 0 0 0 272.93 299.782 Z" bx:shape="crescent 269 320 20.596 158 0.7 1@08b2f45c"/>
-    <path style="fill: rgb(255, 255, 255);" transform="matrix(-0.382665, -0.923887, 0.923887, -0.382665, 47.995705, 419.089032)" d="M 272.93 299.782 A 20.596 20.596 0 0 1 272.93 340.218 A 49.59 49.59 0 0 0 272.93 299.782 Z" bx:shape="crescent 269 320 20.596 158 0.7 1@08b2f45c"/>
-    <path style="fill: rgb(255, 255, 255);" transform="matrix(0.923872, -0.382702, -0.382702, -0.923872, 342.792393, 504.120131)" d="M 272.93 299.782 A 20.596 20.596 0 0 1 272.93 340.218 A 49.59 49.59 0 0 0 272.93 299.782 Z" bx:shape="crescent 269 320 20.596 158 0.7 1@08b2f45c"/>
-    <path style="fill: rgb(255, 255, 255);" transform="matrix(0.382665, -0.923887, -0.923887, -0.382665, 604.029929, 419.1078)" d="M 272.93 299.782 A 20.596 20.596 0 0 1 272.93 340.218 A 49.59 49.59 0 0 0 272.93 299.782 Z" bx:shape="crescent 269 320 20.596 158 0.7 1@08b2f45c"/>
-  </g>
-  <g style="" transform="matrix(0.904613, 0, 0, 0.956454, 31.095921, 19.466761)">
-    <title>shadows around handle</title>
-    <rect x="480.082" y="-224.325" width="36" height="29.572" style="fill: url(#gradient-5);" transform="matrix(1, 0, 0, -1, 0, 0)"/>
-    <rect x="-416.082" y="194.531" width="36" height="29.572" style="fill: url(#gradient-6);" transform="matrix(-1, 0, 0, 1, 0, 0)"/>
-    <rect x="235.917" y="-224.103" width="36" height="29.572" style="fill: url(#gradient-7);" transform="matrix(1, 0, 0, -1, 0, 0)"/>
-    <rect x="-171.917" y="194.531" width="36" height="29.572" style="fill: url(#gradient-8);" transform="matrix(-1, 0, 0, 1, 0, 0)"/>
-  </g>
-  <g style="clip-path: url(#clip-1);" transform="matrix(0.952725, 0, 0, 0.952725, 15.411641, 15.411695)">
-    <title>accents</title>
-    <path d="M 230.896 270.48 L 421.103 270.48 C 449.331 270.48 472.215 293.363 472.215 321.591 L 472.215 511.798 C 472.215 540.026 449.331 562.91 421.103 562.91 L 230.896 562.91 C 202.668 562.91 179.785 540.026 179.785 511.798 L 179.785 321.591 C 179.785 293.363 202.668 270.48 230.896 270.48 Z M 198.797 313.355 L 198.797 339.668 C 198.797 352.848 209.481 363.532 222.66 363.532 L 248.973 363.532 C 262.152 363.532 272.836 352.848 272.836 339.668 L 272.836 313.355 C 272.836 300.176 262.152 289.492 248.973 289.492 L 222.66 289.492 C 209.481 289.492 198.797 300.176 198.797 313.355 Z M 288.992 313.355 L 288.992 339.668 C 288.992 352.848 299.676 363.532 312.856 363.532 L 339.169 363.532 C 352.348 363.532 363.032 352.848 363.032 339.668 L 363.032 313.355 C 363.032 300.176 352.348 289.492 339.169 289.492 L 312.856 289.492 C 299.676 289.492 288.992 300.176 288.992 313.355 Z M 379.165 313.355 L 379.165 339.668 C 379.165 352.848 389.849 363.532 403.028 363.532 L 429.341 363.532 C 442.521 363.532 453.205 352.848 453.205 339.668 L 453.205 313.355 C 453.205 300.176 442.521 289.492 429.341 289.492 L 403.028 289.492 C 389.849 289.492 379.165 300.176 379.165 313.355 Z M 198.797 402.802 L 198.797 429.115 C 198.797 442.294 209.481 452.978 222.66 452.978 L 248.973 452.978 C 262.152 452.978 272.836 442.294 272.836 429.115 L 272.836 402.802 C 272.836 389.622 262.152 378.938 248.973 378.938 L 222.66 378.938 C 209.481 378.938 198.797 389.622 198.797 402.802 Z M 288.981 403.539 L 288.981 429.852 C 288.981 443.032 299.665 453.716 312.844 453.716 L 339.157 453.716 C 352.336 453.716 363.021 443.032 363.021 429.852 L 363.021 403.539 C 363.021 390.36 352.336 379.676 339.157 379.676 L 312.844 379.676 C 299.665 379.676 288.981 390.36 288.981 403.539 Z M 379.165 402.802 L 379.165 429.115 C 379.165 442.294 389.849 452.978 403.028 452.978 L 429.341 452.978 C 442.521 452.978 453.205 442.294 453.205 429.115 L 453.205 402.802 C 453.205 389.622 442.521 378.938 429.341 378.938 L 403.028 378.938 C 389.849 378.938 379.165 389.622 379.165 402.802 Z M 198.797 493.723 L 198.797 520.036 C 198.797 533.216 209.481 543.9 222.66 543.9 L 248.973 543.9 C 262.152 543.9 272.836 533.216 272.836 520.036 L 272.836 493.723 C 272.836 480.544 262.152 469.86 248.973 469.86 L 222.66 469.86 C 209.481 469.86 198.797 480.544 198.797 493.723 Z M 288.992 493.723 L 288.992 520.036 C 288.992 533.216 299.676 543.9 312.856 543.9 L 339.169 543.9 C 352.348 543.9 363.032 533.216 363.032 520.036 L 363.032 493.723 C 363.032 480.544 352.348 469.86 339.169 469.86 L 312.856 469.86 C 299.676 469.86 288.992 480.544 288.992 493.723 Z M 379.165 493.723 L 379.165 520.036 C 379.165 533.216 389.849 543.9 403.028 543.9 L 429.341 543.9 C 442.521 543.9 453.205 533.216 453.205 520.036 L 453.205 493.723 C 453.205 480.544 442.521 469.86 429.341 469.86 L 403.028 469.86 C 389.849 469.86 379.165 480.544 379.165 493.723 Z" style="filter: url(#drop-shadow-filter-4); isolation: isolate;">
-      <title>white accents</title>
+    <path d="M 170.054 107.686 L 234.054 43.686 L 234.054 107.686 L 170.054 107.686 Z" style="fill: rgb(6, 176, 60);"/>
+    <path d="M 414.219 43.686 L 478.219 107.686 L 414.219 107.686 L 414.219 43.686 Z" style="fill: rgb(6, 176, 60);"/>
+    <rect x="234.054" y="43.686" width="56.804" height="64" style="fill: url(#gradient-5);"/>
+    <rect x="-414.219" y="43.686" width="50.435" height="64" style="fill: url(#gradient-2);" transform="matrix(-1, 0, 0, 1, 0, 0)"/>
+    <path d="M 234.054 43.686 L 414.219 43.686 L 477.061 106.528 L 478.219 106.528 L 478.219 222.721 L 414.219 222.721 L 414.219 107.686 L 234.054 107.686 L 234.054 222.721 L 170.054 222.721 L 170.054 106.528 L 171.212 106.528 Z" style="mix-blend-mode: overlay; fill: url(#gradient-4);">
+      <title>handle gradient</title>
     </path>
-    <path d="M 230.896 270.48 L 421.103 270.48 C 449.331 270.48 472.215 293.363 472.215 321.591 L 472.215 511.798 C 472.215 540.026 449.331 562.91 421.103 562.91 L 230.896 562.91 C 202.668 562.91 179.785 540.026 179.785 511.798 L 179.785 321.591 C 179.785 293.363 202.668 270.48 230.896 270.48 Z M 198.797 313.355 L 198.797 339.668 C 198.797 352.848 209.481 363.532 222.66 363.532 L 248.973 363.532 C 262.152 363.532 272.836 352.848 272.836 339.668 L 272.836 313.355 C 272.836 300.176 262.152 289.492 248.973 289.492 L 222.66 289.492 C 209.481 289.492 198.797 300.176 198.797 313.355 Z M 288.992 313.355 L 288.992 339.668 C 288.992 352.848 299.676 363.532 312.856 363.532 L 339.169 363.532 C 352.348 363.532 363.032 352.848 363.032 339.668 L 363.032 313.355 C 363.032 300.176 352.348 289.492 339.169 289.492 L 312.856 289.492 C 299.676 289.492 288.992 300.176 288.992 313.355 Z M 379.165 313.355 L 379.165 339.668 C 379.165 352.848 389.849 363.532 403.028 363.532 L 429.341 363.532 C 442.521 363.532 453.205 352.848 453.205 339.668 L 453.205 313.355 C 453.205 300.176 442.521 289.492 429.341 289.492 L 403.028 289.492 C 389.849 289.492 379.165 300.176 379.165 313.355 Z M 198.797 402.802 L 198.797 429.115 C 198.797 442.294 209.481 452.978 222.66 452.978 L 248.973 452.978 C 262.152 452.978 272.836 442.294 272.836 429.115 L 272.836 402.802 C 272.836 389.622 262.152 378.938 248.973 378.938 L 222.66 378.938 C 209.481 378.938 198.797 389.622 198.797 402.802 Z M 288.981 403.539 L 288.981 429.852 C 288.981 443.032 299.665 453.716 312.844 453.716 L 339.157 453.716 C 352.336 453.716 363.021 443.032 363.021 429.852 L 363.021 403.539 C 363.021 390.36 352.336 379.676 339.157 379.676 L 312.844 379.676 C 299.665 379.676 288.981 390.36 288.981 403.539 Z M 379.165 402.802 L 379.165 429.115 C 379.165 442.294 389.849 452.978 403.028 452.978 L 429.341 452.978 C 442.521 452.978 453.205 442.294 453.205 429.115 L 453.205 402.802 C 453.205 389.622 442.521 378.938 429.341 378.938 L 403.028 378.938 C 389.849 378.938 379.165 389.622 379.165 402.802 Z M 198.797 493.723 L 198.797 520.036 C 198.797 533.216 209.481 543.9 222.66 543.9 L 248.973 543.9 C 262.152 543.9 272.836 533.216 272.836 520.036 L 272.836 493.723 C 272.836 480.544 262.152 469.86 248.973 469.86 L 222.66 469.86 C 209.481 469.86 198.797 480.544 198.797 493.723 Z M 288.992 493.723 L 288.992 520.036 C 288.992 533.216 299.676 543.9 312.856 543.9 L 339.169 543.9 C 352.348 543.9 363.032 533.216 363.032 520.036 L 363.032 493.723 C 363.032 480.544 352.348 469.86 339.169 469.86 L 312.856 469.86 C 299.676 469.86 288.992 480.544 288.992 493.723 Z M 379.165 493.723 L 379.165 520.036 C 379.165 533.216 389.849 543.9 403.028 543.9 L 429.341 543.9 C 442.521 543.9 453.205 533.216 453.205 520.036 L 453.205 493.723 C 453.205 480.544 442.521 469.86 429.341 469.86 L 403.028 469.86 C 389.849 469.86 379.165 480.544 379.165 493.723 Z" style="filter: url(#filter-2);">
-      <title>black accents</title>
-    </path>
+  </g>
+  <path style="fill: url(#gradient-1);" d="M 58.44 127.615 H 453.56 A 58.44 58.44 0 0 1 512 186.055 V 370.793 A 141.207 141.207 0 0 1 370.793 512 H 141.207 A 141.207 141.207 0 0 1 0 370.793 V 186.055 A 58.44 58.44 0 0 1 58.44 127.615 Z" bx:shape="rect 0 127.615 512 384.385 58.44 58.44 141.207 141.207 1@68dab606"/>
+  <g style="filter: url(#inner-shadow-filter-1);">
+    <title>dots</title>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M 120.805 224.646 C 120.805 189.157 124.315 185.647 159.805 185.647 C 195.296 185.647 198.805 189.157 198.805 224.646 C 198.805 260.136 195.296 263.647 159.805 263.647 C 124.315 263.647 120.805 260.136 120.805 224.646 Z M 391.194 416.648 C 391.194 452.136 387.685 455.647 352.194 455.647 C 316.703 455.647 313.194 452.136 313.194 416.648 C 313.194 381.158 316.703 377.647 352.194 377.647 C 387.685 377.647 391.194 381.158 391.194 416.648 Z M 313.064 320.647 C 313.064 285.158 316.575 281.647 352.065 281.647 C 387.553 281.647 391.064 285.158 391.064 320.647 C 391.064 356.136 387.553 359.647 352.065 359.647 C 316.575 359.647 313.064 356.136 313.064 320.647 Z M 390.805 224.646 C 390.805 260.136 387.296 263.647 351.805 263.647 C 316.314 263.647 312.805 260.136 312.805 224.646 C 312.805 189.157 316.314 185.647 351.805 185.647 C 387.296 185.647 390.805 189.157 390.805 224.646 Z M 217.194 416.648 C 217.194 381.158 220.704 377.647 256.195 377.647 C 291.684 377.647 295.194 381.158 295.194 416.648 C 295.194 452.136 291.684 455.647 256.195 455.647 C 220.704 455.647 217.194 452.136 217.194 416.648 Z M 295.064 320.647 C 295.064 356.136 291.554 359.647 256.065 359.647 C 220.574 359.647 217.064 356.136 217.064 320.647 C 217.064 285.158 220.574 281.647 256.065 281.647 C 291.554 281.647 295.064 285.158 295.064 320.647 Z M 216.805 224.646 C 216.805 189.157 220.315 185.647 255.805 185.647 C 291.295 185.647 294.805 189.157 294.805 224.646 C 294.805 260.136 291.295 263.647 255.805 263.647 C 220.315 263.647 216.805 260.136 216.805 224.646 Z M 199.194 416.648 C 199.194 452.136 195.685 455.647 160.194 455.647 C 124.705 455.647 121.194 452.136 121.194 416.648 C 121.194 381.158 124.705 377.647 160.194 377.647 C 195.685 377.647 199.194 381.158 199.194 416.648 Z M 121.064 320.647 C 121.064 285.158 124.574 281.647 160.065 281.647 C 195.554 281.647 199.064 285.158 199.064 320.647 C 199.064 356.136 195.554 359.647 160.065 359.647 C 124.574 359.647 121.064 356.136 121.064 320.647 Z" style="fill: url(#gradient-0-0); filter: url(#inner-shadow-filter-0);"/>
+  </g>
+  <path style="stroke: url(#gradient-6); stroke-width: 15px;" d="M 45.062 134.845 H 466.243 A 37.817 37.817 0 0 1 504.06 172.662 V 395.342 A 109.413 109.413 0 0 1 394.647 504.755 H 116.658 A 109.413 109.413 0 0 1 7.245 395.342 V 172.662 A 37.817 37.817 0 0 1 45.062 134.845 Z" bx:shape="rect 7.245 134.845 496.815 369.91 37.817 37.817 109.413 109.413 1@44a8717c"/>
+  <g style="visibility: hidden;">
+    <title>16x16 grid</title>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="320"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="288"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="256"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="224"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="192"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="160"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="128"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="96"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="64"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="32"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="352"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="384"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="416"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="448"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="480"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-320" transform="matrix(0, 1, 1, 0, 640, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-288" transform="matrix(0, 1, 1, 0, 576, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-256" transform="matrix(0, 1, 1, 0, 512, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-224" transform="matrix(0, 1, 1, 0, 448, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-192" transform="matrix(0, 1, 1, 0, 384, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-160" transform="matrix(0, 1, 1, 0, 320, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-128" transform="matrix(0, 1, 1, 0, 256, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-96" transform="matrix(0, 1, 1, 0, 192, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-64" transform="matrix(0, 1, 1, 0, 128, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-32" transform="matrix(0, 1, 1, 0, 64, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" transform="matrix(0, 1, 1, 0, 0, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-352" transform="matrix(0, 1, 1, 0, 704, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-384" transform="matrix(0, 1, 1, 0, 768, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-416" transform="matrix(0, 1, 1, 0, 832, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-448" transform="matrix(0, 1, 1, 0, 896, -512)" x="512"/>
+    <rect width="512" height="32" style="stroke: rgb(48, 141, 63); stroke-opacity: 0.42;" y="-480" transform="matrix(0, 1, 1, 0, 960, -512)" x="512"/>
   </g>
 </svg>

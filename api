@@ -2166,7 +2166,7 @@ multi_install_gui() { #graphical interface to install multiple apps from a list.
 ${DIRECTORY}/apps/$app/icon-24.png
 $app
 $(head -n1 "${DIRECTORY}/apps/$app/description")"
-  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --window-icon="${DIRECTORY}/icons/settings.png" --list --checklist \
     --width=300 --height=500 \
     --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
     --text="Install everything you want!"$'\n'"Note: apps that are already installed are not shown." \
@@ -2218,7 +2218,7 @@ multi_uninstall_gui() { #graphical interface to uninstall multiple apps from a l
 ${DIRECTORY}/apps/$app/icon-24.png
 $app
 $(head -n1 "${DIRECTORY}/apps/$app/description")"
-  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --list --checklist \
+  done | sed 's/&/&amp;/g' | yad "${yadflags[@]}" --window-icon="${DIRECTORY}/icons/settings.png" --list --checklist \
     --width=300 --height=500 \
     --hide-column=4 --print-column=3 --tooltip-column=4 --no-headers \
     --text="Uninstall everything you want!"$'\n'"Note: apps that are not installed are not shown." \
