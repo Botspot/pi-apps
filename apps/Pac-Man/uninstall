@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo rm -rf "/usr/local/bin/pacman" "/usr/local/share/pacman" "/usr/local/share/applications/pacman.desktop" "/usr/local/share/doc/pacman"
+sudo rm -rf "/usr/local/bin/pacman_sdl" "/usr/local/share/pacman_sdl" "/usr/local/share/applications/pacman_sdl.desktop" "/usr/local/share/doc/pacman_sdl"
 
 sudo update-desktop-database -q
 
