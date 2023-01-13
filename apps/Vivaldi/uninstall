@@ -1,4 +1,6 @@
 #!/bin/bash
 purge_packages || exit 1
 
+# there is no need to remove /etc/apt/trusted.gpg.d/vivaldi-4218647E.gpg and /etc/apt/sources.list.d/vivaldi.list as part of the uninstall as they are fully managed by the vivaldi deb
+# only remove legacy keys and apt repo from old vivaldi instructions
 sudo rm -f /usr/share/keyrings/vivaldi-browser.gpg /etc/apt/sources.list.d/vivaldi-archive.list

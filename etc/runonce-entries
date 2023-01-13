@@ -218,4 +218,12 @@ runonce <<"EOF"
   fi
 EOF
 
+#remove old vivaldi repository
+runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/vivaldi-archive.list ];then
+    sudo_popup rm -f /etc/apt/sources.list.d/vivaldi-archive.list
+    sudo_popup rm -f /usr/share/keyrings/vivaldi-browser.gpg
+  fi
+EOF
+
 true
