@@ -13,5 +13,20 @@ if package_installed kodi-bin ;then
   sudo apt purge kodi-bin -y --autoremove
 fi
 
+# check for bad PPA use
+ppa_name="team-xbmc/ppa"
+ppa_grep="$ppa_name"
+[[ "${ppa_name}" != */ ]] && ppa_grep="${ppa_name}/"
+ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+if [[ $ppa_added -eq "1" ]]; then
+  warning "A BAD PPA from the XBCM Kodi Team has been found on your system."
+  warning "There is no ARM support in this PPA and it causes installation errors so it has been removed."
+  warning "This is a user error. Do NOT add PPAs without ARM support to your system."
+  status "Removing $ppa_name PPA"
+  install_packages ppa-purge || exit 1
+  apt_lock_wait
+  sudo ppa-purge "ppa:$ppa_name" -y
+fi
+
 install_packages kodi || exit 1
 
