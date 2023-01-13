@@ -145,11 +145,6 @@ jobs:
             # store apps changed from last commit to working directory in varaible
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
 
-            # # debugging, set changed_apps to Arduino as a test app
-            # changed_apps="Arduino"
-            # echo "exit 1" > ./apps/Arduino/install-32
-            # echo "debug output" > ./apps/debug_output.txt
-
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
@@ -222,11 +217,6 @@ jobs:
 
             # store apps changed from last commit to working directory in varaible
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
-
-            # # debugging, set changed_apps to Arduino as a test app
-            # changed_apps="Arduino"
-            # echo "exit 1" > ./apps/Arduino/install-64
-            # echo "debug output" > ./apps/debug_output.txt
 
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
