@@ -827,3 +827,10 @@ filepath="https://apt.raspbian-addons.org/debian/pool/main/a/antimicrox/antimicr
 
 install_packages "${filepath}" || exit 1
 ```
+
+#### Updated apps verification QEMU armhf/arm64 Chroot:<br>
+The github actions tests the install and uninstall scripts of each updated app on a Buster armhf PiOS and Bullseye arm64 PiOS image before creating a pull request for the automatic updates. If any script fails for a particular app on either image then the changes are dropped for that app and an error message is added to the pull request comment.
+
+This is accompished by running pi-apps in github actions through a QEMU powered chroot (since github actions does not have armhf/arm64 hosted runners). The QEMU chroot is setup using https://github.com/theofficialgman/arm-runner-action which is a fork of https://github.com/pguyot/arm-runner-action with added functionality to run commands as the `runner` user, github action's default non-root user.
+
+This method of testing is NOT foolproof and app developers should make sure that their scripts error and exit in the event of an install or uninstall failure. Running in QEMU is also NOT the same as running on bare-metal arm hardware. An exception for [one app has already had to be made due to issues](https://github.com/Botspot/pi-apps/commit/10e55a74ea26ca4e4a11aad68dab1ce62a4d099f).
