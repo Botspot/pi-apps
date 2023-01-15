@@ -6,7 +6,7 @@ case "$arch" in
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
-sudo rm -rf /usr/share/Pixelorama
+sudo rm -rf /usr/share/Pixelorama /usr/share/applications/com.orama_interactive.Pixelorama.desktop /usr/bin/pixelorama
 sudo unzip /tmp/pixelorama.zip -d /usr/share/Pixelorama
 rm -f /tmp/pixelorama.zip
 
