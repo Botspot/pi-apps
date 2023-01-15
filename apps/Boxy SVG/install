@@ -1,16 +1,7 @@
 #!/bin/bash
 #wget -qO- https://raw.githubusercontent.com/Botspot/Boxy-SVG-RPi/main/install.sh | bash
 
-#determine boxy svg download link
-if [ $arch == 32 ];then
-  processor=armhf
-elif [ $arch == 64 ];then
-  processor=arm64
-else
-  error '$arch variable not set!'
-  exit 1
-fi
-link="$(wget -qO- --header 'Snap-Device-Series: 16' http://api.snapcraft.io/v2/snaps/info/boxy-svg | sed 's/},{/}\n{/g' | grep $processor | tr '{,}' '\n' | grep '"url":"' | sed 's/^"url":"//g' | sed 's/"$//g')"
+link="$(wget -qO- --header 'Snap-Device-Series: 16' http://api.snapcraft.io/v2/snaps/info/boxy-svg | sed 's/},{/}\n{/g' | grep arm64 | tr '{,}' '\n' | grep '"url":"' | sed 's/^"url":"//g' | sed 's/"$//g')"
 
 if [ -z "$link" ];then
   error "Failed to find a link to download the Boxy SVG snap from! Be sure you are connected to the Internet."
@@ -30,7 +21,44 @@ sudo cp -a /tmp/boxy-mount/opt/boxy-svg /opt || error "Failed to copy files from
 sudo cp /tmp/boxy-mount/meta/gui/boxy-svg.svg /opt/boxy-svg
 sudo cp "$(dirname "$0")/icon-64.png" /opt/boxy-svg
 sudo umount /tmp/boxy-mount
+sudo rm -rf /tmp/boxy.snap /tmp/boxy-mount
 status_green "Done"
+
+#recompile electron app on armhf
+if [ $arch == 32 ];then
+  
+  "${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to recompile Boxy SVG on your 32-bit OS."
+  
+  #load nvm now
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  
+  npm install -g electron/asar electron-packager
+  
+  if [ $? != 0 ];then
+    #fixes npm bug where asar is already installed but it tries to install electron/asar on top of it
+    rm -f ~/.nvm/versions/node/*/bin/asar
+    npm install -g electron/asar electron-packager || error "NPM failed to install asar and electron-packager!"
+  fi
+  
+  rm -rf /tmp/boxy-sourcecode || exit 1
+  asar extract /opt/boxy-svg/resources/app.asar /tmp/boxy-sourcecode || error "Failed to extract boxy svg source code!"
+  
+  cd /tmp/boxy-sourcecode
+  npm install
+  #npm install -g electron-packager
+  electron-packager ./ --electron-version=21.3.4 --arch=armv7l --executable-name=boxy-svg --icon=boxy-svg.svg || error "Failed to package boxysvg electron app!"
+  
+  #copy new armhf files
+  sudo cp -a '/tmp/boxy-sourcecode/Boxy SVG-linux-armv7l'/. /opt/boxy-svg || error "Failed to copy new armv7l packages to /opt/boxy-svg"
+  rm -rf '/tmp/boxy-sourcecode/Boxy SVG-linux-armv7l'
+  
+  #Use armhf linux-fonts-manager
+  rm -rf /tmp/node_modules /tmp/boxy-sourcecode
+  cd /tmp && npm install local-fonts-manager || exit 1
+  sudo mv -f /tmp/node_modules/local-fonts-manager/build/Release/LinuxFontsManager.node /opt/boxy-svg/resources/app.asar.unpacked/node_modules/local-fonts-manager/build/Release
+  rm -rf /tmp/node_modules
+fi
 
 #compile xseticon to set the program's window icon
 if ! command -v xseticon >/dev/null ;then
@@ -47,35 +75,42 @@ if ! command -v xseticon >/dev/null ;then
 fi
 
 #create a runscript to set the window icon
-echo '#!/bin/bash
+cat << "EOF" | sudo tee /usr/local/bin/boxy-svg >/dev/null
+#!/bin/bash
 #This script runs Boxy SVG and will set its window-icon.
 
 #determine how many Boxy SVG windows are already open
-init_numwindows="$(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | wc -l)"
+numwindows="$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)"
 
 #run boxy-svg in background
 /opt/boxy-svg/boxy-svg "$@" &
 pid=$!
-#if this script is killed, also kill boxy svg
+#if this script is terminated, also kill boxy svg
 trap "kill $pid &>/dev/null" EXIT
 
-#wait for launch
-while [ "$init_numwindows" -lt "$(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | wc -l)" ];do
-  sleep 1
-done
-#now window opened
-
-echo "Boxy SVG window has opened, setting icon..."
-
-#set 
-IFS=$'\''\n'\''
-for windowid in $(xwininfo -tree -root | grep '\''\- Boxy SVG": ('\'' | awk '\''{print $1}'\'') ;do
-  xseticon -id $windowid "/opt/boxy-svg/icon-64.png"
-done
+#run a loop in the background to always check for new boxy svg windows and set the window icon
+IFS=$'\n'
+if [ $numwindows == 0 ];then #only run one instance of the daemon
+  while true;do 
+    if [ "$numwindows" != "$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)" ];then
+      for windowid in $(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | awk '{print $1}') ;do
+        xseticon -id $windowid "/opt/boxy-svg/icon-64.png"
+      done
+      numwindows="$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)"
+    fi
+    sleep 0.5
+  done &
+  loop_pid=$!
+fi
 
 #wait for window background-process to be closed before returning to shell
 wait $pid
-' | sudo tee /usr/local/bin/boxy-svg
+
+#stop the icon-setting loop
+code=$?
+kill $loop_pid &>/dev/null
+exit $code
+EOF
 sudo chmod +x /usr/local/bin/boxy-svg
 
 if [ -z "$(cat ~/.config/mimeapps.list | grep 'boxy-svg.desktop')" ];then
