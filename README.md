@@ -122,8 +122,6 @@ Pi-Apps is very easy to use.
   - ![icon](icons/screenshots/buttons/edit.png?raw=true) Modify the app's description, icons, or scripts. (This button is hidden unless you enable it in Settings)
   - ![icon](icons/screenshots/buttons/install.png?raw=true) Install the selected app.
   - ![icon](icons/screenshots/buttons/uninstall.png?raw=true) Uninstall the selected app.
-  - ![icon](icons/screenshots/buttons/credits.png?raw=true) See who played a part in adding the app.
-  - ![icon](icons/screenshots/buttons/errors.png?raw=true) If the selected app failed to install, this button will allow you to see its error log.
 
 - If you install/uninstall an app, you will see the **progress window**, keep installing/uninstalling apps to add them to the queue:  
 ![details](icons/screenshots/manage.png?raw=true)
