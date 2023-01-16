@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $arch == 32 ];then
-  url_arch=armhf
+  url_arch=armv7l
 elif [ $arch == 64 ];then
   url_arch=aarch64
 else
@@ -15,7 +15,7 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/musescore-tmp/MuseScore-4.0.0.3856641905-${url_arch}.AppImage" || exit 1
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/MuseScore-4.0.1.230161436-${url_arch}.AppImage" || exit 1
 
 chmod +x "/tmp/MuseScore.AppImage"
 
