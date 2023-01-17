@@ -2,4 +2,6 @@
 
 sudo rm -rf /usr/share/applications/boxy-svg.desktop /opt/boxy-svg /usr/local/bin/boxy-svg /usr/local/share/icons/com.boxy_svg.BoxySVG.png /usr/local/share/icons/com.boxy_svg.BoxySVG.svg
 
+purge_packages || exit 1
+
 exit 0

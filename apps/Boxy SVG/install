@@ -2,6 +2,8 @@
 
 version=3.95.4.zip
 
+install_packages libfontconfig-dev || exit 0
+
 "${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG on your 32-bit OS."
 
 #install asar and electron-packager
