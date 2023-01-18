@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.4.4
+version=5.5.0
 
 wget -O /tmp/Geekbench.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
 tar -xf /tmp/Geekbench.tar.gz -C /tmp || error "Failed to extract files!"
