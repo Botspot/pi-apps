@@ -34,10 +34,10 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #Search for unicode characters: https://unicode-search.net - search for "block" and "quadrant"
   
   # foreground colors
-  blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
   blue1='\e[38;5;75m'
-  blue2='\e[38;5;69m'
-  blue3='\e[38;5;93m'
+  blue2='\e[38;5;26m'
+  blue3='\e[38;5;21m'
+  blue4='\e[38;5;93m'
   
   green='\e[38;5;46m'
   darkgreen='\e[38;5;34m'
@@ -54,22 +54,22 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "${bg_default}    ${green}🭊${darkgreen}🬹🬹🬹${green}🬿${default}                                          ${darkgreen}                ${default}
- ${blue1}🭇🬭🬭${green}\e[48;5;75m🬎${bg_default}${blue1}🬭${blue2}🬭🬭${green}\e[48;5;69m🬎${bg_default}${blue2}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
- ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue2}  ▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue2}  ▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue2}🭦${bg_black}🭏🬭🬭🬭${blue3}🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+ ${blue1}🭇🬭🬭${green}\e[48;5;26m🬎${bg_default}${blue2}🬭🬭🬭${blue3}${green}\e[48;5;26m🬎${bg_default}${blue3}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
+ ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▄▄🭞 ▄ ${blue3}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue4}  ▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue3}🭦${bg_black}🭏🬭🬭🬭${blue4}🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
     echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
- ${blue1}▂▂▂${green}\e[48;5;75m🮅${bg_default}${blue1}▂${blue2}▂▂${green}\e[48;5;69m🬎${bg_default}${blue2}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
- ${blue1}▌  ${red}▄ ▄ ▄${blue2}  ▐${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue2}  ▐${default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue2}${bg_default}\e[7m▂\e[27m${bg_black}▃▃▃${blue3}▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
-\e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
-                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
+ ${blue1}▂▂▂${green}\e[48;5;26m🮅${bg_default}${blue2}▂▂▂${blue3}${green}\e[48;5;26m🬎${bg_default}${blue3}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
+ ${blue1}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▄▄\e[7m▂\e[27m ▄ ${blue3}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}▌  ${red}▄ ▄ ▄${blue4}  ▐${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue3}${bg_default}\e[7m▂\e[27m${bg_black}▃▃▃▃${blue4}▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+\e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
+                                                   ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
 }
 #end of output functions
