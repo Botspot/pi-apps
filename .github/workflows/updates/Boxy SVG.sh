@@ -29,6 +29,7 @@ if [ -n "$webVer" ]; then
     fi
   fi
 
+else
   warning "webVer variable is missing for $app_name update script, please fix this script, skipping update check."
   echo "**webVer variable is missing for $app_name update script, please fix this script, skipping update check.**" >> /tmp/failed_apps
 fi
