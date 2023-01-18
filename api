@@ -35,6 +35,10 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   
   # foreground colors
   blue='\e[38;5;21m' #blue='\e[38;5;27m' #lighter
+  blue1='\e[38;5;75m'
+  blue2='\e[38;5;69m'
+  blue3='\e[38;5;93m'
+  
   green='\e[38;5;46m'
   darkgreen='\e[38;5;34m'
   red='\e[38;5;197m'
@@ -49,21 +53,21 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
   local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
-    echo -e "${bg_default}    ${green}🭊${darkgreen}▅▅▅▅${green}🬿${default}                                          ${darkgreen}                ${default}
- ${blue}🭇🬭🬭${green}█${blue}🬭🬭🬭🬭${green}█${blue}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
- ${blue}🮉${bg_white}  ${black}${bg_white}🬞🬭🬭🬭🬭🬏${blue}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬰🬠🬐🬰${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue}🮉${bg_white}  ${black}${bg_white}▐${red}${bg_black}🬋🬇🬃🬋${black}${bg_white}▌${bg_white}${blue}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue}🭦${bg_white}🭏🬭🬭🬭🬭🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
-\e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
-                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
+    echo -e "${bg_default}    ${green}🭊${darkgreen}🬹🬹🬹${green}🬿${default}                                          ${darkgreen}                ${default}
+ ${blue1}🭇🬭🬭${green}\e[48;5;75m🬎${bg_default}${blue1}🬭${blue2}🬭🬭${green}\e[48;5;69m🬎${bg_default}${blue2}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
+ ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue2}  ▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue2}  ▋${default}   █▄▄🭞 ▄ ${blue}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue2}🭦${bg_black}🭏🬭🬭🬭${blue3}🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+\e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
+                                                   ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
-    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
- ${blue}▂▂▂${green}█${blue}▂▂▂▂${green}█${blue}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${bg_white}${blue}▌  ${red}${bg_black}▗▖▗▖▗▖${bg_white}${blue}  ▐${default}${bg_default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue}${bg_default}\e[7m▂\e[27m${bg_white}▃▃▃▃▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+    echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
+ ${blue1}▂▂▂${green}\e[48;5;75m🮅${bg_default}${blue1}▂${blue2}▂▂${green}\e[48;5;69m🬎${bg_default}${blue2}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
+ ${blue1}▌  ${red}▄ ▄ ▄${blue2}  ▐${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}▌  ${red}▄ ▄ ▄${blue2}  ▐${default}   █▄▄\e[7m▂\e[27m ▄ ${blue}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue2}${bg_default}\e[7m▂\e[27m${bg_black}▃▃▃${blue3}▃▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                    ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                     ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
