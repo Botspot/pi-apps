@@ -37,19 +37,18 @@ sudo mkdir -p /usr/local/share/icons
 sudo cp ./metadata/com.boxy_svg.BoxySVG.svg /usr/local/share/icons
 sudo cp ./metadata/com.boxy_svg.BoxySVG.png /usr/local/share/icons
 
-cd
+cd $HOME
 rm -rf /tmp/app
 
 #compile xseticon to set the program's window icon
+install_packages libxmu-headers libgd-dev libxmu-dev libx11-dev libglib2.0-dev || exit 1
 if ! command -v xseticon >/dev/null ;then
   echo "Compiling xseticon..."
   cd /tmp
   git_clone https://github.com/xeyownt/xseticon || exit 1
   cd /tmp/xseticon
-  install_packages libxmu-headers libgd-dev libxmu-dev libglib2.0-dev || exit 1
   make || error "Failed to compile xseticon with the 'make' command!"
   sudo cp -f "$PWD/xseticon" /usr/local/bin
-  (purge_packages)
   cd $HOME
   rm -rf /tmp/xseticon
 fi
