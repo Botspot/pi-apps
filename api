@@ -441,6 +441,15 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
+  #if nothing new will be installed, then skip apt update
+  local skip_apt_update=1
+  for package in $packages ;do
+    if ! package_installed "$package" ;then
+      skip_apt_update=0
+      break
+    fi
+  done
+  
   #change the $packages list from newline-delimited to space-delimited
   packages="$(tr '\n' ' ' <<<"$packages")"
   
@@ -503,7 +512,9 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     fi
     
     #run an apt update
-    apt_update "${apt_flags[@]}" || exit 1
+    if [ "$skip_apt_update" == 0 ];then
+      apt_update "${apt_flags[@]}" || exit 1
+    fi
     
     #After apt update, check again if local repo still exists
     if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
