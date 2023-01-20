@@ -1,4 +1,8 @@
 #!/bin/bash
+
+version=v19.0.0
+version2=0.38.0
+
 #Checking if using armv6
 if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
   error "armv6 cpu not supported"
@@ -10,8 +14,8 @@ fi
 #Install nvm manager:
 export NVM_DIR="$HOME/.nvm"
 mkdir -p "$NVM_DIR"
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash || error "Failed to install nvm!"
-source "${DIRECTORY}/api"
+wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/${version2}/install.sh" | bash || error "Failed to install nvm!"
+
 if [ "$arch" == 32 ];then
   #armhf, so patch nvm script to forcibly use armhf
   sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
@@ -38,6 +42,6 @@ echo ". ~/.node_bashrc" >> ~/.bashrc
 # One time use, since `source ~/.bashrc` not working
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
 # Install latest nodejs
 nvm install node || error "Failed to install node.js with nvm!"
