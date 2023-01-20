@@ -1,13 +1,16 @@
 #!/bin/bash
-#prepare to run nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-cd $NVM_DIR
 
-#Uninstall NodeJS
-nvm deactivate
-nvm uninstall default || error "Failed to purge Node.JS!"
+export NVM_DIR="$HOME/.nvm"
+
+if [ -d "$NVM_DIR" ];then
+  #prepare to run nvm
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  cd $NVM_DIR
+
+  #Uninstall NodeJS
+  nvm deactivate
+  nvm uninstall default || error "Failed to purge Node.JS!"
+fi
 
 #Remove nvm
 sudo rm -rf "$NVM_DIR" ~/.npm ~/.bower
