@@ -30,10 +30,6 @@ status_green "Done"
 status "Compilation..."
 cd AlephOne-${version}
 
-# patch issue with building without ffmpeg support
-wget https://github.com/Aleph-One-Marathon/alephone/commit/2a6cea82757a2c5fa46c2a69e71cd2448c8bb3e2.patch
-git apply 2a6cea82757a2c5fa46c2a69e71cd2448c8bb3e2.patch
-
 # get the $DISTRIB_RELEASE by calling get_codename function
 DISTRIB_CODENAME=$(get_codename)
 
