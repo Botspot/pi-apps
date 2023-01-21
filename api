@@ -2553,7 +2553,7 @@ nproc() { #Reduce the number of compile threads on low-RAM systems
   
   local free="$(free | grep 'Mem:' | awk '{print $4}')"
   
-  if [ "$free" -gt $((500*1024)) ];then
+  if [ "$free" -gt $((500*1024)) ] || [ "$GITHUB_ACTIONS" == "true" ];then
     #Free memory >500MB, use normal number of threads
     command nproc
   else
