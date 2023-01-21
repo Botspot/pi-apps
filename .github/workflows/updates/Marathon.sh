@@ -19,7 +19,7 @@ if [ -f install ]; then
     pi_apps_ver="$(cat 'install' | grep -m 1 "version${version_number}=" | sed "s/version${version_number}=//" | xargs)"
 else
     warning "Could not find $app_name install file"
-    echo "**Could not find $app_name install file**" >> /tmp/failed_apps
+    echo '> ![badge-warning][badge-warning]'" Could not find $app_name install file" >> /tmp/failed_apps
 fi
 
 if [ -a "$DIRECTORY/apps/$app_name/install" ]; then
@@ -40,7 +40,7 @@ if [ -a "$DIRECTORY/apps/$app_name/install" ]; then
             else
                 status=0
                 warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
-                echo "**Updating $app_name install had been skipped, the upstream file $all_url does NOT exist.**" >> /tmp/failed_apps
+                echo '> ![badge-warning][badge-warning]'" Updating $app_name install had been skipped, the upstream file $all_url does NOT exist." >> /tmp/failed_apps
                 break
             fi
         done
