@@ -1,5 +1,0 @@
-#!/bin/bash
-
-version=3.6.0-1
-
-install_packages https://www.ratrabbit.nl/downloads/xsnow/xsnow_${version}_armhf.deb || exit 1
