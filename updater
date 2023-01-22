@@ -395,7 +395,7 @@ Applications in your local installation of Pi-Apps that you have not installed y
   fi
   
   #Display a list of everything updatable
-  output="$(echo -e "$LIST" | yad --center --title='Pi-Apps' \
+  output="$(echo -e "$LIST" | yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
     --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
     --list --checklist --separator='\n' --print-column=4 --no-headers \
     --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
@@ -620,7 +620,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   
   status "Displaying notification in lower-right of screen..."
   { #display notification in lower-right
-    output="$(yad --form --text='Pi-Apps updates available.' --separator='\n' \
+    output="$(yad --class Pi-Apps --name "Pi Apps" --form --text='Pi-Apps updates available.' --separator='\n' \
       --on-top --skip-taskbar --undecorated --close-on-unfocus \
       --geometry=260+$((screen_width-262))+$((screen_height-150)) \
       --image="${DIRECTORY}/icons/logo-64.png" \
@@ -641,7 +641,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
         
         echo "Params: '$params'"
         
-        output="$(yad --center --title='Change Pi-Apps update interval' --width=440 \
+        output="$(yad --class Pi-Apps --name "Pi Apps" --center --title='Change Pi-Apps update interval' --width=440 \
           --form --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
           --text="You just requested for Pi-Apps to <i>never check for updates</i> on boot."$'\n'"Are you sure? If so, change the update interval to "\""<b>Never</b>"\"" below." \
           --field='Update interval: ':CB "$params" \
@@ -668,7 +668,7 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   update_now_gui
   
   #display notification saying that pi-apps updates are complete
-  yad --form --text='Pi-Apps updates complete.' \
+  yad --class Pi-Apps --name "Pi Apps" --form --text='Pi-Apps updates complete.' \
     --on-top --skip-taskbar --undecorated --close-on-unfocus \
     --geometry=260+$((screen_width-262))+$((screen_height-150)) \
     --image="${DIRECTORY}/icons/logo-64.png" \

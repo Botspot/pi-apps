@@ -226,4 +226,62 @@ runonce <<"EOF"
   fi
 EOF
 
+#update pi-apps .desktop icons
+runonce <<"EOF"
+#menu button
+if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps.desktop; then
+echo "Updating menu button..."
+mkdir -p ~/.local/share/applications
+echo "[Desktop Entry]
+Name=Pi Apps
+Comment=Raspberry Pi App Store for open source projects
+Exec=${DIRECTORY}/gui
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+StartupWMClass=Pi-Apps
+Type=Application
+Categories=Utility;
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
+chmod 755 ~/.local/share/applications/pi-apps.desktop
+gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
+
+#copy menu button to Desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
+
+chmod 755 ~/Desktop/pi-apps.desktop
+gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
+fi
+
+#settings menu button
+if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps-settings.desktop; then
+echo "Updating Settings menu button..."
+echo "[Desktop Entry]
+Name=Pi Apps Settings
+Comment=Configure Pi-Apps or create an App
+Exec=${DIRECTORY}/settings
+Icon=${DIRECTORY}/icons/settings.png
+Terminal=false
+StartupWMClass=Pi-Apps-Settings
+Type=Application
+Categories=Settings;
+StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
+fi
+
+if ! grep -q "StartupWMClass" ~/.config/autostart/pi-apps-updater.desktop; then
+echo "Updating autostarted updater..."
+mkdir -p ~/.config/autostart
+echo "[Desktop Entry]
+Name=Pi Apps Updater
+Exec=${DIRECTORY}/updater onboot
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+StartupWMClass=Pi-Apps
+Type=Application
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
+fi
+
+EOF
+
 true
