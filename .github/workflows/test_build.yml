@@ -463,6 +463,10 @@ jobs:
             # print date
             date
 
+            # show ld conf files
+            ls /etc/ld.so.conf.d
+            cat /etc/ld.so.conf.d/*
+
             #output functions below
             error() { #red text and exit 1
               echo -e "\e[91m$1\e[0m" 1>&2
