@@ -18,6 +18,8 @@ on:
         required: true
         type: boolean
 
+run-name: Testing ${{ inputs.app_name }}
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   buster-test:
