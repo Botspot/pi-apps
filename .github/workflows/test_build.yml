@@ -1,0 +1,173 @@
+name: Test_Build
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'App Name'
+        required: true
+        default: ''
+      buster_32:
+        description: 'Build on PiOS Buster 32bit'
+        required: true
+        type: boolean
+      bullseye_64:
+        description: 'Build on PiOS Bullseye 64bit'
+        required: true
+        type: boolean
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  buster-test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    if: ${{ inputs.buster_32 }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Test installing app on buster armhf
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          # this is a buster armhf image
+          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2022-09-26/2022-09-22-raspios-buster-armhf.img.xz
+          # bind mount the directory so any changes propogate to outside the chroot
+          bind_mount_repository: yes
+
+          # give the image more space
+          image_additional_mb: 5000
+
+          # set CPUs to use
+          cpu: cortex-a7:cortex-a72
+
+          # user runner name as default path
+          copy_repository_path: /home/runner/pi-apps
+
+          # export github env back to outside the chroot
+          export_github_env: yes
+
+          import_github_env: true
+
+          # set shell to bash
+          shell: /bin/bash
+          commands: |
+            sudo chown runner:docker /home/runner
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+
+            # load pi-apps api early (so we can use error and status_green)
+            #export all functions and variables
+            set -a
+            #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
+            DIRECTORY=$GITHUB_WORKSPACE
+            source $GITHUB_WORKSPACE/api
+
+            # create standard directories
+            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+            sudo mkdir -p /usr/local/bin /usr/local/share/applications
+
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+
+            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+
+            echo "Adding cmake PPA repository..."
+            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
+
+            # Add cmake ppa keyring
+            echo "Signing cmake PPA repository..."
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
+            if [ $? != 0 ];then
+              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
+              error "Failed to sign the cmake PPA!"
+            fi
+
+            # clean out any app status files
+            rm -rf ./data/status
+
+            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Buster 32bit, reverting to previous version."
+            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit, reverting to previous version."
+
+            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 32bit"
+
+  bullseye-test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    if: ${{ inputs.bullseye_64 }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Test installing app on bullseye arm64
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          # this is a bullseye arm64 image
+          base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2022-09-26/2022-09-22-raspios-bullseye-arm64.img.xz
+          # bind mount the directory so any changes propogate to outside the chroot
+          bind_mount_repository: yes
+
+          # give the image more space
+          image_additional_mb: 5000
+
+          # set CPUs to use
+          cpu: cortex-a7:cortex-a72
+
+          # user runner name as default path
+          copy_repository_path: /home/runner/pi-apps
+
+          # export github env back to outside the chroot
+          export_github_env: yes
+
+          import_github_env: true
+
+          # set shell to bash
+          shell: /bin/bash
+          commands: |
+            sudo chown runner:docker /home/runner
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+
+            # load pi-apps api early (so we can use error and status_green)
+            #export all functions and variables
+            set -a
+            #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
+            DIRECTORY=$GITHUB_WORKSPACE
+            source $GITHUB_WORKSPACE/api
+
+            # create standard directories
+            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+            sudo mkdir -p /usr/local/bin /usr/local/share/applications
+
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+
+            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+
+            echo "Adding cmake PPA repository..."
+            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
+
+            # Add cmake ppa keyring
+            echo "Signing cmake PPA repository..."
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
+            if [ $? != 0 ];then
+              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
+              error "Failed to sign the cmake PPA!"
+            fi
+
+            # clean out any app status files
+            rm -rf ./data/status
+
+            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit, reverting to previous version."
+            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit, reverting to previous version."
+
+            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 64bit"
