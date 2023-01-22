@@ -2587,7 +2587,7 @@ elif [ "$guimode" == xlunch-dark ];then
 fi
 
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
-yadflags=(--center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+yadflags=(--class Pi-Apps-Settings --name "Pi Apps Settings" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
