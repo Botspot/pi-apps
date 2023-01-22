@@ -496,6 +496,8 @@ jobs:
 
             # install pi-apps dependencies
             sudo apt update
+            # update certificate chain
+            sudo apt install -y ca-certificates
             sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
