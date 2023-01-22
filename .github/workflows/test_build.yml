@@ -17,6 +17,10 @@ on:
         description: 'Build on PiOS Bullseye 64bit'
         required: true
         type: boolean
+      bionic_64:
+        description: 'Build on Nvidia Jetpack 32.3.1 Bionic 64bit'
+        required: true
+        type: boolean
 
 run-name: Testing ${{ inputs.app_name }}
 
@@ -110,10 +114,10 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Buster 32bit, reverting to previous version."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit, reverting to previous version."
+            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Buster 32bit."
+            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit."
 
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 32bit"
+            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 32bit."
 
   bullseye-test:
     # The type of runner that the job will run on
@@ -203,7 +207,102 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit, reverting to previous version."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit, reverting to previous version."
+            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit."
+            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit."
 
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 64bit"
+            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 64bit."
+
+  bionic-test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    if: ${{ inputs.bionic_64 }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Test installing app on bionic arm64
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          # this is a bionic arm64 image
+          base_image: https://developer.download.nvidia.com/embedded/L4T/r32-3-1_Release_v1.0/Jetson-Nano-SDCard-Image/nv-jetson-nano-sd-card-image-r32.3.1.zip
+          bootpartition:
+          rootpartition: 1
+          # bind mount the directory so any changes propogate to outside the chroot
+          bind_mount_repository: yes
+
+          # give the image more space
+          image_additional_mb: 5000
+
+          # set CPU to use
+          cpu: cortex-a57
+
+          # user runner name as default path
+          copy_repository_path: /home/runner/pi-apps
+
+          # export github env back to outside the chroot
+          export_github_env: yes
+
+          import_github_env: true
+
+          # set shell to bash
+          shell: /bin/bash
+          commands: |
+            sudo chown runner:docker /home/runner
+            # print user info
+            echo $USER $USERNAME $(id) $(whoami)
+            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+
+            #output functions below
+            error() { #red text and exit 1
+              echo -e "\e[91m$1\e[0m" 1>&2
+              exit 1
+            }
+
+            warning() { #yellow text
+              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
+            }
+
+            status() { #cyan text to indicate what is happening
+              
+              #detect if a flag was passed, and if so, pass it on to the echo command
+              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
+                echo -e $1 "\e[96m$2\e[0m" 1>&2
+              else
+                echo -e "\e[96m$1\e[0m" 1>&2
+              fi
+            }
+
+            status_green() { #announce the success of a major action
+              echo -e "\e[92m$1\e[0m" 1>&2
+            }
+
+            # create standard directories
+            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+            sudo mkdir -p /usr/local/bin /usr/local/share/applications
+
+            # install pi-apps dependencies
+            sudo apt update
+            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+
+            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+
+            echo "Adding cmake PPA repository..."
+            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
+
+            # Add cmake ppa keyring
+            echo "Signing cmake PPA repository..."
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
+            if [ $? != 0 ];then
+              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
+              error "Failed to sign the cmake PPA!"
+            fi
+
+            # clean out any app status files
+            rm -rf ./data/status
+
+            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bionic 64bit."
+            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bionic 64bit."
+
+            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bionic 64bit."
