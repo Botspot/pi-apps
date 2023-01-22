@@ -68,8 +68,59 @@ while [ -z $exitloop ];do
   tooltips=()
   PREIFS="$IFS"
   IFS='|'
+
+  # generate yad/xlunch themes based on system installed themes
+  # yad is compiled using gtk3 on all distros so only gtk3 themes are valid
+
+  theme_dirs=( /usr/share/themes ~/.local/share/themes ~/.themes )
+  # begin array with yad default theme
+  declare gtk3_themes=("default")
+                      
+  for td in "${theme_dirs[@]}"; do
+    for th in "$td"/*; do
+      [[ -d "$th" ]] || continue
+      thname=${th##*/}
+      [ $(ls "$th/gtk-3."* 2>/dev/null | wc -l ) -gt 0 ] && gtk3_themes+=("$thname")
+    done
+  done
+  gtk3_themes=( "${gtk3_themes[@]/#/yad-}" )
+  # add xlunch preset themes to the array
+  gtk3_themes+=( "xlunch-dark" )
+  gtk3_themes+=( "xlunch-dark-3d" )
+  gtk3_themes+=( "xlunch-light-3d" )
+  params=$( IFS=$'\n'; echo "${gtk3_themes[*]}" )
+  unset gtk3_themes
+
+  name="App List Style"
+  
+  #create file if necessary
+  if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
+    cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+  fi
+  #get current setting
+  curval="$(cat "${DIRECTORY}/data/settings/${name}")"
+  
+  #order params, with selected option first
+  params="$(echo "$params" | grep -x "$curval")
+$(echo "$params" | grep -vx "$curval")"
+  
+  # remove blank lines (like if the current selected option no longer exists) and format as one line output separated by !
+  params="$(echo "$params" | awk NF | tr '\n' '!')"
+  params="${params::-1}"
+  
+  tooltip="Pi-Apps can display the apps as a compact list (yad), or as a group of larger icons. (xlunch)"
+  
+  yadparams+=(--field=:CB "${params}")
+  tooltips+=(--field="${name}":!!"${tooltip}":BTN '')
+
+  unset name
+  unset tooltip
+  unset params
+  unset curval
+  
   for name in $settings
   do
+    [ "${name}" == "App List Style" ] && continue
     params="$(cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#')"
     
     #create file if necessary

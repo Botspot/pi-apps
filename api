@@ -2572,12 +2572,10 @@ add_english
 
 #set the system GTK theme for yad windows
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
-if [ "$guimode" == yad-dark ];then
-  export GTK_THEME=Adwaita-dark
-elif [ "$guimode" == yad-light ];then
-  export GTK_THEME=PiXflat
-elif [ "$guimode" == yad-default ];then
+if [ "$guimode" == yad-default ];then
   export GTK_THEME=''
+elif [[ "$guimode" = yad* ]];then
+  export GTK_THEME=${guimode//yad-/}
 elif [ "$guimode" == xlunch-light-3d ];then
   export GTK_THEME=''
 elif [ "$guimode" == xlunch-dark-3d ];then

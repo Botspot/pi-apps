@@ -20,34 +20,6 @@ fi
 # set GUI format versioning
 export GUI_FORMAT_VERSION=2
 
-#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
-if [ -z "${text_color+x}" ];then
-  #0400 is the latest version
-  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
-  if [ $yad_version -lt 0400 ]; then
-    if command -v python3 &>/dev/null; then
-      python_version="python3"
-    else
-      python_version="python2"
-    fi
-    export text_color=$(echo "import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from gi.repository import Gdk
-win = Gtk.Window()
-vb = Gtk.VBox()
-tv = Gtk.TextView()
-vb.add(tv)
-win.show_all()
-style = tv.get_style_context()
-textcolor = style.get_color(Gtk.StateType.NORMAL)
-print(Gdk.RGBA.to_string(textcolor))
-" | $python_version -)
-  else
-    export text_color=""
-  fi
-fi
-
 terminal_manage() { #function to install/uninstall one app - uses a terminal and refreshes the app list
   if [ "$1" == 'uninstall' ];then
     action=uninstall
@@ -319,6 +291,34 @@ DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 set -a #make all functions in the api available to subprocesses
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+#For systems with older versions of yad, the text color column cannot be left blank. This python script determines the default text color from GTK bindings.
+if [ -z "${text_color+x}" ];then
+  #0400 is the latest version
+  yad_version="$(zcat /usr/share/doc/yad/NEWS.gz | head -n 1 | tr -cd '0123456789\n')"
+  if [ $yad_version -lt 0400 ]; then
+    if command -v python3 &>/dev/null; then
+      python_version="python3"
+    else
+      python_version="python2"
+    fi
+    export text_color=$(echo "import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import Gdk
+win = Gtk.Window()
+vb = Gtk.VBox()
+tv = Gtk.TextView()
+vb.add(tv)
+win.show_all()
+style = tv.get_style_context()
+textcolor = style.get_color(Gtk.StateType.NORMAL)
+print(Gdk.RGBA.to_string(textcolor))
+" | $python_version -)
+  else
+    export text_color=""
+  fi
+fi
 
 #display the pi-apps logo in the terminal
 generate_logo &
