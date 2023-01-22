@@ -63,9 +63,8 @@ jobs:
             # load pi-apps api early (so we can use error and status_green)
             #export all functions and variables
             set -a
-            #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
-            DIRECTORY=$GITHUB_WORKSPACE
-            source $GITHUB_WORKSPACE/api
+            DIRECTORY=$(pwd)
+            source $DIRECTORY/api
 
             # create standard directories
             mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
@@ -139,9 +138,8 @@ jobs:
             # load pi-apps api early (so we can use error and status_green)
             #export all functions and variables
             set -a
-            #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
-            DIRECTORY=$GITHUB_WORKSPACE
-            source $GITHUB_WORKSPACE/api
+            DIRECTORY=$(pwd)
+            source $DIRECTORY/api
 
             # create standard directories
             mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
