@@ -122,8 +122,8 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Buster 32bit."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit."
+            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Buster 32bit."
+            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit."
 
             status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 32bit."
 
@@ -215,8 +215,8 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bullseye 32bit."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 32bit."
+            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bullseye 32bit."
+            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 32bit."
 
             status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 32bit."
 
@@ -308,8 +308,8 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Buster 64bit."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Buster 64bit."
+            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Buster 64bit."
+            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Buster 64bit."
 
             status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 64bit."
 
@@ -401,8 +401,8 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit."
+            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit."
+            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit."
 
             status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 64bit."
 
@@ -496,7 +496,7 @@ jobs:
             # clean out any app status files
             rm -rf ./data/status
 
-            ./manage install ${{ inputs.app_name }} || error "Failed to install ${{ inputs.app_name }} on Bionic 64bit."
-            ./manage uninstall ${{ inputs.app_name }} || error "Failed to uninstall ${{ inputs.app_name }} on Bionic 64bit."
+            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bionic 64bit."
+            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bionic 64bit."
 
             status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bionic 64bit."
