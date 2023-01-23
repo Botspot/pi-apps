@@ -1,2 +1,5 @@
 #!/bin/bash
+
+killall ulauncher &>/dev/null && echo "Closing Ulauncher before uninstalling..."
+
 purge_packages || exit 1
