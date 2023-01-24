@@ -1,5 +1,7 @@
 #!/bin/bash
 
+killall xsnow &>/dev/null && echo "Closing XSnow before uninstalling..."
+
 sudo rm -rf /usr/games/xsnow /usr/share/applications/xsnow.desktop /usr/share/doc/xsnow /usr/share/locale/*/LC_MESSAGES/xsnow.mo /usr/share/man/man6/xsnow.6.gz /usr/share/metainfo/xsnow.appdata.xml /usr/share/pixmaps/xsnow.svg
 
 purge_packages || exit 1 
