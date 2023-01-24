@@ -1,3 +1,5 @@
 #!/bin/bash
 
+killall caprine &>/dev/null && echo "Closing Caprine before uninstalling..."
+
 purge_packages || exit 1 
