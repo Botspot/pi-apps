@@ -1864,6 +1864,12 @@ If this ends up fixing the problem, please notify the Pi-Apps developers. If you
     error_type="system"
   fi
   
+  if grep -qF "ModuleNotFoundError: No module named 'lsb_release'" <<<"$errors";then
+    error_caption+=("Your lsb_release command seems to be incompletely installed. Try running this command to fix it:
+sudo apt install --reinstall lsb_release")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   if grep -q "^User error: " <<<"$errors" ;then
     #return all lines of output after a line mentions "User error: "
