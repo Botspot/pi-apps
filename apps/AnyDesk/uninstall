@@ -1,4 +1,7 @@
 #!/bin/bash
+
+killall anydesk &>/dev/null && echo "Closing AnyDesk before uninstalling..."
+
 purge_packages || exit 1
 
 #remove symlinked libraries
