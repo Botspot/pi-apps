@@ -5,6 +5,7 @@ sudo chown runner:docker /home/runner
 echo $USER $USERNAME $(id) $(whoami)
 sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
 echo "GITHUB_JOB: $GITHUB_JOB"
+echo "app_name: $app_name"
 
 # print date
 date
@@ -72,7 +73,7 @@ fi
 # clean out any app status files
 rm -rf ./data/status
 
-./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on $GITHUB_JOB."
-./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on $GITHUB_JOB."
+./manage install "$app_name" || error "Failed to install $app_name on $GITHUB_JOB."
+./manage uninstall "$app_name" || error "Failed to uninstall $app_name on $GITHUB_JOB."
 
-status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on $GITHUB_JOB."
+status_green "Successfully installed and uninstalled $app_name on $GITHUB_JOB."

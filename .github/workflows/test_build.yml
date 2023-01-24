@@ -77,6 +77,7 @@ jobs:
           # set shell to bash
           shell: /bin/bash
           commands: |
+            export app_name="${{ inputs.app_name }}"
             ./.github/workflows/test_build_commands.sh
 
   bullseye-32bit:
@@ -96,7 +97,8 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
 
   buster-64bit:
     runs-on: ubuntu-latest
@@ -115,7 +117,8 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
 
   bullseye-64bit:
     runs-on: ubuntu-latest
@@ -134,7 +137,8 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
 
   bionic-64bit:
     runs-on: ubuntu-latest
@@ -157,7 +161,8 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
 
   focal-64bit:
     runs-on: ubuntu-latest
@@ -178,7 +183,8 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
 
   jammy-64bit:
     runs-on: ubuntu-latest
@@ -197,4 +203,5 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -ex ./.github/workflows/test_build_commands.sh
+            export app_name="${{ inputs.app_name }}"
+            ./.github/workflows/test_build_commands.sh
