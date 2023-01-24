@@ -337,7 +337,7 @@ End of apt functions. Flatpak functions below.
   - This should only be used in install-64 scripts as there is no arm32 support on flathub anymore
   - Example usage:
     ```bash
-    flatpak_install librepcb || exit 1
+    flatpak_install org.librepcb.LibrePCB || exit 1
     ```
     Script-writers: Don't forget to install the flatpak package first! (`install_packages flatpak || exit 1`)
     Also, a menu entry needs to be created. See the LibrePCB app, it's better to show than to explain. ;)
@@ -347,7 +347,7 @@ End of apt functions. Flatpak functions below.
   - This function solves both of those edge-cases and prevents unnecessary errors from ocurring.
   - Example usage:
     ```bash
-    flatpak_uninstall librepcb || exit 1
+    flatpak_uninstall org.librepcb.LibrePCB || exit 1
     ```
 
 End of Flatpak functions. App functions below.

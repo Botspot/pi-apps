@@ -2,4 +2,4 @@
 
 install_packages flatpak || exit 1
 
-flatpak_install librepcb || exit 1
+flatpak_install org.librepcb.LibrePCB || exit 1
