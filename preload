@@ -241,7 +241,7 @@ $text_color"
       if [ -f "${DIRECTORY}/apps/${app}/icon-24.png" ];then
         add="${DIRECTORY}/apps/${app}/icon-24.png"$'\n'
       else
-        add="${DIRECTORY}/apps/${app}/none-24.png"$'\n'
+        add="${DIRECTORY}/icons/none-24.png"$'\n'
       fi
       
       #rest of list attributes
