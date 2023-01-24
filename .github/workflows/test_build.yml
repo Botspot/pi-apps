@@ -34,7 +34,7 @@ run-name: Testing ${{ inputs.app_name }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  buster-32-test:
+  buster-32bit:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     if: ${{ inputs.buster_32 }}
@@ -69,462 +69,84 @@ jobs:
           # set shell to bash
           shell: /bin/bash
           commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+            ./.github/workflows/test_build_commands.sh
 
-            # print date
-            date
-
-            #output functions below
-            error() { #red text and exit 1
-              echo -e "\e[91m$1\e[0m" 1>&2
-              exit 1
-            }
-
-            warning() { #yellow text
-              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
-            }
-
-            status() { #cyan text to indicate what is happening
-              
-              #detect if a flag was passed, and if so, pass it on to the echo command
-              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-                echo -e $1 "\e[96m$2\e[0m" 1>&2
-              else
-                echo -e "\e[96m$1\e[0m" 1>&2
-              fi
-            }
-
-            status_green() { #announce the success of a major action
-              echo -e "\e[92m$1\e[0m" 1>&2
-            }
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # install pi-apps dependencies
-            sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Buster 32bit."
-            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Buster 32bit."
-
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 32bit."
-
-  bullseye-32-test:
-    # The type of runner that the job will run on
+  bullseye-32bit:
     runs-on: ubuntu-latest
     if: ${{ inputs.bullseye_32 }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
       - name: Test installing app on bullseye armhf
         uses: theofficialgman/arm-runner-action@v4
         with:
-          # this is a bullseye armhf image
           base_image: https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf.img.xz
-          # bind mount the directory so any changes propogate to outside the chroot
           bind_mount_repository: yes
-
-          # give the image more space
           image_additional_mb: 5000
-
-          # set CPUs to use
           cpu: cortex-a7:cortex-a72
-
-          # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
           export_github_env: yes
-
           import_github_env: true
-
-          # set shell to bash
           shell: /bin/bash
           commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+            ./.github/workflows/test_build_commands.sh
 
-            # print date
-            date
-
-            #output functions below
-            error() { #red text and exit 1
-              echo -e "\e[91m$1\e[0m" 1>&2
-              exit 1
-            }
-
-            warning() { #yellow text
-              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
-            }
-
-            status() { #cyan text to indicate what is happening
-              
-              #detect if a flag was passed, and if so, pass it on to the echo command
-              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-                echo -e $1 "\e[96m$2\e[0m" 1>&2
-              else
-                echo -e "\e[96m$1\e[0m" 1>&2
-              fi
-            }
-
-            status_green() { #announce the success of a major action
-              echo -e "\e[92m$1\e[0m" 1>&2
-            }
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # install pi-apps dependencies
-            sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bullseye 32bit."
-            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 32bit."
-
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 32bit."
-
-  buster-64-test:
-    # The type of runner that the job will run on
+  buster-64bit:
     runs-on: ubuntu-latest
     if: ${{ inputs.buster_64 }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
       - name: Test installing app on buster arm64
         uses: theofficialgman/arm-runner-action@v4
         with:
-          # this is a buster arm64 image
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
-          # bind mount the directory so any changes propogate to outside the chroot
           bind_mount_repository: yes
-
-          # give the image more space
           image_additional_mb: 5000
-
-          # set CPUs to use
           cpu: cortex-a7:cortex-a72
-
-          # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
           export_github_env: yes
-
           import_github_env: true
-
-          # set shell to bash
           shell: /bin/bash
           commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+            ./.github/workflows/test_build_commands.sh
 
-            # print date
-            date
-
-            #output functions below
-            error() { #red text and exit 1
-              echo -e "\e[91m$1\e[0m" 1>&2
-              exit 1
-            }
-
-            warning() { #yellow text
-              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
-            }
-
-            status() { #cyan text to indicate what is happening
-              
-              #detect if a flag was passed, and if so, pass it on to the echo command
-              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-                echo -e $1 "\e[96m$2\e[0m" 1>&2
-              else
-                echo -e "\e[96m$1\e[0m" 1>&2
-              fi
-            }
-
-            status_green() { #announce the success of a major action
-              echo -e "\e[92m$1\e[0m" 1>&2
-            }
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # install pi-apps dependencies
-            sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Buster 64bit."
-            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Buster 64bit."
-
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Buster 64bit."
-
-  bullseye-64-test:
-    # The type of runner that the job will run on
+  bullseye-64bit:
     runs-on: ubuntu-latest
     if: ${{ inputs.bullseye_64 }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
       - name: Test installing app on bullseye arm64
         uses: theofficialgman/arm-runner-action@v4
         with:
-          # this is a bullseye arm64 image
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2022-09-26/2022-09-22-raspios-bullseye-arm64.img.xz
-          # bind mount the directory so any changes propogate to outside the chroot
           bind_mount_repository: yes
-
-          # give the image more space
           image_additional_mb: 5000
-
-          # set CPUs to use
           cpu: cortex-a7:cortex-a72
-
-          # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
           export_github_env: yes
-
           import_github_env: true
-
-          # set shell to bash
           shell: /bin/bash
           commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
+            ./.github/workflows/test_build_commands.sh
 
-            # print date
-            date
-
-            #output functions below
-            error() { #red text and exit 1
-              echo -e "\e[91m$1\e[0m" 1>&2
-              exit 1
-            }
-
-            warning() { #yellow text
-              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
-            }
-
-            status() { #cyan text to indicate what is happening
-              
-              #detect if a flag was passed, and if so, pass it on to the echo command
-              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-                echo -e $1 "\e[96m$2\e[0m" 1>&2
-              else
-                echo -e "\e[96m$1\e[0m" 1>&2
-              fi
-            }
-
-            status_green() { #announce the success of a major action
-              echo -e "\e[92m$1\e[0m" 1>&2
-            }
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # install pi-apps dependencies
-            sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bullseye 64bit."
-            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bullseye 64bit."
-
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bullseye 64bit."
-
-  bionic-64-test:
-    # The type of runner that the job will run on
+  bionic-64bit:
     runs-on: ubuntu-latest
     if: ${{ inputs.bionic_64 }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
       - name: Test installing app on bionic arm64
         uses: theofficialgman/arm-runner-action@v4
         with:
-          # this is a bionic arm64 image
           base_image: https://developer.download.nvidia.com/embedded/L4T/r32-3-1_Release_v1.0/Jetson-Nano-SDCard-Image/nv-jetson-nano-sd-card-image-r32.3.1.zip
+          # add special arguments for jetson nano image format
           bootpartition:
           rootpartition: 1
-          # bind mount the directory so any changes propogate to outside the chroot
           bind_mount_repository: yes
-
-          # give the image more space
           image_additional_mb: 5000
-
-          # set CPU to use
+          # use TX1 ARM CPU cores
           cpu: cortex-a57
-
-          # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
           export_github_env: yes
-
           import_github_env: true
-
-          # set shell to bash
           shell: /bin/bash
           commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
-
-            # print date
-            date
-
-            # show ld conf files
-            ls /etc/ld.so.conf.d
-            cat /etc/ld.so.conf.d/*
-
-            #output functions below
-            error() { #red text and exit 1
-              echo -e "\e[91m$1\e[0m" 1>&2
-              exit 1
-            }
-
-            warning() { #yellow text
-              echo -e "\e[93m\e[5m◢◣\e[25m WARNING: $1\e[0m" 1>&2
-            }
-
-            status() { #cyan text to indicate what is happening
-              
-              #detect if a flag was passed, and if so, pass it on to the echo command
-              if [[ "$1" == '-'* ]] && [ ! -z "$2" ];then
-                echo -e $1 "\e[96m$2\e[0m" 1>&2
-              else
-                echo -e "\e[96m$1\e[0m" 1>&2
-              fi
-            }
-
-            status_green() { #announce the success of a major action
-              echo -e "\e[92m$1\e[0m" 1>&2
-            }
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # fix nvidia jank
-            # update sources list for t210
-            sudo sed -i "s/<SOC>/t210/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
-            # add ld conf files
-            echo "/usr/lib/aarch64-linux-gnu/tegra-egl" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_EGL.conf
-            echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
-
-            # install pi-apps dependencies
-            sudo apt update
-            # update certificate chain
-            sudo apt install -y ca-certificates
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            ./manage install "${{ inputs.app_name }}" || error "Failed to install ${{ inputs.app_name }} on Bionic 64bit."
-            ./manage uninstall "${{ inputs.app_name }}" || error "Failed to uninstall ${{ inputs.app_name }} on Bionic 64bit."
-
-            status_green "Successfully installed and uninstalled ${{ inputs.app_name }} on Bionic 64bit."
+            ./.github/workflows/test_build_commands.sh
