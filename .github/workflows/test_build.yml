@@ -96,7 +96,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
 
   buster-64bit:
     runs-on: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
 
   bullseye-64bit:
     runs-on: ubuntu-latest
@@ -134,7 +134,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
 
   bionic-64bit:
     runs-on: ubuntu-latest
@@ -157,7 +157,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
 
   focal-64bit:
     runs-on: ubuntu-latest
@@ -172,13 +172,13 @@ jobs:
           rootpartition: 1
           bind_mount_repository: yes
           image_additional_mb: 5000
-          cpu: cortex-a76
+          cpu: cortex-a75
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
 
   jammy-64bit:
     runs-on: ubuntu-latest
@@ -197,4 +197,4 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            bash -eux ./.github/workflows/test_build_commands.sh
+            bash -ex ./.github/workflows/test_build_commands.sh
