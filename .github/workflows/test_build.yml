@@ -29,6 +29,14 @@ on:
         description: 'Build on Nvidia Jetpack 32.3.1 Bionic 64bit'
         required: true
         type: boolean
+      focal_64:
+        description: 'Build on Nvidia Jetpack 35.1.0 Focal 64bit'
+        required: true
+        type: boolean
+      jammy_64:
+        description: 'Build on RPI Ubuntu Jammy 64bit'
+        required: true
+        type: boolean
 
 run-name: Testing ${{ inputs.app_name }}
 
@@ -144,6 +152,46 @@ jobs:
           image_additional_mb: 5000
           # use TX1 ARM CPU cores
           cpu: cortex-a57
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            ./.github/workflows/test_build_commands.sh
+
+  focal-64bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.focal_64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on focal arm64
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          base_image: https://developer.download.nvidia.com/embedded/L4T/r35_Release_v1.0/JP_SD_5.0.2_b231/Jetson_SD_Xavier_NX/JP502-xnx-sd-card-image-b231.zip
+          bootpartition:
+          rootpartition: 1
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu: cortex-a76
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            ./.github/workflows/test_build_commands.sh
+
+  jammy-64bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.jammy_64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on jammy arm64
+        uses: theofficialgman/arm-runner-action@v4
+        with:
+          base_image: https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu: cortex-a7:cortex-a72
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
