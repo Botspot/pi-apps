@@ -177,7 +177,7 @@ jobs:
           rootpartition: 1
           bind_mount_repository: yes
           image_additional_mb: 5000
-          cpu: cortex-a75
+          cpu: cortex-a72
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
