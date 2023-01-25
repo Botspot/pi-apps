@@ -83,7 +83,7 @@ import_zip() { #given a zipfile, extract it to apps directory and return the nam
 
 
 #determine what type of input we received
-if [ -z "$name" ];
+if [ -z "$name" ]; then
   error "No App Name, PR #, or zip URL input passed to script. Exiting now."
 fi
 import="$name"
