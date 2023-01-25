@@ -5,12 +5,14 @@ sudo chown runner:docker /home/runner
 echo $USER $USERNAME $(id) $(whoami)
 sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
 echo "GITHUB_JOB: $GITHUB_JOB"
-echo "app_name: $app_name"
+
+# set DIRECTORY variable
+DIRECTORY="$(pwd)"
 
 # print date
 date
 
-#output functions below
+#necessary functions
 error() { #red text and exit 1
   echo -e "\e[91m$1\e[0m" 1>&2
   exit 1
@@ -33,6 +35,175 @@ status() { #cyan text to indicate what is happening
 status_green() { #announce the success of a major action
   echo -e "\e[92m$1\e[0m" 1>&2
 }
+
+import_zip() { #given a zipfile, extract it to apps directory and return the name of the app
+  local import="$1"
+  [ -z "$import" ] || [ ! -f "$import" ] && error "import_zip(): invalid input: '$import'"
+  
+  #create a temporary directory to extract to
+  local tmpdir="$(mktemp -d)" || error "Failed to create a temporaty folder for some reason.\nErrors:\n$tmpdir"
+  #be sure to delete the temporary folder on exit
+  trap "rm -rf '$tmpdir'" EXIT
+  
+  #unzip to the temporary directory
+  local errors="$(unzip "$import" -d "$tmpdir" 2>&1)" || error "Failed to extract '$import' to '$tmpdir'.\nErrors: $errors"
+  
+  #some zip files have an inner directory that app-files are situated in; others don't.
+  if [ "$(find "$tmpdir" -maxdepth 1 -type d | tail +2 | wc -l)" == 1 ] && [ "$(find "$tmpdir" -maxdepth 1 -type f | tail +2 | wc -l)" == 0 ];then
+    #if the temporary directory contains exactly one folder and zero loose files
+    echo "$(basename "$import") contains exactly one folder and zero loose files" 1>&2
+    
+    local app_name="$(basename "$(find "$tmpdir" -maxdepth 1 -type d | tail +2)")"
+    #return the name of the app
+    echo "$app_name"
+    [ -z "$app_name" ] && error "Failed to determine a name for the app, given this filename: '$import'"
+    #remove the app from pi-apps first
+    rm -rf "${DIRECTORY}/apps/${app_name}"
+    
+    #then move the folder straight to the pi-apps folder
+    mv -f "$(find "$tmpdir" -maxdepth 1 -type d | tail +2)" "${DIRECTORY}/apps"
+    
+  else #if extracted archive did not contain exactly one folder and zero loose files
+    echo "$(basename "$import") did not contain exactly one folder and zero loose files" 1>&2
+    
+    #create a folder in the apps directory first
+    newfolder="${DIRECTORY}/apps/$(basename "$import" | awk -F'.' '{print $1}')"
+    [ "$newfolder" == "${DIRECTORY}/apps/" ] && error "Failed to determine a name for the app, given this filename: '$import'"
+    rm -rf "$newfolder"
+    mkdir -p "$newfolder"
+    
+    #return the name of the app
+    basename "$newfolder"
+    
+    #then move the extracted files over, into the app-folder
+    mv -f "$tmpdir"/* "$newfolder"
+  fi
+}
+
+
+
+#determine what type of input we received
+if [ -z "$name" ];
+  error "No App Name, PR #, or zip URL input passed to script. Exiting now."
+fi
+import="$name"
+
+if ls apps | grep -q "$import" ;then
+  #pi-apps app name as input
+  imported_apps="$import"
+
+elif [[ "$import" == *'://'*'.zip' ]];then
+
+  #given a download link to a zip file
+
+  #create a temporary directory to extract to
+  tmpdir="$(mktemp -d)" || error "Failed to create a temporaty folder for some reason.\nErrors:\n$tmpdir"
+  #be sure to delete the temporary folder on exit
+  trap "rm -rf '$tmpdir'" EXIT
+  
+  filename="$tmpdir/$(basename "$import")"
+  
+  #download the zip file
+  wget "$import" -O "$filename" || error "Failed to download '$import' to '$filename'"
+  
+  #use the import_zip function to import the app, keeping a record of the app-name
+  imported_apps="$(import_zip "$filename")"
+  
+elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
+  #given a pull request for an app
+  
+  #check for internet connection
+  ping -q -c1 google.com &>/dev/null || error "No internet connection!\ngoogle.com failed to respond.\nErrors: $(ping -q -c1 google.com 2>&1)" 
+  
+  #if given a PR number, assume it's a PR on the pi-apps repo
+  if [[ "$import" =~ ^[0-9]+$ ]];then
+    PR="https://github.com/Botspot/pi-apps/pull/${import}"
+  else
+    #if given a url to a PR
+    PR="$import"
+  fi
+  
+  #repobranch='https://github.com/cycool29/pi-apps/tree/msteams'
+  repobranch="$(wget -qO- "$PR" | grep -x 'from' --after 2 | tr '<> ' '\n' | grep 'title="' | sed 's/title="//g' | sed 's/"$//g' | head -n1)"
+  
+  if [ -z "$repobranch" ];then
+    error "No PR was found that mentions a branch."
+  else
+    echo "repobranch: $repobranch"
+  fi
+  
+  #Take a combined repo/branch url and separate it.
+  #example value of repobranch: https://github.com/cycool29/pi-apps/tree/msteams
+  
+  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: cycool29/pi-apps
+  branch="$(basename "$repobranch" | awk -F: '{print $2}')" #value: msteams
+  username="$(dirname "$repo" | sed 's+^/++g')" #value: cycool29
+  
+  #make a temporary directory and enter it
+  cd "$(mktemp -d)" || error "Failed to create and enter a temporary directory."
+  #if script is killed prematurely, be sure to delete the temporary folder
+  trap "rm -rf '$(pwd)'" EXIT
+  
+  echo -e "\nrepo: $repo\nbranch: $branch\nusername: $username\ntmpdir: $(pwd)\n"
+  
+  echo -n "Downloading repository... "
+  errors="$(git clone "https://github.com/${repo}" -b $branch -q pi-apps 2>&1)" || error "Failed to clone repository: $repo\nErrors:\n$errors"
+  echo "Done"
+  
+  echo -n "Syncing fork with upstream repo... "
+  cd $(pwd)/pi-apps
+  errors="$(git pull https://github.com/Botspot/pi-apps --rebase -q 2>&1)" || error "Failed to sync upstream repo. \nErrors:\n$errors"
+  
+  cd .. #back to tmpdir
+  echo "Done"
+  
+  echo -n "Getting pi-apps repo for comparison... "
+  errors="$(git clone "https://github.com/Botspot/pi-apps" pi-apps-master -q 2>&1)" || error "Failed to clone Botspot pi-apps repository.\nErrors:\n$errors"
+  echo "Done"
+  
+  #get list of apps that are unique to this pi-apps folder. (not on main repo)
+  applist="$("$(pwd)/pi-apps/api" list_apps local_only)"
+  
+  #get apps that don't match the ones in main branch - find only new apps
+  imported_apps="$(diff -rq "$(pwd)/pi-apps/apps" "$(pwd)/pi-apps-master/apps" | grep "Only in $(pwd)/pi-apps/apps:"  | sed 's+.*/pi-apps-master.++g' | sed 's+.*apps/++g' | sed 's+.*apps: ++g'  | sed 's+/.*++g' | sort | uniq | grep .)"
+
+  IFS=$'\n'
+  for app in $applist
+  do
+    echo -en "Scanning apps... $app\033[0K\r" 1>&2
+
+    if [ -d "$(pwd)/pi-apps/apps/${app}" ] && [ -d "$(pwd)/pi-apps-master/apps/${app}" ] && ! diff -r "$(pwd)/pi-apps/apps/${app}" "$(pwd)/pi-apps-master/apps/${app}" -q >/dev/null 2>&1; then
+      #if app hashes don't match, add to imported list
+      #find only changed apps
+      if [ -z "$imported_apps" ]; then
+        # imported apps is blank, do not add newline
+        imported_apps="${app}"
+      else
+        # imported apps is not blank, add newline
+        imported_apps="${imported_apps}
+${app}"
+      fi
+    fi
+  done
+  
+  imported_apps="$(echo -n "$imported_apps" | sed 's/^/TRUE\n/g' | yad "${yadflags[@]}" --window-icon="${DIRECTORY}/icons/settings.png" --list --checklist --column=chk:CHK --column=app --no-headers --print-column=2 --no-selection \
+    --text="Select apps to import from <b>${username}/${branch}</b>:")" || apps=''
+  
+  IFS=$'\n'
+  for app in $imported_apps ;do
+    #remove directory first and replace with copied version from PR
+    #this prevents orphaned files when moving from install-32/install-64 to install
+    rm -rf "${DIRECTORY}/apps/$app"
+    cp -af "$(pwd)/pi-apps/apps/$app" "${DIRECTORY}/apps"
+    echo "Copied '$(pwd)/pi-apps/apps/${app}' to ${DIRECTORY}/apps"
+  done
+  
+else
+  #unrecognized input
+  error "Unrecognized input '$import'"
+fi
+
+status "Testing app(s): $imported_apps"
 
 # create standard directories
 mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
@@ -79,7 +250,9 @@ fi
 # clean out any app status files
 rm -rf ./data/status
 
-./manage install "$app_name" || error "Failed to install $app_name on $GITHUB_JOB."
-./manage uninstall "$app_name" || error "Failed to uninstall $app_name on $GITHUB_JOB."
-
-status_green "Successfully installed and uninstalled $app_name on $GITHUB_JOB."
+IFS=$'\n'
+for app in $imported_apps ;do
+  ./manage install "$app" || error "Failed to install $app on $GITHUB_JOB."
+  ./manage uninstall "$app" || error "Failed to uninstall $app on $GITHUB_JOB."
+  status_green "Successfully installed and uninstalled $app on $GITHUB_JOB."
+done

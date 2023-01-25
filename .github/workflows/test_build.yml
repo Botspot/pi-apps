@@ -5,8 +5,8 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
-      app_name:
-        description: 'App Name'
+      name:
+        description: 'App Name, PR #, or zip URL'
         required: true
         default: ''
       buster_32:
@@ -38,7 +38,7 @@ on:
         required: true
         type: boolean
 
-run-name: Testing ${{ inputs.app_name }}
+run-name: Testing ${{ inputs.name }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -77,7 +77,7 @@ jobs:
           # set shell to bash
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   bullseye-32bit:
@@ -97,7 +97,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   buster-64bit:
@@ -117,7 +117,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   bullseye-64bit:
@@ -137,7 +137,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   bionic-64bit:
@@ -161,7 +161,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   focal-64bit:
@@ -183,7 +183,7 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
   jammy-64bit:
@@ -203,5 +203,5 @@ jobs:
           import_github_env: true
           shell: /bin/bash
           commands: |
-            export app_name="${{ inputs.app_name }}"
+            export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
