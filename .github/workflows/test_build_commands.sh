@@ -80,7 +80,28 @@ import_zip() { #given a zipfile, extract it to apps directory and return the nam
   fi
 }
 
+if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
+  # fix nvidia jank
+  # update sources list for t210
+  sudo sed -i "s/<SOC>/t210/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+  # add ld conf files
+  echo "/usr/lib/aarch64-linux-gnu/tegra-egl" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_EGL.conf
+  echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
+fi
 
+if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
+  # fix nvidia jank
+  # update sources list for t194
+  sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+fi
+
+# install pi-apps dependencies
+sudo apt update
+if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
+  # update certificate chain
+  sudo apt install -y ca-certificates
+fi
+sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
 #determine what type of input we received
 if [ -z "$name" ]; then
@@ -206,31 +227,6 @@ status "Testing app(s): $imported_apps"
 # create standard directories
 mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
-  # fix nvidia jank
-  # update sources list for t210
-  sudo sed -i "s/<SOC>/t210/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
-  # add ld conf files
-  echo "/usr/lib/aarch64-linux-gnu/tegra-egl" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_EGL.conf
-  echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
-fi
-
-if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
-  # fix nvidia jank
-  # update sources list for t194
-  sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
-fi
-
-# install pi-apps dependencies
-sudo apt update
-if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
-  # update certificate chain
-  sudo apt install -y ca-certificates
-fi
-sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-
 
 # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 
