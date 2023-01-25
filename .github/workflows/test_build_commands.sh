@@ -199,6 +199,8 @@ else
   error "Unrecognized input '$import'"
 fi
 
+cd "$DIRECTORY"
+
 status "Testing app(s): $imported_apps"
 
 # create standard directories
@@ -248,7 +250,9 @@ rm -rf ./data/status
 
 IFS=$'\n'
 for app in $imported_apps ;do
+  cd "$DIRECTORY"
   ./manage install "$app" || error "Failed to install $app on $GITHUB_JOB."
+  cd "$DIRECTORY"
   ./manage uninstall "$app" || error "Failed to uninstall $app on $GITHUB_JOB."
   status_green "Successfully installed and uninstalled $app on $GITHUB_JOB."
 done
