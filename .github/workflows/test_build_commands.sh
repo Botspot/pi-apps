@@ -112,9 +112,6 @@ elif [[ "$import" == *'://'*'.zip' ]];then
 elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];then
   #given a pull request for an app
   
-  #check for internet connection
-  ping -q -c1 google.com &>/dev/null || error "No internet connection!\ngoogle.com failed to respond.\nErrors: $(ping -q -c1 google.com 2>&1)" 
-  
   #if given a PR number, assume it's a PR on the pi-apps repo
   if [[ "$import" =~ ^[0-9]+$ ]];then
     PR="https://github.com/Botspot/pi-apps/pull/${import}"
