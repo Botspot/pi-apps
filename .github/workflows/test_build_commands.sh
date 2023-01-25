@@ -185,9 +185,6 @@ ${app}"
     fi
   done
   
-  imported_apps="$(echo -n "$imported_apps" | sed 's/^/TRUE\n/g' | yad "${yadflags[@]}" --window-icon="${DIRECTORY}/icons/settings.png" --list --checklist --column=chk:CHK --column=app --no-headers --print-column=2 --no-selection \
-    --text="Select apps to import from <b>${username}/${branch}</b>:")" || apps=''
-  
   IFS=$'\n'
   for app in $imported_apps ;do
     #remove directory first and replace with copied version from PR
