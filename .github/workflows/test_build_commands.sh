@@ -47,6 +47,12 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
 fi
 
+if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
+  # fix nvidia jank
+  # update sources list for t194
+  sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+fi
+
 # install pi-apps dependencies
 sudo apt update
 if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
