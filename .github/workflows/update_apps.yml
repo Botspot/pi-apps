@@ -152,7 +152,9 @@ jobs:
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
               # skip checking DDNet (due to Rust) if on arm32 under QEMU: https://github.com/rust-lang/cargo/issues/8719
-              if [ "$app" != "DDNet" ]; then
+              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
+              skiplist=( "DDNet" "Microsoft PowerShell" )
+              if [[ ! " ${skiplist[*]} " =~ " ${app} " ]]; then
                 ./manage install "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to install $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
                 ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to uninstall $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
               fi
@@ -227,8 +229,12 @@ jobs:
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
-              ./manage install "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to install $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-              ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to uninstall $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
+              skiplist=( "Microsoft PowerShell" )
+              if [[ ! " ${skiplist[*]} " =~ " ${app} " ]]; then
+                ./manage install "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to install $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+                ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to uninstall $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              fi
             done
 
             if test -f /tmp/failed_update_apps; then
