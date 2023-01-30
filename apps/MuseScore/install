@@ -15,7 +15,7 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/MuseScore-4.0.1.230161436-${url_arch}.AppImage" || exit 1
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/MuseScore-4.0.1.230260012-${url_arch}.AppImage" || exit 1
 
 chmod +x "/tmp/MuseScore.AppImage"
 
