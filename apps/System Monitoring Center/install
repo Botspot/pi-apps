@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=1.39.1
+version=1.40.0
 
 install_packages https://github.com/hakandundar34coding/system-monitoring-center/releases/download/v${version}/system-monitoring-center_${version}_all.deb || exit 1
