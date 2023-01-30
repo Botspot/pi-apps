@@ -1,7 +1,7 @@
 #!/bin/bash
 # NOTE: This build uses a custom native library repo for the arm64 builds, which is necessary as microsoft and the gdlauncher devs do not provide arm64 native libraries
 
-install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/GDLauncher-linux-arm64-1.1.29-setup.deb || exit 1
+install_packages mesa-utils https://github.com/Pi-Apps-Coders/files/releases/download/large-files/GDLauncher-linux-arm64-1.1.30-setup.deb || exit 1
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
 # detect if script is running on a system with OpenGL lower than 3.3
