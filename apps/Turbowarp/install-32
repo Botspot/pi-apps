@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.6.1
+version=1.7.1
 install_packages https://github.com/TurboWarp/desktop/releases/download/v${version}/TurboWarp-linux-armv7l-${version}.deb || exit 1
 
 echo -n "Moving menu launcher from Education to Programming category... "
