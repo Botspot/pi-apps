@@ -1,5 +1,5 @@
 #!/bin/bash
-version=1.10.0
+version=1.14.3
 
 if package_installed balena-etcher-electron ;then
   status "First removing old balena-etcher-electron package to avoid errors..."
