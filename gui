@@ -545,8 +545,9 @@ fi
 
 #Determine message of the day. If announcements file missing or over a day old, download it.
 if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/data/announcements" -mtime +1 -print)" ]; then
-  wget https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message -qO "${DIRECTORY}/data/announcements"
-fi
+  announcements="$(wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps-announcements/main/message)"
+  echo "$announcements" > "${DIRECTORY}/data/announcements"
+fi & #use $announcements and & here to avoid delaying launch or emptying the file before download completes
 
 if [[ "$guimode" == yad* ]];then
   
