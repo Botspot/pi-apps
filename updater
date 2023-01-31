@@ -520,6 +520,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       source "${DIRECTORY}/updater" source
       
       failed_apps=""
+      local IFS=$'\n'
       for app in $updatable_apps ;do
         update_app "$app" || failed_apps+="$app"$'\''\n'\''
       done
