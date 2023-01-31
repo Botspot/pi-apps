@@ -500,9 +500,6 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     update_app "$app"
   done
   
-  #load the app list now to reduce launch time
-  refresh_app_list &
-  
   #delete .git folder, then copy the new one
   rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
   cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
@@ -512,7 +509,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
   
-  #update any files in the background - don't use a terminal for that. This is a safety measure.
+  #update any files in the background - don't use a terminal for that. This is a safety measure to update pi-apps scripts if terminal fails to launch.
   updatable_apps='' no_status=true update_now_cli
   
   if [ ! -z "$updatable_apps" ];then
@@ -521,7 +518,16 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       updatable_apps="'"$updatable_apps"'"
       trap "sleep 10" EXIT
       source "${DIRECTORY}/updater" source
-      update_now_cli
+      
+      failed_apps=""
+      for app in $updatable_apps ;do
+        update_app "$app" || failed_apps+="$app"$'\''\n'\''
+      done
+      
+      #load the app list now to reduce launch time
+      refresh_app_list &
+      
+      action=update diagnose_apps "$failed_apps"
       echo
       echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
       
