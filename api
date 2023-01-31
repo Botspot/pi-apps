@@ -1897,7 +1897,7 @@ format_logfile() { #remove ANSI escape sequences from a given file, and add OS i
   [ -z "$1" ] && error "format_logfile: no filename given!"
   [ ! -f "$1" ] && error "format_logfile: given filename ($1) does not exist or is not a file!"
   
-  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\x1b\[[0-9;]*//g' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
+  echo -e "$(get_device_info)\n\nBEGINNING OF LOG FILE:\n-----------------------\n\n$(cat "$1" | tr '\r' '\n' | sed "s/\x1b\[?[0-9;]*[a-zA-Z]//g" | sed "s/\x1b\[[0-9;]*[a-zA-Z]//g" | sed 's/\x1b\[[0-9;]*//g' | grep -vF '.......... .......... .......... .......... ..........')" > "$1"
   
 }
 
@@ -2548,7 +2548,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
           if [[ "$line" == '['*']' ]];then
             
             #hide cursor
-            printf "\033[?25l"
+            printf "\e[?25l"
             
             #print the total data only, like: "0.9GiB/1.1GiB"
             statsline="$(echo "$line" | awk '{print $2}' | sed 's/(.*//g' | tr -d '\n') "
@@ -2570,7 +2570,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
             progress_characters=$(((percent*available_width)/100))
             
             statsline+="\e[92m\e[1m$(for ((i=0; i<$progress_characters; i++)); do printf "—"; done)\e[39m" # other possible characters to put here: █🭸
-            echo -ne "\e[0K${statsline}\r\033\e[0m" 1>&2 #clear and print over previous line
+            echo -ne "\e[0K${statsline}\r\e\e[0m" 1>&2 #clear and print over previous line
             
             #reduce the line and print over the previous line, like: "1.1GiB/1.1GiB(98%) DL:18MiB"
             #echo "$line" | awk '{print $2 " " $4 " " substr($5, 1, length($5)-1)}' | tr -d '\n'
@@ -2590,7 +2590,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
   if [ $exitcode == 0 ] && [ "$quiet" == 0 ];then
     
     #show cursor
-    printf "\033[?25h"
+    printf "\e[?25h"
     
     #display "done" message
     if [ "$use" == aria2c ];then
@@ -2602,7 +2602,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
   elif [ $exitcode != 0 ] && [ "$quiet" == 0 ];then
     #show cursor
-    printf "\033[?25h"
+    printf "\e[?25h"
     
     echo -e "\n\e[91mFailed to download: $url\nPlease review errors above.\e[0m" 1>&2
   fi
