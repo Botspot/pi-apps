@@ -400,7 +400,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #status "Handling url: $package"
       
-      local filename="$HOME/$(basename "$package")"
+      local filename="/tmp/$(basename "$package")"
       
       #add .deb extension if filename doesn't end with it.
       if [ "${filename: -4}" != ".deb" ]; then
@@ -1657,8 +1657,13 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=24 Authorization failed\.\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=22 The response status is not successful\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\." <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
+    error_type="internet"
+  fi
+  
+  if grep -qF "errorCode=24 Authorization failed." <<<"$errors" ;then
+    error_caption+=("Download failed with the \"Authorization failed\" error. This sometimes happens during a download on bad Wi-Fi, but if this problem persists, please reach out to the Pi-Apps developers.")
     error_type="internet"
   fi
   
@@ -1671,6 +1676,13 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_caption+=("Your system seems to be having trouble with TLS connections.
 
 Check your internet connection and try again.")
+    error_type="internet"
+  fi
+  
+  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
+
+Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
     error_type="internet"
   fi
   
@@ -1761,13 +1773,6 @@ If this problem continues occurring, please reach out to the Pi-Apps developers 
 To install XZ, run this in a terminal:
 sudo apt-get install xz-utils")
     error_type="system"
-  fi
-  
-  if grep -qF "error: RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
-    error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
-
-Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
-    error_type="internet"
   fi
   
   if grep -qF "aria2c: error while loading shared libraries: /lib/arm-linux-gnueabihf/libaria2.so.0: unexpected reloc type 0xc8" <<<"$errors" ;then
@@ -1913,6 +1918,84 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXkxhc3QgdXBkYXRlZCBQaS1BcHBzIG9uOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF5MXVaWGNLIikiIHwgJChiYXNlNjQgLWQgPDw8IlltRnpaVFkwSUMxa0NnPT0iKSkiIDtlbHNlIHNsZWVwIDAuNyA7ZmkK" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
+}
+
+diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop through each error log, diagnose it, and provide a "Send report" button if applicable.
+  local failed_apps="$1"
+  
+  local num_lines="$(wc -l <<<"$failed_apps")"
+  local i=1 #counter to track which failed_app in the list is current
+  
+  for app in $failed_apps ;do
+    logfile="$(get_logfile "$app")"
+    #given the app's logfile, categorize the error and set the error_type variable
+    diagnosis="$(log_diagnose "$logfile")"
+    
+    error_type="$(echo "$diagnosis" | head -n1)" #first line of diagnosis is the type of error
+    error_caption="$(echo "$diagnosis" | tail -n +2)" #subsequent lines of diagnosis are caption(s)
+    
+    #set the window-text
+    if [ "$error_type" == unknown ];then
+      text="<b>${app^}</b> failed to $action for an <b>unknown</b> reason."
+    else
+      text="<b>${app^}</b> failed to $action because Pi-Apps encountered $([[ "$error_type" == [aeiou]* ]] && echo an || echo a) <b>$error_type</b> error."
+    fi
+    
+    #if the error_type is NOT system, internet, or package, AND the app exists in the official Pi-Apps repository, AND the app-script has not been modified, AND the system setup is supported, AND the app is not a package-app, then enable the "Send report button"
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"Error report cannot be sent because this \"app\" is really just a shortcut to $action a Debian package. It's not a problem that Pi-Apps can fix."
+    elif [[ "$error_type" =~ ^(system|internet|package)$ ]];then
+      text+=$'\n'"Error report cannot be sent because this is not an issue with Pi-Apps."
+    elif ! list_apps online | grep -q "$app" ;then
+      text+=$'\n'"Error report cannot be sent because this app is not in the official repository."
+    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
+      text+=$'\n'"Error report cannot be sent because this app is not the official version."
+    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
+      text+=$'\n'"Error report cannot be sent because this app does not match the official version."
+    elif [ "$supported" == no ];then
+      text+=$'\n'"Error report cannot be sent because your system is unsupported."
+    else
+      #if all of the above checks evaluate to FALSE, then display the "Send report" button.
+      send_button=(--button='Send report'!"${DIRECTORY}/icons/send-error-report.png":2)
+    fi
+    
+    #display support links, depending on if this was a package-app or a script-app
+    if [ "$(app_type "$app")" == package ];then
+      text+=$'\n'"As this is an APT error, consider Googling the errors or asking for help in the <a href=\"https://forums.raspberrypi.com\">Raspberry Pi Forums</a>."
+    else
+      text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
+    fi
+    
+    #if the error_caption is empty, display logfile instead
+    if [ -z "$error_caption" ];then
+      text+=$'\n'"You can view the terminal output below. (scroll down)"
+      error_caption="$(cat "$logfile")"
+    else
+      text+=$'\n'"Below, Pi-Apps explains what went wrong and how you can fix it."
+    fi
+    
+    #this dialog may be one in a series of failed_app dialogs. Name the window-close button accordingly.
+    if [ $i -lt $num_lines ];then
+      close_button=(--button="Next error!${DIRECTORY}/icons/forward.png":1)
+    else
+      close_button=(--button="Close!${DIRECTORY}/icons/exit.png":1)
+    fi
+    
+    echo "$error_caption" | yad "${yadflags[@]}" --class Pi-Apps --name "Pi Apps" --text-info --width=700 --height=300 --title="Error occured when $(echo "${action}" | sed 's/updateing/updating/g') $app ($i/$num_lines)" \
+      --image="${DIRECTORY}/icons/error.png" --image-on-top \
+      --text="$text" --wrap --fontname=12 \
+      --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
+      "${send_button[@]}" \
+      "${close_button[@]}"
+    button="${PIPESTATUS[1]}"
+    
+    if [ $button == 2 ];then
+      #send error log
+      send_error_report "$logfile"
+    fi
+    
+    i=$((i+1))
+  done
 }
 #end of logfile functions
 
