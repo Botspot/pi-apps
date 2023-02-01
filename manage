@@ -377,12 +377,15 @@ $app"
         #indicate current action in current line of $queue
         queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
         
-        #refresh the list in queue-viewer window
-        write_list "$queue"
-        
         #get first word of this line - the action. Subsequent words are the name of the app.
         action="$(echo "$line" | awk -F';' '{print $1}')"
         app="$(echo "$line" | awk -F';' '{print $2}')"
+        
+        #Set terminal title
+        echo -ne "\e]0;${action^}ing ${app}\a"
+        
+        #refresh the list in queue-viewer window
+        write_list "$queue"
         
         #echo "Action is $action, app is $app"
         
