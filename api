@@ -1035,17 +1035,26 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   [ -z "$query" ] && error "app_search(): requires a search query."
   
   #you can change which app-files are searched. Default: description, website, credits
-  local search_files="$(echo "$2" | sed 's/^ //g' | sed 's/ $//g' | sed 's/  / /g')"
-  [ -z "$search_files" ] && search_files="description website credits"
+  if [ ! -z "${2+x}" ];then
+    #second argument can be set, but left blank
+    local search_files="$(echo "$2" | sed 's/^ //g' | sed 's/ $//g' | sed 's/  / /g')"
+  else
+    #if no second argument provided
+    local search_files="description website credits"
+  fi
   
   #generate syntax for the find command. Example output: "-name description -o -name website -o -name credits"
   local find_syntax="$(echo "$search_files" | sed 's/ / -o -name /g')"
   echo "search pattern: $find_syntax" 1>&2
   
-  #search description and website
-  local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g')"
+  #search app files
+  if [ -z "$search_files" ];then
+    local results=""
+  else
+    local results="$(find "${DIRECTORY}/apps" \( -name $find_syntax \) -exec grep -m1 -Fi "$query" {} + | awk -F: '{print $1}' | sed "s+${DIRECTORY}/apps/++g" | sed 's+/.*++g' | sort | uniq)"
+  fi
   #hide incompatible and hidden/disabled apps
-  results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)" | sort)"
+  results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)")"
   
   local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
   
@@ -1089,29 +1098,25 @@ app_search_gui() { #graphical interface to search for apps
     
   elif [ ! -z "$results" ];then #display apps and their categories in a list for user to select
     
-    local categories="$(read_category_files)"
-    
-    local IFS=$'\n'
-    local LIST=''
-    for app in $results ;do
-      local category="$(grep '^'"$app"'|' <<<"$categories" | awk -F'|' '{print $2}')"
-      
-      LIST+="${DIRECTORY}/apps/${app}/icon-24.png
-$app
-$( (cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable") | head -n1)
-<small>in</small>
-${DIRECTORY}/icons/categories/${category##*/}.png
-${category}"$'\n'
-    done
-    LIST="${LIST::-1}" #remove last empty newline
-    
-    show_app() {
+    local app="$(show_app() {
       echo "$2"
     }
     export -f show_app
     
-    local app=''
-    app="$(echo -n "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
+    categories="$(read_category_files)"
+    
+    IFS=$'\n'
+    for app in $results ;do
+      local category="$(grep '^'"$app"'|' <<<"$categories" | awk -F'|' '{print $2}')"
+      
+      echo "${DIRECTORY}/apps/${app}/icon-24.png
+$app
+$( (cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable") | head -n1)
+<small>in</small>
+${DIRECTORY}/icons/categories/${category##*/}.png
+${category}"
+    done | \
+    yad "${yadflags[@]}" --title="Results for "\""$query"\""" --width=310 --height=250 \
       --list --no-headers  --column=app:IMG --column=appname --column=tooltip:HD --column=in --column=category:IMG --column=categoryname \
       --tooltip-column=3 --no-buttons \
       --select-action="bash -c "\""show_app %s; kill "\$"YAD_PID"\""")"
