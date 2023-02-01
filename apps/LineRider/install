@@ -2,40 +2,43 @@
 
 #Bot automatically updates this when I make a new release.
 version=2023.1.1
-#Buster version
-version2=2022.5.1
 
 #Install Depends
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel unzip zip || exit 1
 
-mkdir -p ~/LineRider
-cd ~/LineRider || error "Could not move to folder"
-
-if [[ $(get_codename) == "buster" ]]; then
-  use_version="$version2"
-else
-  use_version="$version"
-fi
+rm -rf /tmp/LineRider
+mkdir -p /tmp/LineRider/ || error "Could not make directory!"
+cd /tmp/LineRider/
 
 #Download LRA-Community-Edition build from repo
 status "Downloading LineRider... "
-wget -O linerider.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${use_version}/LineRider.game.auto-release.${use_version}-LR.zip || error "Could not wget LineRider from GitHub!"
+wget -O linerider.zip https://github.com/Sussy-OS/LRA-Community-Edition/releases/download/${version}/LineRider.game.auto-release.${version}-LR.zip || error "Could not wget LineRider from GitHub!"
 
 #Install
-unzip linerider.zip || error "Could not unzip the files"
-rm linerider.zip
+unzip linerider.zip || error "Could not unzip linerider.zip!"
+rm linerider.zip || error "Failed to delete linerider.zip!"
+cd /tmp/
+sudo mv -f /tmp/LineRider/ /opt/LineRider/ || error "Failed to move source folder to /opt!"
+sudo chmod +x /opt/LineRider/linerider.exe || error "Could not chmod +x executable!"
 
-#Add system ffmpeg to expected location
-mkdir -p ~/Documents/LRA/ffmpeg/linux
-cp $(command -v ffmpeg) ~/Documents/LRA/ffmpeg/linux/ffmpeg
+#Create symbolic link to expected location at runtime
+#because the source code relies on this hardcoded location in the users HOME folder, we can't reliably create it for all users at install time
+#Create linerider command
+sudo mkdir -p /usr/local/bin
+echo '#!/bin/bash
+mkdir -p ~/Documents/LRA/ffmpeg/linux/
+ln -sf $(command -v ffmpeg) ~/Documents/LRA/ffmpeg/linux/ffmpeg
+mono /opt/LineRider/linerider.exe' | sudo tee /usr/local/bin/linerider >/dev/null
+sudo chmod +x /usr/local/bin/linerider
 
 #Menu shortcut
+sudo mkdir -p /usr/local/share/applications
 echo "[Desktop Entry]
 Name=LineRider
 Comment=An Open Source spiritual successor to the flash game Line Rider
 Icon=$(dirname "$0")/icon-64.png
-Exec=mono $HOME/LineRider/linerider.exe
-Path=$HOME/LineRider/
+Exec=linerider
+Path=/opt/LineRider/
 Type=Application
 Terminal=false
-Categories=Game;" > ~/.local/share/applications/LineRider.desktop
+Categories=Game;" | sudo tee /usr/local/share/applications/LineRider.desktop >/dev/null

@@ -1,4 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm -rf ~/LineRider/ ~/.local/share/applications/LineRider.desktop
+sudo rm -rf /opt/LineRider/ /usr/local/share/applications/LineRider.desktop ~/.local/share/applications/LineRider.desktop /usr/local/bin/linerider || error "Could not remove LineRider files!"
