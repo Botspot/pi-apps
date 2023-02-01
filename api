@@ -113,7 +113,10 @@ package_available() { #determine if the specified package-name exists in a repos
   local package="$1"
   [ -z "$package" ] && error "package_available(): no package name specified!"
   #using find and grep to do this is nearly instantaneous, rather than apt-cache which takes several seconds
-  find /var/lib/apt/lists -maxdepth 1 -name "*_Packages" | xargs grep -q "^Package: $package$"
+  local IFS=$'\n'
+  for file in $(find /var/lib/apt/lists -maxdepth 1 -type f -name "*_Packages") ;do
+    grep -q "^Package: $package$" "$file" && break
+  done
 }
 
 package_dependencies() { #outputs the list of dependencies for the $1 package
@@ -341,6 +344,9 @@ repo_rm() { #remove the local apt repository
   apt_lock_wait
   
   rm -rf /tmp/pi-apps-local-packages || sudo rm -rf /tmp/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /tmp/pi-apps-local-packages"
+  
+  #Also remove broken symbolic link to /tmp/pi-apps-local-packages/./Packages
+  sudo rm -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages
 }
 
 app_to_pkgname() { #given an app-name, convert it to a unique, valid package-name that starts with 'pi-apps-'
