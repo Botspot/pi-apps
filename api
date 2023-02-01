@@ -1060,6 +1060,7 @@ $results"
 }
 
 app_search_gui() { #graphical interface to search for apps
+  
   local output=''
   output="$(yad "${yadflags[@]}" --title=Search --width=310 \
     --text="Search for apps."$'\n'"Not case-sensitive." \
@@ -1086,27 +1087,34 @@ app_search_gui() { #graphical interface to search for apps
     #if only one result, don't ask user to select it
     echo "$results" #return result to outside world
     
-  elif [ ! -z "$results" ];then
+  elif [ ! -z "$results" ];then #display apps and their categories in a list for user to select
+    
+    local categories="$(read_category_files)"
     
     local IFS=$'\n'
     local LIST=''
     for app in $results ;do
-      LIST="$LIST
-${DIRECTORY}/apps/${app}/icon-24.png
+      local category="$(grep '^'"$app"'|' <<<"$categories" | awk -F'|' '{print $2}')"
+      
+      LIST+="${DIRECTORY}/apps/${app}/icon-24.png
 $app
-$(echo "$(cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable")" | head -n1)"
+$( (cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable") | head -n1)
+<small>in</small>
+${DIRECTORY}/icons/categories/${category##*/}.png
+${category}"$'\n'
     done
-    LIST="${LIST:1}" #remove first empty newline
+    LIST="${LIST::-1}" #remove last empty newline
+    
+    show_app() {
+      echo "$2"
+    }
+    export -f show_app
     
     local app=''
-    app="$(echo "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
-      --list --no-headers  --column=:IMG --column=name --column=tooltip:HD \
-      --print-column=2 --tooltip-column=3)" || exit 0
-    
-    #if nothing selected but OK button (or Enter key) was pressed, choose first result.
-    if [ -z "$app" ];then
-      app="$(head -n1 <<<"$results")"
-    fi
+    app="$(echo -n "$LIST" | yad "${yadflags[@]}" --title=Results --width=310 --height=250 \
+      --list --no-headers  --column=app:IMG --column=appname --column=tooltip:HD --column=in --column=category:IMG --column=categoryname \
+      --tooltip-column=3 --no-buttons \
+      --select-action="bash -c "\""show_app %s; kill "\$"YAD_PID"\""")"
     
     echo "$app" #return result to outside world
   else
