@@ -117,7 +117,7 @@ if [ ! -z "$3" ];then
     app="$(yadflags+=("$geometry2") ; app_search_gui)"
     
     if [ ! -z "$app" ];then
-      "${DIRECTORY}/gui" '' "$app" "search/$app" "$app"
+      "${DIRECTORY}/gui" '' "$app" "/$app" "$app"
     fi
     
   elif [[ "$input" == */ ]];then
