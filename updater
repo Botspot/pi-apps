@@ -507,6 +507,20 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   [ "$no_status" != true ] && status_green "\nPi-Apps updates complete."
 }
 
+update_now_gui_apps() { # updatable_apps variable
+  # this function exists to avoid having to write commands in terminal-run formatting for update_now_gui
+  local failed_apps=""
+  local IFS=$'\n'
+  for app in $updatable_apps ;do
+    update_app "$app" || failed_apps+="$app"$'\n'
+  done
+  
+  #load the app list now to reduce launch time
+  refresh_app_list &
+  
+  action=update diagnose_apps "$failed_apps"
+}
+
 update_now_gui() { #input: updatable_files and updatable_apps variables
   
   #update any files in the background - don't use a terminal for that. This is a safety measure to update pi-apps scripts if terminal fails to launch.
@@ -519,16 +533,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       trap "sleep 10" EXIT
       source "${DIRECTORY}/updater" source
       
-      failed_apps=""
-      IFS=$'\n'
-      for app in $updatable_apps ;do
-        update_app "$app" || failed_apps+="$app"$'\''\n'\''
-      done
-      
-      #load the app list now to reduce launch time
-      refresh_app_list &
-      
-      action=update diagnose_apps "$failed_apps"
+      update_now_gui_apps
       echo
       echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
       
