@@ -258,11 +258,11 @@ jobs:
           branch: "auto-app-updates-NOT-FOR-USERS"
           title: "[AUTO] Update App Versions"
           body: |
-            [badge-error]: https://github.com/Mqxx/GitHub-Markdown/blob/main/blockquotes/badge/error.svg?raw=true 'Error'
-            [badge-warning]: https://github.com/Mqxx/GitHub-Markdown/blob/main/blockquotes/badge/warning.svg?raw=true 'Warning'
-            [badge-issue]: https://github.com/Mqxx/GitHub-Markdown/blob/main/blockquotes/badge/issue.svg?raw=true 'Issue'
-            [badge-check]: https://github.com/Mqxx/GitHub-Markdown/blob/main/blockquotes/badge/check.svg?raw=true 'Check'
-            [badge-info]: https://github.com/Mqxx/GitHub-Markdown/blob/main/blockquotes/badge/info.svg?raw=true 'Info'
+            [badge-error]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/error.svg?raw=true 'Error'
+            [badge-warning]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/warning.svg?raw=true 'Warning'
+            [badge-issue]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/issue.svg?raw=true 'Issue'
+            [badge-check]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/check.svg?raw=true 'Check'
+            [badge-info]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/info.svg?raw=true 'Info'
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Apps updated:
