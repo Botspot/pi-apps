@@ -275,9 +275,9 @@ $app"
     local line
     for line in $queue ;do
       
-      action="$(echo "$line" | awk -F';' '{print $1}')"
-      app="$(echo "$line" | awk -F';' '{print $2}')"
-      code="$(echo "$line" | awk -F';' '{print $3}')"
+      local action="$(echo "$line" | awk -F';' '{print $1}')"
+      local app="$(echo "$line" | awk -F';' '{print $2}')"
+      local code="$(echo "$line" | awk -F';' '{print $3}')"
       
       output+="$(add_to_list "$action" "$app" "$code" stdout)"$'\n'
     done
@@ -363,7 +363,7 @@ $app"
     
     if [ ! -z "$new_lines" ];then #if new actions have been added to the queue
       
-      #keep track of all actions for this session in the $queue variable
+      #keep track of all actions for this session with the $queue variable
       if [ -z "$queue" ];then
         queue="$new_lines"
       else
@@ -372,7 +372,7 @@ $app"
       #echo "queue is '$queue'"
       
       for line in $new_lines ;do
-        #echo "Received '$line'"
+        #echo "Now handling request: '$line'"
         
         #indicate current action in current line of $queue
         queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
@@ -421,8 +421,8 @@ ${DIRECTORY}/icons/none-1.png
   #close the queue-viewer window in a few seconds
   (sleep 5; kill $yadpid 2>/dev/null) &
   
-  #diagnose every failed app's logfile - list item format is $action;$app:$exitcode
-  failed_apps="$(echo "$queue" | grep -v ';0$' | awk -F';' '{print $2}')"
+  #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
+  failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
   diagnose_apps "$failed_apps"
   
 elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
