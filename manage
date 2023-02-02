@@ -580,7 +580,8 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
         unset output
       else
         #install and not update failed, run purge_packages
-        purge_packages &>/dev/null
+        echo "Running purge_packages..." >> "$logfile"
+        purge_packages >> "$logfile"
       fi
     fi
     unset package_name
