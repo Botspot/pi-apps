@@ -28,5 +28,5 @@ sudo rm -f /usr/local/bin/mscore
 sudo ln -s /usr/local/bin/MuseScore.AppImage /usr/local/bin/mscore
 
 #change menu button label to 'MuseScore 4'
-sudo sed -i 's/MU 4.0 Portable/MuseScore 4/g' /usr/local/share/applications/org.musescore.MuseScore4portable.desktop
+sudo sed -i 's/^Name=.*/Name=MuseScore 4/g' /usr/local/share/applications/org.musescore.MuseScore4portable.desktop
 true #in case sed fails
