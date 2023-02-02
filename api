@@ -231,7 +231,16 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
 apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   #make sure english locale is added first
   add_english
-  
+
+  #check if sudo needs a password currently. this prevents sudo asking for a password in the below fuser command which would have "Waiting until APT locks are released... " written after it after 5 seconds
+  #the result would look like something in the terminal to a user "[sudo] password for USER: Waiting until APT locks are released... " which might be confusing
+  #this is very often the first command that pi-apps scripts run that requires sudo privileges from the user
+  #passwordless sudo (like on piOS) will always skip the contents of the if
+  if ! sudo -n true ; then
+    # sudo needs a password so prompt the user to give one before running other commands
+    sudo echo > /dev/null
+  fi
+
   #in a background subprocess, after 5 seconds, say "Waiting until APT locks are released... "
   (sleep 5; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
