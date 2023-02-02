@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Test installing app on buster armhf
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           # this is a buster armhf image
           base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2022-09-26/2022-09-22-raspios-buster-armhf.img.xz
@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye armhf
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf.img.xz
           bind_mount_repository: yes
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on buster arm64
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
           bind_mount_repository: yes
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye arm64
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2022-09-26/2022-09-22-raspios-bullseye-arm64.img.xz
           bind_mount_repository: yes
@@ -146,7 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bionic arm64
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://developer.download.nvidia.com/embedded/L4T/r32-3-1_Release_v1.0/Jetson-Nano-SDCard-Image/nv-jetson-nano-sd-card-image-r32.3.1.zip
           # add special arguments for jetson nano image format
@@ -170,7 +170,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on focal arm64
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://developer.download.nvidia.com/embedded/L4T/r35_Release_v1.0/JP_SD_5.0.2_b231/Jetson_SD_Xavier_NX/JP502-xnx-sd-card-image-b231.zip
           bootpartition:
@@ -192,7 +192,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on jammy arm64
-        uses: theofficialgman/arm-runner-action@v4
+        uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
