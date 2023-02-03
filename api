@@ -1023,16 +1023,14 @@ app_type() { #there are 'standard' apps, and there are 'package' apps - an alias
 }
 
 will_reinstall() { #return 0 if $1 app will be reinstalled during an update, otherwise return 1.
-  [ -z "$1" ] && error 'will_reinstall(): requires an argument'
+  local app="$1"
+  [ -z "$app" ] && error 'will_reinstall(): requires an argument'
   
   #detect which installation script exists and get the hash for that one
-  scriptname="$(script_name_cpu "$1")"
-  
-  oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
-  newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${1}/${scriptname}" 2>/dev/null | awk '{print $1}')"
+  local scriptname="$(script_name_cpu "$1")"
   
   #if install script was changed                              #if installed already
-  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${1}")" == 'installed' ];then
+  if ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" "${DIRECTORY}/apps/${app}/${scriptname}" -q >/dev/null && [ "$(app_status "$app")" == 'installed' ];then
     return 0
   else
     return 1
