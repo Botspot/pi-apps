@@ -310,7 +310,6 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
   fi
   
-  local reinstall_list
   local LIST
   local app
   for app in $updatable_apps ;do #generate a yad list for every updatable app
@@ -338,26 +337,22 @@ app:$app
 $line"$'\n'
     # if app will be reinstalled then include it on the list and notify the user that it will be reinstalled
     elif will_reinstall "$app"; then
-      reinstall_list+="TRUE
-${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
-$app (app$(echo ', <b>will be reinstalled</b>'))
-app:$app
-$line"$'\n'
-    # if app has been installed in the past then show it on the list. Useful to notify users that their, app which failed to install in the past, now works.
-    elif [ -f "${DIRECTORY}/data/status/${app}" ];then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
-$app
+$app (<b>will be reinstalled</b>)
 app:$app
 $line"$'\n'
+    # if app has been installed in the past then show it on the list. Useful to notify users that their app, which failed to install in the past, may now work.
+    elif [ "$(app_status "${app}")" == 'corrupted' ];then
+      LIST+="TRUE
+${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
+$app (Try installing it again!)
+app:$app
+This app failed to install last time. Maybe it will work now! After updating, try installing this app again."$'\n'
     else # app is not new or getting re-installed, add to compressed update list
       compressed_update+=$'\n'"app:${app}"
     fi
   done
-  
-  #keep apps that will reinstall at the top of the list
-  LIST="$reinstall_list$LIST"
-  unset reinstall_list
   
   local file
   for file in $updatable_files ;do #generate a yad list for every updatable file
@@ -383,7 +378,7 @@ file:$file
 "$'\n'
     
   done
-
+  
   # add special entry to list for compressed app updates
   if [ ! -z "$compressed_update" ];then
     # display all apps to be updated if less than 11 in number (-lt 12 lines due to the trailing newline)
@@ -392,16 +387,16 @@ file:$file
 ${DIRECTORY}/icons/categories/All Apps.png
 Unused apps
 compressed_apps
-Updatable apps that you have never installed$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
+Other apps that received minor updates$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
     else
       LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
 Unused apps
 compressed_apps
-Updatable apps that you have never installed. (too many to list here)"$'\n'
+Other apps that received minor updates. (too many to list here)"$'\n'
     fi
   fi
-
+  
   # remove trailing newline
   LIST="${LIST%$'\n'}"
   
