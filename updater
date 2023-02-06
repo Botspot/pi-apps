@@ -145,7 +145,7 @@ get_updatable_files() { #sets the updatable_files variable
           #file is missing in the update folder - local
           true #do not add to updatable_apps list
           
-        elif ! diff "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" -q >/dev/null ;then
+        elif ! files_match "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" ;then
           #files don't match - add to updatable_files list
           updatable_files+=$'\n'"${file}"
         fi
@@ -444,12 +444,9 @@ update_app() { #first word is app name
   #Set terminal title
   echo -ne "\e]0;Updating ${app}\a"
   
-  local newinstallhash="$(sha1sum "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
-  local oldinstallhash="$(sha1sum "${DIRECTORY}/apps/${app}/${scriptname}" 2>/dev/null | awk '{print $1}')"
-  
   installback=no
-  #         if install script was changed                           #if installed already
-  if [ "$newinstallhash" != "$oldinstallhash" ] && [ "$(app_status "${app}")" == 'installed' ];then
+  #         if install script was changed                                                                          and       if currently installed
+  if ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" "${DIRECTORY}/apps/${app}/${scriptname}" && [ "$(app_status "${app}")" == 'installed' ];then
     installback=yes
     status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it

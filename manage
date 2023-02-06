@@ -96,7 +96,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
       script_name_cpu="$(script_name_cpu "$app")"
       
       #if the app-script doesn't match version in update folder
-      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" -q >/dev/null ;then
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" ;then
         
         "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
         

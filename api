@@ -895,10 +895,10 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
 #   #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
 #   app="$1"
 #   trigger="$2"
-  
+#
 #   [ -z "$app" ] && error "bitly_link(): requires an app argument"
 #   [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
-  
+#
 #   #if the 'Enable Analytics' setting is enabled
 #   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
 #     #determine the name of the link to "click"
@@ -1027,10 +1027,10 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   [ -z "$app" ] && error 'will_reinstall(): requires an argument'
   
   #detect which installation script exists and get the hash for that one
-  local scriptname="$(script_name_cpu "$1")"
+  local scriptname="$(script_name_cpu "$app")"
   
   #if install script was changed                              #if installed already
-  if ! diff "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" "${DIRECTORY}/apps/${app}/${scriptname}" -q >/dev/null && [ "$(app_status "$app")" == 'installed' ];then
+  if ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" "${DIRECTORY}/apps/${app}/${scriptname}" && [ "$(app_status "$app")" == 'installed' ];then
     return 0
   else
     return 1
@@ -1974,9 +1974,9 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       text+=$'\n'"Error report cannot be sent because this is not an issue with Pi-Apps."
     elif ! list_apps online | grep -q "$app" ;then
       text+=$'\n'"Error report cannot be sent because this app is not in the official repository."
-    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" | awk '{print $1}')" ];then
+    elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" ;then
       text+=$'\n'"Error report cannot be sent because this app is not the official version."
-    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && [ "$(sha256sum "${DIRECTORY}/apps/${app}/uninstall" | awk '{print $1}')" != "$(sha256sum "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" | awk '{print $1}')" ];then
+    elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" "${DIRECTORY}/apps/${app}/uninstall" ;then
       text+=$'\n'"Error report cannot be sent because this app does not match the official version."
     elif [ "$supported" == no ];then
       text+=$'\n'"Error report cannot be sent because your system is unsupported."
@@ -2094,6 +2094,14 @@ view_file() { #maximized yad window to view a text file
     --title="Viewing file" --text="File location: <b>$file</b>" \
     --text-info --tail --maximized \
     --button=Close #--back='#505050' --fore='#00FFFF'
+}
+
+files_match() { #$1 and $2 are paths to files
+  if [ ! -f "$1" ] || [ ! -f "$2" ];then
+    return 1
+  else
+    diff "$1" "$2" -q >/dev/null
+  fi
 }
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
@@ -2679,9 +2687,11 @@ nproc() { #Reduce the number of compile threads on low-RAM systems
 }
 #end of command interceptors
 
-trap "exit 1" INT
-
-cd $HOME
+#Stop a running api function if user presses Ctrl+C, but avoid doing this if api is sourced in an interactive terminal.
+if [[ $- != *i* ]] ;then
+  trap "exit 1" INT
+  cd $HOME
+fi
 
 add_english
 
