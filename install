@@ -17,7 +17,7 @@ command -v apt >/dev/null || error "apt: command not found. Most likely this sys
 
 #Ensure running arm processor
 if uname -m | grep -qi 'x86\|i686\|i386' ;then
-  error "Pi-Apps is not supported on non-ARM CPU architectures. We encourage you to use one of the existing x86 app stores, like the Snap Store or the Flatpak store."
+  error "Pi-Apps is not supported on non-ARM CPU architectures. We encourage you to use your distro's app store, like Gnome Software or Discover Software Center."
 fi
 
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
