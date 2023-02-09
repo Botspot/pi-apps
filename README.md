@@ -53,9 +53,10 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 #### Supported systems:
 
 - [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): fully supported.
-- [Switchroot L4T Ubuntu](https://wiki.switchroot.org/en/Linux/Ubuntu-Install-Guide): fully supported (incompatible apps are hidden)
-- Kali Linux, Ubuntu, Ubuntu Mate, any other Debian-based ARM OS: Pi-Apps should mostly work but you may encounter errors for some apps.
-- Android, ChromeOS, non-ARM, non-Debian operating systems: Not supported. Your mileage may vary.
+- [Switchroot L4T Ubuntu Bionic](https://wiki.switchroot.org/en/Linux/Ubuntu-Install-Guide): fully supported (incompatible apps are hidden)
+- [Raspberry Pi Ubuntu](https://ubuntu.com/desktop/flavours) (GNOME, Mate, KDE, Budgie, etc) and [Raspberry Pi Pop_OS!](https://pop.system76.com/): you may encounter errors installing or running some apps
+- [Nvidia Jetson](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/), [Pine64](https://www.pine64.org/), [Orange Pi](http://www.orangepi.org/), [Radxa](https://rockpi.org/), [Bananna Pi](https://banana-pi.org/), [Khadas](https://www.khadas.com/), [Inovato](https://www.inovato.com/), [Libre Computer](https://libre.computer/), and other ARM Debian/Ubuntu Based Devices: not actively tested, most apps should work (pi-specific apps are hidden)
+- Android, ChromeOS, Kali Linux, non-ARM, other Debian and non-Debian operating systems: Not supported. Your mileage may vary.
 
 <details>
 <summary><b>To install Pi-Apps manually</b> if you prefer to see what happens under the hood</summary>
