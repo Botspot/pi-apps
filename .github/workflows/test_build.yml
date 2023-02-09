@@ -37,6 +37,10 @@ on:
         description: 'Build on RPI Ubuntu Jammy 64bit'
         required: true
         type: boolean
+      popos_jammy_64:
+        description: 'Build on RPI PopOS Jammy 64bit'
+        required: true
+        type: boolean
 
 run-name: Testing ${{ inputs.name }}
 
@@ -195,6 +199,26 @@ jobs:
         uses: theofficialgman/arm-runner-action@v6
         with:
           base_image: https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu: cortex-a7:cortex-a72
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
+  popos-jammy-64bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.popos_jammy_64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on PopOS jammy arm64
+        uses: theofficialgman/arm-runner-action@v6
+        with:
+          base_image: https://iso.pop-os.org/22.04/arm64/raspi/3/pop-os_22.04_arm64_raspi_3.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
