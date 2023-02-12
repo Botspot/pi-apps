@@ -159,7 +159,7 @@ Kali)
   ;;
 Ubuntu)
   case "$__os_codename" in
-  bionic | focal | groovy)
+  bionic | focal)
     ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep openjdk-r | wc -l)
     if [[ $ppa_added -eq "1" ]]; then
       status "Skipping OpenJDK PPA, already added"
