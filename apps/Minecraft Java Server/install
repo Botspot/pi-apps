@@ -214,7 +214,7 @@ esac
 
 case "$java_selection" in
   "Java 8")
-    (install_packages temurin-8-jdk)
+    (install_packages temurin-8-jre)
     if [ $? != 0 ]; then
       if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
         # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
@@ -225,7 +225,7 @@ case "$java_selection" in
         error "Failed to install temurin packages."
       fi
     fi
-    java_location="/usr/lib/jvm/temurin-8-jdk-$dpkg_arch/bin/java"
+    java_location="/usr/lib/jvm/temurin-8-jre-$dpkg_arch/bin/java"
     ;;
   "Java 16")
     (install_packages adoptopenjdk-16-hotspot-jre)
@@ -242,7 +242,7 @@ case "$java_selection" in
     java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
     ;;
   "Java 17")
-    (install_packages temurin-17-jdk)
+    (install_packages temurin-17-jre)
     if [ $? != 0 ]; then
       if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
         # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
@@ -253,7 +253,7 @@ case "$java_selection" in
         error "Failed to install temurin packages."
       fi
     fi
-    java_location="/usr/lib/jvm/temurin-17-jdk-$dpkg_arch/bin/java"
+    java_location="/usr/lib/jvm/temurin-17-jre-$dpkg_arch/bin/java"
     ;;
 esac
 
