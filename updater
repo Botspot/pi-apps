@@ -385,15 +385,15 @@ file:$file
     if [[ $(wc -l <<< "$compressed_update") -lt 12 ]]; then
     LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
-Unused apps
+Inactive updates
 compressed_apps
-Other apps that received minor updates$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
+Refreshes the Pi-Apps details for these apps:\n$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
     else
       LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
-Unused apps
+Inactive updates
 compressed_apps
-Other apps that received minor updates. (too many to list here)"$'\n'
+Refreshes the Pi-Apps details for apps that do not need to be reinstalled for this update. (Too many to list here)"$'\n'
     fi
   fi
   
