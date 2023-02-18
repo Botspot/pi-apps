@@ -387,7 +387,7 @@ file:$file
 ${DIRECTORY}/icons/categories/All Apps.png
 Inactive updates
 compressed_apps
-Refreshes the Pi-Apps details for these apps:\n$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
+Refreshes the Pi-Apps details for these apps$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
     else
       LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
@@ -406,7 +406,7 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   fi
   
   #Display a list of everything updatable
-  output="$(echo -e "$LIST" | yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
+  output="$(echo "$LIST" | yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
     --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
     --list --checklist --separator='\n' --print-column=4 --no-headers \
     --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
