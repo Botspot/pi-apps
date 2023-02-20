@@ -1,3 +1,3 @@
 #!/bin/bash
 
-install_packages gnome gnome-core gnome-software gnome-shell || error "Could not install GNOME and its software."
+install_packages gnome gnome-core gnome-software gnome-shell || exit 1
