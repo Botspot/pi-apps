@@ -100,7 +100,7 @@ fi
 echo "[Desktop Entry]
 Name=Boxy SVG
 Comment=Scalable Vector Graphics (SVG) editor
-Exec=boxy-svg %u
+Exec=boxy-svg %F
 Icon=com.boxy_svg.BoxySVG
 Type=Application
 Terminal=false
