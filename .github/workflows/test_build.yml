@@ -198,7 +198,7 @@ jobs:
       - name: Test installing app on jammy arm64
         uses: theofficialgman/arm-runner-action@v6
         with:
-          base_image: https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img.xz
+          base_image: https://cdimage.ubuntu.com/releases/22.04.2/release/ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
