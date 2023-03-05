@@ -21,7 +21,7 @@ Comment=Python IDE
 Categories=Development;IDE;Programming;
 Terminal=false
 StartupWMClass=jetbrains-pycharm-ce
-StartupNotify=true" > /usr/local/share/applications/jetbrains-pycharm-ce.desktop
+StartupNotify=true" | sudo tee /usr/local/share/applications/jetbrains-pycharm-ce.desktop
 
 #cleanup
 rm -rf $HOME/pycharm-community.tar.gz $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
