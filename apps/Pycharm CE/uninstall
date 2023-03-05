@@ -6,6 +6,6 @@ remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
 
 echo "Deleting /opt/pycharm-community directory"
 sudo rm -rf /opt/pycharm-community || error "Failed to delete /opt/pycharm-community directory"
-rm -f ~/.local/share/applications/jetbrains-pycharm-ce.desktop
+sudo rm -f ~/.local/share/applications/jetbrains-pycharm-ce.desktop /usr/local/share/applications/jetbrains-pycharm-ce.desktop
 # cleanup files leftover from potential failed install
 rm -rf $HOME/pycharm-community.tar.gz $HOME/pty4j $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
