@@ -1,21 +1,33 @@
 #!/bin/bash
+
 if dpkg -l box86 &>/dev/null ;then
   sudo apt purge -y box86
 fi
 
-sudo rm -f /etc/apt/sources.list.d/box86.list
-echo "Adding box86 repo..."
-sudo mkdir -p /etc/apt/sources.list.d
-sudo wget https://itai-nelken.github.io/weekly-box86-debs/debian/box86.list -O /etc/apt/sources.list.d/box86.list || error "Failed to download /etc/apt/sources.list.d/box86.list"
-echo "Adding key..."
-wget -qO- https://itai-nelken.github.io/weekly-box86-debs/debian/KEY.gpg | sudo apt-key add - || error "Failed to add key to box86 repo!"
-echo "Installing box86..."
-sudo dpkg --remove box86-no-binfmt-restart 2>/dev/null
-install_packages box86 || exit 1
+sudo wget https://ryanfortner.github.io/box86-debs/box86.list -O /etc/apt/sources.list.d/box86.list
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box86.list
+  error "Failed to add box86.list file!"
+fi
 
-if ! sudo systemctl restart systemd-binfmt ;then
-  echo -e "\nWarning: systemd-binfmt failed to restart. Getting debug info..."
-  echo "Running command: 'systemctl status systemd-binfmt.service'"
-  systemctl status systemd-binfmt.service
-  echo "Still exiting with success, but you will have to manually run all x86 applications with box86 as binfmt isn't there to do it for you."
+sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg
+curl -fsSL https://ryanfortner.github.io/box86-debs/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/box86-debs-archive-keyring.gpg
+
+if [ $? != 0 ];then
+  sudo rm -f /etc/apt/sources.list.d/box86.list
+  error "Failed to add KEY.gpg to APT keyring!"
+fi
+
+# obtain SOC_ID
+get_model
+if [[ "$SOC_ID" == "tegra-x1" ]] || [[ "$SOC_ID" == "tegra-x2" ]]; then
+  install_packages box86-tegrax1 || exit 1
+elif [[ "$SOC_ID" == "rk3399" ]]; then
+  install_packages box86-rk3399 || exit 1
+elif [[ "$SOC_ID" == "bcm2711" ]]; then
+  install_packages box86 || exit 1
+else
+  warning "There is no box86 pre-build for your device $SOC_ID $model"
+  warning "Installing the RPI4 tuned box86 build as a fallback (no crypto extensions enabled)"
+  install_packages box86 || exit 1
 fi
