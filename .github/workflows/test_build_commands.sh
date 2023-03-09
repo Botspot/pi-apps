@@ -95,6 +95,11 @@ if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
   sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 fi
 
+if [[ "$GITHUB_JOB" == "jammy-64bit" ]]; then
+  # remove packages that won't work in the chroot
+  sudo apt remove -y linux-image-*-raspi linux-modules-*-raspi linux-image-raspi linux-raspi
+fi
+
 # install pi-apps dependencies
 sudo apt update
 if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
