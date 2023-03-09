@@ -33,27 +33,27 @@ if package_installed mesa-va-drivers ; then
   mesa_va_drivers="mesa-va-drivers:armhf"
 fi
 
-if [[ "$(get_codename)" == "bionic" ]] || [[ "$(get_codename)" == "focal" ]] || [[ "$(get_codename)" == "bullseye" ]]; then
-  install_packages libc6:armhf libstdc++6:armhf \
-    libx11-6:armhf \
-    libgtk-3-0:armhf \
-    libgtk2.0-0:armhf libgdk-pixbuf2.0-0:armhf \
-    libpng16-16:armhf libjpeg62:armhf \
-    libopenal1:armhf osspd:armhf libopusfile0:armhf libvorbisfile3:armhf \
-    libcurl4:armhf \
-    libudev1:armhf \
-    libsdl2-2.0-0:armhf libsdl2-mixer-2.0-0:armhf libsdl2-image-2.0-0:armhf libsdl2-net-2.0-0:armhf libsdl2-ttf-2.0-0:armhf \
-    libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf libsmpeg0:armhf \
-    libcal3d12v5:armhf \
-    libssl1.1:armhf '|' libssl3:armhf libssh-gcrypt-4:armhf \
-    libcups2:armhf \
-    libgssapi-krb5-2:armhf libkrb5-3:armhf \
-    $rpi_arm_userspace $mesa_va_drivers libegl1-mesa:armhf libgl1-mesa-glx:armhf libgles2-mesa:armhf 
-elif [[ "$(get_codename)" == "buster" ]]; then
-  error "User error: Box86 cannot be installed on Raspberry Pi OS Buster 64-bit due to lack of official support. Consider upgrading your system to Raspberry Pi OS Bullseye or use the 32-bit version to install Box86."
-else
-  error "This script can't run on your OS! It HAS to be Raspbian/Debian Bullseye or Ubuntu 20.04"
+if [[ ! -z "$__os_original_id" ]]; then
+  error "User error: Box86 cannot be installed on $__os_original_desc. Please use any official Ubuntu Flavor, Debian, or PiOS/Raspbian Bullseye."
+elif [[ "$__os_codename" == "buster" ]]; then
+  error "User error: Box86 cannot be installed on $__os_desc. Please use any official Ubuntu Flavor, Debian, or PiOS/Raspbian Bullseye."
 fi
+
+install_packages libc6:armhf libstdc++6:armhf \
+  libx11-6:armhf \
+  libgtk-3-0:armhf \
+  libgtk2.0-0:armhf libgdk-pixbuf2.0-0:armhf \
+  libpng16-16:armhf libjpeg62:armhf \
+  libopenal1:armhf osspd:armhf libopusfile0:armhf libvorbisfile3:armhf \
+  libcurl4:armhf \
+  libudev1:armhf \
+  libsdl2-2.0-0:armhf libsdl2-mixer-2.0-0:armhf libsdl2-image-2.0-0:armhf libsdl2-net-2.0-0:armhf libsdl2-ttf-2.0-0:armhf \
+  libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf libsmpeg0:armhf \
+  libcal3d12v5:armhf \
+  libssl1.1:armhf '|' libssl3:armhf libssh-gcrypt-4:armhf \
+  libcups2:armhf \
+  libgssapi-krb5-2:armhf libkrb5-3:armhf \
+  $rpi_arm_userspace $mesa_va_drivers libegl1-mesa:armhf libgl1-mesa-glx:armhf libgles2-mesa:armhf
 
 sudo wget https://ryanfortner.github.io/box86-debs/box86.list -O /etc/apt/sources.list.d/box86.list
 if [ $? != 0 ];then
