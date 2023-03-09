@@ -1,8 +1,0 @@
-#!/bin/bash
-if [ -f ~/Windows-10/uninstall ];then
-  setsid ~/Windows-10/uninstall &
-else
-  echo "WARNING: Windows 10 theme's uninstall script is missing!"
-fi
-
-purge_packages || exit 1
