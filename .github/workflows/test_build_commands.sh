@@ -97,7 +97,7 @@ fi
 
 if [[ "$GITHUB_JOB" == "jammy-64bit" ]]; then
   # remove packages that won't work in the chroot
-  sudo apt remove -y linux-image-*-raspi linux-modules-*-raspi linux-image-raspi linux-raspi
+  sudo apt remove -y linux-image-*-raspi linux-modules-*-raspi linux-image-raspi linux-raspi linux-headers-raspi
 fi
 
 # install pi-apps dependencies
