@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=16.7.1
+version=16.8
 
 if ! package_is_new_enough rustc 1.60.0 ;then
   # Add repository source to apt sources.list
