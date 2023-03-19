@@ -1,6 +1,6 @@
 #!/bin/bash
 
-webVer[0]=$(wget -qO- https://nodejs.org/en/download/current/ | grep 'https://nodejs\.org/dist/.*\.tar\.gz' -m1 | tr '/' '\n' | grep '^v')
+webVer[0]=$(wget -qO- https://nodejs.org/en/download/current/ | tr '<>' '\n' | grep 'https://nodejs\.org/dist/.*\.tar\.gz' -m1 | tr '/' '\n' | grep '^v')
 armhf_url[0]="https://nodejs.org/dist/${webVer}/node-${webVer}-linux-armv7l.tar.xz"
 arm64_url[0]="https://nodejs.org/dist/${webVer}/node-${webVer}-linux-arm64.tar.xz"
 
