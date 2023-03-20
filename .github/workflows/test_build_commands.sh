@@ -112,11 +112,11 @@ sudo apt install -y yad curl wget aria2 lsb-release software-properties-common a
 if [ -z "$name" ]; then
   error "No App Name, PR #, or zip URL input passed to script. Exiting now."
 fi
-import="$name"
+import="${name/;/$'\n'}"
 
 if ls apps | grep -q "$import" ;then
   #pi-apps app name as input
-  imported_apps="${import/;/$'\n'}"
+  imported_apps="$import"
 
 elif [[ "$import" == *'://'*'.zip' ]];then
 
