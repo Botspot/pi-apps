@@ -84,8 +84,20 @@ elif ! command -v swapoff >/dev/null ;then
   error "\nUser error: Incompatible because the 'swapoff' command is missing on your system."
 elif ! command -v modprobe >/dev/null ;then
   error "\nUser error: Incompatible because the 'modprobe' command is missing on your system."
-elif ! sudo modprobe zram &>/dev/null ;then
-  error "\nUser error: Incompatible because the 'zram' kernel module is missing on your system."
+fi
+
+#load zram module
+if false && command -v enable_module >/dev/null ;then
+  enable_module zram || exit 1
+elif ! lsmod | awk '{print $1}' | grep -qxF zram ;then
+  if ! sudo modprobe zram &>/dev/null ;then
+    if [ ! -d "/lib/modules/$(uname -r)" ];then
+        error "\nUser error: Failed to load the 'zram' kernel module because you upgraded the kernel and have not rebooted yet.
+Please reboot to load the new kernel, then try again."
+    else
+      error "\nUser error: Incompatible because the 'zram' kernel module is missing on your system."
+    fi
+  fi
 fi
 status_green "Done"
 
@@ -131,9 +143,11 @@ elif [ "$1" == storage-on ]; then
 fi
 
 # Load zram module
-if ! modprobe zram ;then
-  echo "Failed to load zram kernel module"
-  exit 1
+if ! lsmod | awk "{print $1}" | grep -qxF zram ;then
+  if ! modprobe zram ;then
+    echo "Failed to load zram kernel module"
+    exit 1
+  fi
 fi
 
 # disable all zram devices

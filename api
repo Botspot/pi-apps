@@ -2425,7 +2425,17 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
   
   #load the module now if not already loaded
   if ! lsmod | awk '{print $1}' | grep -qxF "$module" ;then
-    sudo modprobe "$module" || exit 1
+    errors="$(sudo modprobe "$module" 2>&1)"
+    if [ $? != 0 ];then
+      #if modprobe fails, the module may be missing because user upgraded the kernel and has not rebooted yet.
+      if [ ! -d "/lib/modules/$(uname -r)" ];then
+        error "\nUser error: Failed to load the '$module' kernel module because you upgraded the kernel and have not rebooted yet.
+Please reboot to load the new kernel, then try again."
+      fi
+    else
+      #other modprobe error: exit now and display modprobe output
+      error "$errors"
+    fi
   fi
   
   #make it load on boot
