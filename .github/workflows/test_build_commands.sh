@@ -116,7 +116,7 @@ import="$name"
 
 if ls apps | grep -q "$import" ;then
   #pi-apps app name as input
-  imported_apps="$import"
+  imported_apps="${import/;/$'\n'}"
 
 elif [[ "$import" == *'://'*'.zip' ]];then
 
@@ -253,7 +253,11 @@ IFS=$'\n'
 for app in $imported_apps ;do
   cd "$DIRECTORY"
   ./manage install "$app" || error "Failed to install $app on $GITHUB_JOB."
+  status_green "Successfully installed $app on $GITHUB_JOB."
+done
+IFS=$'\n'
+for app in $imported_apps ;do
   cd "$DIRECTORY"
   ./manage uninstall "$app" || error "Failed to uninstall $app on $GITHUB_JOB."
-  status_green "Successfully installed and uninstalled $app on $GITHUB_JOB."
+  status_green "Successfully uninstalled $app on $GITHUB_JOB."
 done
