@@ -1,0 +1,45 @@
+#!/bin/bash
+version=1.8.19
+
+#determine filename of download
+if [ $arch == 32 ];then
+  filename="arduino-${version}-linuxarm.tar.xz"
+elif [ $arch == 64 ];then
+  filename="arduino-${version}-linuxaarch64.tar.xz"
+fi
+
+#ask if user wants dark theme
+wget -qO /tmp/arduino-dark-before-after.png 'https://github.com/Botspot/DarkArduinoTheme/raw/master/before-and-after.png'
+
+yad --center --separator='\n' \
+  --title="Enable Arduino dark theme?" --image=/tmp/arduino-dark-before-after.png --image-on-top \
+  --button="Use dark mode":2 --button="Use light mode":0 \
+  --window-icon="$(dirname "$0")/icon-64.png" \
+  --form --field="Enable dark mode in Arduino?":LBL '' >/dev/null &
+question_pid=$!
+
+cd ~/.local/share
+wget -O $PWD/$filename https://downloads.arduino.cc/$filename || error "failed to download!"
+
+tar -xf $PWD/$filename || error "failed to extract with tar!"
+sudo $PWD/arduino-${version}/install.sh || error "failed run Arduino install script!"
+rm -f $HOME/Desktop/arduino-arduinoide.desktop $PWD/$filename
+
+if package_installed brltty ; then
+  status "Removing brltty package because it makes it impossible to connect to arduino boards..."
+  apt_lock_wait
+  sudo apt purge -y brltty
+fi
+
+#configure dark mode if user chose it
+wait $question_pid
+if [ $? == 2 ];then
+  status "Installing dark mode..."
+  git_clone https://github.com/Botspot/DarkArduinoTheme || exit 1
+  
+  cp -r DarkArduinoTheme/theme ~/.local/share/arduino-${version}/lib
+  cp -r DarkArduinoTheme/images/. ~/.local/share/arduino-${version}/lib
+  rm -rf DarkArduinoTheme
+  status_green "Done"
+fi
+rm -f /tmp/arduino-dark-before-after.png
