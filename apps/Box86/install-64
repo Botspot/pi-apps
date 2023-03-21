@@ -39,6 +39,8 @@ elif [[ "$__os_codename" == "buster" ]]; then
   error "User error: Box86 cannot be installed on $__os_desc. Please use any official Ubuntu Flavor, Debian, or PiOS/Raspbian Bullseye."
 fi
 
+# libsdl2-mixer-2.0-0:armhf NOT included since it depends on libopusfile0 on newer distros (buster+ and focal+) which is NOT multiarch compatible
+
 install_packages libc6:armhf libstdc++6:armhf \
   libx11-6:armhf \
   libgtk-3-0:armhf \
@@ -47,7 +49,7 @@ install_packages libc6:armhf libstdc++6:armhf \
   libopenal1:armhf osspd:armhf libopusfile0:armhf libvorbisfile3:armhf \
   libcurl4:armhf \
   libudev1:armhf \
-  libsdl2-2.0-0:armhf libsdl2-mixer-2.0-0:armhf libsdl2-image-2.0-0:armhf libsdl2-net-2.0-0:armhf libsdl2-ttf-2.0-0:armhf \
+  libsdl2-2.0-0:armhf libsdl2-image-2.0-0:armhf libsdl2-net-2.0-0:armhf libsdl2-ttf-2.0-0:armhf \
   libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf libsmpeg0:armhf \
   libcal3d12v5:armhf \
   libssl1.1:armhf '|' libssl3:armhf libssh-gcrypt-4:armhf \
