@@ -26,7 +26,7 @@ on:
         required: true
         type: boolean
       bionic_64:
-        description: 'Build on Nvidia Jetpack 32.3.1 Bionic 64bit'
+        description: 'Build on Switchroot Ubuntu Bionic 64bit'
         required: true
         type: boolean
       focal_64:
