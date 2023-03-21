@@ -1029,16 +1029,24 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   local app="$1"
   [ -z "$app" ] && error 'will_reinstall(): requires an argument'
   
-  #detect which installation script exists and get the hash for that one
-  local local_scriptname="$(script_name_cpu "$app")"
-  if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ];then
-    local new_scriptname=install
-  elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ];then
-    local new_scriptname="install-${arch}"
+  #exit immediately if app is not installed.
+  if [ "$(app_status "$app")" != 'installed' ];then
+    return 1
   fi
   
-  #if install script exists in update folder, and if install script was changed, and if installed already
-  if [ ! -z "$new_scriptname" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${new_scriptname}" "${DIRECTORY}/apps/${app}/${local_scriptname}" && [ "$(app_status "$app")" == 'installed' ];then
+  #detect which installation script exists - both for local install and for update directory
+  local local_scriptname="$(script_name_cpu "$app")"
+  
+  local new_scriptname="$(DIRECTORY="${DIRECTORY}/update/pi-apps" script_name_cpu "$app")"
+  
+  if [ "$local_scriptname" == packages ] && [ "$new_scriptname" != packages ];then
+    #migration from package-app to script-app. Reinstall.
+    return 0
+  elif [ "$local_scriptname" != packages ] && [ "$new_scriptname" == packages ];then
+    #migration from script-app to package-app. Reinstall.
+    return 0
+  elif [ ! -z "$new_scriptname" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${new_scriptname}" "${DIRECTORY}/apps/${app}/${local_scriptname}" ;then
+    #if install script exists in update folder, and if install script was changed, and if installed already
     return 0
   else
     return 1
