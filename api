@@ -1079,7 +1079,9 @@ app_search() { #search all apps for $1, with filenames in $2 (space-separated an
   #hide incompatible and hidden/disabled apps
   results="$(echo "$results" | list_subtract "$(list_apps hidden)" | list_intersect "$(list_apps cpu_installable)")"
   
-  local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
+  if [ -z "$app_list" ];then
+    local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
+  fi
   
   #search app names - first prioritize results starting with query, then show results containing query, then show other pre-existing results.
   results="$(grep -i "^$query" <<<"$app_list" | sort)
@@ -1093,16 +1095,37 @@ $results"
 
 app_search_gui() { #graphical interface to search for apps
   
+  #pre-populate search field with last search, if available
+  if [ -f "${DIRECTORY}/data/last-search" ];then
+    local last_search="$(cat "${DIRECTORY}/data/last-search")"
+  else
+    local last_search=''
+  fi
+  
   local output=''
   output="$(yad "${yadflags[@]}" --title=Search --width=310 \
     --text="Search for apps."$'\n'"Not case-sensitive." \
-    --form --field='' '' \
+    --form --field='' "$last_search" \
     --field='Search description':CHK 'TRUE' \
     --field='Search website':CHK 'TRUE' \
     --field='Search credits':CHK 'TRUE' \
-    --field='Search scripts':CHK 'FALSE')" || exit 0
-  
+    --field='Search scripts':CHK 'FALSE')" || return 0
   local query="$(echo "$output" | sed -n 1p)"
+  
+  #exit now if search query is empty
+  if [ -z "$query" ];then
+    return 0
+  fi
+  #save query for next time in last-search data file
+  echo "$query" > "${DIRECTORY}/data/last-search"
+  
+  #skip file-based search if user searched for exact app name
+  local app_list="$(list_apps cpu_installable | list_subtract "$(list_apps hidden)")"
+  local results="$(grep -xFi "$query" <<<"$app_list")"
+  if [ ! -z "$results" ];then
+    echo "$results"
+    return 0
+  fi
   
   local search_files='description website credits scripts'
   search_files=''
@@ -1145,11 +1168,19 @@ ${category}"
       --select-action="bash -c "\""show_app %s; kill "\$"YAD_PID"\""")"
     
     echo "$app" #return result to outside world
-  else
+    
+  elif list_apps | grep -qi "^$query" ;then
+    #no compatible apps found, but an incompatible app was found that matches the name
+    yad "${yadflags[@]}" --title=Results --width=310 \
+      --text=""\""<b>$(list_apps | grep -i -m1 "^$query")</b>"\"" is not compatible with your ${arch}-bit OS." \
+      --button=OK:0
+    return 0
+    
+  else #no results found
     yad "${yadflags[@]}" --title=Results --width=310 \
       --text="No results found for "\""<b>$query</b>"\""." \
       --button=OK:0
-    exit 0
+    return 0
   fi
 }
 
@@ -2721,6 +2752,17 @@ fi
 
 add_english
 
+#if this script is being run standalone, set the DIRECTORY variable based on the script's location
+if [[ "$0" == */api ]];then
+  #it is necessary to set it now in order for yadflags and yad theme to work as intended.
+  DIRECTORY="$(readlink -f "$(dirname "$0")")"
+  export DIRECTORY
+#if being sourced, ensure DIRECTORY variable is set
+elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
+  echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
+  return 1
+fi
+
 #set the system GTK theme for yad windows
 guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
 if [ "$guimode" == yad-default ];then
@@ -2806,14 +2848,8 @@ fi
 
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then
-  DIRECTORY="$(readlink -f "$(dirname "$0")")"
-  export DIRECTORY
   "$@"
   exit $?
-#if being sourced, ensure DIRECTORY variable set
-elif [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ ! -d "$DIRECTORY" ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
-  echo "DIRECTORY variable must be set to a valid pi-apps folder. Default folder: $HOME/pi-apps"
-  return 1
 fi
 
 export DIRECTORY
