@@ -92,7 +92,7 @@ jobs:
           fi
 
       - name: Test installing updated apps on buster armhf
-        uses: theofficialgman/arm-runner-action@v6
+        uses: theofficialgman/arm-runner-action@v7
         with:
           # this is a buster armhf image
           base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2022-09-26/2022-09-22-raspios-buster-armhf.img.xz
@@ -171,7 +171,7 @@ jobs:
             fi
 
       - name: Test installing updated apps on bullseye arm64
-        uses: theofficialgman/arm-runner-action@v6
+        uses: theofficialgman/arm-runner-action@v7
         with:
           # this is a bullseye arm64 image
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2022-09-26/2022-09-22-raspios-bullseye-arm64.img.xz
