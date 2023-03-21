@@ -90,12 +90,16 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   # skip joycond postinst
   sudo rm /var/lib/dpkg/info/joycond.postinst -f
   sudo dpkg --configure joycond
+  # purge apt-file (speedup initial apt update)
+  sudo apt purge apt-file
 fi
 
 if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
   # fix nvidia jank
   # update sources list for t194
   sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+  # purge apt-file (speedup initial apt update)
+  sudo apt purge apt-file
 fi
 
 if [[ "$GITHUB_JOB" == "jammy-64bit" ]]; then
