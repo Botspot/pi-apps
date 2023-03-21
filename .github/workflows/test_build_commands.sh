@@ -90,6 +90,9 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   # skip joycond postinst
   sudo rm /var/lib/dpkg/info/joycond.postinst -f
   sudo dpkg --configure joycond
+  # note that we are in a chroot to skip bootfile configuration
+  sudo mkdir -p /opt/switchroot
+  sudo touch /opt/switchroot/image_prep
 fi
 
 if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
