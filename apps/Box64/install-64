@@ -20,9 +20,13 @@ if [[ "$SOC_ID" == "tegra-x1" ]] || [[ "$SOC_ID" == "tegra-x2" ]]; then
 elif [[ "$SOC_ID" == "rk3399" ]]; then
   install_packages box64-rk3399 || exit 1
 elif [[ "$SOC_ID" == "bcm2711" ]]; then
-  install_packages box64 || exit 1
+  install_packages box64-rpi4arm64 || exit 1
+elif cat /proc/cpuinfo | grep -q aes; then
+  warning "There is no box64 pre-build for your device $SOC_ID $model"
+  warning "Installing the generic arm box64 build as a fallback (crypto extensions enabled)"
+  install_packages box64-generic-arm || exit 1
 else
   warning "There is no box64 pre-build for your device $SOC_ID $model"
   warning "Installing the RPI4 tuned box64 build as a fallback (no crypto extensions enabled)"
-  install_packages box64 || exit 1
+  install_packages box64-rpi4arm64 || exit 1
 fi
