@@ -200,6 +200,7 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
 remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing from that repository is currently installed. Deletion skipped if $2 is 'test'
   local file="$1"
   local testmode="$2"
+  local key="$3"
   [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
   #return now if the list file does not exist
   [ -f "$file" ] || return 0
@@ -223,6 +224,7 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   elif [ "$in_use" == 0 ];then
     status "Removing the $(basename "$file" | sed 's/.list$//g') repo as it is not being used"
     sudo rm -f "$file"
+    [ -f "$key"] && sudo rm -f "$key" || true
   fi
   
 }

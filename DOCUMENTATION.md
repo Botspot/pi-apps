@@ -277,9 +277,13 @@ Apt/dpkg/package functions below.
     ```
     For testing, you can tell the function to not actually delete anything by adding the `test` flag:
     ```bash
-    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list test
-    ```
+    remove_repofile_if_unused /etc/apt/sources.list.d/mono-official-stable.list test
+    ```
     In this mode, it will return text like "`The given repository is not in use and can be deleted:`".
+    You can also pass a repo key to the 3rd argument to the function and it will delete it alongside the repo if it is unused:
+    ```bash
+    remove_repofile_if_unused /etc/apt/sources.list.d/brave-browser-release.list "" /usr/share/keyrings/brave-browser-archive-keyring.gpg
+    ```
 - `apt_lock_wait` - waits until apt locks are released.
 - `less_apt` - Reduce the output of an `apt` operation.
   - Example usage:
