@@ -1167,7 +1167,7 @@ ${category}"
   elif list_apps | grep -qi "^$query" ;then
     #no compatible apps found, but an incompatible app was found that matches the name
     yad "${yadflags[@]}" --title=Results --width=310 \
-      --text=""\""<b>$(list_apps | grep -i -m1 "^$query")</b>"\"" is not compatible with your ${arch}-bit OS." \
+      --text=""\""<b>$(list_apps | grep -i -m1 "^$query")</b>"\"" is not compatible with your ${__os_desc} ${arch}-bit OS." \
       --button=OK:0
     return 0
     
