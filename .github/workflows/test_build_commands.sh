@@ -255,6 +255,14 @@ fi
 # clean out any app status files
 rm -rf ./data/status
 
+# runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
+#for the will_reinstall() and list_intersect() functions
+set -a #make all functions in the api available to subprocesses
+source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+#Run runonce entries
+"${DIRECTORY}/etc/runonce-entries"
+set +a #stop exporting functions
+
 IFS=$'\n'
 for app in $imported_apps ;do
   cd "$DIRECTORY"
