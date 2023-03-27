@@ -24,11 +24,8 @@ if package_installed steamlink ; then
   sudo apt purge -y steamlink
 fi
 
-echo "Installing steam.deb"
-# install_packages https://steamcdn-a.akamaihd.net/client/installer/steam.deb || error "Could not install steam deb"
-wget https://steamcdn-a.akamaihd.net/client/installer/steam.deb -qO /tmp/steam.deb || wget https://repo.steampowered.com/steam/archive/stable/steam_latest.deb -O /tmp/steam.deb || error "Failed to download steam.deb"
-apt_lock_wait
-sudo apt install --no-install-recommends -y /tmp/steam.deb || error "Failed to install steam.deb"
+echo "Installing steam_latest.deb"
+install_packages https://repo.steampowered.com/steam/archive/stable/steam_latest.deb || exit 1
 
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
