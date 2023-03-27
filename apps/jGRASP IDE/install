@@ -5,7 +5,7 @@ install_packages openjdk-11-jdk || exit 1
 
 rm -rf ~/jgrasp.zip ~/jgrasp
 
-wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_09.zip' -O ~/jgrasp.zip || error "Failed to download jgrasp.zip!"
+wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_10.zip' -O ~/jgrasp.zip || error "Failed to download jgrasp.zip!"
 unzip ~/jgrasp.zip || error "Failed to extract jgrasp.zip!"
 rm -f ~/jgrasp.zip
 
