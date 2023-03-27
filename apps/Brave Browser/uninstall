@@ -1,0 +1,5 @@
+#!/bin/bash
+
+purge_packages || exit 1
+
+remove_repofile_if_unused /etc/apt/sources.list.d/brave-browser-release.list "" /usr/share/keyrings/brave-browser-archive-keyring.gpg
