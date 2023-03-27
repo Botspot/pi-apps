@@ -133,7 +133,10 @@ EOF
 #transition from box86-no-binfmt-restart package to box86
 runonce <<"EOF"
   if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
-    sudo_popup bash -c 'dpkg --remove box86-no-binfmt-restart pi-apps-5f3374a7 && apt update && apt install box86 -y'
+    sudo_popup bash -c 'dpkg --remove box86-no-binfmt-restart'
+    rm -f "${DIRECTORY}/data/status/Box86"
+    "${DIRECTORY}/manage" uninstall Box86
+    "${DIRECTORY}/manage" install Box86
   fi
   
   #if box86 is supposedly installed, but box86 command not found, reinstall box86
