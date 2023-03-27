@@ -431,22 +431,15 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
 
 update_app() { #first word is app name
   local app="$1"
-  [ -z "$app" ] && error "update_app(): no app specified!"
-  #don't check if app currently exists; it may be a new app!
-  
-  #detect which installation script exists and get the hash for that one
-  scriptname="$(script_name_cpu "$app")"
-  [ $? == 1 ] && exit 1
-  
+  [ -z "$app" ] && error "update_app(): no app specified!"  
   status "Updating \e[1m${app}\e[0m\e[96m..."
   echo
   
   #Set terminal title
   echo -ne "\e]0;Updating ${app}\a"
   
-  installback=no
-  #         if install script was changed                                                                          and       if currently installed
-  if ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${scriptname}" "${DIRECTORY}/apps/${app}/${scriptname}" && [ "$(app_status "${app}")" == 'installed' ];then
+  local installback=no
+  if will_reinstall "$app";then
     installback=yes
     status "$app's install script has been updated. Reinstalling $app..."
     #uninstall it

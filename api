@@ -980,19 +980,14 @@ script_name_cpu() { #get script name to run based on detected CPU arch
     error "script_name_cpu: '$1' is an invalid app name."
   fi
   
-  #this is used by the updater so we need to check the update folder too
   if [ -f "${DIRECTORY}/apps/$1/install-32" ] && [ $arch == 32 ];then
     echo 'install-32'
   elif [ -f "${DIRECTORY}/apps/$1/install-64" ] && [ $arch == 64 ];then
     echo 'install-64'
   elif [ -f "${DIRECTORY}/apps/$1/install" ];then
     echo 'install'
-  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install-32" ] && [ $arch == 32 ];then
-    echo 'install-32'
-  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install-64" ] && [ $arch == 64 ];then
-    echo 'install-64'
-  elif [ -f "${DIRECTORY}/update/pi-apps/apps/$1/install" ];then
-    echo 'install'
+  elif [ -f "${DIRECTORY}/apps/$1/packages" ];then
+    echo 'packages'
   else
     true #app not compatible with current arch
   fi
@@ -1039,7 +1034,7 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   
   local new_scriptname="$(DIRECTORY="${DIRECTORY}/update/pi-apps" script_name_cpu "$app")"
   
-  if [ "$local_scriptname" == packages ] && [ "$new_scriptname" != packages ];then
+  if [ ! -z "$new_scriptname" ] && [ "$local_scriptname" == packages ] && [ "$new_scriptname" != packages ];then
     #migration from package-app to script-app. Reinstall.
     return 0
   elif [ "$local_scriptname" != packages ] && [ "$new_scriptname" == packages ];then

@@ -406,6 +406,7 @@ End of Flatpak functions. App functions below.
   - For example, if your operating system is 32-bit and the app has an `install-32` script, this function would return "install-32".
   - If your operating system is 64-bit and the app has an `install-64` script, this function would return "install-64".
   - If the app has an `install` script, this function would return "install".
+  - If the app has an `packages` script, this function would return "packages".
   - If none of the above, don't return anything.
 - `app_status` - return the given app's current status.
   - If the app's status file does not exist, this function returns 'uninstalled'.
