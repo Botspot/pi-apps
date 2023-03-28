@@ -129,18 +129,16 @@ jobs:
             sudo apt update
             sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
+            # runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
+            #for the will_reinstall() and list_intersect() functions
+            set -a #make all functions in the api available to subprocesses
+            source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+            #Run runonce entries
+            "${DIRECTORY}/etc/runonce-entries"
+            set +a #stop exporting functions
+
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
+            debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
 
             # store apps changed from last commit to working directory in varaible
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
@@ -208,18 +206,16 @@ jobs:
             sudo apt update
             sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
+            # runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
+            #for the will_reinstall() and list_intersect() functions
+            set -a #make all functions in the api available to subprocesses
+            source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+            #Run runonce entries
+            "${DIRECTORY}/etc/runonce-entries"
+            set +a #stop exporting functions
+
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-            echo "Adding cmake PPA repository..."
-            echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-            # Add cmake ppa keyring
-            echo "Signing cmake PPA repository..."
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-            if [ $? != 0 ];then
-              sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-              error "Failed to sign the cmake PPA!"
-            fi
+            debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
 
             # store apps changed from last commit to working directory in varaible
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)

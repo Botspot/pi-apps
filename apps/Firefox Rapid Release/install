@@ -2,18 +2,10 @@
 
 # it would unnecessary to run this on bionic, check and skip adding the repo if on ubuntu bionic
 if [[ "$get_codename" != "bionic" ]]; then
+  # remove deprecated repofilename
+  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
   # Add repository source to apt sources.list
-  echo "Adding firefox PPA repository..."
-  echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/firefox-ubuntu.list || error "Failed to add repository to sources.list!"
-
-  # Add firefox ppa keyring
-  echo "Signing firefox PPA repository..."
-  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0AB215679C571D1C8325275B9BDB3D89CE49EC21
-  if [ $? != 0 ];then
-    sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
-    error "Failed to sign the firefox PPA!"
-  fi
-
+  debian_ppa_installer "mozillateam/ppa" "bionic" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
   # remove /etc/apt/preferences.d/99bionic-updates which was added when bionic default repositories were added
   sudo rm -f /etc/apt/preferences.d/99bionic-updates
 fi

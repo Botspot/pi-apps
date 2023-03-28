@@ -1,4 +1,9 @@
 #!/bin/bash
 purge_packages || exit 1
 sudo rm -f /etc/apt/preferences.d/99bionic-updates
+# remove deprecated repofilename
 sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+# remove repofile if unused
+ppa_name="mozillateam/ppa"
+ppa_dist="bionic"
+remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list

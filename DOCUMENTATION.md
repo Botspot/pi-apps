@@ -334,6 +334,30 @@ This is a special folder (`/tmp/pi-apps-local-packages`) used by the `install_pa
   - This is useful for the `createapp` script to automatically find a suitable icon for package-apps you're trying to add.
   - This uses `dpkg-query` to list all files each package installed. The list is filteres to only show `.png` files in `/icons/` or `/pixmaps/` folders.
   - The list is sorted by filesize to find the picture with the most pixels.
+- `ubuntu_ppa_installer` - Given a ppa name, this function will automatically add the apt repo and key for the current ubuntu dist to the users apt sources.list.d directory.
+  - Example usage:
+    ```bash
+    ubuntu_ppa_installer "ubuntu-mozilla-security/rust-next" || exit 1
+    ```
+  - Removing the repo should be performed as part of an app uninstall script by using the existing pi-apps function `remove_repofile_if_unused`. Repo .list filenames are standardized so the following convention should be used for removal.
+  - Example removal:
+    ```bash
+    ppa_name="ubuntu-mozilla-security/rust-next"
+    ppa_dist="$__os_codename"
+    remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
+    ```
+- `debian_ppa_installer` - Given a ppa name, dist, and key this function will automatically add the apt repo and key for the specified ubuntu dist to the users apt sources.list.d directory.
+  - Example usage:
+    ```bash
+    debian_ppa_installer "ubuntu-mozilla-security/rust-next" "bionic" "AF316E81A155146718A6FBD7A6DCF7707EBC211F" || exit 1
+    ```
+  - Removing the repo should be performed as part of an app uninstall script by using the existing pi-apps function `remove_repofile_if_unused`. Repo .list filenames are standardized so the following convention should be used for removal.
+  - Example removal:
+    ```bash
+    ppa_name="ubuntu-mozilla-security/rust-next"
+    ppa_dist="focal"
+    remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
+    ```
 
 End of apt functions. Flatpak functions below.
 

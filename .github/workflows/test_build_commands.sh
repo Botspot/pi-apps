@@ -239,19 +239,6 @@ status "Testing app(s): $imported_apps"
 mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 
-# upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-
-echo "Adding cmake PPA repository..."
-echo "deb [arch=$(dpkg --print-architecture)] https://ppa.launchpadcontent.net/theofficialgman/cmake-bionic/ubuntu bionic main " | sudo tee /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list || error "Failed to add repository to sources.list!"
-
-# Add cmake ppa keyring
-echo "Signing cmake PPA repository..."
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0ACACB5D1E74E484
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/theofficialgman-ubuntu-cmake-bionic-bionic.list
-  error "Failed to sign the cmake PPA!"
-fi
-
 # clean out any app status files
 rm -rf ./data/status
 
@@ -262,6 +249,9 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 #Run runonce entries
 "${DIRECTORY}/etc/runonce-entries"
 set +a #stop exporting functions
+
+# upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
 
 IFS=$'\n'
 for app in $imported_apps ;do
