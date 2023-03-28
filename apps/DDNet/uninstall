@@ -2,7 +2,12 @@
 
 purge_packages || exit 1
 
-remove_repofile_if_unused /etc/apt/sources.list.d/rust-ubuntu.list
+# remove deprecated repofilename
+sudo rm -f /etc/apt/sources.list.d/rust-ubuntu.list
+# remove repofile if unused
+ppa_name="ubuntu-mozilla-security/rust-next"
+ppa_dist="bionic"
+remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
 
 sudo rm -rf /usr/local/share/ddnet \
 /usr/local/bin/DDNet \
