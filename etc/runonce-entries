@@ -122,6 +122,14 @@ runonce <<"EOF"
     # not installed
     rm -rf "${DIRECTORY}/apps/Minecraft Java"
   fi
+  
+  #rename 'Brave Browser' to 'Brave'
+  rm -rf "${DIRECTORY}/apps/Brave Browser"
+  mv -f "${DIRECTORY}/data/status/Brave Browser" "${DIRECTORY}/data/status/Brave" 2>/dev/null
+  
+  #rename 'Discord' to 'Webcord'
+  rm -rf "${DIRECTORY}/apps/Discord"
+  mv -f "${DIRECTORY}/data/status/Discord" "${DIRECTORY}/data/status/Webcord" 2>/dev/null
   true
 EOF
 
