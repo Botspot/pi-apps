@@ -688,6 +688,24 @@ flatpak_install() { #install an app using flatpak
     error "flatpak_install(): Could not install $1 because flatpak is not installed!"
   fi
   
+  case "$__os_codename" in
+  buster)
+    debian_ppa_installer "theofficialgman/flatpak-no-bwrap" "bionic" "0ACACB5D1E74E484"
+    apt_lock_wait
+    sudo apt-get --only-upgrade install flatpak -y
+    ;;
+  bullseye)
+    debian_ppa_installer "theofficialgman/flatpak-no-bwrap" "focal" "0ACACB5D1E74E484"
+    apt_lock_wait
+    sudo apt-get --only-upgrade install flatpak -y
+    ;;
+  bionic|focal|jammy)
+    ubuntu_ppa_installer "theofficialgman/flatpak-no-bwrap"
+    apt_lock_wait
+    sudo apt-get --only-upgrade install flatpak -y
+    ;;
+  esac
+  
   status -n "Flatpak: Adding flathub remote... "
   #Add the flathub remote, first as root, if that fails then try installing as user, while removing unwanted output
   ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"  ) | grep --line-buffered -v "Note that the directories 
