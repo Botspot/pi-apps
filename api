@@ -638,6 +638,45 @@ get_icon_from_package() { #given a package-name, find all png files that it inst
   done
   dpkg-query -L "$@" $extra_packages 2>/dev/null | grep '\.png$\|\.svg$' | grep '/icons/\|/pixmaps/' | xargs wc -c | grep -v ' total' | sort -nr | head -n1 | sed 's/  / /g' | sed 's/^ //g' | tr ' ' '\n' | tail -n +2
 }
+
+ubuntu_ppa_installer() {
+  local ppa_name="$1"
+  [ -z "$1" ] && error "ubuntu_ppa_installer(): This function is used to add a ppa to a ubuntu based install but a required input argument was missing."
+  local ppa_grep="$ppa_name"
+  [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/"
+  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  if [[ $ppa_added -eq "1" ]]; then
+    status "Skipping $ppa_name PPA, already added"
+  else
+    status "Adding $ppa_name PPA"
+    sudo add-apt-repository "ppa:$ppa_name" -y
+    apt_lock_wait
+    sudo apt update
+  fi
+}
+
+debian_ppa_installer() {
+  local ppa_name="$1"
+  local ppa_dist="$2"
+  local key="$3"
+  [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && error "debian_ppa_installer(): This function is used to add a ppa to a debian based install but a required input argument was missing."
+  local ppa_grep="$ppa_name"
+  [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/ubuntu ${ppa_dist}"
+  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  if [[ $ppa_added -eq "1" ]]; then
+    status "Skipping $ppa_name PPA, already added"
+  else
+    status "Adding $ppa_name PPA"
+    echo "deb https://ppa.launchpadcontent.net/${ppa_name}/ubuntu ${ppa_dist} main" | sudo tee /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list || error "Failed to add repository to sources.list!"
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key"
+    if [ $? != 0 ];then
+      sudo rm -f /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
+      error "Failed to sign the $ppa_name PPA!"
+    fi
+    apt_lock_wait
+    sudo apt update
+  fi
+}
 #end of apt functions
 
 #flatpak functions
