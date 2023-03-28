@@ -1258,6 +1258,32 @@ refresh_app_list() { #Force-regenerate the app list
   rm -rf "${DIRECTORY}/data/preload"
   "${DIRECTORY}/etc/preload-daemon" "$guimode" once &>/dev/null
 }
+
+list_apps_missing_dummy_debs() { #List any installed apps that have had their dummy deb uninstalled more recently than the app was installed
+  local IFS=$'\n'
+  local app
+  local dummy_deb_status="$(grep ' installed pi-apps-\| not-installed pi-apps-' /var/log/dpkg.log | tac | awk -F' ' '!seen[$5]++' | sed 's/:all$//g')"
+  #example line value: 2023-03-20 13:13:54 status installed pi-apps-6f59c0e1:all 1.0
+  
+  for app in $(list_apps installed | list_intersect "$(list_apps standard)") ;do
+    #For every installed app, make sure the dummy deb, if it has ever been installed, is installed
+    local pkgname="$(app_to_pkgname "$app")"
+    local match="$(grep -m1 "$pkgname" <<<"$dummy_deb_status")"
+    
+    if [ -z "$match" ];then
+      #echo "no dummy deb information associated with $app"
+      true
+    elif [ "$(echo "$match" | awk '{print $4}')" == not-installed ];then
+      #echo "$app has its $pkgname package uninstalled!"
+      
+      #if the dummy deb was removed after app was installed, then there is a problem
+      if [ "$(date -d '2023-03-27 22:23:58' +'%s')" -gt "$(date -r "${DIRECTORY}/data/status/${app}" +'%s')" ];then
+        #echo "the dummy deb for $app was removed after $app was installed!"
+        echo "$app"
+      fi
+    fi
+  done
+}
 #end of app functions
 
 #logfile functions below
