@@ -15,6 +15,7 @@ fi
 
 #Get pi-apps api functions if necessary
 if ! command -v runonce >/dev/null ;then
+  set -a #make all functions in the api available to subprocesses
   source "${DIRECTORY}/api"
 fi
 
