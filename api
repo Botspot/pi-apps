@@ -224,7 +224,7 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   elif [ "$in_use" == 0 ];then
     status "Removing the $(basename "$file" | sed 's/.list$//g') repo as it is not being used"
     sudo rm -f "$file"
-    [ -f "$key" ] && sudo rm -f "$key" || true
+    [ -f "$key"] && sudo rm -f "$key" || true
   fi
   
 }
