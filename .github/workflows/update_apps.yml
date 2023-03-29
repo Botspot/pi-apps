@@ -133,7 +133,7 @@ jobs:
             #for the will_reinstall() and list_intersect() functions
             set -a #make all functions in the api available to subprocesses
             #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
-            DIRECTORY=$GITHUB_WORKSPACE
+            DIRECTORY=$(pwd)
             source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
             #Run runonce entries
             "${DIRECTORY}/etc/runonce-entries"
@@ -212,7 +212,7 @@ jobs:
             #for the will_reinstall() and list_intersect() functions
             set -a #make all functions in the api available to subprocesses
             #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
-            DIRECTORY=$GITHUB_WORKSPACE
+            DIRECTORY=$(pwd)
             source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
             #Run runonce entries
             "${DIRECTORY}/etc/runonce-entries"
