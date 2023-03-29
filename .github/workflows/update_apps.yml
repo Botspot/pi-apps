@@ -138,6 +138,7 @@ jobs:
             #Run runonce entries
             "${DIRECTORY}/etc/runonce-entries"
             set +a #stop exporting functions
+            cd ${DIRECTORY}
 
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
             debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
@@ -217,6 +218,7 @@ jobs:
             #Run runonce entries
             "${DIRECTORY}/etc/runonce-entries"
             set +a #stop exporting functions
+            cd ${DIRECTORY}
 
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
             debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
