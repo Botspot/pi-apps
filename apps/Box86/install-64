@@ -17,7 +17,7 @@ else
 fi
 
 if dpkg -l box86 &>/dev/null ;then
-  sudo apt purge -y box86
+  sudo apt purge -y --allow-change-held-packages box86
 fi
 
 #install box86 dependencies
