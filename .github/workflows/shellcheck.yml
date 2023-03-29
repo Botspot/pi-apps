@@ -1,0 +1,28 @@
+name: Shellcheck
+on:
+  pull_request_target:
+    branches:
+      - master
+  push:
+    branches: '**'
+  workflow_dispatch:
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
+      - uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Check vital scripts for errors
+        run: |
+          cd $GITHUB_WORKSPACE
+          sudo apt install shellcheck wget -y
+          if shellcheck api createapp gui install manage preload settings uninstall updater etc/preload-daemon etc/runonce-entries etc/terminal-run --color=always | sed '0,/\[31m/!d' ;then
+            exit 1
+          fi
