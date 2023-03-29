@@ -23,6 +23,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           sudo apt install shellcheck wget -y
-          if shellcheck api createapp gui install manage preload settings uninstall updater etc/preload-daemon etc/runonce-entries etc/terminal-run --color=always | sed '0,/\[31m/!d' ;then
+          if ! shellcheck api createapp gui install manage preload settings uninstall updater etc/preload-daemon etc/runonce-entries etc/terminal-run --color=always | sed '0,/\[31m/!{q1}' ;then
             exit 1
           fi
