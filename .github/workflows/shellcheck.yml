@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout pi-apps repo
+        uses: actions/checkout@v3
         if: github.event_name != 'pull_request_target'
-      - uses: actions/checkout@v3
+      - name: Checkout pi-apps PR repo
+        uses: actions/checkout@v3
         if: github.event_name == 'pull_request_target'
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
