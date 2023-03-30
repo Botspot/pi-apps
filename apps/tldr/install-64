@@ -1,5 +1,6 @@
 #!/bin/bash
-wget -O tldr https://github.com/dbrgn/tealdeer/releases/download/v1.5.0/tealdeer-linux-armv7-musleabihf || error "Failed to download tldr!"
-sudo mv tldr /usr/bin/ || error "Failed to move binary to /usr/bin/"
+version=1.6.1
+wget -O /tmp/tldr https://github.com/dbrgn/tealdeer/releases/download/v${version}/tealdeer-linux-armv7-musleabihf || error "Failed to download tldr!"
+sudo mv /tmp/tldr /usr/bin/ || error "Failed to move binary to /usr/bin/"
 sudo chmod +x /usr/bin/tldr
 tldr --update
