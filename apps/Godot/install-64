@@ -1,6 +1,6 @@
 #!/bin/bash
-version=3.5.1
-version2=1.14.0
+version=3.5.2
+version2=1.15.0
 
 case $(get_codename) in
 buster|bionic)
