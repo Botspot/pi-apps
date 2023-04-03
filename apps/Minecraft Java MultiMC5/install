@@ -17,40 +17,6 @@ model=${model//Type1ProductConfigId/}
 model=${model//INVALID/}
 model=${model//All Series/}
 model=${model//�/}
-# first check if lsb_release has an upstream option -u
-# if not, check if there is an upstream-release file
-# if not, check if there is a lsb-release.diverted file
-# if not, assume that this is not a ubuntu derivative
-if lsb_release -a -u &>/dev/null; then
-  # This is a Ubuntu Derivative, checking the upstream-release version info
-  __os_id="$(lsb_release -s -i -u)"
-  __os_desc="$(lsb_release -s -d -u)"
-  __os_release="$(lsb_release -s -r -u)"
-  __os_codename="$(lsb_release -s -c -u)"
-elif [ -f /etc/upstream-release/lsb-release ]; then
-  # ubuntu 22.04+ linux mint no longer includes the lsb_release -u option
-  # add a parser for the /etc/upstream-release/lsb-release file
-  source /etc/upstream-release/lsb-release
-  __os_id="$DISTRIB_ID"
-  __os_desc="$DISTRIB_DESCRIPTION"
-  __os_release="$DISTRIB_RELEASE"
-  __os_codename="$DISTRIB_CODENAME"
-  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
-elif [ -f /etc/lsb-release.diverted ]; then
-  # ubuntu 22.04+ popOS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
-  # add a parser for the new /etc/lsb-release.diverted file
-  source /etc/lsb-release.diverted
-  __os_id="$DISTRIB_ID"
-  __os_desc="$DISTRIB_DESCRIPTION"
-  __os_release="$DISTRIB_RELEASE"
-  __os_codename="$DISTRIB_CODENAME"
-  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
-else
-  __os_id="$(lsb_release -s -i)"
-  __os_desc="$(lsb_release -s -d)"
-  __os_release="$(lsb_release -s -r)"
-  __os_codename="$(lsb_release -s -c)"
-fi
 
 status "Installing Necessary Dependencies"
 case "$__os_id" in
@@ -158,26 +124,10 @@ Kali)
   install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
   ;;
 Ubuntu)
-  case "$__os_codename" in
-  bionic | focal)
-    ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep openjdk-r | wc -l)
-    if [[ $ppa_added -eq "1" ]]; then
-      status "Skipping OpenJDK PPA, already added"
-    else
-      status "Adding OpenJDK PPA, needed for Minecraft 1.17+"
-      ppa_name="openjdk-r/ppa" && ppa_installer
-    fi
-    ;;
-  *)
-    requiredver="18.04"
-    if printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
-      status "Skipping OpenJDK PPA, $__os_codename already has openjdk-17 in the default repositories"
-    else
-      error_user "$__os_codename appears to be too old to run/compile MultiMC5"
-    fi
-    ;;
-
-  esac
+  requiredver="18.04"
+  if ! printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
+    error_user "$__os_codename appears to be too old to run/compile MultiMC5"
+  fi
   # install dependencies
   install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre qtbase5-dev || error "Failed to install dependencies"
   ;;

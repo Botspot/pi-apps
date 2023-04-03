@@ -11,6 +11,9 @@ if [[ "$1" != "update" ]];then
 
   remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
   remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list
+  ppa_name="openjdk-r/ppa"
+  ppa_dist="$__os_codename"
+  remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
 else
   echo "Uninstall skipped because run from the updater"
 fi
