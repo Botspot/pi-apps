@@ -16,5 +16,5 @@ if [ -d "${location}" ]; then
     rm -rf "${location}" || error "Failed to remove ${location} folder"
   fi
 else
-  warning "No Arduino folder was found. Most likely it was never fully installed"
+  warning "No Arduino folder was found in $HOME/.local/share. Most likely it was never fully installed"
 fi

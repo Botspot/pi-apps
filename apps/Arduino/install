@@ -9,17 +9,20 @@ elif [ $arch == 64 ];then
 fi
 
 #ask if user wants dark theme
-wget -qO /tmp/arduino-dark-before-after.png 'https://github.com/Botspot/DarkArduinoTheme/raw/master/before-and-after.png'
+wget -qO /tmp/dark-arduino.png 'https://github.com/Botspot/DarkArduinoTheme/raw/master/dark-arduino.png'
+wget -qO /tmp/light-arduino.png 'https://github.com/Botspot/DarkArduinoTheme/raw/master/light-arduino.png'
 
 yad --center --separator='\n' \
-  --title="Enable Arduino dark theme?" --image=/tmp/arduino-dark-before-after.png --image-on-top \
-  --button="Use dark mode":2 --button="Use light mode":0 \
+  --title='Arduino color theme' \
+  --form --columns=2 --no-buttons \
   --window-icon="$(dirname "$0")/icon-64.png" \
-  --form --field="Enable dark mode in Arduino?":LBL '' >/dev/null &
+  --text="Choose a color theme for Arduino:" \
+  --field='!/tmp/dark-arduino.png!Dark mode:BTN' 'bash -c "echo dark; kill $YAD_PID"' \
+  --field='!/tmp/light-arduino.png!Light mode (default):BTN' 'bash -c "echo light; kill $YAD_PID"' | grep -qx dark &
 question_pid=$!
 
 cd ~/.local/share
-wget -O $PWD/$filename https://downloads.arduino.cc/$filename || error "failed to download!"
+wget -O $PWD/$filename "https://downloads.arduino.cc/${filename}" || error "Failed to download arduino package!"
 
 tar -xf $PWD/$filename || error "failed to extract with tar!"
 sudo $PWD/arduino-${version}/install.sh || error "failed run Arduino install script!"
@@ -28,12 +31,12 @@ rm -f $HOME/Desktop/arduino-arduinoide.desktop $PWD/$filename
 if package_installed brltty ; then
   status "Removing brltty package because it makes it impossible to connect to arduino boards..."
   apt_lock_wait
-  sudo apt purge -y brltty
+  sudo apt purge -y brltty | less_apt
 fi
 
 #configure dark mode if user chose it
 wait $question_pid
-if [ $? == 2 ];then
+if [ $? == 0 ];then
   status "Installing dark mode..."
   git_clone https://github.com/Botspot/DarkArduinoTheme || exit 1
   
@@ -42,4 +45,4 @@ if [ $? == 2 ];then
   rm -rf DarkArduinoTheme
   status_green "Done"
 fi
-rm -f /tmp/arduino-dark-before-after.png
+rm -f /tmp/dark-arduino.png /tmp/dark-arduino.png
