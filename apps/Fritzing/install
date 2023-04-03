@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install dependencies
-install_packages build-essential git cmake libssl-dev libudev-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libqt5serialport5-dev libqt5svg5-dev libgit2-dev libboost-all-dev || exit 1
+install_packages build-essential git cmake libssl-dev libudev-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libqt5serialport5-dev libqt5svg5-dev libgit2-dev pkg-config libboost-all-dev || exit 1
 
 # install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
 package_available qt5-default
