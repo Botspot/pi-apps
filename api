@@ -1785,9 +1785,20 @@ Maybe reinstalling this package and the prboom-plus package would help?")
 Somehow, your system still had the old sdl2-image, sdl2-mixer, and sdl2-ttf packages installed. These have been removed, so please try installing your other apps again.")
     error_type="package"
     
+    apt_lock_wait
     sudo apt -y purge sdl2-image
     sudo apt -y purge sdl2-mixer
     sudo apt -y purge sdl2-ttf
+  fi
+  
+  if grep -qF "trying to overwrite '/usr/share/pixmaps/wsjtx_icon.png', which is also in package wsjtx 2.6.1" ;then
+    error_caption+=("The wsjtx-data package is conflicting with the wsjtx package installed on your system. You must fix this to install additional software.
+
+According to the forums at wsjtx.groups.io, you can fix this by uninstalling wsjtx-data with this command:
+sudo apt purge wsjtx-data
+
+Here is the full forum link in case it helps you: https://wsjtx.groups.io/g/main/topic/77286764")
+    error_type="package"
   fi
   
   #NON-APT ERRORS BELOW
