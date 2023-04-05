@@ -3,7 +3,7 @@ on:
   push:
     branches: '**'
 jobs:
-  shellcheck:
+  sha1sum:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pi-apps repo
