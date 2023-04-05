@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.14.0.1720
+version=5.14.2.2046
 
 #install box64
 "${DIRECTORY}/manage" install-if-not-installed 'Box64' || error "Box64 installation failed!"
@@ -27,7 +27,8 @@ if true;then
   echo "Getting x86_64 libs..."
   wget https://github.com/ryanfortner/rpi-zoom/raw/master/zoom_x64_libs.zip || error "Failed to download zoom x64 libraries!"
   unzip zoom_x64_libs.zip || error "Failed to extract zoom libraries."
-  mv zoom_x64_libs/* zoom/ || error "Failed to move zoom x64 libraries to zoom folder."
+  mkdir ~/zoom/x64_libs
+  mv zoom_x64_libs/* ~/zoom/x64_libs || error "Failed to move zoom x64 libraries to zoom folder."
   rm -r $HOME/zoom_x64_libs || error "Failed to remove library folder."
 fi
 
@@ -44,7 +45,16 @@ if [ -z "$(ps aux | grep pulseaudio | grep -v grep)" ];then
 fi
 cd ${HOME}/zoom/
 echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
-box64 zoom' > "${HOME}/zoom/runzoom.sh"
+
+#record uptime before zoom launches
+before="$(cat /proc/uptime | awk "{print $1}" | awk "{print int($1+0.5)}")"
+export BOX64_LD_LIBRARY_PATH="${BOX64_LD_LIBRARY_PATH}:${HOME}/zoom/Qt/lib:${HOME}/zoom/cef:${HOME}/zoom/x64_libs"
+
+box64 ./zoom
+if [ $? != 0 ] && [ $((before+5)) -ge "$(cat /proc/uptime | awk "{print $1}" | awk "{print int($1+0.5)}")" ];then
+  box64 ./ZoomLauncher
+fi
+' > "${HOME}/zoom/runzoom.sh"
 chmod +x "${HOME}/zoom/runzoom.sh"
 
 echo "Creating a Zoom button in the Main Menu..."
