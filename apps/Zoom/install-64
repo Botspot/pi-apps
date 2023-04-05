@@ -34,7 +34,7 @@ fi
 
 echo 'Creating launcher script'
 echo '#!/bin/bash
-trap "echo '\''Zoom exited. Close this terminal to exit'\'' ; sleep infinity" EXIT
+trap "echo -e '\''\e[102m\e[30mZoom exited. Close this terminal to exit\e[0m'\'' ; sleep infinity" EXIT
 if [ -z "$(ps aux | grep pulseaudio | grep -v grep)" ];then
   echo -e "\e[102m\e[30mLaunching pulseaudio.\e[0m"
   pulseaudio &
