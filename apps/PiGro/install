@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=23.01
+version=23.02
 
 # Get dependencies
 install_packages xterm python3-pil python3-pil.imagetk python3-pip python3-dev mpg123 lolcat || exit 1
@@ -13,6 +13,7 @@ git_clone https://github.com/actionschnitzel/PiGro-Aid- -b $version --depth=1 ||
 cd PiGro-Aid- || error "Failed to enter directory!"
 chmod +x start.sh
 
+mkdir -p $HOME/Desktop $HOME/.local/share/applications
 echo "[Desktop Entry]
 Version=2.1
 Exec=$HOME/PiGro-Aid-/start.sh
