@@ -311,7 +311,7 @@ $app"
   #Use a PID file to check if another daemon process is running.
   if [ -f "${DIRECTORY}/data/manage-daemon/pid" ];then
     #check if PID is running
-    if [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/cmdline" ];then
+    if [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
       echo "Sending instructions to daemon. (PID $(cat "${DIRECTORY}/data/manage-daemon/pid"))"
       
       #Immediately add these new actions to the gui list
