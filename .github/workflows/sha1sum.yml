@@ -1,0 +1,14 @@
+name: sha1sum
+on:
+  push:
+    branches: '**'
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pi-apps repo
+        uses: actions/checkout@v3
+      - name: hash all files
+        run: |
+          cd $GITHUB_WORKSPACE
+          find . -path ./.git -prune -o -type f -exec sha1sum "{}" +
