@@ -236,7 +236,7 @@ cd "$DIRECTORY"
 status "Testing app(s): $imported_apps"
 
 # create standard directories
-mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
+mkdir -p  $HOME/.local/share/applications $HOME/.local/bin $HOME/Desktop
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 
 # clean out any app status files
