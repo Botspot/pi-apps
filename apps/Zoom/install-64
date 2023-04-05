@@ -50,7 +50,7 @@ echo -e "\e[102m\e[30mLaunching Zoom.\e[0m"
 before="$(cat /proc/uptime | awk "{print $1}" | awk "{print int($1+0.5)}")"
 export BOX64_LD_LIBRARY_PATH="${BOX64_LD_LIBRARY_PATH}:${HOME}/zoom/Qt/lib:${HOME}/zoom/cef:${HOME}/zoom/x64_libs"
 
-box64 ./zoom
+box64 ./zoom --no-sandbox
 if [ $? != 0 ] && [ $((before+5)) -ge "$(cat /proc/uptime | awk "{print $1}" | awk "{print int($1+0.5)}")" ];then
   box64 ./ZoomLauncher
 fi
