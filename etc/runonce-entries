@@ -297,4 +297,16 @@ fi
 
 EOF
 
+#Fix mimeapps containing only boxy svg mimeapp entry without [Added associations] appearing first
+runonce <<"EOF"
+  if [ "$(head -n1 ~/.config/mimeapps.list)" == 'image/svg+xml;application/illustrator=boxy-svg.desktop;' ];then
+    #remove first line from mimeapps.list
+    sed -i 1d ~/.config/mimeapps.list
+    
+    #Add it back correctly
+    echo "[Added Associations]
+image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+  fi
+EOF
+
 true
