@@ -4,7 +4,7 @@ version=3.96.0.zip
 
 install_packages libfontconfig-dev || exit 0
 
-"${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG on your 32-bit OS."
+"${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG."
 
 #install asar and electron-packager
 export NVM_DIR="$HOME/.nvm"
@@ -94,7 +94,9 @@ sudo chmod +x /usr/local/bin/boxy-svg
 
 if [ -z "$(cat ~/.config/mimeapps.list | grep 'boxy-svg.desktop')" ];then
   echo "Associating the SVG mimetype with Boxy SVG..."
-  echo "image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+  echo "[Added Associations]
+image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+  
 fi
 
 echo "[Desktop Entry]
