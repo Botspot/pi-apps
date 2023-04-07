@@ -7,6 +7,7 @@ install_packages bash util-linux procps hostapd iproute2 iw haveged dnsmasq ipta
 cd /tmp
 git_clone https://github.com/lakinduakash/linux-wifi-hotspot || error "Failed to clone repository!"
 cd linux-wifi-hotspot || error "Failed to cd into 'linux-wifi-hotspot'!"
+git checkout aabe18aa57f8fcd88205a9b23cb3f634623b2104
 
 # Build and install
 status "Building Linux Wifi Hotspot..."
