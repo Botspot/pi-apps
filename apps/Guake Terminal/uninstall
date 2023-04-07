@@ -1,11 +1,13 @@
 #!/bin/bash
 
+version=3.9.0
+
 killall guake &>/dev/null && echo "Closing Guake Terminal"
 
 #Allow packages required by this app to be uninstalled
 purge_packages || exit 1
 
-git_clone https://github.com/Guake/guake || error 'Failed to clone repository!'
+git_clone https://github.com/Guake/guake -b ${version} || error 'Failed to clone repository!'
 cd ~/guake || error "Failed to enter the $HOME/guake folder! Most likely this means the repository failed to download."
 sudo make uninstall || error "The 'make' command was unable to uninstall Guake!"
 
