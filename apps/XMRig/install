@@ -1,5 +1,5 @@
 #!/bin/bash
-version=6.18.0
+version=v6.19.2-mo1
 
 # userinput function to display yad prompts to the user
 function userinput_func {
@@ -146,7 +146,7 @@ rm -rf $HOME/xmrig
 if true;then
   install_packages git build-essential cmake libuv1-dev libssl-dev libhwloc-dev yad xprintidle || exit 1
   
-  git_clone https://github.com/MoneroOcean/xmrig || error 'Failed to clone repository!'
+  git_clone https://github.com/MoneroOcean/xmrig -b ${version} || error 'Failed to clone repository!'
   
   mkdir $HOME/xmrig/build; cd $HOME/xmrig/build || error 'Failed to create and cd into build directory!'
   
