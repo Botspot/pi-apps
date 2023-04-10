@@ -525,7 +525,10 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   if [ "$(app_type "$app")" == standard ];then
     if [ "$action" == install ];then
       scriptname="$(script_name_cpu "$app")" #will be install, install-32, or install-64
-      [ -z "$scriptname" ] && error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS." | tee -a "$logfile"
+      if [ -z "$scriptname" ];then
+        error "It appears $app does not have an install-${arch} script suitable for your ${arch}-bit OS." | tee -a "$logfile"
+        exit 1
+      fi
     else #uninstall mode
       scriptname=uninstall
     fi
