@@ -155,8 +155,8 @@ rm -f /tmp/wine.tgz
 #edit wine.inf to disable mime-associations. Nobody wants to double-click a text file, wonder why nothing is happening, then watch 15 Wine notepad windows pop up. Ask me how I know.
 sudo sed -i 's/winemenubuilder.exe -a -r/winemenubuilder.exe -r/' /opt/wine/share/wine/wine.inf #See: https://askubuntu.com/a/400430
 
-#download winetricks
-wget -O /tmp/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" || exit 1
+#download winetricks - old version that does not display a warning about old wine version
+wget -O /tmp/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/66af4adb7c22955277aec34e89f12825b6ca75b7/src/winetricks" || exit 1
 sudo mv /tmp/winetricks /opt/wine/bin/winetricks || error "Failed to move winetricks script to /opt/wine/bin folder!"
 sudo chmod +x /opt/wine/bin/winetricks
 
