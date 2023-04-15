@@ -93,6 +93,13 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   # note that we are in a chroot to skip bootfile configuration
   sudo mkdir -p /opt/switchroot
   sudo touch /opt/switchroot/image_prep
+  #correct switchroot apt key if necessary
+  apt-key list 2>/dev/null | grep -q 'expired] Switchroot Apt Repo Automated Signing Key'
+  if [ $? == 0 ]; then
+    echo -e "\e[96mThe Switchroot Apt Repo Signing Key has expired. Please provide your password if requested to update it.\e[0m"
+    sudo apt-key del 92813F6A23DB6DFC
+    wget -O - https://newrepo.switchroot.org/pubkey | sudo apt-key add -
+  fi
 fi
 
 if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
