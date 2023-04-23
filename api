@@ -1791,7 +1791,7 @@ Somehow, your system still had the old sdl2-image, sdl2-mixer, and sdl2-ttf pack
     sudo apt -y purge sdl2-ttf
   fi
   
-  if grep -qF "trying to overwrite '/usr/share/pixmaps/wsjtx_icon.png', which is also in package wsjtx 2.6.1" ;then
+  if grep -qF "trying to overwrite '/usr/share/pixmaps/wsjtx_icon.png', which is also in package wsjtx 2.6.1" <<<"$errors" ;then
     error_caption+=("The wsjtx-data package is conflicting with the wsjtx package installed on your system. You must fix this to install additional software.
 
 According to the forums at wsjtx.groups.io, you can fix this by uninstalling wsjtx-data with this command:
