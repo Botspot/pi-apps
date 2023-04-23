@@ -437,38 +437,47 @@ update_app() { #first word is app name
   
   #Set terminal title
   echo -ne "\e]0;Updating ${app}\a"
-  
-  local installback=no
-  if will_reinstall "$app";then
-    installback=yes
-    status "$app's install script has been updated. Reinstalling $app..."
-    #uninstall it
-    "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+
+  # check if update app folder exists before doing anything
+  # it can happen that executing the updater from the pi-apps GUI the update folder is missing
+  # if the user has no internet or internet issues the update folder will be removed due to the failed git pull and then wait in the loop for a new git clone
+  # the GUI updater executes check_repo with the "fast" option so it skips updating the pi-apps update folder and obtains any previously determined updatable apps and files
+  # if we do not check for this then apps will be removed, the older version moved to trash, and then the new version will fail to copy over since it does not exist
+  if [ -d "${DIRECTORY}/update/pi-apps/apps/${app}" ]; then
+    local installback=no
+    if will_reinstall "$app";then
+      installback=yes
+      status "$app's install script has been updated. Reinstalling $app..."
+      #uninstall it
+      "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+      
+      #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
+      if [ "$(app_status "$app")" == installed ];then
+        echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+      fi
+    fi
     
-    #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
-    if [ "$(app_status "$app")" == installed ];then
-      echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
+    #move old program to trash - this allows app-developers to recover their work if update was accidental
+    gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
+    #failsafe
+    rm -rf "${DIRECTORY}/apps/${app}"
+    
+    #copy new version from update/ to apps/
+    cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+    
+    failed=false
+    if [ "$installback" == 'yes' ];then
+      #install the app again
+      "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
+      if [ $? != 0 ]; then
+        failed=true
+      else
+        # click update link only if app is already installed and the update succeeded
+        shlink_link "$app" update &
+      fi
     fi
-  fi
-  
-  #move old program to trash - this allows app-developers to recover their work if update was accidental
-  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
-  #failsafe
-  rm -rf "${DIRECTORY}/apps/${app}"
-  
-  #copy new version from update/ to apps/
-  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
-  
-  failed=false
-  if [ "$installback" == 'yes' ];then
-    #install the app again
-    "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
-    if [ $? != 0 ]; then
-      failed=true
-    else
-      # click update link only if app is already installed and the update succeeded
-      shlink_link "$app" update &
-    fi
+  else
+    failed=true
   fi
   
   if [ "$failed" == 'true' ]; then
