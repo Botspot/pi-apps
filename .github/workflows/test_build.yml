@@ -152,7 +152,7 @@ jobs:
       - name: Test installing app on bionic arm64
         uses: theofficialgman/arm-runner-action@v8
         with:
-          base_image: https://download.switchroot.org/ubuntu/switchroot-ubuntu-5.0.0-2022-12-23.7z
+          base_image: https://download.switchroot.org/ubuntu/switchroot-ubuntu-5.1.0-2023-04-22.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
@@ -176,7 +176,7 @@ jobs:
       - name: Test installing app on focal arm64
         uses: theofficialgman/arm-runner-action@v8
         with:
-          base_image: https://developer.nvidia.com/downloads/r35releasev21-jetson-nx-jp51-sd-card-imagezip
+          base_image: https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v3.1/sd_card_b49/jp511-xnx-sd-card-image.zip
           bootpartition:
           rootpartition: 1
           bind_mount_repository: yes
