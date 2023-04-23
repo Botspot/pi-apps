@@ -2079,7 +2079,7 @@ send_error_report() { #non-interactively send a Pi-Apps error log file to the Bo
   #-F "syntaxes[]=text"
   
   
-  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXkxhc3QgdXBkYXRlZCBQaS1BcHBzIG9uOicg$(base64 <<<"$1")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF5MXVaWGNLIikiIHwgJChiYXNlNjQgLWQgPDw8IlltRnpaVFkwSUMxa0NnPT0iKSkiIDtlbHNlIHNsZWVwIDAuNyA7ZmkK" | tr -d '\n') 2>&1)"
+  local errors="$(bash <(base64 -d <<<"aWYgZ3JlcCAnXkxhc3QgdXBkYXRlZCBQaS1BcHBzIG9uOicg$(base64 <<<"'"$1"'")IDt0aGVuIGN1cmwgLUYgImZpbGU9QFwi$(base64 <<<"$1")XCI7ZmlsZW5hbWU9XCIkKGJhc2VuYW1lICI=$(base64 <<<"$1")IiB8IHNlZCAncy9cLi4qLy50eHQvZycpXCIiICIkKHdnZXQgLXFPLSAiJChiYXNlNjQgLWQgPDw8ImFIUjBjSE02THk5eVlYY3VaMmwwYUhWaWRYTmxjbU52Ym5SbGJuUXVZMjl0TDBKdmRITndiM1F2Y0drdFlYQndjeTFoYm1Gc2VYUnBZM012YldGcGJpOWxjbkp2Y2kxc2IyY3RkMlZpYUc5dmF5MXVaWGNLIikiIHwgJChiYXNlNjQgLWQgPDw8IlltRnpaVFkwSUMxa0NnPT0iKSkiIDtlbHNlIHNsZWVwIDAuNyA7ZmkK" | tr -d '\n') 2>&1)"
   [ $? != 0 ] && error "curl failed to upload log file!\nErrors:\n$errors"
   
 }
