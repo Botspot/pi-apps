@@ -87,7 +87,7 @@ elif ! command -v modprobe >/dev/null ;then
 fi
 
 #load zram module
-if false && command -v enable_module >/dev/null ;then
+if command -v enable_module >/dev/null ;then
   enable_module zram || exit 1
 elif ! lsmod | awk '{print $1}' | grep -qxF zram ;then
   if ! sudo modprobe zram &>/dev/null ;then
