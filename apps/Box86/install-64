@@ -64,7 +64,7 @@ if [ $? != 0 ];then
 fi
 
 sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg
-wget -qO- https://raw.githubusercontent.com/ryanfortner/box86-debs/master/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/box86-debs-archive-keyring.gpg
+wget -qO- https://raw.githubusercontent.com/ryanfortner/box86-debs/master/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box86-debs-archive-keyring.gpg >/dev/null
 
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box86.list

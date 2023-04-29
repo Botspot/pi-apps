@@ -309,4 +309,11 @@ image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.l
   fi
 EOF
 
+#correct home ownership of gnupg repo
+runonce <<"EOF"
+  if [ -d ~/.gnupg ] && stat -c "%U %G" ~/.gnupg/* | grep -q "root"; then
+    sudo_popup chown -R $USER:$USER ~/.gnupg
+  fi
+EOF
+
 true
