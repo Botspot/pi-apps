@@ -4,7 +4,7 @@ if [ -f "$HOME/.conkyrc" ]; then
 fi
 
 # Get dependencies
-install_packages conky-all lua50 || exit 1
+install_packages conky-all lua5.1 || exit 1
 #get conkyrc
 wget -O ~/.conkyrc https://raw.githubusercontent.com/Botspot/rpi_conky/master/conky_rings/.conkyrc || error "Failed to get .conkyrc!"
 #get fonts to ~/.local/share/fonts
