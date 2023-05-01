@@ -1,0 +1,25 @@
+#!/bin/bash
+
+install_packages gnome-software gnome-software-plugin-flatpak || exit 1
+
+if ! package_is_new_enough flatpak 1.14.4 ;then
+  case "$__os_codename" in
+  buster)
+    debian_ppa_installer "theofficialgman/flatpak-no-bwrap" "bionic" "0ACACB5D1E74E484"
+    apt_lock_wait
+    sudo apt --only-upgrade install flatpak -y | less_apt
+    ;;
+  bullseye)
+    debian_ppa_installer "theofficialgman/flatpak-no-bwrap" "focal" "0ACACB5D1E74E484"
+    apt_lock_wait
+    sudo apt --only-upgrade install flatpak -y | less_apt
+    ;;
+  bionic|focal|jammy)
+    ubuntu_ppa_installer "theofficialgman/flatpak-no-bwrap"
+    apt_lock_wait
+    sudo apt --only-upgrade install flatpak -y | less_apt
+    ;;
+  esac
+fi
+
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || error "Flatpak failed to add flathub remote!"
