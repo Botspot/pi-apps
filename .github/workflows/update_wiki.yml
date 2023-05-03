@@ -58,6 +58,10 @@ jobs:
         run: |
           curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Botspot/pi-apps-analytics/dispatches --data '{"event_type": "update analytics"}'
       
+      - name: "Trigger website repo actions"
+        run: |
+          curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Pi-Apps-Coders/website/dispatches --data '{"event_type": "update applist"}'
+
       - name: Upload scripts page to wiki
         uses: docker://decathlon/wiki-page-creator-action:latest
         env:
