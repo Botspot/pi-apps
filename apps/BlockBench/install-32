@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.7.1
+version=4.7.2
 
 install_packages https://github.com/ryanfortner/blockbench-arm/raw/master/blockbench_${version}_armhf.deb || exit 1
 
