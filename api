@@ -2024,6 +2024,15 @@ To fix this, run this command:
 sudo chown -R $USER:$USER $HOME/.cache/pip")
     error_type="system"
   fi
+
+  if grep -q "mkdir: cannot create directory */home/$USER/pi-apps-*: Permission denied" <<<"$errors";then
+    error_caption+=("Your HOME directory cannot be written to by the current user.
+Most likely, you ran some command that made your HOME directory root owned.
+
+To fix this, run this command:
+sudo chown -R $USER:$USER $HOME")
+    error_type="system"
+  fi
   
   if grep -qF "collect2: fatal error: ld terminated with signal 11 [Segmentation fault]" <<<"$errors";then
     error_caption+=("Failed to compile! The error was: "\""collect2: fatal error: ld terminated with signal 11 [Segmentation fault]"\""
