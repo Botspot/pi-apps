@@ -34,18 +34,18 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      # # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # - uses: actions/checkout@v3
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          chmod +x $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
-          cd $GITHUB_WORKSPACE
-          mkdir wikioutput
-          cd wikioutput
-          $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
-          cat Apps-List.md
+      # # Runs a set of commands using the runners shell
+      # - name: Run a multi-line script
+      #   run: |
+      #     chmod +x $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
+      #     cd $GITHUB_WORKSPACE
+      #     mkdir wikioutput
+      #     cd wikioutput
+      #     $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
+      #     cat Apps-List.md
           
       - name: "Set environmental variables"
         run: |
@@ -62,8 +62,8 @@ jobs:
         run: |
           curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Pi-Apps-Coders/website/dispatches --data '{"event_type": "update applist"}'
 
-      - name: Upload scripts page to wiki
-        uses: docker://decathlon/wiki-page-creator-action:latest
-        env:
-          GH_PAT: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          MD_FOLDER: "/github/workspace/wikioutput"         
+      # - name: Upload scripts page to wiki
+      #   uses: docker://decathlon/wiki-page-creator-action:latest
+      #   env:
+      #     GH_PAT: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+      #     MD_FOLDER: "/github/workspace/wikioutput"         
