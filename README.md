@@ -8,7 +8,7 @@
   <a href="https://github.com/Botspot/pi-apps/blob/master/CHANGELOG.md">
     View changelog</a>
   |
-  <a href="https://github.com/Botspot/pi-apps/wiki/Apps-List">
+  <a href="https://pi-apps.io/wiki/getting-started/apps-list/">
     Apps List</a>
   |
   <a href="https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml">
@@ -41,7 +41,7 @@ There is no centralized software repository, except for the `apt` repositories w
 Surely there is a better way! **There is.**  
 Introducing Pi-Apps, a well-maintained collection of app installation-scripts that you can run with **one click**.  
 
-Pi-Apps now serves **over 1,000,000 people** and hosts [over 200 apps](https://github.com/Botspot/pi-apps/wiki/Apps-List).
+Pi-Apps now serves **over 1,000,000 people** and hosts [over 200 apps](https://pi-apps.io/wiki/getting-started/apps-list/).
 
 ## Install Pi-Apps
 Open a terminal and run this command:
@@ -131,18 +131,18 @@ Pi-Apps is very easy to use.
 ![settings](icons/screenshots/settings.png?raw=true)  
 In addition to changeable settings, this window also gives access to these tools:
   - ![icon](icons/screenshots/buttons/categories.png?raw=true) Does that one app seem to be in the wrong category? With this button, you can change it.
-  - ![icon](icons/screenshots/buttons/new%20app.png?raw=true) Create a new app with a wizard-style set of dialogs. We recommend reading [the tutorial](https://github.com/Botspot/pi-apps/wiki/Creating-an-app).
+  - ![icon](icons/screenshots/buttons/new%20app.png?raw=true) Create a new app with a wizard-style set of dialogs. We recommend reading [the tutorial](https://pi-apps.io/wiki/development/Creating-an-app/).
   - ![icon](icons/screenshots/buttons/log%20files.png?raw=true) View the past weeks-worth of installation logs. This is useful if you ever encounter an app that won't install and want to see the terminal output after you closed the terminal.
   - ![icon](icons/screenshots/buttons/import%20app.png?raw=true) This allows you to easily import a 3rd-party app from elsewhere. It helps Pi-Apps developers test upcoming apps for reliability on a variety of systems.
 
-To learn more about Pi-Apps, read [the documentation](https://github.com/Botspot/pi-apps/blob/master/DOCUMENTATION.md) and the [wiki](https://github.com/Botspot/pi-apps/wiki).
+To learn more about Pi-Apps, read [the documentation](https://pi-apps.io/wiki/development/DOCUMENTATION/) and the [wiki](https://pi-apps.io/wiki/).
 
 ## :raised_hands: Contributing
 You don't need to be a programmer to help!  
 - The easiest way to help is by "Starring" our repository - it helps more people find Pi-Apps. (Scroll to the top of this page and on the right there is a "Star" button)
 - If you know somebody else who has a Raspberry Pi, feel free to tell them about Pi-Apps. We would offer you a referral discount, but Pi-Apps is free, so... `¯\_(ツ)_/¯`
 - You can [make suggestions](https://github.com/Botspot/pi-apps/issues/new?template=suggestion.yml), [report bugs](https://github.com/Botspot/pi-apps/issues/new?template=bug-report.yml), or [suggest apps](https://github.com/Botspot/pi-apps/issues/new?template=app-suggestion.yml).
-- You can [create and submit an app](https://github.com/Botspot/pi-apps/wiki/Creating-an-app). Don't worry, it's about as easy as using the terminal (and it's even easier if you're submitting a simple apt-package)!
+- You can [create and submit an app](https://pi-apps.io/wiki/development/Creating-an-app/). Don't worry, it's about as easy as using the terminal (and it's even easier if you're submitting a simple apt-package)!
 - You can also join our cheerful community: <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
 ## Badge
