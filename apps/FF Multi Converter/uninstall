@@ -1,8 +1,7 @@
 #!/bin/bash
 
-sudo $HOME/FF-Multi-Converter/uninstall.sh
-sudo rm -rf $HOME/FF-Multi-Converter || error 'Failed to remove "FF-Multi-Converter" directory!'
-
-rm -f $HOME/.local/share/applications/ffmulticonverter.desktop
+for i in $(find /usr -path "*ffmulticonverter*"); do
+	sudo rm -rf $i
+done
 
 purge_packages || exit 1
