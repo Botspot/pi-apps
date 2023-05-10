@@ -525,6 +525,9 @@ update_now_gui_apps() { # updatable_apps variable
     update_app "$app" || failed_apps+="$app"$'\n'
   done
   
+  #Set terminal title
+  echo -ne "\e]0;Updates complete\a"
+  
   #load the app list now to reduce launch time
   refresh_app_list &
   
