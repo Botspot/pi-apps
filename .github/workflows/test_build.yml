@@ -154,10 +154,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bookworm arm64
-        uses: theofficialgman/arm-runner-action@v9
+        uses: theofficialgman/arm-runner-action@v10
         with:
           base_image: https://raspi.debian.net/daily/raspi_4_bookworm.img.xz
           bind_mount_repository: yes
+          install_standard_packages: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
           copy_repository_path: /home/runner/pi-apps
