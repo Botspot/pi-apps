@@ -25,6 +25,10 @@ on:
         description: 'Build on PiOS Bullseye 64bit'
         required: true
         type: boolean
+      bookworm_64:
+        description: 'Build on Debian Bookworm 64bit'
+        required: true
+        type: boolean
       bionic_64:
         description: 'Build on Switchroot Ubuntu 5.1.0 Bionic 64bit'
         required: true
@@ -133,6 +137,26 @@ jobs:
         uses: theofficialgman/arm-runner-action@v9
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu: cortex-a7:cortex-a72
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
+  bookworm-64bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.bookworm_64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on bookworm arm64
+        uses: theofficialgman/arm-runner-action@v9
+        with:
+          base_image: https://raspi.debian.net/daily/raspi_4_bookworm.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
