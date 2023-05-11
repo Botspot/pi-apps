@@ -4,10 +4,12 @@ git_clone https://github.com/Jai-JAP/pikiss-gui || error 'Failed to clone PiKISS
 
 install_packages ninja-build gobject-introspection libgee-0.8-dev libgirepository1.0-dev libgtk-3-dev valac libgnome-menu-3-dev || exit 1
 
-if package_installed meson; then
-  sudo pip3 install --upgrade meson || error 'Failed to upgrade older version of meson from pip'
+if package_is_new_enough meson 0.57.0 ;then
+  install_packages meson || exit 1
 else
-  sudo pip3 install meson || error 'Failed to install meson from pip'
+  install_packages python3-pip || exit 1
+  sudo python3 -m pip install --upgrade meson || error 'Failed to upgrade older version of meson from pip'
+  hash -r
 fi
 
 "${DIRECTORY}/manage" install-if-not-installed piKiss || error "piKiss failed to install somehow!"
