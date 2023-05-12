@@ -132,7 +132,7 @@ package_latest_version() { #returns the latest available versions of the specifi
   [ -z "$package" ] && error "package_latest_version(): no package specified!"
   
   # use slower but more accurate apt list command to get package version for current architecture
-  apt list -a "$package" 2>/dev/null | grep "$(dpkg --print-architecture)" | awk '{print $2}' | sort -rV | head -n1
+  apt list -a "$package" 2>/dev/null | grep "$(dpkg --print-architecture)\|all" | awk '{print $2}' | sort -rV | head -n1
   #grep -rx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" --after 4 | grep -o 'Version: .*' | awk '{print $2}' | sort -rV | head -n1
 }
 
