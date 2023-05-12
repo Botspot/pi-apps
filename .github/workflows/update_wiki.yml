@@ -34,26 +34,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      # - uses: actions/checkout@v3
-
-      # # Runs a set of commands using the runners shell
-      # - name: Run a multi-line script
-      #   run: |
-      #     chmod +x $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
-      #     cd $GITHUB_WORKSPACE
-      #     mkdir wikioutput
-      #     cd wikioutput
-      #     $GITHUB_WORKSPACE/.github/workflows/update-wiki.sh
-      #     cat Apps-List.md
-          
-      - name: "Set environmental variables"
-        run: |
-          echo "ACTION_MAIL=Botspot@users.noreply.github.com" >> $GITHUB_ENV
-          echo "ACTION_NAME=Botspot" >> $GITHUB_ENV
-          echo "OWNER=Botspot" >> $GITHUB_ENV
-          echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
-
       - name: "Trigger analytics repo actions"
         run: |
           curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Botspot/pi-apps-analytics/dispatches --data '{"event_type": "update analytics"}'
@@ -61,9 +41,4 @@ jobs:
       - name: "Trigger website repo actions"
         run: |
           curl -XPOST -u "Botspot:${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/Pi-Apps-Coders/website/dispatches --data '{"event_type": "update applist"}'
-
-      # - name: Upload scripts page to wiki
-      #   uses: docker://decathlon/wiki-page-creator-action:latest
-      #   env:
-      #     GH_PAT: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-      #     MD_FOLDER: "/github/workspace/wikioutput"         
+   
