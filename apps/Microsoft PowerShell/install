@@ -2,7 +2,7 @@
 version=7.3.4
 
 rm -rf "$HOME/powershell"
-install_packages libssl1.1 libunwind8 || exit 1
+install_packages libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu72 '|' libicu71 '|' libicu70 '|' libicu69 '|' libicu68 '|' libicu67 '|' libicu66 '|' libicu65 '|' libicu63 '|' libicu60 '|' libicu57 '|' libicu55 '|' libicu52 libssl3 '|' libssl1.1 '|' libssl1.0.2 '|' libssl1.0.0 libunwind8 || exit 1
 wget https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-arm${arch}.tar.gz || exit 1
 mkdir -p ~/powershell || error "Unable to create Powershell Directory!"
 tar -xf ./powershell-${version}-linux-arm${arch}.tar.gz -C ~/powershell || error "Unable to extract / copy Powershell to directory!"
