@@ -1,0 +1,7 @@
+Store Monero cryptocurrency with the official wallet software.
+Monero is a privacy currency, allowing easy money transfers to others without oppresive governments, hackers, or foreign adversaries knowing how much you sent or to whom.
+The Monero wallet software allows you to store your currency securely. Usually this requires downloading the whole blockchain (over 400GB for Bitcoin), but Monero wallet has "simple mode" which avoids taking up your disk space.
+
+To run: Menu -> Internet -> Monero GUI
+To run in a terminal: monero-wallet-gui
+To run the CLI version in a terminal: monero-wallet-cli

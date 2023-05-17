@@ -1,0 +1,73 @@
+#!/bin/bash
+
+install_packages qtbase5-dev qtdeclarative5-dev qml-module-qtqml-models2 qml-module-qtquick-controls \
+qml-module-qtquick-controls2 qml-module-qtquick-dialogs qml-module-qtquick-xmllistmodel \
+qml-module-qt-labs-settings qml-module-qt-labs-platform qml-module-qt-labs-folderlistmodel \
+qttools5-dev-tools qml-module-qtquick-templates2 libqt5svg5-dev || exit 1
+
+cd /tmp
+git_clone --recursive https://github.com/monero-project/monero-gui || exit 1
+
+#compile
+cd /tmp/monero-gui
+make release -j$(nproc) || error "Compiling monero-gui failed. Check errors above."
+cd
+
+IFS=$'\n'
+
+#install program files to /usr/local/bin
+files='monero-blockchain-ancestry
+monero-blockchain-depth
+monero-blockchain-export
+monero-blockchain-import
+monero-blockchain-mark-spent-outputs
+monero-blockchain-prune
+monero-blockchain-prune-known-spent-data
+monero-blockchain-stats
+monero-blockchain-usage
+monerod
+monero-gen-ssl-cert
+monero-gen-trusted-multisig
+monero-wallet-cli
+monero-wallet-gui
+monero-wallet-rpc' #update this list with ls /tmp/monero-gui/build/release/bin | grep .
+
+for file in $files ;do
+  sudo mv "/tmp/monero-gui/build/release/bin/$file" /usr/local/bin || exit 1
+done
+
+#install app icons to /usr/share/icons
+files='128x128.png
+16x16.png
+24x24.png
+256x256.png
+32x32.png
+48x48.png
+64x64.png
+96x96.png' #update this list with ls /tmp/monero-gui/images/appicons | grep .
+
+for file in $files ;do
+  sudo mkdir -p /usr/share/icons/hicolor/$(echo "$file" | awk -F'.' '{print $1}')/apps
+  sudo mv "/opt/monero-gui/images/appicons/$file" /usr/share/icons/hicolor/$(echo "$file" | awk -F'.' '{print $1}')/apps/monero.png || exit 1
+done
+
+#done extracting needed files from monero-gui repo, so remove it
+rm -rf /tmp/monero-gui
+
+echo '[Desktop Entry]
+Name=Monero GUI
+GenericName=Monero-GUI
+X-GNOME-FullName=Monero-GUI
+Comment=Monero GUI
+Keywords=Monero;
+Exec=monero-wallet-gui %u
+Terminal=false
+Type=Application
+Icon=monero
+Categories=Network;GNOME;Qt;
+MimeType=x-scheme-handler/monero;x-scheme-handler/moneroseed
+StartupNotify=true
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-UsesNotifications=true
+StartupWMClass=monero-wallet-gui' | sudo tee /usr/share/applications/monero-gui.desktop >/dev/null
+
