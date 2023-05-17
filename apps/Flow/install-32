@@ -1,10 +1,10 @@
 #!/bin/bash
 
-version=ekioh_6.9.0_raspberry-pi64-flow_20230307_r38512
+version=ekioh_6.9.0_raspberry-pi32-flow_20230307_r38512
 
 sudo rm -rf /tmp/flow /opt/flow
 
-wget -O /tmp/flow.zip "https://support.ekioh.com/download/binaries/$(sed "s/pi64/pi${arch}/g" <<<"$version").zip" || exit 1
+wget -O /tmp/flow.zip "https://support.ekioh.com/download/binaries/${version}.zip" || exit 1
 
 unzip /tmp/flow.zip -d /tmp/flow
 rm /tmp/flow.zip
