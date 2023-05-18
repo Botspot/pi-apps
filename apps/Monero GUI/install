@@ -1,6 +1,11 @@
 #!/bin/bash
 
-install_packages cmake libssl-dev qtbase5-dev qtdeclarative5-dev qml-module-qtqml-models2 qml-module-qtquick-controls \
+install_packages build-essential cmake miniupnpc libunbound-dev graphviz doxygen \
+libunwind8-dev pkg-config libssl-dev libzmq3-dev libsodium-dev libhidapi-dev libnorm-dev \
+libusb-1.0-0-dev libpgm-dev libprotobuf-dev protobuf-compiler libgcrypt20-dev libboost-chrono-dev \
+libboost-date-time-dev libboost-filesystem-dev libboost-locale-dev libboost-program-options-dev \
+libboost-regex-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev \
+qtbase5-dev qtdeclarative5-dev qml-module-qtqml-models2 qml-module-qtquick-controls \
 qml-module-qtquick-controls2 qml-module-qtquick-dialogs qml-module-qtquick-xmllistmodel \
 qml-module-qt-labs-settings qml-module-qt-labs-platform qml-module-qt-labs-folderlistmodel \
 qttools5-dev-tools qml-module-qtquick-templates2 libqt5svg5-dev || exit 1
