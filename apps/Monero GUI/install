@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_packages cmake qtbase5-dev qtdeclarative5-dev qml-module-qtqml-models2 qml-module-qtquick-controls \
+install_packages cmake libcurl4-openssl-dev qtbase5-dev qtdeclarative5-dev qml-module-qtqml-models2 qml-module-qtquick-controls \
 qml-module-qtquick-controls2 qml-module-qtquick-dialogs qml-module-qtquick-xmllistmodel \
 qml-module-qt-labs-settings qml-module-qt-labs-platform qml-module-qt-labs-folderlistmodel \
 qttools5-dev-tools qml-module-qtquick-templates2 libqt5svg5-dev || exit 1
