@@ -4,7 +4,7 @@ This changelog mainly covers major events in Pi-Apps like new apps being added.
 
 If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
 
-Last updated: January 15, 2023 by [@theofficialgman](https://github.com/theofficialgman)
+Last updated: May 19, 2023 by [@theofficialgman](https://github.com/theofficialgman)
 
 ## New Apps changelog:
 
@@ -224,6 +224,11 @@ Last updated: January 15, 2023 by [@theofficialgman](https://github.com/theoffic
 - **10/19/2022** Added Minecraft Java Prism Launcher app
 - **01/05/2023** Added Pixelorama app
 - **01/06/2023** Added Gnome Builder IDE app
+- **03/28/2023** Added Brave app
+- **03/28/2023** Rename Discord to Webcord
+- **04/28/2023** Added Krita app
+- **04/30/2023** Added Gnome Software app
+- **05/17/2023** Added Monero GUI app
 
 ## Other notable changes:
 
