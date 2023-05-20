@@ -53,7 +53,7 @@ files='128x128.png
 
 for file in $files ;do
   sudo mkdir -p /usr/share/icons/hicolor/$(echo "$file" | awk -F'.' '{print $1}')/apps
-  sudo mv "/opt/monero-gui/images/appicons/$file" /usr/share/icons/hicolor/$(echo "$file" | awk -F'.' '{print $1}')/apps/monero.png || exit 1
+  sudo mv "/tmp/monero-gui/images/appicons/$file" /usr/share/icons/hicolor/$(echo "$file" | awk -F'.' '{print $1}')/apps/monero.png || exit 1
 done
 
 #done extracting needed files from monero-gui repo, so remove it

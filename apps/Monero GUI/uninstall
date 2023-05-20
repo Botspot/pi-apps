@@ -1,7 +1,7 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -rf /opt/monero-gui /usr/share/applications/monero-gui.desktop
+sudo rm -rf /usr/share/applications/monero-gui.desktop
 
 IFS=$'\n'
 
