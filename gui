@@ -289,6 +289,22 @@ fi
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
+#check mission-critical scripts and re-download them if they contain a syntax error
+(
+  sleep 10
+  command -v shellcheck >/dev/null || exit 0
+  
+  if shellcheck "${DIRECTORY}/updater" --color=always | grep '\[31m' --before 1 ;then
+    echo "Downloading updater script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/updater" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/updater' 2>&1)" || echo "$errors"
+  fi | sed 's/]31m//g'
+  
+  if shellcheck "${DIRECTORY}/api" --color=always | grep '\[31m' --before 1 ;then
+    echo "Downloading api script to repair syntax error"
+    errors="$(wget -O "${DIRECTORY}/api" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/api' 2>&1)" || echo "$errors"
+  fi | sed 's/]31m//g'
+) &
+
 set -a #make all functions in the api available to subprocesses
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
@@ -334,7 +350,6 @@ EOF
 
 #Various stuff to run in background (enclosed in brackets so Geany IDE can collapse the code)
 {
-
 mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
   "${DIRECTORY}/data/preload" "${DIRECTORY}/data/settings" \
   "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
@@ -349,22 +364,6 @@ if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
   #click it
   curl -s -X 'GET' "https://pi-apps-analytics.linkpc.net/pi-apps-active-usage/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
 fi
-
-#check mission-critical scripts and re-download them if they contain a syntax error
-(
-  sleep 10
-  command -v shellcheck >/dev/null || exit 0
-  
-  if shellcheck "${DIRECTORY}/updater" --color=always | grep '\[31m' --before 1 ;then
-    echo "Downloading updater script to repair syntax error"
-    errors="$(wget -O "${DIRECTORY}/updater" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/updater' 2>&1)" || echo "$errors"
-  fi | sed 's/]31m//g'
-  
-  if shellcheck "${DIRECTORY}/api" --color=always | grep '\[31m' --before 1 ;then
-    echo "Downloading api script to repair syntax error"
-    errors="$(wget -O "${DIRECTORY}/api" 'https://raw.githubusercontent.com/Botspot/pi-apps/master/api' 2>&1)" || echo "$errors"
-  fi | sed 's/]31m//g'
-) &
 }
 
 #Determine the app list mode. Allowed values: 'yad-*', 'xlunch-*'
