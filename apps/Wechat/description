@@ -9,3 +9,4 @@ WeChat Desktop App:
 - Everything from gifs to emojis to images all work
 
 To run: Menu -> Internet -> WeChat
+to run in a terminal: WINEPREFIX=$HOME/.config/wechat-prefix wine "$HOME/.config/wechat-prefix/drive_c/Program Files/Tencent/WeChat/WeChat.exe"

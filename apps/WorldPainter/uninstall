@@ -1,5 +1,5 @@
 #!/bin/bash
 
-sudo rm -f /opt/worldpainter/.install4j/pref_jre.cfg
+sudo rm -f /opt/worldpainter/.install4j/pref_jre.cfg /usr/share/fkms/applications/install4j_1tsntyi-worldpainter.desktop
 
 purge_packages || exit 1

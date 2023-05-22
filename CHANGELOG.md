@@ -4,7 +4,7 @@ This changelog mainly covers major events in Pi-Apps like new apps being added.
 
 If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
 
-Last updated: May 19, 2023 by [@theofficialgman](https://github.com/theofficialgman)
+Last updated: May 21, 2023 by [@Botspot](https://github.com/Botspot)
 
 ## New Apps changelog:
 
@@ -335,5 +335,7 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **5/16/2022** Major GUI updates and script modifications made. https://github.com/Botspot/pi-apps/pull/1580 https://github.com/Botspot/pi-apps/issues/1578
 - **10/7/2022** Switch to Pi-Apps self hosted shlink server instead of bitly for analytics tracking
 - **11/4/2022** Added analytics tracking for successfull user app updates
-- **1/10-11/2022** Added Github Actions based update verification/validity checker to the automatic updater.
-- **1/12-14/2022** Updated Pi-Apps icons and logo for 2023
+- **1/10-11/2023** Added Github Actions based update verification/validity checker to the automatic updater.
+- **1/12-14/2023** Updated Pi-Apps icons and logo for 2023
+- **5/3/2023** Major improvements to [pi-apps.io](https://pi-apps.io) website
+- **5/21/2023** Changed nearly all app descriptions to explicitly say how to run the app.

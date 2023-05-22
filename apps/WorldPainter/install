@@ -7,19 +7,17 @@ install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_
 # remove worldpainter duplicate .desktop file due to bad deb
 sudo xdg-desktop-menu uninstall --mode system "/opt/worldpainter/.install4j/install4j_1tsntyi-worldpainter.desktop"
 
+# force java-11
 case "$arch" in
-"64") 
-# force java-11
-sudo tee /opt/worldpainter/.install4j/pref_jre.cfg <<EOF
-/usr/lib/jvm/java-11-openjdk-arm64
-EOF
-;;
-"32") 
-# force java-11
-sudo tee /opt/worldpainter/.install4j/pref_jre.cfg <<EOF
-/usr/lib/jvm/java-11-openjdk-armhf
-EOF
-;;
-*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+  "64") 
+    
+    echo /usr/lib/jvm/java-11-openjdk-arm64 | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
+    ;;
+  "32") 
+    echo /usr/lib/jvm/java-11-openjdk-armhf | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
+    ;;
+  *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
+#put the launcher in the Games category
+echo 'Categories=Game;' | sudo tee -a /usr/share/fkms/applications/install4j_1tsntyi-worldpainter.desktop
