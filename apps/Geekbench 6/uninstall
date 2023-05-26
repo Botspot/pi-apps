@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo rm -rf /opt/geekbench6 /usr/local/bin/geekbench6 || error "Failed to remove Geekbench binaries!"
