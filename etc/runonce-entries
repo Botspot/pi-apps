@@ -130,6 +130,17 @@ runonce <<"EOF"
   #rename 'Discord' to 'Webcord'
   rm -rf "${DIRECTORY}/apps/Discord"
   mv -f "${DIRECTORY}/data/status/Discord" "${DIRECTORY}/data/status/Webcord" 2>/dev/null
+  
+  #rename 'Geekbench' to 'Geekbench 5'
+  if [ -f "${DIRECTORY}/data/status/Geekbench" ] && [ $(cat "${DIRECTORY}/data/status/Geekbench") == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/data/status/Geekbench" "${DIRECTORY}/data/status/Geekbench 5"
+    rm -rf "${DIRECTORY}/apps/Geekbench 5"
+    mv -f "${DIRECTORY}/apps/Geekbench" "${DIRECTORY}/apps/Geekbench 5"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/Geekbench"
+  fi
   true
 EOF
 
