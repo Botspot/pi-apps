@@ -8,7 +8,7 @@ fi
 #Use built-in uninstall procedure
 #this MUST come before a package purge otherwise fuse may be removed
 if [ -f /usr/local/bin/MuseScore.AppImage ];then
-  echo y | sudo /usr/local/bin/MuseScore.AppImage uninstall || error "MuseScore.AppImage failed to run its own installation procedure. Please review errors above."
+  echo y | sudo /usr/local/bin/MuseScore.AppImage uninstall || error "MuseScore.AppImage failed to run its own uninstall procedure. Please review errors above."
 fi
 
 #Allow packages required by this app to be uninstalled
