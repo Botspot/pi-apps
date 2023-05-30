@@ -383,7 +383,7 @@ $app"
         app="$(echo "$line" | awk -F';' '{print $2}')"
         
         #Set terminal title
-        echo -ne "\e]0;${action^}ing ${app}\a"
+        echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
         
         #refresh the list in queue-viewer window
         write_list "$queue"
@@ -425,6 +425,9 @@ ${DIRECTORY}/icons/none-1.png
   #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
   failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
   diagnose_apps "$failed_apps"
+
+  #updates could have been run as part of the manage-daemon, so update the updatable-files and updatable-apps status files
+  "${DIRECTORY}/updater" set-status  
   
 elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
@@ -600,27 +603,17 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
   
-elif [ "$1" == 'update' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
-  
-  warning "The manage script ONLY updates apps, and this mode has been replaced by the updater script.
-If you want to update Pi-Apps from the command-line, please use:
-~/pi-apps/updater cli-yes"
-  
+elif [ "$1" == 'update' ];then
+  #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
     error "For this operation, you must specify which app to operate on."
-  elif [ ! -d "${DIRECTORY}/apps/$app" ];then
-    error "${DIRECTORY}/apps/$app does not exist!"
   fi
   
   #get functions from updater script
   source "${DIRECTORY}/updater" source
-  
-  check_repo
-  updatable_apps="$2"
-  updatable_files=''
-  
-  update_now_cli
+
+  update_app "$app" || exit $?
   
 elif [ "$1" == 'check-all' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
   

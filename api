@@ -681,8 +681,10 @@ terminal_manage() { #function to install/uninstall one app - uses a terminal and
     action=uninstall
   elif [ "$1" == 'install' ];then
     action=install
+  elif [ "$1" == 'update' ];then
+    action=update
   else
-    error "terminal_manage(): Must specify an action: either 'install' or 'uninstall'"
+    error "terminal_manage(): Must specify an action: either 'install' or 'uninstall' or 'update'"
   fi
   
   app="$2" #one app name
