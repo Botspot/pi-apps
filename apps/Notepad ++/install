@@ -1,0 +1,36 @@
+#!/bin/bash
+
+version=8.5.3
+
+#determine filename of download
+if [ $arch == 32 ];then
+  filename="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v${version}/npp.${version}.portable.zip"
+elif [ $arch == 64 ];then
+  filename="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v${version}/npp.${version}.portable.x64.zip"
+fi
+
+#Installing wine
+if [ $arch == 32 ];then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x86)' || error 'Failed to install wine'
+elif [ $arch == 64 ];then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x64)' || error 'Failed to install wine'
+fi
+#Removing deprecated filepaths
+rm -rf ~/npp.zip ~/Notepad++
+#Downloading npp files
+wget "$filename" -O /tmp/npp.zip || error 'Failed to download npp files'
+#Extracting npp files
+mkdir -p ~/.local/share/applications
+unzip /tmp/npp.zip -d ~/.local/share/applications/Notepad++ || error 'Failed to extract npp archive'
+#Removing npp archive
+rm /tmp/npp.zip
+#Creating Desktop Entry
+echo "[Desktop Entry]
+Name=Notepad++
+Comment=Notepad++ is a free source code editor and Notepad replacement that supports several languages.
+Exec=wine $HOME/.local/share/applications/Notepad++/notepad++.exe
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility;" > ~/.local/share/applications/notepad++.desktop || error 'Failed to create menu button!'
