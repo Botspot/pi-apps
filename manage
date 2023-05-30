@@ -360,7 +360,7 @@ $app"
     
     #check for new actions to be executed
     echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging
-    new_lines="$(cat "${DIRECTORY}/data/manage-daemon/queue")"
+    new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
     
     if [ ! -z "$new_lines" ];then #if new actions have been added to the queue
       
