@@ -1,6 +1,7 @@
 #!/bin/bash
 
 purge_packages || exit 1
-#Removing Downlaoded Files
+#removing deprecated files
 rm -rf ~/Notepad++
-rm -f ~/.local/share/applications/notepad++.desktop
+#removing program files
+rm -rf ~/.local/share/applications/notepad++.desktop ~/.local/share/applications/Notepad++
