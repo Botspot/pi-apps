@@ -517,7 +517,7 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   [ "$no_status" != true ] && status_green "\nPi-Apps updates complete."
 }
 
-update_now_gui_apps() { # updatable_apps variable
+update_now_gui_apps() { # deprecated function that is only here so old updater scripts can call it.
   # this function exists to avoid having to write commands in terminal-run formatting for update_now_gui
   local failed_apps=""
   local IFS=$'\n'
@@ -535,25 +535,25 @@ update_now_gui_apps() { # updatable_apps variable
 }
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
-  
+  local IFS=$'\n'  
   #update any files in the background - don't use a terminal for that. This is a safety measure to update pi-apps scripts if terminal fails to launch.
   updatable_apps='' no_status=true update_now_cli
-  
+
   if [ ! -z "$updatable_apps" ];then
-    "${DIRECTORY}/etc/terminal-run" '
-      DIRECTORY="'"$DIRECTORY"'"
-      updatable_apps="'"$updatable_apps"'"
-      trap "sleep 10" EXIT
-      source "${DIRECTORY}/updater" source
-      
-      update_now_gui_apps
-      echo
-      echo -e "\e[92mAll updates complete. Closing in 10 seconds.\e[39m"
-      
-    ' "Updating $(echo "$updatable_apps" | wc -l) app$([ $(echo "$updatable_apps" | wc -l) != 1 ] && echo s)..."
+    for app in $updatable_apps ;do
+      terminal_manage update "$app" &
+      # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
+      # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
+      # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially
+      #Use a PID file to check if another daemon process is running.
+      if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
+        true #nothing to do
+        sleep 0.1
+      else
+        sleep 5
+      fi
+    done
   fi
-  
-  status_green "\nPi-Apps updates complete."
 }
 
 runmode="$1"
@@ -692,15 +692,6 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   
   update_now_gui
   
-  #display notification saying that pi-apps updates are complete
-  yad --class Pi-Apps --name "Pi Apps" --form --text='Pi-Apps updates complete.' \
-    --on-top --skip-taskbar --undecorated --close-on-unfocus \
-    --geometry=260+$((screen_width-262))+$((screen_height-150)) \
-    --image="${DIRECTORY}/icons/logo-64.png" \
-    --button="Close!${DIRECTORY}/icons/exit.png":1 \
-    --timeout=30
-  "${DIRECTORY}/updater" set-status
-  
 elif [ "$runmode" == 'get-status' ];then #Check if anything was deemed updatable the last time updates were checked for.
   
   if [ -s "${DIRECTORY}/data/update-status/updatable-files" ] || [ -s "${DIRECTORY}/data/update-status/updatable-apps" ];then
@@ -763,11 +754,10 @@ elif [ "$runmode" == gui ];then #dialog-list of updatable apps, with checkboxes 
   
   if [ "$use_terminal" == 0 ];then
     update_now_cli
+    "${DIRECTORY}/updater" set-status 
   else
     update_now_gui
   fi
-  
-  "${DIRECTORY}/updater" set-status 
   
 elif [ "$runmode" == gui-yes ];then #update now without asking for confirmation
   check_repo
