@@ -1,0 +1,115 @@
+#!/bin/bash
+
+#note to maintainer, if you change the below version make sure to update it in the uninstall script as well
+version=8.10
+
+#install box64
+"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
+if ! command -v box64 >/dev/null ;then
+  error "User error: Pi-Apps thinks Box64 is installed, however no command named 'box64' exists. Please install Box64 manually."
+fi
+echo "Installed Box64 version:"
+box64 -v || error "User error: Something went wrong when trying to run Box64."
+
+# Remove old wine, while leaving config intact
+pkill -9 wine
+command -v wineserver >/dev/null && wineserver -k
+command -v wine >/dev/null && sudo apt purge -y wine &>/dev/null &
+sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg /usr/local/bin/winetricks /opt/wine-${version} ~/.cache/winetricks ~/.cache/wine 2>/dev/null
+
+# Get dependencies
+install_packages cabextract p7zip-full || exit 1
+
+# Download wine to /opt
+wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wine-${version}.tar.gz -O /tmp/wine-${version}.tar.gz || error 'Failed to download wine!'
+sudo tar -xvf /tmp/wine-${version}.tar.gz -C /opt || error 'Failed to extract wine!'
+rm -f /tmp/wine-${version}.tar.gz
+
+#edit wine.inf to disable mime-associations. Nobody wants to double-click a text file, wonder why nothing is happening, then watch 15 Wine notepad windows pop up. Ask me how I know.
+sudo sed -i 's/winemenubuilder.exe -a -r/winemenubuilder.exe -r/' /opt/wine-${version}/share/wine/wine.inf #See: https://askubuntu.com/a/400430
+
+
+status "Creating terminal commands:"
+echo "  - winecfg"
+sudo ln -s /opt/wine-${version}/bin/winecfg /usr/local/bin/winecfg
+echo "  - wineserver"
+sudo ln -s /opt/wine-${version}/bin/wineserver /usr/local/bin/wineserver
+echo "  - wineboot"
+sudo ln -s /opt/wine-${version}/bin/wineboot /usr/local/bin/wineboot
+echo "  - wine"
+sudo ln -s /opt/wine-${version}/bin/wine /usr/local/bin/wine
+
+#make them all executable
+status -n "Making executable... "
+sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/wine || error "\nFailed to mark all commands as executable. Most likely one failed to be generated or copied. These files are:\n/usr/local/bin/winecfg\n/usr/local/bin/wineserver\n/usr/local/bin/wineboot\n/usr/local/bin/wine"
+status_green "Done"
+
+#get icons from wine-stuff repo
+cd /tmp
+rm -rf wine-stuff
+git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
+sudo mv wine-stuff/icons /opt/wine-${version}
+sudo mv wine-stuff/Windows_10.msstyles /opt/wine-${version}
+sudo chown -R root:root  /opt/wine-${version}/icons /opt/wine-${version}/Windows_10.msstyles
+rm -rf wine-stuff
+
+#create menu launchers
+status -n "Creating Menu launchers... "
+
+#Remove wine auto-generated desktop files that handle mimetypes. Nobody in their right mind would want this.
+#See: https://askubuntu.com/a/400430
+rm -f ~/.local/share/mime/packages/x-wine*
+rm -f ~/.local/share/applications/wine-extension*
+rm -f ~/.local/share/icons/hicolor/*/*/application-x-wine-extension*
+rm -f ~/.local/share/mime/application/x-wine-extension*
+
+echo "[Desktop Entry]
+StartupNotify=true
+Terminal=false
+Type=Application
+Name=Wine Configuration
+Exec=wine winecfg
+Icon=/opt/wine-${version}/icons/winecfg.png
+Categories=System;
+Comment=Configure wine" | sudo tee /usr/share/applications/wine-config.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Desktop
+Comment=Wine graphical desktop environment to mimic a Windows OS
+Icon=/opt/wine-${version}/icons/wine-desktop.png
+Exec=wine explorer /desktop=shell,1280x720
+Terminal=false
+Categories=System;" | sudo tee /usr/share/applications/wine-explorer.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Program Manager
+Comment=Install/Remove Windows programs
+Icon=/opt/wine-${version}/icons/wine-program-manager.png
+Exec=wine uninstaller
+Terminal=false
+Categories=System;" | sudo tee /usr/share/applications/wine-uninstaller.desktop
+
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wine Task Manager
+Comment=View running processes within Wine
+Icon=/opt/wine-${version}/icons/winetask.png
+Exec=wine taskmgr
+Terminal=false
+Categories=System;" | sudo tee /usr/share/applications/wine-taskmgr.desktop
+
+echo "[Desktop Entry]
+StartupNotify=false
+Version=1.0
+Type=Application
+Name=Wine Killer
+Comment=Terminate any running Wine processes
+Icon=/opt/wine-${version}/icons/winestop.png
+Exec=wineserver -k
+Terminal=false
+Categories=System;" | sudo tee /usr/share/applications/wine-killer.desktop
