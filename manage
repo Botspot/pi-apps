@@ -30,7 +30,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   
   local queue="$1"
   
-  #Ensure that the first word of each line is 'install' or 'uninstall'
+  #Ensure that the first word of each line is 'install' or 'uninstall' or 'update'
   local i=1 #track the line number in queue
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
@@ -52,7 +52,14 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
     
-    if [ ! -d "${DIRECTORY}/apps/${app}" ];then
+    if [ "$action" == update ] && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+      yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
+        --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --button=OK!"${DIRECTORY}/icons/check.png":0
+      
+      #remove the app from list
+      queue="$(echo "$queue" | sed ${i}d)"
+    elif [ "$action" != update ] && [ ! -d "${DIRECTORY}/apps/${app}" ];then
       yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
