@@ -366,46 +366,49 @@ $app"
   while true;do #repeat until nothing is left in the queue
     
     #check for new actions to be executed
-    echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging
+    echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging if the queue file is empty
     new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
-    
-    if [ ! -z "$new_lines" ];then #if new actions have been added to the queue
-      
-      #keep track of all actions for this session with the $queue variable
-      if [ -z "$queue" ];then
-        queue="$new_lines"
-      else
+
+    #keep track of all actions for this session with the $queue variable
+    if [ -z "$queue" ];then
+      queue="$new_lines"
+    else
+      if [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
         queue+=$'\n'"$new_lines"
       fi
+    fi
+    #echo "length of queue is $(echo "$queue" | wc -l)"
+    
+    if [ "${current_line_num}" -le "$(echo "$queue" | wc -l)" ];then #if we have not iterated through the entire queue length
+      #echo "current position in queue is ${current_line_num}"
       #echo "queue is '$queue'"
       
-      for line in $new_lines ;do
-        #echo "Now handling request: '$line'"
-        
-        #indicate current action in current line of $queue
-        queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
-        
-        #get first word of this line - the action. Subsequent words are the name of the app.
-        action="$(echo "$line" | awk -F';' '{print $1}')"
-        app="$(echo "$line" | awk -F';' '{print $2}')"
-        
-        #Set terminal title
-        echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
-        
-        #refresh the list in queue-viewer window
-        write_list "$queue"
-        
-        #echo "Action is $action, app is $app"
-        
-        "${DIRECTORY}/manage" "$action" "$app"
-        exitcode=$?
-        
-        #record exit code in current line of $queue
-        queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
-        
-        #one more line of $queue has been completed.
-        current_line_num=$((current_line_num+1))
-      done
+      line="$(echo "$queue" | sed -n "${current_line_num}"p)"
+      #echo "Now handling request: '$line'"
+      
+      #indicate current action in current line of $queue
+      queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
+      
+      #get first word of this line - the action. Subsequent words are the name of the app.
+      action="$(echo "$line" | awk -F';' '{print $1}')"
+      app="$(echo "$line" | awk -F';' '{print $2}')"
+      
+      #Set terminal title
+      echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
+      
+      #refresh the list in queue-viewer window
+      write_list "$queue"
+      
+      #echo "Action is $action, app is $app"
+      
+      "${DIRECTORY}/manage" "$action" "$app"
+      exitcode=$?
+      
+      #record exit code in current line of $queue
+      queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
+      
+      #one more line of $queue has been completed.
+      current_line_num=$((current_line_num+1))
       
       #refresh the list in queue-viewer window
       write_list "$queue"
