@@ -294,6 +294,43 @@ $app"
     clear_list
     echo "$output" > "${DIRECTORY}/data/manage-daemon/yadlist"
   }
+
+  reorder_list() { # given $queue in $1, output a new queue with app refreshes prioritized before install/uninstalls
+    local queue="$1"
+    # only reorder queue for actions that have not completed yet (no exit code present)
+    local queue_pending
+    local queue_pending_refresh
+    local queue_pending_other
+    local queue_completed
+    local queue_reordered
+    local IFS=$'\n'
+    local line
+    for line in $queue ;do
+      if ! [[ "$(echo "$line" | awk -F';' '{print $3}')" =~ ^[0-9]+$ ]] ; then
+        # echo "$line is still pending" 1>&2
+        queue_pending+="$line"$'\n'
+      else
+        # echo "$line has been completed already" 1>&2
+        queue_completed+="$line"$'\n'
+      fi
+    done
+    [ ! -z "$queue_pending" ] && queue_pending="${queue_pending::-1}" #remove final newline character
+    [ ! -z "$queue_completed" ] && queue_reordered+="$queue_completed" #already includes trailing newline
+    for line in $queue_pending ;do
+      if [[ "$(echo "$line" | awk -F';' '{print $1}')" == "refresh" ]] ; then
+        # echo "$line has the refresh action" 1>&2
+        queue_pending_refresh+="$line"$'\n'
+      else
+        # echo "$line has some other action" 1>&2
+        queue_pending_other+="$line"$'\n'
+      fi
+    done
+    [ ! -z "$queue_pending_refresh" ] && queue_reordered+="$queue_pending_refresh" #already includes trailing newline
+    [ ! -z "$queue_pending_other" ] && queue_reordered+="$queue_pending_other" #already includes trailing newline
+    queue_reordered="${queue_reordered::-1}" #remove final newline character
+
+    echo "$queue_reordered"
+  }
   
   #make a named pipe so that other daemon processes can notify this master daemon process to complete new tasks
   if [ ! -e "${DIRECTORY}/data/manage-daemon/queue" ];then
@@ -377,6 +414,8 @@ $app"
         queue+=$'\n'"$new_lines"
       fi
     fi
+    # reorder queue list to prioritize app refresh actions
+    queue="$(reorder_list "$queue")"
     #echo "length of queue is $(echo "$queue" | wc -l)"
     
     if [ "${current_line_num}" -le "$(echo "$queue" | wc -l)" ];then #if we have not iterated through the entire queue length
