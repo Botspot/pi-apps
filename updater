@@ -418,6 +418,7 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   # add compressed_update apps to output
   if echo "$output" | grep -q '^compressed_apps' ;then
     output+=$'\n'"${compressed_update}"
+    refresh_apps="$(echo "$compressed_update" | grep '^app:' | sed 's/^app://g')"
   fi
   
   #remove empty newlines from output
@@ -541,7 +542,12 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
 
   if [ ! -z "$updatable_apps" ];then
     for app in $updatable_apps ;do
-      terminal_manage update "$app" &
+      # if app is a compressed update app, do a refresh and not an update
+      if echo "${refresh_apps}" | grep -q "^$app"; then
+        terminal_manage refresh "$app" &
+      else
+        terminal_manage update "$app" &
+      fi
       # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
       # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
       # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially

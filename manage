@@ -30,12 +30,12 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   
   local queue="$1"
   
-  #Ensure that the first word of each line is 'install' or 'uninstall' or 'update'
+  #Ensure that the first word of each line is 'install' or 'uninstall' or 'update' or 'refresh'
   local i=1 #track the line number in queue
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     
-    if [ "$action" != install ] && [ "$action" != uninstall ] && [ "$action" != update ];then
+    if [ "$action" != install ] && [ "$action" != uninstall ] && [ "$action" != update ] && [ "$action" != refresh ];then
       warning "illegal mode: '$action' Removing this line from the queue"
       
       #remove the app from list
@@ -610,7 +610,7 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
   
-elif [ "$1" == 'update' ];then
+elif [ "$1" == 'update' ] || [ "$1" == 'refresh' ];then
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
