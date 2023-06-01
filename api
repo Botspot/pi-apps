@@ -2987,47 +2987,55 @@ export GDK_BACKEND=x11
 # if not, check if there is an upstream-release file
 # if not, check if there is a lsb-release.diverted file
 # if not, assume that this is not a ubuntu derivative
-if lsb_release -a -u &>/dev/null; then
-  # This is a Ubuntu Derivative, checking the upstream-release version info
-  __os_id="$(lsb_release -s -i -u)"
-  __os_desc="$(lsb_release -s -d -u)"
-  __os_release="$(lsb_release -s -r -u)"
-  __os_codename="$(lsb_release -s -c -u)"
-  __os_original_id="$(lsb_release -s -i)"
-  __os_original_desc="$(lsb_release -s -d)"
-  __os_original_release="$(lsb_release -s -r)"
-  __os_original_codename="$(lsb_release -s -c)"
-elif [ -f /etc/upstream-release/lsb-release ]; then
-  # ubuntu 22.04+ Linux Mint no longer includes the lsb_release -u option
-  # add a parser for the /etc/upstream-release/lsb-release file
-  source /etc/upstream-release/lsb-release
-  __os_id="$DISTRIB_ID"
-  __os_desc="$DISTRIB_DESCRIPTION"
-  __os_release="$DISTRIB_RELEASE"
-  __os_codename="$DISTRIB_CODENAME"
-  __os_original_id="$(lsb_release -s -i)"
-  __os_original_desc="$(lsb_release -s -d)"
-  __os_original_release="$(lsb_release -s -r)"
-  __os_original_codename="$(lsb_release -s -c)"
-  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
-elif [ -f /etc/lsb-release.diverted ]; then
-  # ubuntu 22.04+ Pop!_OS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
-  # add a parser for the new /etc/lsb-release.diverted file
-  source /etc/lsb-release.diverted
-  __os_id="$DISTRIB_ID"
-  __os_desc="$DISTRIB_DESCRIPTION"
-  __os_release="$DISTRIB_RELEASE"
-  __os_codename="$DISTRIB_CODENAME"
-  __os_original_id="$(lsb_release -s -i)"
-  __os_original_desc="$(lsb_release -s -d)"
-  __os_original_release="$(lsb_release -s -r)"
-  __os_original_codename="$(lsb_release -s -c)"
-  unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
-else
-  __os_id="$(lsb_release -s -i)"
-  __os_desc="$(lsb_release -s -d)"
-  __os_release="$(lsb_release -s -r)"
-  __os_codename="$(lsb_release -s -c)"
+# use mapfile to temporarily store release info for speed
+if [ -z "$__os_id" ] || [ -z "$__os_desc" ] || [ -z "$__os_release" ] || [ -z "$__os_codename" ]; then
+  if lsb_release -a -u &>/dev/null; then
+    # This is a Ubuntu Derivative, checking the upstream-release version info
+    mapfile -t os_u < <(lsb_release -s -i -d -r -c -u)
+    export __os_id="${os_u[0]}"
+    export __os_desc="${os_u[1]}"
+    export __os_release="${os_u[2]}"
+    export __os_codename="${os_u[3]}"
+    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    export __os_original_id="${os[0]}"
+    export __os_original_desc="${os[1]}"
+    export __os_original_release="${os[2]}"
+    export __os_original_codename="${os[3]}"
+  elif [ -f /etc/upstream-release/lsb-release ]; then
+    # ubuntu 22.04+ Linux Mint no longer includes the lsb_release -u option
+    # add a parser for the /etc/upstream-release/lsb-release file
+    source /etc/upstream-release/lsb-release
+    export __os_id="$DISTRIB_ID"
+    export __os_desc="$DISTRIB_DESCRIPTION"
+    export __os_release="$DISTRIB_RELEASE"
+    export __os_codename="$DISTRIB_CODENAME"
+    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    export __os_original_id="${os[0]}"
+    export __os_original_desc="${os[1]}"
+    export __os_original_release="${os[2]}"
+    export __os_original_codename="${os[3]}"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+  elif [ -f /etc/lsb-release.diverted ]; then
+    # ubuntu 22.04+ Pop!_OS no longer includes the /etc/upstream-release/lsb-release or the lsb_release -u option
+    # add a parser for the new /etc/lsb-release.diverted file
+    source /etc/lsb-release.diverted
+    export __os_id="$DISTRIB_ID"
+    export __os_desc="$DISTRIB_DESCRIPTION"
+    export __os_release="$DISTRIB_RELEASE"
+    export __os_codename="$DISTRIB_CODENAME"
+    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    export __os_original_id="${os[0]}"
+    export __os_original_desc="${os[1]}"
+    export __os_original_release="${os[2]}"
+    export __os_original_codename="${os[3]}"
+    unset DISTRIB_ID DISTRIB_DESCRIPTION DISTRIB_RELEASE DISTRIB_CODENAME
+  else
+    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    export __os_id="${os[0]}"
+    export __os_desc="${os[1]}"
+    export __os_release="${os[2]}"
+    export __os_codename="${os[3]}"
+  fi
 fi
 
 #if this script is being run standalone, run the specified function
