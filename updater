@@ -561,16 +561,22 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
     terminal_manage update "$(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")" &
     safe_wait
   fi
+
+  if [ ! -z "$refresh_apps" ];then
+    for app in $refresh_apps ;do
+      # if app is a compressed update app, do a refresh and not an update
+      terminal_manage refresh "$app" &
+      safe_wait
+    done
+  fi
   
   if [ ! -z "$updatable_apps" ];then
     for app in $updatable_apps ;do
-      # if app is a compressed update app, do a refresh and not an update
-      if echo "${refresh_apps}" | grep -q "^$app"; then
-        terminal_manage refresh "$app" &
-      else
+      # if app is not a compressed update app, do a regular update
+      if ! echo "${refresh_apps}" | grep -q "^$app"; then
         terminal_manage update "$app" &
+        safe_wait
       fi
-      safe_wait
     done
   fi
 }
