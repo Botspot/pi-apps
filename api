@@ -676,7 +676,7 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   fi
 }
 
-terminal_manage() { #function to install/uninstall one app - uses a terminal and refreshes the app list
+terminal_manage() { #function to install/uninstall/update/refresh one app (or filelist) - uses a terminal and refreshes the app list
   if [ "$1" == 'uninstall' ];then
     action=uninstall
   elif [ "$1" == 'install' ];then
@@ -689,7 +689,7 @@ terminal_manage() { #function to install/uninstall one app - uses a terminal and
     error "terminal_manage(): Must specify an action: either 'install' or 'uninstall' or 'update' or 'refresh'"
   fi
   
-  app="$2" #one app name
+  app="$2" #one app name (or filelist of the format 'filelist:path/to/file:path/to/another/file')
   
   #To prevent multiple simultaneous manage instances, use the 'daemon' mode. This will create a queue of actions that are executed concurrently.
   #The first daemon instance is the 'master' process. Subsequent processes will add the action to the queue and then exit.
@@ -730,6 +730,9 @@ terminal_manage() { #function to install/uninstall one app - uses a terminal and
       --width=700 --height=300 --text-info --title="Error occured when calling terminal-run" \
       --image="${DIRECTORY}/icons/error.png" --image-on-top --fontname=12 \
       --button='OK'
+      if [[ "$app" =~ ^filelist:.* ]];then #list of files separated by :
+        updatable_apps='' updatable_files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')" no_status=true update_now_cli
+      fi
     fi
   fi
 }

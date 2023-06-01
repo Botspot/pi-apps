@@ -51,8 +51,12 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
-    
-    if [ "$action" == update ] && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+
+    if [[ "$line" =~ ^"update;filelist:".* ]];then
+      # the current line is being used to pass a list of files to update
+      # skip app validation
+      true
+    elif [ "$action" == update ] && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
       yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
@@ -78,7 +82,11 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
     
-    if [ "$(app_status "${app}")" == "${action}ed" ];then
+    if [[ "$line" =~ ^"update;filelist:".* ]];then
+      # the current line is being used to pass a list of files to update
+      # skip app validation
+      true
+    elif [ "$(app_status "${app}")" == "${action}ed" ];then
       yad --class Pi-Apps --name "Pi Apps" --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
         --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
@@ -232,6 +240,11 @@ if [ "$1" == 'daemon' ];then
     else
       local icon="${DIRECTORY}/icons/none-24.png"
     fi
+
+    if [[ "$app" =~ ^filelist:.* ]];then
+      app="Pi-Apps Script Files"
+      local icon="${DIRECTORY}/icons/shellscript.png"
+    fi    
     
     if [ -z "$status" ];then
       #if there is no status number, then this action has not occured yet.
@@ -295,11 +308,12 @@ $app"
     echo "$output" > "${DIRECTORY}/data/manage-daemon/yadlist"
   }
 
-  reorder_list() { # given $queue in $1, output a new queue with app refreshes prioritized before install/uninstalls
+  reorder_list() { # given $queue in $1, output a new queue with app refreshes and file updates prioritized before install/uninstalls
     local queue="$1"
     # only reorder queue for actions that have not completed yet (no exit code present)
     local queue_pending
     local queue_pending_refresh
+    local queue_pending_filelist
     local queue_pending_other
     local queue_completed
     local queue_reordered
@@ -320,11 +334,15 @@ $app"
       if [[ "$(echo "$line" | awk -F';' '{print $1}')" == "refresh" ]] ; then
         # echo "$line has the refresh action" 1>&2
         queue_pending_refresh+="$line"$'\n'
+      elif [[ "$line" =~ ^"update;filelist:".* ]];then
+        # echo "$line is a filelist" 1>&2
+        queue_pending_filelist+="$line"$'\n'
       else
         # echo "$line has some other action" 1>&2
         queue_pending_other+="$line"$'\n'
       fi
     done
+    [ ! -z "$queue_pending_filelist" ] && queue_reordered+="$queue_pending_filelist" #already includes trailing newline
     [ ! -z "$queue_pending_refresh" ] && queue_reordered+="$queue_pending_refresh" #already includes trailing newline
     [ ! -z "$queue_pending_other" ] && queue_reordered+="$queue_pending_other" #already includes trailing newline
     queue_reordered="${queue_reordered::-1}" #remove final newline character
@@ -414,7 +432,7 @@ $app"
         queue+=$'\n'"$new_lines"
       fi
     fi
-    # reorder queue list to prioritize app refresh actions
+    # reorder queue list to prioritize app refresh and file update actions
     queue="$(reorder_list "$queue")"
     #echo "length of queue is $(echo "$queue" | wc -l)"
     
@@ -651,6 +669,13 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
+  
+elif [ "$1" == 'update' ] && [[ "$2" =~ ^filelist:.* ]];then #list of files separated by :
+  # hijack the app variable to pass our list of files to update to it
+  #get functions from updater script
+  source "${DIRECTORY}/updater" source
+
+  updatable_apps='' updatable_files="$(echo "$2" | sed 's/^filelist://g' | tr ':' '\n')" no_status=true update_now_cli
   
 elif [ "$1" == 'update' ] || [ "$1" == 'refresh' ];then
   #for this operation, a program name must be specified.
