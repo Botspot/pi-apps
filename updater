@@ -538,8 +538,29 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
   local IFS=$'\n'
+  safe_wait() {
+    # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
+    # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
+    # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially
+    #Use a PID file to check if another daemon process is running.
+    if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
+      true #nothing to do
+    else
+      attempts=0
+      while [ ! -f "${DIRECTORY}/data/manage-daemon/pid" ] || [ ! -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];do
+        if [ "$attempts" -gt 500 ];then
+          break
+        fi
+        sleep 0.01
+        attempts=$((attempts + 1))
+      done
+    fi
+  }
   #update any files with terminal_manage. if it fails terminal-run will update the files in the background. This is a safety measure to update pi-apps scripts if terminal fails to launch.
-  terminal_manage update "$(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")" &
+  if [ ! -z "$updatable_files" ]; then
+    terminal_manage update "$(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")" &
+    safe_wait
+  fi
   
   if [ ! -z "$updatable_apps" ];then
     for app in $updatable_apps ;do
@@ -549,16 +570,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       else
         terminal_manage update "$app" &
       fi
-      # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
-      # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
-      # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially
-      #Use a PID file to check if another daemon process is running.
-      if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
-        true #nothing to do
-        sleep 0.1
-      else
-        sleep 5
-      fi
+      safe_wait
     done
   fi
 }
