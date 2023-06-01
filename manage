@@ -1,4 +1,5 @@
 #!/bin/bash
+{ #prevents errors if script was modified while in use
 
 #$1 is an action, like install
 #$2 is app name, like Arduino
@@ -651,3 +652,7 @@ If you want to update Pi-Apps from the command-line, please use:
 else
   error "Invalid mode. ($1) Allowed values: 'install', 'multi-install', 'install-if-not-installed', 'uninstall', 'multi-uninstall', 'update', 'update-all', 'check-all', or 'daemon'."
 fi
+
+# exit script when finished. Prevents errors if script was modified while in use and new script is longer than previous script.
+exit "$?"
+}
