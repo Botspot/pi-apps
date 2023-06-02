@@ -1800,6 +1800,17 @@ sudo apt purge wsjtx-data
 Here is the full forum link in case it helps you: https://wsjtx.groups.io/g/main/topic/77286764")
     error_type="package"
   fi
+
+  #if RPi OS
+  if [ -f /etc/rpi-issue ];then
+    if grep -qF "linux-image-.*-arm64" <<<"$errors";then
+      error_caption+=("You have a generic ARM64 linux kernel image installed on your system but are running Raspberry Pi OS. This is a package designed for ARM64 servers. You must fix this to prevent apt install/upgrades from erroring.
+
+Try removing all generic ARM64 linux kernels with this command:
+sudo apt purge --autoremove linux-image-*-arm64")
+      error_type="package"
+    fi
+  fi
   
   #NON-APT ERRORS BELOW
   if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
