@@ -538,6 +538,7 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
   local IFS=$'\n'
+  local queue
   safe_wait() {
     # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
     # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
@@ -558,15 +559,13 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
   }
   #update any files with terminal_manage. if it fails terminal-run will update the files in the background. This is a safety measure to update pi-apps scripts if terminal fails to launch.
   if [ ! -z "$updatable_files" ]; then
-    terminal_manage update "$(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")" &
-    safe_wait
+    queue+="update $(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")"$'\n'
   fi
 
   if [ ! -z "$refresh_apps" ];then
     for app in $refresh_apps ;do
       # if app is a compressed update app, do a refresh and not an update
-      terminal_manage refresh "$app" &
-      safe_wait
+      queue+="refresh $app"$'\n'
     done
   fi
   
@@ -574,11 +573,12 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
     for app in $updatable_apps ;do
       # if app is not a compressed update app, do a regular update
       if ! echo "${refresh_apps}" | grep -q "^$app"; then
-        terminal_manage update "$app" &
-        safe_wait
+        queue+="update $app"$'\n'
       fi
     done
   fi
+  queue="${queue::-1}" #remove final newline character
+  terminal_manage_multi "$queue" &
 }
 
 runmode="$1"
