@@ -471,10 +471,9 @@ $app"
       #one more line of $queue has been completed.
       current_line_num=$((current_line_num+1))
       
+    else #no further items in queue, so stop the daemon
       #refresh the list in queue-viewer window
       write_list "$queue"
-      
-    else #no further items in queue, so stop the daemon
       
       #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
       echo "${DIRECTORY}/icons/none-1.png
