@@ -238,17 +238,28 @@ if [ "$1" == 'daemon' ];then
     
     # $4 specifies where the output should go. Default is to send the output to the yadlist pipe, but if value is 'stdout', output to stdout.
     local output="$4"
-    
+
+    #choose an icon for this app or file being updated/installed
     if [ -f "${DIRECTORY}/apps/$app/icon-24.png" ];then
       local icon="${DIRECTORY}/apps/$app/icon-24.png"
+    elif [ "$action" == update-file ];then
+      #determine mimetype of file to display an informative icon in the list
+      if [ "$(file -b --mime-type "${DIRECTORY}/${app}")" == 'text/x-shellscript' ];then
+        #if updatable file in question is a main pi-apps shell script, then display shellscript icon.
+        local icon="${DIRECTORY}/icons/shellscript.png"
+        app+=' (script)'
+      elif [[ "${DIRECTORY}/${app}" == *.png ]] || [[ "${DIRECTORY}/${app}" == *.svg ]];then
+        local icon="${DIRECTORY}/icons/image.png"
+        app+=' (image)'
+      else
+        #otherwise display txt icon.
+        local icon="${DIRECTORY}/icons/txt.png"
+        app+=' (file)'
+      fi
+      action=update
     else
       local icon="${DIRECTORY}/icons/none-24.png"
     fi
-
-    if [[ "$app" =~ ^filelist:.* ]];then
-      app="Pi-Apps Script Files"
-      local icon="${DIRECTORY}/icons/shellscript.png"
-    fi    
     
     if [ -z "$status" ];then
       #if there is no status number, then this action has not occured yet.
@@ -303,8 +314,15 @@ $app"
       local action="$(echo "$line" | awk -F';' '{print $1}')"
       local app="$(echo "$line" | awk -F';' '{print $2}')"
       local code="$(echo "$line" | awk -F';' '{print $3}')"
-      
-      output+="$(add_to_list "$action" "$app" "$code" stdout)"$'\n'
+
+      if [[ "$app" =~ ^filelist:.* ]];then
+        local files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')"
+        for file in $files ;do
+          output+="$(add_to_list "update-file" "$file" "$code" stdout)"$'\n'
+        done
+      else
+        output+="$(add_to_list "$action" "$app" "$code" stdout)"$'\n'
+      fi
     done
     output="${output::-1}" #remove final newline character
     
@@ -335,7 +353,7 @@ $app"
     [ ! -z "$queue_pending" ] && queue_pending="${queue_pending::-1}" #remove final newline character
     [ ! -z "$queue_completed" ] && queue_reordered+="$queue_completed" #already includes trailing newline
     for line in $queue_pending ;do
-      if [[ "$(echo "$line" | awk -F';' '{print $1}')" == "refresh" ]] ; then
+      if [[ "$line" =~ ^"refresh;".* ]] ; then
         # echo "$line has the refresh action" 1>&2
         queue_pending_refresh+="$line"$'\n'
       elif [[ "$line" =~ ^"update;filelist:".* ]];then
@@ -387,8 +405,15 @@ $app"
         #get first word of this line - the action. Subsequent words are the name of the app.
         action="$(echo "$line" | awk -F ';' '{print $1}')"
         app="$(echo "$line" | awk -F ';' '{print $2}')"
-        
-        add_to_list "$action" "$app"
+
+        if [[ "$app" =~ ^filelist:.* ]];then
+          files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')"
+          for file in $files ;do
+            add_to_list "update-file" "$file"
+          done
+        else
+          add_to_list "$action" "$app"
+        fi
         
       done
       
@@ -431,10 +456,8 @@ $app"
     #keep track of all actions for this session with the $queue variable
     if [ -z "$queue" ];then
       queue="$new_lines"
-    else
-      if [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
-        queue+=$'\n'"$new_lines"
-      fi
+    elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
+      queue+=$'\n'"$new_lines"
     fi
     # reorder queue list to prioritize app refresh and file update actions
     queue="$(reorder_list "$queue")"
@@ -674,7 +697,7 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   exit $exitcode
   
 elif [ "$1" == 'update' ] && [[ "$2" =~ ^filelist:.* ]];then #list of files separated by :
-  # hijack the app variable to pass our list of files to update to it
+  # use the second argument to pass our list of files to update
   #get functions from updater script
   source "${DIRECTORY}/updater" source
 
