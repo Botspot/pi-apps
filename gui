@@ -499,7 +499,7 @@ if [[ "$guimode" == yad* ]];then
   #create a named pipe to send app list through to yad
   pipe="$(mktemp -u)" #get a random filename to work with
   mkfifo $pipe #make the named pipe
-  trap "rm $pipe" EXIT #remove this named pipe on exit
+  trap "rm -f $pipe" EXIT #remove this named pipe on exit
   echo pipe is $pipe
   
   while true;do #main operating loop for yad window
@@ -527,6 +527,8 @@ if [[ "$guimode" == yad* ]];then
     
     case $button in
     2) #settings
+      # remove pipe early so that nothing attempts to write to it
+      rm -f "$pipe"
       "${DIRECTORY}/settings"
       "${DIRECTORY}/gui" "$@" #run new instance of this script
       exit 0
