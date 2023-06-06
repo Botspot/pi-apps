@@ -441,11 +441,6 @@ $app"
     echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging if the queue file is empty
     new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
     
-    if [ "$sourced_updater" == 0 ] && grep -q "update-file" <<<"$new_lines" ;then #source updater if files need to be updated
-      source "${DIRECTORY}/updater" source
-      sourced_updater=1
-    fi
-    
     #keep track of all actions for this session with the $queue variable
     if [ -z "$queue" ];then
       queue="$new_lines"
@@ -453,6 +448,10 @@ $app"
       queue+=$'\n'"$new_lines"
       # reorder queue list to prioritize app refresh and file update actions
       queue="$(reorder_list "$queue")"
+      if [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
+        source "${DIRECTORY}/updater" source
+        sourced_updater=1
+      fi
     fi
     #echo "length of queue is $(echo "$queue" | wc -l)"
     
@@ -488,7 +487,7 @@ $app"
     
     #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates because that is out of the scope for manage script.
     if [ "$action" == update-file ];then
-      updatable_apps='' updatable_files="$app" no_status=true update_now_cli
+      update_file "$app"
       exitcode=$?
     else
       "${DIRECTORY}/manage" "$action" "$app"
@@ -522,6 +521,11 @@ ${DIRECTORY}/icons/none-1.png
   #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
   failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
   diagnose_apps "$failed_apps"
+
+  # if update refresh or update-file actions were run then update the .git folder
+  if [ "$sourced_updater" == 1 ]; then
+    update_git
+  fi
   
   #updates could have been run as part of the manage-daemon, so update the updatable-files and updatable-apps status files
   "${DIRECTORY}/updater" set-status  
@@ -701,17 +705,16 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   exit $exitcode
   
 elif [ "$1" == 'refresh' ];then #copy the online version of an app to the main pi-apps folder. Used when an app does not need to be reinstalled when updating it/
-  status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
-  #Set terminal title
-  echo -ne "\e]0;Refreshing ${app}\a"
-  
-  #move old program to trash - this allows app-developers to recover their work if update was accidental
-  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
-  #failsafe
-  rm -rf "${DIRECTORY}/apps/${app}"
-  
-  #copy new version from update/ to apps/
-  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}" && status_green Done || warning "Failed to refresh app '$app'!"
+  #for this operation, a program name must be specified.
+  app="$2"
+  if [ -z "$app" ];then
+    error "For this operation, you must specify which app to operate on."
+  fi
+
+  # make sure refresh_app function is available
+  typeset -f refresh_app &>/dev/null || source "${DIRECTORY}/updater" source
+
+  refresh_app "$app" || exit $?
   
 elif [ "$1" == 'update' ];then #user-facing argument to update an app. Pi-Apps scripts should directly use updater's update_app function.
   #for this operation, a program name must be specified.
@@ -720,9 +723,9 @@ elif [ "$1" == 'update' ];then #user-facing argument to update an app. Pi-Apps s
     error "For this operation, you must specify which app to operate on."
   fi
   
-  #get functions from updater script
-  source "${DIRECTORY}/updater" source
-
+  # make sure update_app function is available
+  typeset -f update_app &>/dev/null || source "${DIRECTORY}/updater" source
+  
   update_app "$app" || exit $?
   
 elif [ "$1" == 'check-all' ];then #The manage script no longer handles updates. This mode is only for backwards-compatibility and uses the updater script
