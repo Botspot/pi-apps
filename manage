@@ -30,7 +30,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   
   local queue="$1"
   
-  #Ensure that the first word of each line is 'install' or 'uninstall' or 'update' or 'refresh'
+  #Ensure that the first word of each line is 'install' or 'uninstall' or 'update' or 'refresh' or 'update-file'
   local i=1 #track the line number in queue
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
@@ -485,9 +485,12 @@ $app"
       write_list_pid=$!
     fi
     
-    #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates because that is out of the scope for manage script.
+    #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
     if [ "$action" == update-file ];then
       update_file "$app"
+      exitcode=$?
+    elif [ "$action" == refresh ];then
+      refresh_app "$app"
       exitcode=$?
     else
       "${DIRECTORY}/manage" "$action" "$app"
@@ -703,18 +706,6 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
-  
-elif [ "$1" == 'refresh' ];then #copy the online version of an app to the main pi-apps folder. Used when an app does not need to be reinstalled when updating it/
-  #for this operation, a program name must be specified.
-  app="$2"
-  if [ -z "$app" ];then
-    error "For this operation, you must specify which app to operate on."
-  fi
-
-  # make sure refresh_app function is available
-  typeset -f refresh_app &>/dev/null || source "${DIRECTORY}/updater" source
-
-  refresh_app "$app" || exit $?
   
 elif [ "$1" == 'update' ];then #user-facing argument to update an app. Pi-Apps scripts should directly use updater's update_app function.
   #for this operation, a program name must be specified.
