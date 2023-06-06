@@ -458,14 +458,8 @@ update_app() { #first arg is app name
         echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
       fi
     fi
-    
-    #move old program to trash - this allows app-developers to recover their work if update was accidental
-    gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
-    #failsafe
-    rm -rf "${DIRECTORY}/apps/${app}"
-    
-    #copy new version from update/ to apps/
-    cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+
+    no_status=true refresh_app "$app"
     
     failed=false
     if [ "$installback" == 'yes' ];then
@@ -494,9 +488,9 @@ update_app() { #first arg is app name
 refresh_app() { #first arg is app name
   local app="$1"
   [ -z "$app" ] && error "refresh_app(): no app specified!"  
-  status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
+  [ "$no_status" != true ] && status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
   #Set terminal title
-  echo -ne "\e]0;Refreshing ${app}\a"
+  [ "$no_status" != true ] && echo -ne "\e]0;Refreshing ${app}\a"
   
   #move old program to trash - this allows app-developers to recover their work if update was accidental
   gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
@@ -506,10 +500,10 @@ refresh_app() { #first arg is app name
   #copy new version from update/ to apps/
   cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
   if [ "$?" == "0" ]; then
-    status_green Done
+    [ "$no_status" != true ] && status_green Done
     return 0
   else
-    warning "Failed to refresh app '$app'!"
+    [ "$no_status" != true ] && warning "Failed to refresh app '$app'!"
     return 1
   fi
 }
@@ -521,10 +515,10 @@ update_file() { #first arg is file name
   
   #copy new version
   if cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" ;then
-    status_green "${file} file was copied successfully."
+    [ "$no_status" != true ] && status_green "${file} file was copied successfully."
     return 0
   else
-    echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
+    [ "$no_status" != true ] && echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     return 1
   fi
 }
