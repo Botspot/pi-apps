@@ -213,10 +213,14 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 find "${DIRECTORY}/logs" -type f -mtime +6 -exec rm -f {} \; &>/dev/null &
 
 #check if hardware and OS is supported
-if is_supported_system >/dev/null;then
-  supported=yes
+if [[ "$supported" == "yes" ]] || [[ "$supported" == "no" ]]; then
+  true
 else
-  supported=no
+  if is_supported_system >/dev/null;then
+    export supported=yes
+  else
+    export supported=no
+  fi
 fi
 
 if [ "$1" == 'daemon' ];then
