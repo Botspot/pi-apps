@@ -431,7 +431,7 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   
 }
 
-update_app() { #first word is app name
+update_app() { #first arg is app name
   local app="$1"
   [ -z "$app" ] && error "update_app(): no app specified!"  
   status "Updating \e[1m${app}\e[0m\e[96m..."
@@ -491,27 +491,61 @@ update_app() { #first word is app name
   fi
 }
 
-update_now_cli() { #input: updatable_files and updatable_apps variables
+refresh_app() { #first arg is app name
+  local app="$1"
+  [ -z "$app" ] && error "refresh_app(): no app specified!"  
+  status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
+  #Set terminal title
+  echo -ne "\e]0;Refreshing ${app}\a"
   
+  #move old program to trash - this allows app-developers to recover their work if update was accidental
+  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
+  #failsafe
+  rm -rf "${DIRECTORY}/apps/${app}"
+  
+  #copy new version from update/ to apps/
+  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}"
+  if [ "$?" == "0" ]; then
+    status_green Done
+    return 0
+  else
+    warning "Failed to refresh app '$app'!"
+    return 1
+  fi
+}
+
+update_file() { #first arg is file name
+  local file="$1"
+  [ -z "$file" ] && error "update_file(): no file specified!"  
+  mkdir -p "$(dirname "${DIRECTORY}/${file}")"
+  
+  #copy new version
+  if cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" ;then
+    status_green "${file} file was copied successfully."
+    return 0
+  else
+    echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
+    return 1
+  fi
+}
+
+update_git() {
+  #delete .git folder, then copy the new one
+  rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
+  cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+}
+
+update_now_cli() { #input: updatable_files and updatable_apps variables
   local IFS=$'\n'
   for file in $updatable_files ;do
-    mkdir -p "$(dirname "${DIRECTORY}/${file}")"
-    
-    #copy new version
-    if cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" ;then
-      status_green "${file} file was copied successfully."
-    else
-      echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
-    fi
+    update_file "$file"
   done
   
   for app in $updatable_apps ;do
     update_app "$app"
   done
   
-  #delete .git folder, then copy the new one
-  rm -rf "${DIRECTORY}/.git" || sudo rm -rf "${DIRECTORY}/.git" || error "Failed to delete old ${DIRECTORY}/.git folder!"
-  cp -a "${DIRECTORY}/update/pi-apps/.git" "${DIRECTORY}" || error "Failed to copy new .git folder!"
+  update_git
   
   [ "$no_status" != true ] && status_green "\nPi-Apps updates complete."
   true
