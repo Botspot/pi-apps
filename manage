@@ -51,19 +51,20 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
-
+    
     if [[ "$line" =~ ^"update;filelist:".* ]];then
       # the current line is being used to pass a list of files to update
       # skip app validation
       true
-    elif [ "$action" == update ] && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+    elif ([ "$action" == update ] || [ "$action" == refresh ]) && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
+      
       yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
       
       #remove the app from list
       queue="$(echo "$queue" | sed ${i}d)"
-    elif [ "$action" != update ] && [ ! -d "${DIRECTORY}/apps/${app}" ];then
+    elif [ "$action" != update ] &&  [ "$action" != refresh ] && [ ! -d "${DIRECTORY}/apps/${app}" ];then
       yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
@@ -238,7 +239,7 @@ if [ "$1" == 'daemon' ];then
     
     # $4 specifies where the output should go. Default is to send the output to the yadlist pipe, but if value is 'stdout', output to stdout.
     local output="$4"
-
+    
     #choose an icon for this app or file being updated/installed
     if [ -f "${DIRECTORY}/apps/$app/icon-24.png" ];then
       local icon="${DIRECTORY}/apps/$app/icon-24.png"
@@ -396,7 +397,7 @@ $app"
   #Use a PID file to check if another daemon process is running.
   if [ -f "${DIRECTORY}/data/manage-daemon/pid" ];then
     #check if PID is running
-    if [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
+    if process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;then
       echo "Sending instructions to daemon. (PID $(cat "${DIRECTORY}/data/manage-daemon/pid"))"
       
       #Immediately add these new actions to the gui list
@@ -414,7 +415,6 @@ $app"
         else
           add_to_list "$action" "$app"
         fi
-        
       done
       
       #exit script - data has been sent to already-running daemon
@@ -433,8 +433,8 @@ $app"
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad --class Pi-Apps --name "Pi Apps" "$geometry2" --title='Monitor Progress' \
-    --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text --width=330 --height=200 \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad --class Pi-Apps --name "Pi Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+    --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \
     --no-buttons &
@@ -452,63 +452,75 @@ $app"
     #check for new actions to be executed
     echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging if the queue file is empty
     new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
-
+    
     #keep track of all actions for this session with the $queue variable
     if [ -z "$queue" ];then
       queue="$new_lines"
     elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
       queue+=$'\n'"$new_lines"
+      # reorder queue list to prioritize app refresh and file update actions
+      queue="$(reorder_list "$queue")"
     fi
-    # reorder queue list to prioritize app refresh and file update actions
-    queue="$(reorder_list "$queue")"
     #echo "length of queue is $(echo "$queue" | wc -l)"
     
-    if [ "${current_line_num}" -le "$(echo "$queue" | wc -l)" ];then #if we have not iterated through the entire queue length
-      #echo "current position in queue is ${current_line_num}"
-      #echo "queue is '$queue'"
-      
-      line="$(echo "$queue" | sed -n "${current_line_num}"p)"
-      #echo "Now handling request: '$line'"
-      
-      #indicate current action in current line of $queue
-      queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
-      
-      #get first word of this line - the action. Subsequent words are the name of the app.
-      action="$(echo "$line" | awk -F';' '{print $1}')"
-      app="$(echo "$line" | awk -F';' '{print $2}')"
-      
-      #Set terminal title
-      echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
-      
-      #refresh the list in queue-viewer window
-      write_list "$queue"
-      
-      #echo "Action is $action, app is $app"
-      
+    #exit loop if queue is complete and no new actions were added to the queue
+    if [ "${current_line_num}" -gt "$(echo "$queue" | wc -l)" ];then
+      break
+    fi
+    
+    #echo "current position in queue is ${current_line_num}"
+    #echo "queue is '$queue'"
+    
+    line="$(echo "$queue" | sed -n "${current_line_num}"p)"
+    #echo "Now handling request: '$line'"
+    
+    #indicate current action in current line of $queue
+    queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
+    
+    #get first word of this line - the action. Subsequent words are the name of the app.
+    action="$(echo "$line" | awk -F';' '{print $1}')"
+    app="$(echo "$line" | awk -F';' '{print $2}')"
+    
+    #Set terminal title
+    echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
+    
+    #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is 'dropped input'
+    if [ -z "$write_list_pid" ];then
+      write_list "$queue" &
+      write_list_pid=$!
+    elif ! process_exists "$write_list_pid" ;then
+      write_list "$queue" &
+      write_list_pid=$!
+    fi
+    
+    #run manage script for app installs, uninstalls, or updates. Not for file-updates or app refreshes.
+    if [ "$action" == update ] && [[ "$app" =~ ^filelist:.* ]];then #list of files separated by ':'
+      # use the second argument to pass our list of files to update
+      updatable_apps='' updatable_files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')" no_status=true update_now_cli
+      exitcode=$?
+    else
       "${DIRECTORY}/manage" "$action" "$app"
       exitcode=$?
-      
-      #record exit code in current line of $queue
-      queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
-      
-      #one more line of $queue has been completed.
-      current_line_num=$((current_line_num+1))
-      
-    else #no further items in queue, so stop the daemon
-      #refresh the list in queue-viewer window
-      write_list "$queue"
-      
-      #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
-      echo "${DIRECTORY}/icons/none-1.png
+    fi
+    
+    #record exit code in current line of $queue
+    queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
+    
+    #one more line of $queue has been completed.
+    current_line_num=$((current_line_num+1))
+  done
+  
+  #refresh the list in queue-viewer window
+  wait $write_list_pid
+  write_list "$queue"
+  
+  #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
+  echo "${DIRECTORY}/icons/none-1.png
 ${DIRECTORY}/icons/none-1.png
 Done.
 ${DIRECTORY}/icons/none-1.png
 " > "${DIRECTORY}/data/manage-daemon/yadlist"
-      
-      #exit loop
-      break
-    fi
-  done
+  
   #all actions have been completed. Daemon has effectively stopped listening, so remove its pid file
   rm -f "${DIRECTORY}/data/manage-daemon/pid"
   
@@ -518,7 +530,7 @@ ${DIRECTORY}/icons/none-1.png
   #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
   failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
   diagnose_apps "$failed_apps"
-
+  
   #updates could have been run as part of the manage-daemon, so update the updatable-files and updatable-apps status files
   "${DIRECTORY}/updater" set-status  
   
@@ -696,14 +708,20 @@ Or on Discord: \e[94m\e[4mhttps://discord.gg/RXSTvaUvuu\e[0m" | tee -a "$logfile
   #exit the manage script with the same exit-code of the app's script
   exit $exitcode
   
-elif [ "$1" == 'update' ] && [[ "$2" =~ ^filelist:.* ]];then #list of files separated by :
-  # use the second argument to pass our list of files to update
-  #get functions from updater script
-  source "${DIRECTORY}/updater" source
-
-  updatable_apps='' updatable_files="$(echo "$2" | sed 's/^filelist://g' | tr ':' '\n')" no_status=true update_now_cli
+elif [ "$1" == 'refresh' ];then #copy the online version of an app to the main pi-apps folder. Used when an app does not need to be reinstalled when updating it/
+  status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
+  #Set terminal title
+  echo -ne "\e]0;Refreshing ${app}\a"
   
-elif [ "$1" == 'update' ] || [ "$1" == 'refresh' ];then
+  #move old program to trash - this allows app-developers to recover their work if update was accidental
+  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
+  #failsafe
+  rm -rf "${DIRECTORY}/apps/${app}"
+  
+  #copy new version from update/ to apps/
+  cp -rf "${DIRECTORY}/update/pi-apps/apps/${app}" "${DIRECTORY}/apps/${app}" && status_green Done || warning "Failed to refresh app '$app'!"
+  
+elif [ "$1" == 'update' ];then #user-facing argument to update an app. Pi-Apps scripts should directly use updater's update_app function.
   #for this operation, a program name must be specified.
   app="$2"
   if [ -z "$app" ];then
