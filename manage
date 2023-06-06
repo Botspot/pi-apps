@@ -35,7 +35,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     
-    if [ "$action" != install ] && [ "$action" != uninstall ] && [ "$action" != update ] && [ "$action" != refresh ];then
+    if [ "$action" != install ] && [ "$action" != uninstall ] && [ "$action" != update ] && [ "$action" != refresh ] && [ "$action" != update-file ];then
       warning "illegal mode: '$action' Removing this line from the queue"
       
       #remove the app from list
@@ -52,8 +52,8 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
     
-    if [[ "$line" =~ ^"update;filelist:".* ]];then
-      # the current line is being used to pass a list of files to update
+    if [ "$action" == update-file ];then
+      # the current line is a pseudo-action used to update a file
       # skip app validation
       true
     elif ([ "$action" == update ] || [ "$action" == refresh ]) && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
@@ -83,8 +83,8 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
     
-    if [[ "$line" =~ ^"update;filelist:".* ]];then
-      # the current line is being used to pass a list of files to update
+    if [ "$action" == update-file ];then
+      # the current line is a pseudo-action used to update a file
       # skip app validation
       true
     elif [ "$(app_status "${app}")" == "${action}ed" ];then
@@ -315,15 +315,8 @@ $app"
       local action="$(echo "$line" | awk -F';' '{print $1}')"
       local app="$(echo "$line" | awk -F';' '{print $2}')"
       local code="$(echo "$line" | awk -F';' '{print $3}')"
-
-      if [[ "$app" =~ ^filelist:.* ]];then
-        local files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')"
-        for file in $files ;do
-          output+="$(add_to_list "update-file" "$file" "$code" stdout)"$'\n'
-        done
-      else
-        output+="$(add_to_list "$action" "$app" "$code" stdout)"$'\n'
-      fi
+      
+      output+="$(add_to_list "$action" "$app" "$code" stdout)"$'\n'
     done
     output="${output::-1}" #remove final newline character
     
@@ -336,7 +329,7 @@ $app"
     # only reorder queue for actions that have not completed yet (no exit code present)
     local queue_pending
     local queue_pending_refresh
-    local queue_pending_filelist
+    local queue_pending_files
     local queue_pending_other
     local queue_completed
     local queue_reordered
@@ -357,15 +350,15 @@ $app"
       if [[ "$line" =~ ^"refresh;".* ]] ; then
         # echo "$line has the refresh action" 1>&2
         queue_pending_refresh+="$line"$'\n'
-      elif [[ "$line" =~ ^"update;filelist:".* ]];then
-        # echo "$line is a filelist" 1>&2
-        queue_pending_filelist+="$line"$'\n'
+      elif [[ "$line" =~ ^"update-file;".* ]];then
+        # echo "$line has the update-file action" 1>&2
+        queue_pending_files+="$line"$'\n'
       else
         # echo "$line has some other action" 1>&2
         queue_pending_other+="$line"$'\n'
       fi
     done
-    [ ! -z "$queue_pending_filelist" ] && queue_reordered+="$queue_pending_filelist" #already includes trailing newline
+    [ ! -z "$queue_pending_files" ] && queue_reordered+="$queue_pending_files" #already includes trailing newline
     [ ! -z "$queue_pending_refresh" ] && queue_reordered+="$queue_pending_refresh" #already includes trailing newline
     [ ! -z "$queue_pending_other" ] && queue_reordered+="$queue_pending_other" #already includes trailing newline
     queue_reordered="${queue_reordered::-1}" #remove final newline character
@@ -406,15 +399,8 @@ $app"
         #get first word of this line - the action. Subsequent words are the name of the app.
         action="$(echo "$line" | awk -F ';' '{print $1}')"
         app="$(echo "$line" | awk -F ';' '{print $2}')"
-
-        if [[ "$app" =~ ^filelist:.* ]];then
-          files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')"
-          for file in $files ;do
-            add_to_list "update-file" "$file"
-          done
-        else
-          add_to_list "$action" "$app"
-        fi
+        
+        add_to_list "$action" "$app"
       done
       
       #exit script - data has been sent to already-running daemon
@@ -445,6 +431,8 @@ $app"
   #Used to track which line of $queue is currently being dealt with.
   current_line_num=1
   
+  sourced_updater=0 #updater script needs to be sourced if files are updated. This allows it to only be sourced once.
+  
   queue=''
   IFS=$'\n'
   while true;do #repeat until nothing is left in the queue
@@ -452,6 +440,11 @@ $app"
     #check for new actions to be executed
     echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging if the queue file is empty
     new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
+    
+    if [ "$sourced_updater" == 0 ] && grep -q "update-file" <<<"$new_lines" ;then #source updater if files need to be updated
+      source "${DIRECTORY}/updater" source
+      sourced_updater=1
+    fi
     
     #keep track of all actions for this session with the $queue variable
     if [ -z "$queue" ];then
@@ -493,10 +486,9 @@ $app"
       write_list_pid=$!
     fi
     
-    #run manage script for app installs, uninstalls, or updates. Not for file-updates or app refreshes.
-    if [ "$action" == update ] && [[ "$app" =~ ^filelist:.* ]];then #list of files separated by ':'
-      # use the second argument to pass our list of files to update
-      updatable_apps='' updatable_files="$(echo "$app" | sed 's/^filelist://g' | tr ':' '\n')" no_status=true update_now_cli
+    #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates because that is out of the scope for manage script.
+    if [ "$action" == update-file ];then
+      updatable_apps='' updatable_files="$app" no_status=true update_now_cli
       exitcode=$?
     else
       "${DIRECTORY}/manage" "$action" "$app"
