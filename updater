@@ -498,14 +498,11 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
     mkdir -p "$(dirname "${DIRECTORY}/${file}")"
     
     #copy new version
-    cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" || echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
-    
-    #special edge-case: if current file ends in .c, delete the corresponding executable so that it will be recompiled.
-    if [[ "$file" == *.c ]];then
-      rm -f "${DIRECTORY}/$(echo "$file" | sed 's/\.c$//g')"
+    if cp -f "${DIRECTORY}/update/pi-apps/${file}" "${DIRECTORY}/${file}" ;then
+      status_green "${file} file was copied successfully."
+    else
+      echo -e "\e[91mFailed to copy ${DIRECTORY}/update/pi-apps/${file}! \e[0m"
     fi
-    
-    status_green "${file} file was copied successfully."
   done
   
   for app in $updatable_apps ;do
@@ -543,7 +540,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
   
   #contruct a queue to send to terminal_manage_multi.
   if [ ! -z "$updatable_files" ]; then
-    queue+="update filelist:$(echo -n "$updatable_files" | tr '\n' ':')"$'\n'
+    queue+="$(echo "$updatable_files" | sed 's/^/update-file /g')"$'\n'
   fi
   
   if [ ! -z "$refreshable_apps" ];then
