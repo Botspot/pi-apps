@@ -540,24 +540,6 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
 update_now_gui() { #input: updatable_files and updatable_apps variables
   local IFS=$'\n'
   local queue=''
-  safe_wait() {
-    # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
-    # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
-    # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially
-    #Use a PID file to check if another daemon process is running.
-    if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;then
-      true #nothing to do
-    else
-      attempts=0
-      while [ ! -f "${DIRECTORY}/data/manage-daemon/pid" ] || ! process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;do
-        if [ "$attempts" -gt 500 ];then
-          break
-        fi
-        sleep 0.01
-        attempts=$((attempts + 1))
-      done
-    fi
-  }
   
   #contruct a queue to send to terminal_manage_multi.
   if [ ! -z "$updatable_files" ]; then
