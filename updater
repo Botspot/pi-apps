@@ -181,7 +181,7 @@ get_updatable_apps() { #return a list of updatable apps
       # requires english locale to be properly enabled and for diff naming convention not to change
       #diff -rq "${DIRECTORY}/apps" "${DIRECTORY}/update/pi-apps/apps" | sed "\|^Only in ${DIRECTORY}/apps|d" | sed "s;Only in ${DIRECTORY}/update/pi-apps/apps: ;;g" | sed "s;Files ${DIRECTORY}/apps/;;g" | awk -F '/' '{print $1}' | uniq
       # same output, but with rsync which is much simpler. slightly slower
-      updatable_apps=$(rsync -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/apps/" "${DIRECTORY}/apps/" | awk -F '/' '{print $1}' | uniq; exit ${PIPESTATUS[0]})
+      updatable_apps=$(rsync -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/apps/" "${DIRECTORY}/apps/" | awk -F '/' '{print $1}' | sort | uniq; exit ${PIPESTATUS[0]})
     fi
 
     if [ "$?" != "0" ] || ! command -v rsync >/dev/null; then
@@ -301,7 +301,7 @@ list_updates_cli () {  #from https://unix.stackexchange.com/a/673436
 }
 
 
-list_updates_gui() { #input: updatable_apps and updatable_files variables
+list_updates_gui() { #input: updatable_apps and updatable_files variables, output: updatable_apps and updatable_files, with refreshable_apps being a subset of updatable_apps
   local IFS=$'\n'
   
   #If updatable_apps and updatable_files variables empty, set them to the results of the last update-check
@@ -312,6 +312,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
   
   local LIST
   local app
+  local compressed_update
   for app in $updatable_apps ;do #generate a yad list for every updatable app
     # get app tooltip
     read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
@@ -319,38 +320,38 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
-app:$app
+refresh-app:$app
 $line"$'\n'
     # if install-${arch} is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
-app:$app
+refresh-app:$app
 $line"$'\n'
     # similar to the above. if install script is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
-app:$app
+refresh-app:$app
 $line"$'\n'
     # if app will be reinstalled then include it on the list and notify the user that it will be reinstalled
     elif will_reinstall "$app"; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (<b>will be reinstalled</b>)
-app:$app
+reinstall-app:$app
 $line"$'\n'
     # if app has been installed in the past then show it on the list. Useful to notify users that their app, which failed to install in the past, may now work.
     elif [ "$(app_status "${app}")" == 'corrupted' ];then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (Try installing it again!)
-app:$app
+refresh-app:$app
 This app failed to install last time. Maybe it will work now! After updating, try installing this app again."$'\n'
-    else # app is not new or getting re-installed, add to compressed update list
-      compressed_update+=$'\n'"app:${app}"
+    else # app is not new or getting reinstalled, add to compressed update list
+      compressed_update+=$'\n'"refresh-app:${app}"
     fi
   done
   
@@ -387,7 +388,7 @@ file:$file
 ${DIRECTORY}/icons/categories/All Apps.png
 Inactive updates
 compressed_apps
-Refreshes the Pi-Apps details for these apps$(echo "${compressed_update}" | tr -d '\n' | sed 's/app:/, /g' | sed 's/^,/:/g')"$'\n'
+Refreshes the Pi-Apps details for these apps$(echo "${compressed_update}" | tr -d '\n' | sed 's/refresh-app:/, /g' | sed 's/^,/:/g')"$'\n'
     else
       LIST+="TRUE
 ${DIRECTORY}/icons/categories/All Apps.png
@@ -418,14 +419,14 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   # add compressed_update apps to output
   if echo "$output" | grep -q '^compressed_apps' ;then
     output+=$'\n'"${compressed_update}"
-    refresh_apps="$(echo "$compressed_update" | grep '^app:' | sed 's/^app://g')"
   fi
   
   #remove empty newlines from output
   output="$(echo "$output" | grep .)"
   
   #regenerate list of updatable apps and files, based on what the user selected
-  updatable_apps="$(echo "$output" | grep '^app:' | sed 's/^app://g')"
+  refreshable_apps="$(echo "$output" | grep '^refresh-app:' | sed 's/^refresh-app://g')"
+  updatable_apps="$(echo "$output" | grep '^refresh-app:\|^reinstall-app:' | sed 's/^refresh-app://g ; s/^reinstall-app://g')"
   updatable_files="$(echo "$output" | grep '^file:' | sed 's/^file://g')"
   
 }
@@ -538,17 +539,17 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
   local IFS=$'\n'
-  local queue
+  local queue=''
   safe_wait() {
     # terminal_manage (which calls etc/terminal-run) is sensitive to race conditions. If terminal_manage is called before the first terminal-run terminal opens, multiple terminals will open.
     # the for loop is very fast and without a sleep would result in the number of terminals equaling the number of updatable_apps which is not the intention.
     # the intention of terminal_manage is for there to only be one terminal that all manage executions use sequentially
     #Use a PID file to check if another daemon process is running.
-    if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && [ -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];then
+    if [ -f "${DIRECTORY}/data/manage-daemon/pid" ] && process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;then
       true #nothing to do
     else
       attempts=0
-      while [ ! -f "${DIRECTORY}/data/manage-daemon/pid" ] || [ ! -f "/proc/$(cat "${DIRECTORY}/data/manage-daemon/pid")/status" ];do
+      while [ ! -f "${DIRECTORY}/data/manage-daemon/pid" ] || ! process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;do
         if [ "$attempts" -gt 500 ];then
           break
         fi
@@ -557,27 +558,31 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
       done
     fi
   }
-  #update any files with terminal_manage. if it fails terminal-run will update the files in the background. This is a safety measure to update pi-apps scripts if terminal fails to launch.
+  
+  #contruct a queue to send to terminal_manage_multi.
   if [ ! -z "$updatable_files" ]; then
-    queue+="update $(echo "filelist:$updatable_files" | tr '\n' ':' | sed "s,:$,,")"$'\n'
+    queue+="update filelist:$(echo -n "$updatable_files" | tr '\n' ':')"$'\n'
   fi
-
-  if [ ! -z "$refresh_apps" ];then
-    for app in $refresh_apps ;do
-      # if app is a compressed update app, do a refresh and not an update
-      queue+="refresh $app"$'\n'
-    done
+  
+  if [ ! -z "$refreshable_apps" ];then
+    queue+="$(echo "$refreshable_apps" | sed 's/^/refresh /g')"$'\n'
   fi
   
   if [ ! -z "$updatable_apps" ];then
+    # for future reference, the for loop should be used here as opposed to using a function like list_subract
+    # list_subtract requires input to be sorted which would be undesirable as it would change update order compared to what is shown to the user in the update GUI
     for app in $updatable_apps ;do
-      # if app is not a compressed update app, do a regular update
-      if ! echo "${refresh_apps}" | grep -q "^$app"; then
+      # if app is not in refreshable_apps, do a regular update
+      if ! echo "${refreshable_apps}" | grep -q "^$app"; then
         queue+="update $app"$'\n'
       fi
     done
   fi
   queue="${queue::-1}" #remove final newline character
+  queue="$(tac <<<"$queue")" # reverse order because manage daemon reverses it again; affects alphabetization, not priority
+  #echo "update_now_gui: queue is '$queue'"
+  
+  #update any files with terminal_manage. If terminal-run fails it will update the files in the background. This is a safety measure to update pi-apps scripts if terminal fails to launch.
   terminal_manage_multi "$queue" &
 }
 
