@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.6.16
+version=4.6.18-patch1
 
 ### Install dependencies
 install_packages lsb-release wget gpg || error "Failed to install dependencies"
