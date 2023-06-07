@@ -448,10 +448,11 @@ $app"
       queue+=$'\n'"$new_lines"
       # reorder queue list to prioritize app refresh and file update actions
       queue="$(reorder_list "$queue")"
-      if [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
-        source "${DIRECTORY}/updater" source
-        sourced_updater=1
-      fi
+    fi
+    
+    if [ ! -z "$new_lines" ] && [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
+      source "${DIRECTORY}/updater" source
+      sourced_updater=1
     fi
     #echo "length of queue is $(echo "$queue" | wc -l)"
     
@@ -477,12 +478,20 @@ $app"
     echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
     
     #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is 'dropped input'
-    if [ -z "$write_list_pid" ];then
+    if [ -z "$write_list_pid" ] || ! process_exists "$write_list_pid" ;then
       write_list "$queue" &
       write_list_pid=$!
-    elif ! process_exists "$write_list_pid" ;then
-      write_list "$queue" &
-      write_list_pid=$!
+      
+      #secondary list-writing background process - kill it if it exists because write_list just sent a newer version of the list to yad
+      [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid"
+    else
+      #if app1 is refreshed and app2 is then reinstalled, the list would only say app1 is bring refreshed for the entirety of app2's reinstallation, due to the process-skipping.
+      #launch a secondary background process that waits for $write_list_pid to finish
+      
+      #only allow one secondary background process to run; kill previous jobs and start a new one
+      [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid"
+      (while process_exists $write_list_pid ;do sleep 1 ;done ; write_list "$queue") &
+      secondary_write_list_pid=$!
     fi
     
     #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
@@ -504,7 +513,8 @@ $app"
     current_line_num=$((current_line_num+1))
   done
   
-  #refresh the list in queue-viewer window
+  #refresh the list in queue-viewer window for the final time with all actions complete
+  [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid" #kill secondary list writer
   wait $write_list_pid
   write_list "$queue"
   
