@@ -35,7 +35,7 @@ fi
 echo "PID is $pid" 1>&2
 
 #while the user-selection stays the same, AND the text editor is still running, wait.
-while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ] && [ -e /proc/$pid ];do
+while [ "$(cat "$DIRECTORY/data/current-viewed-logfile")" == "$file" ] && [ -f /proc/$pid/status ];do
   sleep 1
 done
 kill $pid 2>/dev/null
