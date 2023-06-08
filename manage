@@ -446,9 +446,10 @@ $app"
       queue="$new_lines"
     elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
       queue+=$'\n'"$new_lines"
-      # reorder queue list to prioritize app refresh and file update actions
-      queue="$(reorder_list "$queue")"
     fi
+
+    # reorder queue list to prioritize app refresh and file update actions
+    queue="$(reorder_list "$queue")"
     
     if [ ! -z "$new_lines" ] && [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
       source "${DIRECTORY}/updater" source
