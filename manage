@@ -104,6 +104,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   
   #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
   
+  will_update=0
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
@@ -113,7 +114,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
       script_name_cpu="$(script_name_cpu "$app")"
       
       #if the app-script doesn't match version in update folder
-      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" ;then
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && [ "$will_update" == 0 ]&& ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" ;then
         
         "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
         
@@ -122,21 +123,19 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
           --button="Install anyway"!"${DIRECTORY}/icons/forward.png":1 --button="Update first"!"${DIRECTORY}/icons/download.png":0
         
         if [ $? == 0 ];then
+          will_update=1
           #if user clicked Yes, run the updater
-          "${DIRECTORY}/updater" gui fast 1>&2
-          
-          #now that the api script was potentially updated, source it again to get new functions
-          source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-
-          #FIXME: manage-daemon loop is subject to race conditions on first iteration
-          # it can happen when mulitple jobs are submitted at almost the same time (like when user uses the "app-script doesn't match version in update folder" dialog") that only one of the processes gets read
-          sleep 3
+          update_queue="$(no_update=true "${DIRECTORY}/updater" gui fast | sed 's/^\( *[^ ]\+\) /\1;/')"
         fi
       fi
     fi
   done
   [ -z "$queue" ] && exit 0
   
+  if [ ! -z "$update_queue" ]; then
+    # place all updates before queue input to validate_apps_gui
+    queue="$update_queue"$'\n'"$queue"
+  fi  
   echo "$queue"
 }
 
@@ -570,20 +569,37 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
   app_list="$2" #newline-separated list of apps to install/uninstall
   
-  #check if any app names are invalid - use the validate_apps_gui function which requires the action to prefix each line. Then filter out the action afterwards.
-  app_list="$(validate_apps_gui "$(echo "$app_list" | sed "s/^/${action};/g")" | sed 's/.*;//g')"
-  [ -z "$app_list" ] && exit 0
+  #check if any app names are invalid - use the validate_apps_gui function which requires the action to prefix each line.
+  queue="$(validate_apps_gui "$(echo "$app_list" | sed "s/^/${action};/g")")"
+  [ -z "$queue" ] && exit 0
+
+  if grep -q "update\|refresh\|update-file" <<<"$queue" ;then #source updater if necessary
+    source "${DIRECTORY}/updater" source
+  fi
   
   #install/uninstall one app at a time. If it fails then add the app to the list of failed apps
   IFS=$'\n'
   failed_apps=''
-  for app in $app_list ;do
+  for line in $queue ;do
+    action="$(echo "$line" | awk -F ';' '{print $1}')"
+    app="$(echo "$line" | awk -F ';' '{print $2}')"
     
     #Set terminal title
     echo -ne "\e]0;${action^}ing ${app}\a"
+
+    #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
+    if [ "$action" == update-file ];then
+      update_file "$app"
+      exitcode=$?
+    elif [ "$action" == refresh ];then
+      refresh_app "$app"
+      exitcode=$?
+    else
+      "${DIRECTORY}/manage" "$action" "$app"
+      exitcode=$?
+    fi
     
-    "${DIRECTORY}/manage" $action "$app"
-    if [ $? != 0 ];then
+    if [ $exitcode != 0 ];then
       #this app failed to install - add it to the list of failed apps
       failed_apps+="$app"$'\n'
     fi

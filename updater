@@ -590,7 +590,11 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
   #echo "update_now_gui: queue is '$queue'"
   
   #update any files with terminal_manage. If terminal-run fails it will update the files in the background. This is a safety measure to update pi-apps scripts if terminal fails to launch.
-  terminal_manage_multi "$queue" &
+  if [ "$no_update" != true ];then
+    terminal_manage_multi "$queue" &
+  else
+    echo "$queue"
+  fi
 }
 
 runmode="$1"
