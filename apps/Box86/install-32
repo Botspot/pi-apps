@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if dpkg -l box86 &>/dev/null ;then
-  sudo apt purge -y --allow-change-held-packages box86
+  sudo apt purge -y --allow-change-held-packages box86*
 fi
 
 sudo wget https://raw.githubusercontent.com/ryanfortner/box86-debs/c1f02bf85a6221d05c6389cbae7e933f5e82d2fd/box86.list -O /etc/apt/sources.list.d/box86.list
@@ -26,6 +26,8 @@ elif [[ "$SOC_ID" == "rk3399" ]]; then
   install_packages box86-rk3399 || exit 1
 elif [[ "$SOC_ID" == "bcm2711" ]]; then
   install_packages box86-rpi4arm64 || exit 1
+elif [[ "$SOC_ID" == "bcm2837" ]]; then
+  install_packages box86-rpi3arm64 || exit 1
 elif cat /proc/cpuinfo | grep -q aes; then
   warning "There is no box86 pre-build for your device $SOC_ID $model"
   warning "Installing the generic arm box86 build as a fallback (crypto extensions enabled)"
