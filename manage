@@ -380,30 +380,18 @@ $app"
   #To simplify parsing, place a ';' character between $1 (the action) and subsequent args. (the app)
   queue="$(echo "$queue" | sed 's/^\( *[^ ]\+\) /\1;/')"
   
-  wrote_pid=0
-  #only one instance of this script should ever be running at a time.
-  #Use a PID file to check if another daemon process is running.
-  if [ ! -f "${DIRECTORY}/data/manage-daemon/pid" ];then
-    #write my own PID to the pid file
-    echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
-    wrote_pid=1
-  fi
   #validate the selections first
   queue="$(validate_apps_gui "$queue")"
-  if [ -z "$queue" ]; then
-    if [ "$wrote_pid" == 1 ]; then
-      #no actions were valid to run and the PID from this instance was added to the pid file, so remove the pid file
-      rm -f "${DIRECTORY}/data/manage-daemon/pid"
-    fi
-    exit 0
-  fi
+  [ -z "$queue" ] && exit 0
   
   #send each requested action to the queue file
   if [ ! -z "$queue" ];then
     echo "$queue" > "${DIRECTORY}/data/manage-daemon/queue" &
   fi
   
-  if [ "$wrote_pid" == 0 ];then
+  #only one instance of this script should ever be running at a time.
+  #Use a PID file to check if another daemon process is running.
+  if [ -f "${DIRECTORY}/data/manage-daemon/pid" ];then
     #check if PID is running
     if process_exists $(cat "${DIRECTORY}/data/manage-daemon/pid") ;then
       echo "Sending instructions to daemon. (PID $(cat "${DIRECTORY}/data/manage-daemon/pid"))"
@@ -420,11 +408,11 @@ $app"
       
       #exit script - data has been sent to already-running daemon
       exit 0
-    else
-      #write my own PID to the pid file
-      echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
     fi
   fi #past this point, this instance is acting as the daemon.
+  
+  #write my own PID to the pid file
+  echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
   
   #Display a list of actions and their current status.
   #This list is updated with new information as time progresses.
