@@ -8,7 +8,7 @@ sudo rm -rf /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver
 status_green "Done"
 
 status -n "Removing Wine folders... "
-sudo rm -rf /opt/wine
+sudo rm -rf /opt/wine-*
 rm -rf ~/.cache/winetricks ~/.cache/wine
 status_green "Done"
 
