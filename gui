@@ -513,7 +513,7 @@ if [[ "$guimode" == yad* ]];then
     
     #constantly read from the pipe and send all output to yad
     #if an item is selected, this script will be run with the row's contents
-    tail -f --retry $pipe | yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
+    { yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
       --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
       --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -521,9 +521,7 @@ if [[ "$guimode" == yad* ]];then
       --dclick-action "env pipe=$pipe '${DIRECTORY}/gui'" --select-action "env pipe=$pipe '${DIRECTORY}/gui'" \
       --button="!${DIRECTORY}/icons/search.png"!'Search':"env pipe=$pipe '${DIRECTORY}/gui' '' '' Search/ Search/" \
       --button="!${DIRECTORY}/icons/options.png"!'Settings':2 \
-      "$geometry1"
-    
-    button=$? #get exit code of yad - indicates which button was clicked
+      "$geometry1"; button=$?; kill "$!"; } < <(exec tail -f --retry $pipe)
     
     case $button in
     2) #settings
