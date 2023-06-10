@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=8.10
+
 pkill -9 wine
 command -v wineserver >/dev/null && wineserver -k
 
@@ -8,7 +10,7 @@ sudo rm -rf /usr/local/bin/wine /usr/local/bin/winecfg /usr/local/bin/wineserver
 status_green "Done"
 
 status -n "Removing Wine folders... "
-sudo rm -rf /opt/wine
+sudo rm -rf /opt/wine-${version}
 rm -rf ~/.cache/winetricks ~/.cache/wine
 status_green "Done"
 
