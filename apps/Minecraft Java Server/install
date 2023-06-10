@@ -44,9 +44,18 @@ mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
 description="What type of Minecraft server\ndo you want to run?"
-table=("Vanilla" "Fabric" "Forge" "Paper" "Bukkit" "Spigot" "Sponge" "Purpur" "Tuinity")
+table=("Vanilla" "Fabric" "Forge")
+serverjars=( $(curl -s https://serverjars.com/api/fetchTypes | jq -r '.response.servers[]' | sed 's/.*/\u&/') )
+table+=( ${serverjars[@]} )
 userinput_func "$description" "${table[@]}"
 server_category="$output"
+
+# store previous extglob state
+extglob_was_enabled=0
+shopt -q extglob && extglob_was_enabled=1
+# enable extglob
+shopt -s extglob
+serverjars_extglob="@($(IFS="|";echo "${serverjars[*]}"))"
 
 case "$server_category" in
   "Fabric")
@@ -77,7 +86,7 @@ case "$server_category" in
     server_jar="forge-$installer_version-installer.jar"
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
-  "Paper"|"Bukkit"|"Spigot"|"Purpur"|"Tuinity"|"Sponge")
+  $serverjars_extglob)
     available_versions=$(curl -s https://serverjars.com/api/fetchAll/Servers/$server_category/0 | jq -r '.response[] | .version')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
@@ -99,6 +108,10 @@ case "$server_category" in
     error "You did not choose an option, exiting the script."
     ;;
 esac
+
+if [[ "$extglob_was_enabled" == "0" ]]; then
+  shopt -u extglob
+fi
 
 while [[ ! -a $(echo ${server_jar}) ]]; do
   description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
@@ -193,7 +206,7 @@ case "$java_selection" in
     sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
 
     echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb bionic main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
     ;;
   *)
     error "No java version selected, exiting the script"
