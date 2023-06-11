@@ -5,17 +5,18 @@
 get_model &>/dev/null
 if [[ -z "$jetson_model" ]]; then
   sudo dpkg --add-architecture armhf
-  install_packages curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf zlib1g-dev:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf libllvm9:armhf || exit 1
+  install_packages curl libx11-6:armhf libxext6:armhf libegl1-mesa:armhf zlib1g:armhf zlib1g-dev:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf || exit 1
 fi
 
 #Download file
 mkdir -p ~/.local/bin || error "Could not make directory"
-wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/ChristopherHX/linux-packaging-scripts/releases/download/v0.3.2-682/Minecraft_Bedrock_Launcher-arm_aarch64-0.0.682.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.10.0-716/Minecraft_Bedrock_Launcher-arm64-v0.10.0.716.AppImage' || error "failed to download Minecraft Bedrock Launcher"
 chmod +x ~/.local/bin/MCBedrock.AppImage
 
 enable_module fuse || exit 1
 
 #Make Desktop file
+mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
 Version=1.1
 Type=Application
