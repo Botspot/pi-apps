@@ -295,6 +295,7 @@ Categories=System;" | sudo tee /usr/share/applications/wine-regenerate.desktop
 status_green "Done"
 
 cat << EOF | sudo tee /usr/local/bin/generate-wine-prefix >/dev/null
+#!/bin/bash
 echo
 
 #set up functions
