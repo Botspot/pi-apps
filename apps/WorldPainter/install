@@ -2,11 +2,8 @@
 
 version=2.17.2
 
-sudo rm -f /usr/share/fkms/applications/install4j_1tsntyi-worldpainter.desktop
+sudo rm -f /usr/share/*/applications/install4j_1tsntyi-worldpainter.desktop
 install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
-
-# remove worldpainter duplicate .desktop file due to bad deb
-sudo xdg-desktop-menu uninstall --mode system "/opt/worldpainter/.install4j/install4j_1tsntyi-worldpainter.desktop"
 
 # force java-11
 case "$arch" in
@@ -20,4 +17,4 @@ case "$arch" in
 esac
 
 #put the launcher in the Graphics category
-echo 'Categories=Graphics;2DGraphics;RasterGraphics;' | sudo tee -a /usr/share/fkms/applications/install4j_1tsntyi-worldpainter.desktop
+echo 'Categories=Graphics;2DGraphics;RasterGraphics;' | sudo tee -a /usr/share/*/applications/install4j_1tsntyi-worldpainter.desktop
