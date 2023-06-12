@@ -4,7 +4,7 @@ if grep -q ARMv6 /proc/cpuinfo ;then
 fi
 
 kernel="$(uname -m)"
-if ! [[ "$kernel" =~ "64" ]]; then
+if ! [[ "$kernel" =~ "64" ]] && [ "$GITHUB_ACTIONS" != "true" ]; then
   if [ -e /boot/config-$(uname -r) ];then
     vmsplit_output="$(cat /boot/config-$(uname -r) | grep VMSPLIT)"
   else
