@@ -8,14 +8,17 @@ else
   hardware='pi4'
 fi
 
-if [ ! -e /proc/config.gz ];then
-  sudo modprobe configs || exit 1
+if [ -e /boot/config-$(uname -r) ];then
+  vmsplit_output="$(cat /boot/config-$(uname -r) | grep VMSPLIT)"
+else
   if [ ! -e /proc/config.gz ];then
-    error "/proc/config.gz does not exist after running sudo modprobe configs!"
+    sudo modprobe configs || exit 1
+    if [ ! -e /proc/config.gz ];then
+      error "/proc/config.gz does not exist after running sudo modprobe configs!"
+    fi
   fi
+  vmsplit_output="$(gunzip < /proc/config.gz | grep VMSPLIT)"
 fi
-
-vmsplit_output="$(gunzip < /proc/config.gz | grep VMSPLIT)"
 if [ -z "$vmsplit_output" ];then
   kernel="$(uname -m)"
   if [ $kernel == aarch64 ];then
