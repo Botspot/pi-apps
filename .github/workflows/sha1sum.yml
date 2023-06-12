@@ -1,7 +1,6 @@
 name: sha1sum
 on:
-  push:
-    branches: '**'
+  workflow_dispatch:
 jobs:
   sha1sum:
     runs-on: ubuntu-latest
