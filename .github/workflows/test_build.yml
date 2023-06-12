@@ -9,22 +9,21 @@ on:
         description: 'App Name, PR #, or zip URL'
         required: true
         default: ''
-      buster_32:
-        description: 'Build on PiOS Buster 32bit'
+      buster:
+        description: 'Build on PiOS Buster'
         required: true
         type: boolean
-      bullseye_32:
-        description: 'Build on PiOS Bullseye 32bit'
+      bullseye:
+        description: 'Build on PiOS Bullseye'
         required: true
         type: boolean
-      buster_64:
-        description: 'Build on PiOS Buster 64bit'
-        required: true
-        type: boolean
-      bullseye_64:
-        description: 'Build on PiOS Bullseye 64bit'
-        required: true
-        type: boolean
+      architecture:
+        type: choice
+        description: 'For Buster/Bullseye, test on 32bit, 64bit, or Both if available'
+        options:
+        - 32bit
+        - 64bit
+        - Both
       bookworm_64:
         description: 'Build on Debian Bookworm 64bit'
         required: true
@@ -57,7 +56,7 @@ jobs:
   buster-32bit:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    if: ${{ inputs.buster_32 }}
+    if: ${{ inputs.buster && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -94,7 +93,7 @@ jobs:
 
   bullseye-32bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.bullseye_32 }}
+    if: ${{ inputs.bullseye && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye armhf
@@ -114,7 +113,7 @@ jobs:
 
   buster-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.buster_64 }}
+    if: ${{ inputs.buster && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on buster arm64
@@ -134,7 +133,7 @@ jobs:
 
   bullseye-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.bullseye_64 }}
+    if: ${{ inputs.bullseye && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye arm64
