@@ -152,6 +152,11 @@ jobs:
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
+              # only attempt install/uninstall if updated app is supported on this architecture
+              scriptname="$(script_name_cpu "$app")" #will be install, install-32, or package
+              if [ -z "$scriptname" ];then
+                continue
+              fi
               # skip checking DDNet (due to Rust) if on arm32 under QEMU: https://github.com/rust-lang/cargo/issues/8719
               # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
               # skip WPS Office on 32bit as it requires  "64bit" kernel to be detected. QEMU reports an armv7 kernel. WPS Office is still tested on arm64 (which will verify if the deb works and installs correctly)
@@ -232,6 +237,11 @@ jobs:
             # attempt to install updated apps using manage script loop
             # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
             for app in "${changed_apps[@]}"; do
+              # only attempt install/uninstall if updated app is supported on this architecture
+              scriptname="$(script_name_cpu "$app")" #will be install, install-64, or package
+              if [ -z "$scriptname" ];then
+                continue
+              fi
               # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
               skiplist=( "Microsoft PowerShell" )
               if [[ ! " ${skiplist[*]} " =~ " ${app} " ]]; then
