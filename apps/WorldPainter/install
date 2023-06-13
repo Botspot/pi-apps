@@ -2,7 +2,6 @@
 
 version=2.17.2
 
-sudo rm -f /usr/share/*/applications/install4j_1tsntyi-worldpainter.desktop
 install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
 
 # force java-11
@@ -15,6 +14,3 @@ case "$arch" in
     ;;
   *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
-
-#put the launcher in the Graphics category
-echo 'Categories=Graphics;2DGraphics;RasterGraphics;' | sudo tee -a /usr/share/*/applications/install4j_1tsntyi-worldpainter.desktop
