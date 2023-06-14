@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.17.2
+version=2.18.0
 
 install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
 
