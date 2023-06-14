@@ -131,6 +131,7 @@ else
 fi
 #Past this point, the pi is running a Wine-compatible kernel.
 
+#note to maintainer, if you change the below version make sure to update it in the uninstall script as well
 version=8.10
 
 #install box86
