@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.0.2
+version=2.1.1
 
 install_packages openjdk-11-jre || exit 1
 
