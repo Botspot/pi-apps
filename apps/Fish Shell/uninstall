@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# cleanup any remaing old lunar stuff
+echo "uninstalling fish"
+sudo apt remove fish
+sudo apt update
+sudo apt autoremove
+sudo apt autoclean
+
+exit
