@@ -29,7 +29,7 @@ on:
         required: true
         type: boolean
       bionic_64:
-        description: 'Build on Switchroot Ubuntu 5.1.0 Bionic 64bit'
+        description: 'Build on Switchroot Ubuntu 5.1.1 Bionic 64bit'
         required: true
         type: boolean
       focal_64:
