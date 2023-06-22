@@ -13,7 +13,7 @@ Ubuntu)
     # also disable firefox snap apt package from Ubuntu
     echo 'Package: *
 Pin: release o=LP-PPA-mozillateam
-Pin-Priority: 990
+Pin-Priority: 1000
 
 Package: firefox*
 Pin: release o=Ubuntu*
@@ -22,12 +22,18 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
   echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
   fi
+  install_packages firefox || exit 1
+  # install_packages will not switch an already installed 1:1snap* package to a XXX firefox package since this would constitute a downgrade
+  # the pin priorities added above will prevent Ubuntu repository firefox packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the ppa version of firefox
+  apt_lock_wait
+  sudo apt --only-upgrade --allow-downgrades install firefox -y | less_apt
+  true
   ;;
 *)
   # Add repository source to apt sources.list
   debian_ppa_installer "mozillateam/ppa" "bionic" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
   # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
   echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:bionic";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+  install_packages firefox || exit 1
   ;;
 esac
-install_packages firefox || exit 1
