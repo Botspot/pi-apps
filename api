@@ -652,6 +652,17 @@ ubuntu_ppa_installer() { #setup a PPA on an Ubuntu distro. Arguments: ppa_name
     sudo add-apt-repository "ppa:$ppa_name" -y || exit 1
     apt_update || exit 1
   fi
+  # check if ppa .list filename does not exist under the current distro codename
+  # on a distro upgrade the .list filename is not updated and add-apt-repository can re-use the old filename
+  local ppa_dist="$__os_codename"
+  local standard_filename="/etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list" 
+  if [[ ! -f "$standard_filename" ]] && ls /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-*.list 1> /dev/null; then
+    local original_filename="$(ls /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-*.list | head -1)"
+    # change the filename to match the current distro codename
+    sudo mv "$original_filename" "$standard_filename"
+    sudo rm -f "$original_filename".distUpgrade
+    sudo rm -f "$original_filename".save
+  fi
 }
 
 debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name distribution key
