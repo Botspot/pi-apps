@@ -644,7 +644,7 @@ ubuntu_ppa_installer() { #setup a PPA on an Ubuntu distro. Arguments: ppa_name
   [ -z "$1" ] && error "ubuntu_ppa_installer(): This function is used to add a ppa to a ubuntu based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
@@ -661,7 +661,7 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && error "debian_ppa_installer(): This function is used to add a ppa to a debian based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/ubuntu ${ppa_dist}"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep -v list.save | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
