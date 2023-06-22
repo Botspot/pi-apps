@@ -1,12 +1,33 @@
 #!/bin/bash
 
-# it would unnecessary to run this on bionic, check and skip adding the repo if on ubuntu bionic
-if [[ "$get_codename" != "bionic" ]]; then
-  # remove deprecated repofilename
-  sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+# remove deprecated repofilename
+sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
+# remove /etc/apt/preferences.d/99bionic-updates which was added when bionic default repositories were added
+sudo rm -f /etc/apt/preferences.d/99bionic-updates  
+case "$__os_id" in
+Ubuntu)
+  # starting on 22.04 the apt package for firefox is a snap so we need to add the ppa
+  # 18.04 firefox is no longer being updated so we also want to use the ppa on it
+  if printf '%s\n' "22.04" "$__os_release" | sort -CV || [[ "$__os_release" == "18.04" ]]; then
+    ubuntu_ppa_installer "mozillateam/ppa"
+    # also disable firefox snap apt package from Ubuntu
+    echo 'Package: *
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 990
+
+Package: firefox*
+Pin: release o=Ubuntu*
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
+  
+  # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
+  echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+  fi
+  ;;
+*)
   # Add repository source to apt sources.list
   debian_ppa_installer "mozillateam/ppa" "bionic" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
-  # remove /etc/apt/preferences.d/99bionic-updates which was added when bionic default repositories were added
-  sudo rm -f /etc/apt/preferences.d/99bionic-updates
-fi
+  # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
+  echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:bionic";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+  ;;
+esac
 install_packages firefox || exit 1
