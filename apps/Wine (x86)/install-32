@@ -310,6 +310,7 @@ echo
 #set up functions
 $(declare -f error)
 $(declare -f status)
+$(declare -f warning)
 
 if [ "\$(id -u)" == 0 ];then
   error "Please don't run this script with sudo."
@@ -517,6 +518,8 @@ echo '
 wine regedit \$TMPFILE
 
 rm -f \$TMPFILE
+
+warning "This will take a long time, just let winetricks do its thing."
 
 #install some packages with winetricks for a better out-of-the-box experience
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
