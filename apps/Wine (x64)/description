@@ -1,10 +1,10 @@
-Run x64 Windows apps with a box64 version of x64 wine-8.11.
+Run x86 and x64 Windows apps with a box64-emulated version x86/x64 wine-8.11 (WOW64 mode enabled).
 To run: wine path/to/file.exe
 To configure wine: go to 'Wine configuration' in main menu or type in terminal: wine winecfg
 Not all Windows applications will work under Wine. It's a good idea to check online if your program can run, or if something can be tweaked to make it work.
 
-NOTE: x86 32bit applications currently do not work as Box64 needs many changes to support the new Wine WOW64 mode.
-If you see a warning in the terminal log containing experimental wow64 mode, your application contains 32bit binaries and will not work currently.
+Note: x86 32bit applications use the new Wine WOW64 mode. The WOW64 mode allows for running x86 Windows applications on x86_64 without any x86 Linux userspace.
+Note: This mode is experimental in Wine and Box64 support for x86 code still need some work. However, many applications already work.
 
 Note: the applications installed with wine will appear under the wine category in the main menu, and they will stay there even after uninstalling wine.
 
