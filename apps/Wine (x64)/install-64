@@ -8,6 +8,10 @@ version=8.11
 if ! command -v box64 >/dev/null ;then
   error "User error: Pi-Apps thinks Box64 is installed, however no command named 'box64' exists. Please install Box64 manually."
 fi
+#upgrade box86
+echo "Upgrading Box64 if necessary:"
+apt_lock_wait
+sudo apt install --only-upgrade box64-* -y
 echo "Installed Box64 version:"
 box64 -v || error "User error: Something went wrong when trying to run Box64."
 

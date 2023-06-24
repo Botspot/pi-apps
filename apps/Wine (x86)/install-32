@@ -139,6 +139,10 @@ version=8.11
 if ! command -v box86 >/dev/null ;then
   error "User error: Pi-Apps thinks Box86 is installed, however no command named 'box86' exists. Please install Box86 manually."
 fi
+#upgrade box86
+echo "Upgrading Box86 if necessary:"
+apt_lock_wait
+sudo apt install --only-upgrade box86-* -y
 echo "Installed Box86 version:"
 box86 -v || error "User error: Something went wrong when trying to run Box86."
 
