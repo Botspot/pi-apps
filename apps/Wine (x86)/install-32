@@ -141,6 +141,7 @@ if ! command -v box86 >/dev/null ;then
 fi
 #upgrade box86
 echo "Upgrading Box86 if necessary:"
+apt_update
 apt_lock_wait
 sudo apt install --only-upgrade box86-* -y
 echo "Installed Box86 version:"
