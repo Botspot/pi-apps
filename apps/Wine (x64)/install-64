@@ -10,6 +10,7 @@ if ! command -v box64 >/dev/null ;then
 fi
 #upgrade box86
 echo "Upgrading Box64 if necessary:"
+apt_update
 apt_lock_wait
 sudo apt install --only-upgrade box64-* -y
 echo "Installed Box64 version:"
