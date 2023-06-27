@@ -615,11 +615,11 @@ elif [[ "$guimode" == xlunch* ]];then
       "${DIRECTORY}/preload" xlunch "$(echo "$input" | sed 's+/$++g')" > $pipe
       
     #pi-apps logo button clicked - go to homepage in web browser
-    elif [ "$line" == 'pi-apps-homepage' ];then
+    elif [ "$input" == 'pi-apps-homepage' ];then
       x-www-browser "$(cat "${DIRECTORY}/etc/git_url")" &
       
     #Settings button clicked
-    elif [ "$line" == 'pi-apps-settings' ];then
+    elif [ "$input" == 'pi-apps-settings' ];then
       #close xlunch
       echo ':quit' > $pipe
       
@@ -638,7 +638,7 @@ elif [[ "$guimode" == xlunch* ]];then
       geometry2="--center --height=$((height/2)) --width=$width" details_window "$input"
       
       #show app list again
-      "${DIRECTORY}/preload" xlunch "$(dirname "$line" | sed 's/^.$//g')" > $pipe
+      "${DIRECTORY}/preload" xlunch "$(dirname "$input" | sed 's/^.$//g')" > $pipe
     fi
   done
   
