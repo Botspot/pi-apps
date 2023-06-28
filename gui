@@ -111,67 +111,72 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 #In Xlunch mode, the window must be centered, but xlunch only handles absolute offsets.
 get_positions() {
   #determine screen_width and screen_height
-  screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
-  if [ -z "$screen_dimensions" ];then
-    # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
-    # workaround is to get the first output returned for the connected display
-    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+  if [ -z "$screen_width" ] || [ -z "$screen_height" ];then
+    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
+    if [ -z "$screen_dimensions" ];then
+      # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
+      # workaround is to get the first output returned for the connected display
+      screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+    fi
+    screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
+    screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
   fi
-  screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
-  screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
-  unset screen_dimensions
   
   if [[ "$guimode" == yad* ]];then
-
+    
     # if this is being run by yad, there should be a yad window id
     # store in arrary of x and y
     # this allows for windows to be moved by the user and the second window to still show up where expected
     main_yad_window=$YAD_XID
     if [ -n "${main_yad_window}" ]; then
       window_info=$(xwininfo -id $main_yad_window)
-      # for speed of execution, we are assuming the order of matches from xwininfo
-      # this is safe as the output order has been standardized for over a decade
-      # this is the location of where the window content starts inside the title bar and window borders (pos x then pos y)
-      main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
-      # these are the dimensions of where the window content starts inside the title bar and window borders (dim x then dim y)
-      main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
-      # again, for speed, all border widths are saved to one array
-      # left, right, title, bottom [0, 1, 2, 3]
-      # this is the size of the window borders (including title bar)
-      border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
-      #total dimensions for both yad windows side by side
-      if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
-        #gui size for small screens
-        height=${main_yad_window_dim[1]}
-        width=600
+      
+      #skip calculating offsets if yad window is in the same place as last time
+      if [ -z "$last_window_info" ] || [ -z "$geometry1" ] || [ -z "$geometry2" ] || [ "$last_window_info" != "$window_info" ];then
+        # for speed of execution, we are assuming the order of matches from xwininfo
+        # this is safe as the output order has been standardized for over a decade
+        # this is the location of where the window content starts inside the title bar and window borders (pos x then pos y)
+        main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
+        # these are the dimensions of where the window content starts inside the title bar and window borders (dim x then dim y)
+        main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
+        # again, for speed, all border widths are saved to one array
+        # left, right, title, bottom [0, 1, 2, 3]
+        # this is the size of the window borders (including title bar)
+        border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
+        #total dimensions for both yad windows side by side
+        if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
+          #gui size for small screens
+          height=${main_yad_window_dim[1]}
+          width=600
+          
+          #width of first window
+          width1=${main_yad_window_dim[0]}
+          #width of second window
+          width2=350
+        else
+          #gui size for large screens
+          height=${main_yad_window_dim[1]}
+          width=800
+          
+          #width of first window
+          width1=${main_yad_window_dim[0]}
+          #width of second window
+          width2=480
+        fi
+        #how far down the top of the title bar of yad window is from the top of the screen
+        yoffset=$((main_yad_window_pos[1]-border_widths[2]))
         
-        #width of first window
-        width1=${main_yad_window_dim[0]}
-        #width of second window
-        width2=350
-      else
-        #gui size for large screens
-        height=${main_yad_window_dim[1]}
-        width=800
+        #screen offsets for window 1
+        #use current position of the left side of the main window border
+        xoffset1=$((main_yad_window_pos[0]-border_widths[0]))
+        #screen offsets for window 2
+        #use current position of the right side of the main window border
+        xoffset2=$((xoffset1+border_widths[0]+width1+border_widths[1]))
         
-        #width of first window
-        width1=${main_yad_window_dim[0]}
-        #width of second window
-        width2=480
+        #set completed location arguments for both yad windows
+        geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
+        geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
       fi
-      #how far down the top of the title bar of yad window is from the top of the screen
-      yoffset=$((main_yad_window_pos[1]-border_widths[2]))
-      
-      #screen offsets for window 1
-      #use current position of the left side of the main window border
-      xoffset1=$((main_yad_window_pos[0]-border_widths[0]))
-      #screen offsets for window 2
-      #use current position of the right side of the main window border
-      xoffset2=$((xoffset1+border_widths[0]+width1+border_widths[1]))
-      
-      #set completed location arguments for both yad windows
-      geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
-      geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     else
       # default positions when the main window does not exist yet
       #total dimensions for both yad windows side by side
@@ -399,9 +404,7 @@ details_window() { #input: prefix/app
     "${imageline[@]}" \
     --title="Details of ${app}" --window-icon="${DIRECTORY}/icons/logo.png" \
     $geometry2 --skip-taskbar \
-    "${whichbutton[@]}" &
-  trap "sleep 1 ; kill $! 2>/dev/null" EXIT SIGTERM SIGINT #run yad as a subprocess to ensure it is killed when this whole function is killed
-  wait $!
+    "${whichbutton[@]}"
   button=$?
   
   case $button in
@@ -464,6 +467,7 @@ if [[ "$guimode" == yad* ]];then
   motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
   
   return_sysname() { #Function that is run in yad gui to echo the selected line to the listening while loop.
+    echo "YAD_XID is $YAD_XID"
     echo "$3"
   }
   
@@ -474,6 +478,16 @@ if [[ "$guimode" == yad* ]];then
     fi
   }
   
+  kill_details() { #close the details window in 1 second. Uses the $detailspid variable. To close it immediately add an argument of 0
+    (
+    if [ "$1" != 0 ];then
+      sleep 1.5
+    fi
+    pkill -P "$detailspid" 2>/dev/null
+    kill "$detailspid" 2>/dev/null
+    ) &
+  }
+  
   #constantly read from the pipe and send all output to yad
   #if an item is selected, the listening while loop will act on the input given to it
   while read -r input ;do
@@ -482,7 +496,7 @@ if [[ "$guimode" == yad* ]];then
     
     if [[ "$input" == *'Updates/' ]];then
       #updater window
-      kill "$detailspid" 2>/dev/null
+      kill_details
       
       get_positions
       "${DIRECTORY}/updater" gui fast $geometry2 --skip-taskbar --close-on-unfocus
@@ -496,14 +510,13 @@ if [[ "$guimode" == yad* ]];then
       fi
     elif [ "$input" == 'Search/' ];then
       #search window
-      kill "$detailspid" 2>/dev/null
+      kill_details
       
       get_positions
       app="$(yadflags+=("$geometry2" --close-on-unfocus) ; app_search_gui)"
       
       if [ ! -z "$app" ];then
-        #show app details window for this selected app, and close the previous one
-        kill "$detailspid" 2>/dev/null
+        #show app details window for this selected app
         details_window "/$app" &
         detailspid=$!
       fi
@@ -515,10 +528,14 @@ if [[ "$guimode" == yad* ]];then
       echo -e '\f' > $pipe #clear the yad list
       "${DIRECTORY}/preload" yad "${input::-1}" >> $pipe #send yad the app-list - derived from folder name but dropping the final slash character
       
+    elif [[ "$input" == 'YAD_XID is'* ]];then
+      YAD_XID="$(echo "$input" | awk '{print $3}')"
     elif [ ! -z "$input" ];then #app details window
       
+      get_positions
+      
       #show app details window, and close the previous one
-      kill "$detailspid" 2>/dev/null
+      kill_details
       details_window "$input" &
       detailspid=$!
     fi
@@ -528,17 +545,18 @@ if [[ "$guimode" == yad* ]];then
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --tooltip-column=4 \
     --dclick-action "bash -c "\""return_sysname %s"\""" --select-action="bash -c "\""return_sysname %s"\""" \
-    --button="!${DIRECTORY}/icons/search.png"!'Search':"echo Search/" \
+    --button="!${DIRECTORY}/icons/search.png"!'Search':"bash -c "\""return_sysname '' '' Search/"\""" \
     --button="!${DIRECTORY}/icons/options.png"!'Settings':"bash -c "\""echo Settings/ ; kill "\$"YAD_PID"\""" \
     "$geometry1" < <(tail -f --retry $pipe))
   
-  button="${PIPESTATUS[1]}"
-  kill "$detailspid" 2>/dev/null
+  kill_details 0 #immediately close details window without delay
+  unset YAD_XID #avoid trying to get dimensions of a now closed yad window (fixes badWindow error in get_positions after returning from settings)
   
   if [ "$input" == Settings/ ];then
   
     # remove pipe early so that nothing attempts to write to it
     rm -f "$pipe"
+    
     "${DIRECTORY}/settings"
     "${DIRECTORY}/gui" "$@" #run new instance of this script
   fi
