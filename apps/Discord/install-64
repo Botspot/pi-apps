@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# this part shamelessly stolen from the steam script.
+
+# install box86
+"${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
+# install box64
+"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
+
+# perform an apt upgrade to make sure the latest version of box64 and box86 are installed
+apt_lock_wait
+sudo apt upgrade -y || exit 1
+
+# download discord
+
+wget "https://discord.com/api/download?platform=linux&format=tar.gz"
+echo "extracting archive..."
+tar -xzf "download?platform=linux&format=tar.gz" || error "error downloading and/or extracting discord"
+# download icon
+wget "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png"
+
+sudo mv ./Discord /usr/share/discord || error "error moving folder"
+sudo chmod a+x /usr/share/discord/Discord
+sudo mkdir /usr/local /usr/local/share
+sudo mv "636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" /usr/share/discord/discord.png
+sudo cp /usr/share/discord/discord.desktop /usr/local/share/applications/discord.desktop || error "error copying desktop file. discord is already installed, but not added to the start menu"
+sudo sed -i 's;Exec=/usr/share/discord/Discord;Exec=box64 /usr/share/discord/Discord;g' /usr/local/share/applications/discord.desktop || error "error editing the desktop file"
+sudo sed -i 's;Icon=discord;Icon=/usr/share/discord/discord.png;g' /usr/local/share/applications/discord.desktop || error "error editing the desktop file"
+cp /usr/local/share/applications/discord.desktop ~/Desktop/discord.desktop

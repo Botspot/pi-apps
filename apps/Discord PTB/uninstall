@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo rm -r /usr/share/discord
+sudo rm /usr/local/share/applications/discord.desktop
+rm ~/Desktop/discord.desktop
