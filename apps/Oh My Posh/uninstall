@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cache_dir=$(oh-my-posh cache path)
+rm -r $cache_dir
+sudo rm /usr/local/bin/oh-my-posh
+
+echo "Please note: You need to remove the init command manually"

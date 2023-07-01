@@ -1,0 +1,15 @@
+#!/bin/bash
+
+wget -O /tmp/oh-my-posh https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-arm
+sudo mv /tmp/oh-my-posh /usr/local/bin/oh-my-posh
+sudo chmod +x /usr/local/bin/oh-my-posh
+
+cache_dir=$(oh-my-posh cache path)
+theme_dir="${cache_dir}/themes"
+mkdir -p $theme_dir
+curl -s -L https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -o ${cache_dir}/themes.zip
+unzip -o -q ${cache_dir}/themes.zip -d $theme_dir
+chmod u+rw ${theme_dir}/*.omp.*
+rm ${cache_dir}/themes.zip
+
+echo 'eval "$(oh-my-posh init bash)"' >> ~/.bashrc
