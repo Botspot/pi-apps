@@ -1,0 +1,14 @@
+#!/bin/bash
+
+mkdir cascadia
+cd cascadia
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.1/CascadiaCode.zip || error "failed to download font"
+unzip CascadiaCode.zip || error "failed to extract zip"
+mkdir ~/.fonts
+mkdir ~/.fonts/Caskaydia
+rm -- *Propo*
+rm -- *Mono*
+rm CascadiaCode.zip
+mv * ~/.fonts/Caskaydia/
+cd ..
+rm -r cascadia || error "failed to clean up"
