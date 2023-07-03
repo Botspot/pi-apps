@@ -321,27 +321,40 @@ if [ -z "\$WINEPREFIX" ];then
   WINEPREFIX="\$HOME/.wine"
 fi
 export WINEPREFIX
+export BOX86_NOBANNER=1 #hide box86 output (for cosmetics)
+export WINEARCH=win32 #Make sure Wine creates a 32-bit prefix
 
 if [ -e "\$HOME/.wine" ];then
   status "Checking Wine prefix at \$WINEPREFIX..."
+  echo "To choose another prefix, set the WINEPREFIX variable."
+  echo "Waiting 5 seconds..."
+  sleep 5
+  # check for existance of incompatible prefix (see server_init_process https://github.com/wine-mirror/wine/blob/884cff821481b4819f9bdba455217bd5a3f97744/dlls/ntdll/unix/server.c#L1544-L1670)
+  # Boot wine and check for errors (make fresh wineprefix)
+  output="\$(set -o pipefail; wine wineboot 2>&1 | tee /dev/stderr; )" #this won't display any dialog boxes that require a button to be clicked
+  if [ "\$?" != 0 ]; then
+    warning "Your previously existing Wine prefix failed with an error (see above). It has been removed and will be re-generated."
+    rm -rf "\$HOME/.wine"
+    wine wineboot #this won't display any dialog boxes that require a button to be clicked
+  fi
+  #wait until above process exits
+  sleep 2
+  while [ ! -z "\$(pgrep -i 'wine C:')" ];do
+    sleep 1
+  done
 else
   status "Generating Wine prefix at \$WINEPREFIX..."
+  echo "To choose another prefix, set the WINEPREFIX variable."
+  echo "Waiting 5 seconds..."
+  sleep 5
+  # Boot wine (make fresh wineprefix)
+  wine wineboot #this won't display any dialog boxes that require a button to be clicked
+  #wait until above process exits
+  sleep 2
+  while [ ! -z "\$(pgrep -i 'wine C:')" ];do
+    sleep 1
+  done
 fi
-echo "To choose another prefix, set the WINEPREFIX variable."
-echo "Waiting 5 seconds..."
-sleep 5
-
-# Boot wine (make fresh wineprefix)
-export BOX86_NOBANNER=1 #hide box86 output (for cosmetics)
-export WINEARCH=win32 #Make sure Wine creates a 32-bit prefix
-#export WINEDLLOVERRIDES="mscoree,mshtml=" #Avoid asking user to install gecko or mono
-
-wine wineboot #this won't display any dialog boxes that require a button to be clicked
-#wait until above process exits
-sleep 2
-while [ ! -z "\$(pgrep -i 'wine C:')" ];do
-  sleep 1
-done
 
 status "Making registry changes..."
 TMPFILE="\$(mktemp)" || exit 1
