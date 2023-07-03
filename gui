@@ -18,7 +18,7 @@ if [[ $(id -u) == 0 ]]; then
 fi
 
 # set GUI format versioning
-export GUI_FORMAT_VERSION=2
+export GUI_FORMAT_VERSION=3
 
 #display first 4 arguments this script receives (for debugging)
 if false;then
@@ -490,10 +490,8 @@ if [[ "$guimode" == yad* ]];then
   
   #constantly read from the pipe and send all output to yad
   #if an item is selected, the listening while loop will act on the input given to it
+  # Yad app list window sends back user selections to this listening while loop
   while read -r input ;do
-    
-    echo "Received '$input'"
-    
     if [[ "$input" == *'Updates/' ]];then
       #updater window
       kill_details
