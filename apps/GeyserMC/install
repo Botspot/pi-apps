@@ -1,0 +1,24 @@
+#!/bin/bash
+
+wget https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/standalone
+
+mkdir ~/geyser
+mv standalone ~/geyser/Geyser-Standalone.jar
+
+echo "[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Geyser
+Comment=Enable clients from Minecraft Bedrock Edition to join your Minecraft Java server.
+Exec=~/geyser/run.sh
+Icon=~/pi-apps/apps/GeyserMC/icon-64.png
+Categories=Utility;
+Terminal=False" > ~/.local/share/applications/geyser.desktop
+
+cd ~/geyser
+echo '#!/bin/sh 
+cd "$( dirname "$0" )" 
+java -Xms1024M -jar Geyser-Standalone.jar' > run.sh
+chmod +x run.sh
+echo "You can close Geyser right after it opens."
+./run.sh
