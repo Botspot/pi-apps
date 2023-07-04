@@ -1,12 +1,13 @@
 #!/bin/bash
 
-cd /tmp
-mkdir cascadia
-cd cascadia
-wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.1/CascadiaCode.zip || error "failed to download font"
+version=v3.0.2
+
+mkdir -p /tmp/cascadia || error "Failed to create /tmp/cascadia folder!"
+wget -O /tmp/cascadia/CascadiaCode.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/${version}/CascadiaCode.zip" || error "Failed to download Caskaydia Cove NF!"
+cd /tmp/cascadia || error "Could not move to folder."
 unzip CascadiaCode.zip || error "failed to extract zip"
-sudo mkdir -p /usr/local/share/fonts/truetype/Caskaydia
-rm CascadiaCode.zip
-sudo mv * /usr/local/share/fonts/truetype/Caskaydia/
-cd ..
-rm -r cascadia || error "failed to clean up"
+rm -f CascadiaCode.zip
+sudo mkdir -p /usr/local/share/fonts/truetype/Caskaydia || error "Failed to create /usr/local/share/fonts/truetype/Caskaydia folder!"
+sudo mv * /usr/local/share/fonts/truetype/Caskaydia/ || error "Could not move font files to install directory"
+rm -rf /tmp/cascadia
+fc-cache -f || error "Failed to run fc-cache!"
