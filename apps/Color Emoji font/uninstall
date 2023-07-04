@@ -1,2 +1,4 @@
 #!/bin/bash
-rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || sudo rm -f "$HOME/.fonts/NotoColorEmoji.ttf" || error "Failed to remove font file!"
+
+sudo rm -f /usr/local/share/fonts/NotoColorEmoji.ttf || error "Failed to remove font file!"
+fc-cache -f || error "Failed to run fc-cache!"

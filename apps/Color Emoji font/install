@@ -1,5 +1,7 @@
 #!/bin/bash
-mkdir -p $HOME/.fonts
-cd $HOME/.fonts || error "Failed to enter fonts directory!"
-wget https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf || error "Failed to download NotoColorEmoji.ttf!"
+wget -O /tmp/NotoColorEmoji.ttf https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf || error "Failed to download NotoColorEmoji.ttf!"
+
+sudo mkdir -p /usr/local/share/fonts || error "Failed to create /usr/local/share/fonts folder!"
+sudo mv /tmp/NotoColorEmoji.ttf /usr/local/share/fonts
+
 fc-cache -f || error "Failed to run fc-cache!"
