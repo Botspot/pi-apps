@@ -5,8 +5,8 @@ mkdir cascadia
 cd cascadia
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.1/CascadiaCode.zip || error "failed to download font"
 unzip CascadiaCode.zip || error "failed to extract zip"
-sudo mkdir -p /usr/local/share/fonts/Caskaydia
+sudo mkdir -p /usr/local/share/fonts/truetype/Caskaydia
 rm CascadiaCode.zip
-sudo mv * /usr/local/share/fonts/Caskaydia/
+sudo mv * /usr/local/share/fonts/truetype/Caskaydia/
 cd ..
 rm -r cascadia || error "failed to clean up"
