@@ -104,7 +104,7 @@ Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
 StartupWMClass=Pi-Apps
 Type=Application
-Categories=Utility;
+Categories=Utility;System;PackageManager;
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
