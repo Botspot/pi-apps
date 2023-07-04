@@ -253,7 +253,7 @@ EOF
 #update pi-apps .desktop icons
 runonce <<"EOF"
 #menu button
-if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps.desktop; then
+if ! grep -q "PackageManager" ~/.local/share/applications/pi-apps.desktop; then
 echo "Updating menu button..."
 mkdir -p ~/.local/share/applications
 echo "[Desktop Entry]
