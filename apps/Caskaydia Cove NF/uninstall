@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sudo rm -rf /usr/local/share/fonts/truetype/Caskaydia
+fc-cache -f || error "Failed to run fc-cache!"
