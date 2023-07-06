@@ -32,6 +32,7 @@ sudo mkdir -p /usr/local/bin /usr/local/share/applications
 echo '#!/bin/bash
 export STEAMOS=1
 export STEAM_RUNTIME=1
+export DBUS_FATAL_WARNINGS=0
 BOX64_LOG=1 BOX86_LOG=1 BOX64_EMULATED_LIBS=libmpg123.so.0 /usr/lib/steam/bin_steam.sh -no-cef-sandbox steam://open/minigameslist "$@"
 
 rm -f /home/${USER}/Desktop/steam.desktop' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
