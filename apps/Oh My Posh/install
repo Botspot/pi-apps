@@ -1,0 +1,28 @@
+#!/bin/bash
+
+version=v17.6.0
+
+#determine filename of download
+if [ $arch == 32 ];then
+  wget -O /tmp/oh-my-posh https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/${version}/posh-linux-arm || error "Failed to download posh"
+elif [ $arch == 64 ];then
+  wget -O /tmp/oh-my-posh https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/${version}/posh-linux-arm64 || error "Failed to download posh"
+fi
+
+sudo mkdir -p /usr/local/bin
+sudo mv /tmp/oh-my-posh /usr/local/bin/oh-my-posh || error "Could not move posh to /usr/local/bin"
+sudo chmod +x /usr/local/bin/oh-my-posh
+sudo chown root:root /usr/local/bin/oh-my-posh
+
+# /usr/local/bin might not be in the users PATH until a reboot if it is the first application in this directory
+# use absolute paths during this script
+cache_dir="$(/usr/local/bin/oh-my-posh cache path)"
+theme_dir="${cache_dir}/themes"
+mkdir -p $theme_dir
+wget -O /tmp/themes.zip https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/${version}/themes.zip || error "Failed to download posh themes"
+unzip -o -q "/tmp/themes.zip" -d "$theme_dir"
+chmod u+rw "$theme_dir"/*.omp.*
+rm -f "/tmp/themes.zip"
+
+sudo mkdir -p /etc/bash_completion.d
+echo 'eval "$(/usr/local/bin/oh-my-posh init bash)"' | sudo tee /etc/bash_completion.d/oh-my-posh  >/dev/null
