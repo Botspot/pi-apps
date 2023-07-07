@@ -540,7 +540,7 @@ if [[ "$guimode" == yad* ]];then
       details_window "$input" &
       detailspid=$!
     fi
-  done < <(yad "${yadflags[@]}" \
+  done < <({ yad "${yadflags[@]}" \
     --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
     --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -548,7 +548,7 @@ if [[ "$guimode" == yad* ]];then
     --dclick-action "bash -c "\""return_sysname %s"\""" --select-action="bash -c "\""return_sysname %s"\""" \
     --button="!${DIRECTORY}/icons/search.png"!'Search':"bash -c "\""return_sysname '' '' Search/"\""" \
     --button="!${DIRECTORY}/icons/options.png"!'Settings':"bash -c "\""echo Settings/ ; kill "\$"YAD_PID"\""" \
-    "$geometry1" < <(tail -f --retry $pipe))
+    "$geometry1"; kill "$!"; } < <(exec tail -f --retry $pipe))
   
   kill_details 0 #immediately close details window without delay
   unset YAD_XID #avoid trying to get dimensions of a now closed yad window (fixes badWindow error in get_positions after returning from settings)
