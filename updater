@@ -765,24 +765,13 @@ elif [ "$runmode" == 'set-status' ];then #check for updates and write updatable 
   if [ "$updatable_files" != "$(cat "${DIRECTORY}/data/update-status/updatable-files")" ];then
     echo "$updatable_files" | grep . > "${DIRECTORY}/data/update-status/updatable-files"
   fi
-  
+
   # this is the only part of any script that is called after running an update using the new files
   # since the new gui merge requires the gui script to be restarted, use this opportunity to kill the old GUI and start a new one
-  # only done once with a runonce if current gui format version is less than 2
+  # only done once with a runonce if current gui format version is not 2
   runonce <<"EOF"
-    if [[ "$GUI_FORMAT_VERSION" -lt 2 ]]; then
+    if [[ "$GUI_FORMAT_VERSION" != 2 ]]; then
       pkill gui && ( "${DIRECTORY}/gui" & )
-      echo "stopped the GUI"
-    elif [[ "$GUI_FORMAT_VERSION" == 2 ]]; then
-      pkill gui && kill $(ps -fC yad | grep "yad --class Pi-Apps --name Pi Apps --center --title=Pi-Apps --image" | awk '{print $2}') && echo "Pi-Apps is always working to improve.
-As part of that we need you to restart the Pi-Apps GUI.
-We went ahead and closed it for you.
-Open it again to get back to installing, uninstalling, and updating software!
-
-Sorry for the inconvenience :)" | yad --class Pi-Apps --name "Pi Apps" --text-info --width=500 --height=400 --title='Please Restart Pi-Apps' \
-      --image="${DIRECTORY}/icons/error.png" --image-on-top \
-      --wrap --fontname=16 --center \
-      --button=OK!"${DIRECTORY}/icons/check.png":0 &
       echo "stopped the GUI"
     else
       echo "skipped stopping the gui"

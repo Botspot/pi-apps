@@ -18,14 +18,11 @@ if [[ $(id -u) == 0 ]]; then
 fi
 
 # set GUI format versioning
-export GUI_FORMAT_VERSION=3
+export GUI_FORMAT_VERSION=2
 
-#display first 4 arguments this script receives (for debugging)
-if false;then
-  echo "1 $1" 1>&2
-  echo "2 $2" 1>&2
-  echo "3 $3" 1>&2
-  echo "4 $4" 1>&2
+#Transition from the GUI that calls itself to the self-contained GUI: when called by the old GUI, kill that yad window and treat this subprocess as the new main thread
+if [ -z "$1$2" ] && [ ! -z "$3" ] && [ ! -z "$4" ] ;then
+  kill $(ps -fC yad | grep "yad --class Pi-Apps --name Pi Apps --center --title=Pi-Apps --image" | awk '{print $2}')
 fi
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
@@ -480,7 +477,7 @@ if [[ "$guimode" == yad* ]];then
     fi
   }
   
-  kill_details() { #close the details window in 1 second. Uses the $detailspid variable. To close it immediately add an argument of 0
+  kill_details() { #close the details window in 1 second for better UX. Uses the $detailspid variable. To close it immediately add an argument of 0
     (
     if [ "$1" != 0 ];then
       sleep 1.5
@@ -664,5 +661,4 @@ elif [[ "$guimode" == xlunch* ]];then
   done
   
 fi
-
 
