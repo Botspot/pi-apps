@@ -455,8 +455,12 @@ if [[ "$guimode" == yad* ]];then
   #create a named pipe to send app list through to yad
   pipe="$(mktemp -u)" #get a random filename to work with
   mkfifo $pipe #make the named pipe
-  trap "rm -f $pipe" EXIT #remove this named pipe on exit
+  #create a named pipe to store detailspid
+  detailspid="$(mktemp -u)" #get a random filename to work with
+  mkfifo $detailspid #make the named pipe
+  trap "rm -f $pipe; rm -f $detailspid" EXIT #remove the named pipes on exit
   echo pipe is $pipe
+  echo detailspid is $detailspid
   
   #in background process, send initial app list to yad; first echo line waits until yad is accepting input, then use small delay to prevent items from being missed
   (echo -e '\f' > $pipe
@@ -474,12 +478,17 @@ if [[ "$guimode" == yad* ]];then
   }
   
   kill_details() { #close the details window in 1 second for better UX. Uses the $detailspid variable. To close it immediately add an argument of 0
+    echo "" >> $detailspid &
+    detailspidlist="$(cat $detailspid)"
     (
     if [ "$1" != 0 ];then
       sleep 1.5
     fi
-    pkill -P "$detailspid" 2>/dev/null
-    kill "$detailspid" 2>/dev/null
+    
+    echo "$detailspidlist" | while read line ; do
+      [ ! -z "$line" ] && pkill -P "$line" 2>/dev/null
+      [ ! -z "$line" ] && kill "$line" 2>/dev/null
+    done
     ) &
   }
   
@@ -515,7 +524,7 @@ if [[ "$guimode" == yad* ]];then
       #show app details window for this selected app
       yadflags+=("$geometry2" --close-on-unfocus)
       app_search_gui | details_window_check &
-      detailspid=$!
+      echo "$!" >> $detailspid &
       
     elif [[ "$input" == */ ]];then
       #app folder selected
@@ -531,7 +540,7 @@ if [[ "$guimode" == yad* ]];then
       #show app details window, and close the previous one
       kill_details
       details_window "$input" &
-      detailspid=$!
+      echo "$!" >> $detailspid &
     fi
   }
   { yad "${yadflags[@]}" \
@@ -551,6 +560,7 @@ if [[ "$guimode" == yad* ]];then
   
     # remove pipe early so that nothing attempts to write to it
     rm -f "$pipe"
+    rm -f "$detailspid"
     
     "${DIRECTORY}/settings"
     "${DIRECTORY}/gui" "$@" #run new instance of this script
