@@ -292,6 +292,8 @@ fi & #use $announcements and & here to avoid delaying launch or emptying the fil
 
 details_window() { #input: prefix/app
   local input="$1"
+
+  [ -z "$input" ] && return
   
   # make sure terminal_manage function is available
   # the old updater did not source the new api script
@@ -510,14 +512,17 @@ if [[ "$guimode" == yad* ]];then
       #search window
       kill_details
       
+      details_window_check(){
+        local input
+        read input
+        [ -z "$input" ] && return
+        details_window "/$input"
+      }
       get_positions
-      app="$(yadflags+=("$geometry2" --close-on-unfocus) ; app_search_gui)"
-      
-      if [ ! -z "$app" ];then
-        #show app details window for this selected app
-        details_window "/$app" &
-        detailspid=$!
-      fi
+      #show app details window for this selected app
+      yadflags+=("$geometry2" --close-on-unfocus)
+      app_search_gui | details_window_check &
+      detailspid=$!
       
     elif [ "$input" == 'Settings/' ];then
       break
