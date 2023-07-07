@@ -21,8 +21,9 @@ fi
 export GUI_FORMAT_VERSION=2
 
 #Transition from the GUI that calls itself to the self-contained GUI: when called by the old GUI, kill that yad window and treat this subprocess as the new main thread
-if [ -z "$1$2" ] && [ ! -z "$3" ] && [ ! -z "$4" ] ;then
+if [ -z "$1" ] && [ ! -z "$2" ] && [ ! -z "$3" ] ;then
   kill $(ps -fC yad | grep "yad --class Pi-Apps --name Pi Apps --center --title=Pi-Apps --image" | awk '{print $2}')
+  unset YAD_XID #new gui, don't try to get dimensions of the now closed app list
 fi
 
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
