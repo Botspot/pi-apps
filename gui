@@ -466,11 +466,6 @@ if [[ "$guimode" == yad* ]];then
   #retrieve a random line from the announcements file for this session
   motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
   
-  return_sysname() { #Function that is run in yad gui to echo the selected line to the listening while loop.
-    echo "YAD_XID is $YAD_XID"
-    echo "$3"
-  }
-  
   refresh_list() { #Refresh the current list of apps in the event of a change
     if [ ! -z "$pipe" ];then
       echo -e "\f" > "$pipe"
@@ -488,10 +483,10 @@ if [[ "$guimode" == yad* ]];then
     ) &
   }
   
-  #constantly read from the pipe and send all output to yad
-  #if an item is selected, the listening while loop will act on the input given to it
-  # Yad app list window sends back user selections to this listening while loop
-  while read -r input ;do
+  run_user_selection() { #Function that is run in yad gui to execute user selection
+    yadflags=(--class Pi-Apps --name "Pi Apps" --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+    echo "YAD_XID is $YAD_XID"
+    input="$3"
     if [[ "$input" == *'Updates/' ]];then
       #updater window
       kill_details
@@ -522,8 +517,6 @@ if [[ "$guimode" == yad* ]];then
       app_search_gui | details_window_check &
       detailspid=$!
       
-    elif [ "$input" == 'Settings/' ];then
-      break
     elif [[ "$input" == */ ]];then
       #app folder selected
       echo -e '\f' > $pipe #clear the yad list
@@ -540,20 +533,21 @@ if [[ "$guimode" == yad* ]];then
       details_window "$input" &
       detailspid=$!
     fi
-  done < <({ yad "${yadflags[@]}" \
+  }
+  { yad "${yadflags[@]}" \
     --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
     --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --tooltip-column=4 \
-    --dclick-action "bash -c "\""return_sysname %s"\""" --select-action="bash -c "\""return_sysname %s"\""" \
-    --button="!${DIRECTORY}/icons/search.png"!'Search':"bash -c "\""return_sysname '' '' Search/"\""" \
-    --button="!${DIRECTORY}/icons/options.png"!'Settings':"bash -c "\""echo Settings/ ; kill "\$"YAD_PID"\""" \
-    "$geometry1"; kill "$!"; } < <(exec tail -f --retry $pipe))
+    --dclick-action "bash -c "\""run_user_selection %s"\""" --select-action="bash -c "\""run_user_selection %s"\""" \
+    --button="!${DIRECTORY}/icons/search.png"!'Search':"bash -c "\""run_user_selection '' '' Search/"\""" \
+    --button="!${DIRECTORY}/icons/options.png"!'Settings':2 \
+    "$geometry1"; button=$?; kill "$!"; } < <(exec tail -f --retry $pipe)
   
   kill_details 0 #immediately close details window without delay
   unset YAD_XID #avoid trying to get dimensions of a now closed yad window (fixes badWindow error in get_positions after returning from settings)
   
-  if [ "$input" == Settings/ ];then
+  if [ "$button" == 2 ];then
   
     # remove pipe early so that nothing attempts to write to it
     rm -f "$pipe"
