@@ -1,4 +1,7 @@
 #!/bin/bash
 
-rm -rf "$HOME/.cache/oh-my-posh"
+#skip removal of cache if executed from an update
+if [[ "$1" != "update" ]];then
+  rm -rf "$HOME/.cache/oh-my-posh"
+fi
 sudo rm -f /usr/local/bin/oh-my-posh /etc/bash_completion.d/oh-my-posh
