@@ -1432,6 +1432,14 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
 #------------------------------------------
 #repo issues below
 #------------------------------------------
+  # check if /etc/apt/sources.list exists
+  if [ ! -f "/etc/apt/sources.list" ]; then
+    error_caption+=("You are missing your global /etc/apt/sources.list file. You must fix it before Pi-Apps will work.
+
+Refer to your Linux distro's documentation for how to restore this file.
+You may have a backup of it in /etc/apt/sources.list.save if you have not deleted that as well.")
+    error_type="system"
+  fi
   
   #check for 'E: The repository'
   if grep -qF 'E: The repository' <<<"$errors" || grep -qF 'sources.list entry misspelt' <<<"$errors" || grep -qF 'component misspelt in' <<<"$errors" ;then
