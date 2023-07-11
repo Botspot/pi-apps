@@ -645,11 +645,15 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   fi
   
   #wait until internet works
+  iter=1
   while ! command wget --spider https://github.com &>/dev/null ;do
     echo -n "Pi-Apps updater script: no internet connection yet. "
-    sleep 1
     echo " Waiting 10 seconds..."
     sleep 10
+    iter=$(( $iter + 1 ))
+    if [[ "$iter" -gt 18 ]]; then
+      exit 0
+    fi
   done
   
   check_repo
