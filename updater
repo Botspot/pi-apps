@@ -340,7 +340,7 @@ $line"$'\n'
     elif will_reinstall "$app"; then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
-$app (<b>will be reinstalled</b>)
+$app (<b>new update</b>)
 reinstall-app:$app
 $line"$'\n'
     # if app has been installed in the past then show it on the list. Useful to notify users that their app, which failed to install in the past, may now work.
