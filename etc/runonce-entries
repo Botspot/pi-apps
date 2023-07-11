@@ -274,6 +274,10 @@ cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
 
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
+warning "From the pi-apps developers:"$'\n\n'"We just wanted to let you know that a correction has been made so that Pi-Apps on piOS"$'\n'"will now appear in the 'Preferences' category alongside all other software centers."$'\n\n'"Don't be alarmed that we moved it."
+yad --class Pi-Apps --name "Pi Apps" --text="From the pi-apps developers:"$'\n\n'"We just wanted to let you know that a correction has been made so that Pi-Apps on piOS"$'\n'"will now appear in the 'Preferences' category alongside all other software centers."$'\n\n'"Don't be alarmed that we moved it." \
+  --text-align=center --center --title='Notification' --window-icon="${DIRECTORY}/icons/logo.png" --fixed \
+  --button="OK"!"${DIRECTORY}/icons/check.png":0 &
 fi
 
 #settings menu button
