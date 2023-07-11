@@ -96,6 +96,18 @@ if [ ! -f ~/.local/share/applications/pi-apps.desktop ];then
   echo "Creating menu button..."
 fi
 mkdir -p ~/.local/share/applications
+if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then #If on PiOS, place launcher in Accessories as it has always been there and is more intuitive there
+echo "[Desktop Entry]
+Name=Pi Apps
+Comment=Raspberry Pi App Store for open source projects
+Exec=${DIRECTORY}/gui
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+StartupWMClass=Pi-Apps
+Type=Application
+Categories=Utility
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
+else #if not on PiOS, place launcher in Preferences to match the wider decision of putting app installers there (see PR #2388)
 echo "[Desktop Entry]
 Name=Pi Apps
 Comment=Raspberry Pi App Store for open source projects
@@ -106,6 +118,7 @@ StartupWMClass=Pi-Apps
 Type=Application
 Categories=Utility;System;PackageManager;
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
+fi
 chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
 

@@ -253,9 +253,21 @@ EOF
 #update pi-apps .desktop icons
 runonce <<"EOF"
 #menu button
-if ! grep -q "PackageManager" ~/.local/share/applications/pi-apps.desktop; then
+
 echo "Updating menu button..."
 mkdir -p ~/.local/share/applications
+if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then
+echo "[Desktop Entry]
+Name=Pi Apps
+Comment=Raspberry Pi App Store for open source projects
+Exec=${DIRECTORY}/gui
+Icon=${DIRECTORY}/icons/logo.png
+Terminal=false
+StartupWMClass=Pi-Apps
+Type=Application
+Categories=Utility
+StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
+else
 echo "[Desktop Entry]
 Name=Pi Apps
 Comment=Raspberry Pi App Store for open source projects
@@ -266,6 +278,8 @@ StartupWMClass=Pi-Apps
 Type=Application
 Categories=Utility;System;PackageManager;
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
+fi
+
 chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
 
@@ -274,7 +288,6 @@ cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
 
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
-fi
 
 #settings menu button
 if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps-settings.desktop; then
