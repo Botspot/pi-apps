@@ -120,7 +120,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
         
         yad --class Pi-Apps --name "Pi Apps" --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to update $app</b> before installing it?" \
           --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
-          --button="Install anyway"!"${DIRECTORY}/icons/forward.png":1 --button="Update first"!"${DIRECTORY}/icons/download.png":0
+          --button="I know what I am doing, Install current version"!"${DIRECTORY}/icons/forward.png":1 --button="Yes, Update first"!"${DIRECTORY}/icons/download.png":0
         
         if [ $? == 0 ];then
           will_update=1
