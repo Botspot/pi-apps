@@ -29,6 +29,9 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   local IFS=$'\n'
   
   local queue="$1"
+  local action
+  local app
+  local line
   
   #Ensure that the first word of each line is 'install' or 'uninstall' or 'update' or 'refresh' or 'update-file'
   local i=1 #track the line number in queue
@@ -78,7 +81,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   [ -z "$queue" ] && exit 0
   
   #if trying to install an already-installed app, or trying to uninstall and already-uninstalled app, ask for confirmation
-  local i=1 #track the line number in queue
+  i=1 #track the line number in queue
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
@@ -104,7 +107,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   
   #Check if any apps are updatable and ask user if they really want to INSTALL an outdated version. (This is skipped if uninstalling apps)
   
-  will_update=0
+  local update_queue=''
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
@@ -114,23 +117,27 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
       script_name_cpu="$(script_name_cpu "$app")"
       
       #if the app-script doesn't match version in update folder
-      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && [ "$will_update" == 0 ]&& ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" ;then
+      if [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${script_name_cpu}" "${DIRECTORY}/apps/${app}/${script_name_cpu}" ;then
         
         "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
         
-        yad --class Pi-Apps --name "Pi Apps" --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to update $app</b> before installing it?" \
+        yad --class Pi-Apps --name "Pi Apps" --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to install the newest official version of $app?</b>" \
           --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
-          --button="I know what I am doing, Install current version"!"${DIRECTORY}/icons/forward.png":1 --button="Yes, Update first"!"${DIRECTORY}/icons/download.png":0
+          --image="${DIRECTORY}/apps/$app/icon-64.png" \
+          --button="I know what I am doing, Install current version"!"${DIRECTORY}/icons/forward.png":1 --button="Yes, Install newest official version"!"${DIRECTORY}/icons/download.png"!"In most cases, this is the button you should click.":0
         
         if [ $? == 0 ];then
-          will_update=1
-          #if user clicked Yes, run the updater
-          update_queue="$(no_update=true "${DIRECTORY}/updater" gui fast | sed 's/^\( *[^ ]\+\) /\1;/')"
+          if [ -z "$update_queue" ] && ! files_match "${DIRECTORY}/api" "${DIRECTORY}/update/pi-apps/api" ;then #if user clicked Yes, update api (for potential new functions) and the app
+            update_queue="update-file;api"$'\n'"refresh;$app"
+          elif [ -z "$update_queue" ];then
+            update_queue="refresh;$app"
+          else
+            update_queue+=$'\n'"refresh;$app"
+          fi
         fi
       fi
     fi
   done
-  [ -z "$queue" ] && exit 0
   
   if [ ! -z "$update_queue" ]; then
     # place all updates before queue input to validate_apps_gui
