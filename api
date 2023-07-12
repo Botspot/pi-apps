@@ -1421,8 +1421,13 @@ get_logfile() { #find the most recent logfile for the $1 app
 
 log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and categorize issue with error_type variable
   #errors="$(cat /dev/stdin)"
-  local logfile="$1"
-  local errors="$(cat "$logfile")"
+  local errors="$(cat "$1")"
+  # any attempt to write to the logfile will instead write to /dev/null if allowwrite argument is not passed
+  if [ "$2" == "allowwrite" ]; then
+    local logfile="$1"
+  else
+    local logfile="/dev/null"
+  fi
   
   #store the user-friendly explanations for each type of error
   local error_caption=()
@@ -2202,7 +2207,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
   for app in $failed_apps ;do
     local logfile="$(get_logfile "$app")"
     #given the app's logfile, categorize the error and set the error_type variable
-    local diagnosis="$(log_diagnose "$logfile")"
+    local diagnosis="$(log_diagnose "$logfile" "allowwrite")"
     
     local error_type="$(echo "$diagnosis" | head -n1)" #first line of diagnosis is the type of error
     local error_caption="$(echo "$diagnosis" | tail -n +2)" #subsequent lines of diagnosis are caption(s)
