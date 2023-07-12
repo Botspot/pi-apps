@@ -1619,6 +1619,7 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
     grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
     grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs apt-cache show >> "$logfile"
   fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
