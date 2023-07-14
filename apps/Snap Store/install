@@ -1,5 +1,13 @@
 #!/bin/bash
 # Get dependencies
+if package_installed pi-package ;then #pi-package-data conflicts with gnome-packagekit-data - see https://github.com/raspberrypi-ui/pipackage/issues/7
+  yad --class Pi-Apps --name "Pi Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --image=system-software-install \
+  --text="Snap Store now cannot be installed along with the <b>Add / Remove Software</b> program."$'\n'"Do you wish to remove it now, or cancel installation?" \
+  --button="Remove <u>Add / Remove Software</u>":0 --button="Cancel installation of Snap Store":1 || error "User error: exited"
+  apt_lock_wait
+  sudo apt purge -y pi-package pi-package-data pi-package-session --autoremove || error "APT failed to remove the "\""Add / Remove Software"\"" program"
+fi
+
 install_packages libsquashfuse0 squashfuse fuse libgconf-2-4 || exit 1
 sudo apt install -y snapd || error "APT failed to install snapd"
 
