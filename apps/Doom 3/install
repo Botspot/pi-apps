@@ -33,7 +33,7 @@ freeglut3-dev libvorbisfile3 libcurl4 cmake build-essential \
 libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
 
 cd /tmp
-git clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
+git_clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
 cd dhewm3/neo || exit
 mkdir build || error "Failed to create build folder"
 cd build || exit
