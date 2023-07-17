@@ -1437,15 +1437,6 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
 #------------------------------------------
 #repo issues below
 #------------------------------------------
-  # check if /etc/apt/sources.list exists
-  if [ ! -f "/etc/apt/sources.list" ]; then
-    error_caption+=("You are missing your global /etc/apt/sources.list file. You must fix it before Pi-Apps will work.
-
-Refer to your Linux distro's documentation for how to restore this file.
-You may have a backup of it in /etc/apt/sources.list.save if you have not deleted that as well.")
-    error_type="system"
-  fi
-  
   #check for 'E: The repository'
   if grep -qF 'E: The repository' <<<"$errors" || grep -qF 'sources.list entry misspelt' <<<"$errors" || grep -qF 'component misspelt in' <<<"$errors" ;then
     error_caption+=("APT reported a faulty repository, and you must fix it before Pi-Apps will work.
@@ -1658,7 +1649,8 @@ deb http://deb.debian.org/debian $(get_codename)-updates main contrib non-free
     else
       error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
-The contents of this file will vary based on your operating system. You are not using Raspberry Pi OS, so you will have to find what to put in there yourself.")
+Refer to your Linux distro's documentation for how to restore this file.
+You may have a backup of it in /etc/apt/sources.list.save if you have not deleted that as well.")
     fi
     error_type="system"
   fi
