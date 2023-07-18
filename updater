@@ -316,7 +316,9 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables, outpu
   for app in $updatable_apps ;do #generate a yad list for every updatable app
     # get app tooltip
     read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
-    if [ ! -d "${DIRECTORY}/apps/${app}" ]; then
+    # if ${app} folder did not exist before and install-${arch}, install, or packages file is in the new update, then this is a "new app"
+    # results in applications that only have support for a different architecture to show under the compressed update
+    if [ ! -d "${DIRECTORY}/apps/${app}" ] && ( [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/packages" ] ); then
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
