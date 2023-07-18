@@ -554,6 +554,8 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
       elif [ "$using_local_packages" == 1 ] && echo "$output" | grep 'but it is not installable' ;then
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
         cat /tmp/pi-apps-local-packages/Packages
+        echo -e "Attempting apt --dry-run installation of the problematic package(s) for debugging purposes:\n"
+        grep "but it is not installable" <<<"$output" | awk '{print $4}' | uniq | xargs sudo -E apt install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
       fi
       
       exit 1
