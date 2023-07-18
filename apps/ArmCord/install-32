@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=3.2.0
+version=3.2.1
 
 install_packages "https://github.com/ArmCord/ArmCord/releases/download/v${version}/ArmCord_${version}_armv7l.deb" || exit 1
