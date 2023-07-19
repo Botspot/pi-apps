@@ -1524,7 +1524,7 @@ You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fi
 Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
     error_type="system"
   fi
-
+  
   #check for broken pi-apps-local-packages symlink
   if grep -q "E: Could not open file /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages" <<<"$errors" ;then
     error_caption+=("APT reported the pi-apps-local-packages list as missing.
@@ -2777,11 +2777,12 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     use=wget
   fi
   
+  local filename="$(echo "$url" | sed 's+/download$++g' | sed 's+.*/++g')"
   if [ "$quiet" == 0 ];then
-    if [ -n "$file" ] && [ "$file" != "$(pwd)/$(basename $url)" ]; then
-      status -n "Downloading $(basename "$url") to $file... " 1>&2
+    if [ -n "$file" ] && [ "$file" != "$(pwd)/$filename" ]; then
+      status -n "Downloading $filename to $file... " 1>&2
     else
-      status -n "Downloading $(basename "$url")... " 1>&2
+      status -n "Downloading $filename... " 1>&2
     fi
     echo
   fi
@@ -2796,7 +2797,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     
     #if $file empty, generate it based on url
     if [ -z "$file" ];then
-      file="$(pwd)/$(basename "$url")"
+      file="$(pwd)/$filename"
     fi
     
     #use these flags for aria2c
