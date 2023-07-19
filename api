@@ -1435,6 +1435,25 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
   local error_caption=()
   #store the general type of error
   local error_type=''
+
+  #frankendebian detector
+  #this can cause many other errors but we want this to be the first reported issue to the user
+  if [ ! -z "$__os_codename" ]; then
+    # if all instances of the primary apt repo(s) do not match the reported $__os_codename, then the user has made a frankendebian
+    if grep "Hit:.*raspbian.raspberrypi.org/raspbian\|Hit:.*archive.raspberrypi.org/debian\|\
+Hit:.*debian.org/debian\|Hit:.*security.debian.org/\|\
+Hit:.*ports.ubuntu.com\|Hit:.*esm.ubuntu.com/apps/ubuntu\|Hit:.*esm.ubuntu.com/infra/ubuntu\|\
+Hit:.*repo.huaweicloud.com/debian\|Hit:.*repo.huaweicloud.com/ubuntu-ports\|\
+Hit:.*apt.pop-os.org\|\
+Hit:.*apt.armbian.com" <<<"$errors" | awk '{print $3}' | grep -qv "$__os_codename"; then
+      error_caption+=("FrankenDebian DETECTED!
+
+Do not break your distro: https://wiki.debian.org/DontBreakDebian
+Your current reported release ($__os_codename) should not be combined with other releases.
+Your install is in a broken unrecoverable state. You will need to re-flash/re-install your Operating System of choice.")
+      error_type="system"
+    fi
+  fi
   
 #------------------------------------------
 #repo issues below
