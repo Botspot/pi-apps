@@ -1524,6 +1524,14 @@ You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fi
 Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
     error_type="system"
   fi
+
+  #check for broken pi-apps-local-packages symlink
+  if grep -q "E: Could not open file /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages" <<<"$errors" ;then
+    error_caption+=("APT reported the pi-apps-local-packages list as missing.
+
+The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?")
+    # no error_type since we want the user to be able to upload logs for this issue while still showing the custom caption
+  fi
   
 #------------------------------------------
 #repo issues above, apt/dpkg issues below
