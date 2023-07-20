@@ -3,4 +3,4 @@ purge_packages || exit 1
 
 sudo rm -f /etc/apt/sources.list.d/box64.list || error "Failed to remove repo!"
 
-sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg || error "Failed to remove GPG key!"
+sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg || error "Failed to remove GPG key!"

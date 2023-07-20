@@ -11,7 +11,7 @@ purge_packages || exit 1
 
 sudo rm -f /etc/apt/sources.list.d/box86.list || error "Failed to remove repo!"
 
-sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg || error "Failed to remove GPG key!"
+sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg || error "Failed to remove GPG key!"
 
 if [ "$arch" == 64 ]; then
   # remove armhf architecture if no packages from it are currently installed

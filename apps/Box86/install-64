@@ -57,14 +57,15 @@ install_packages libc6:armhf libstdc++6:armhf \
   libgssapi-krb5-2:armhf libkrb5-3:armhf \
   $rpi_arm_userspace $mesa_va_drivers libegl1-mesa:armhf libgl1-mesa-glx:armhf libgles2-mesa:armhf
 
-sudo wget https://raw.githubusercontent.com/ryanfortner/box86-debs/c1f02bf85a6221d05c6389cbae7e933f5e82d2fd/box86.list -O /etc/apt/sources.list.d/box86.list
+sudo wget https://github.com/Pi-Apps-Coders/box86-debs/raw/master/box86.list -O /etc/apt/sources.list.d/box86.list
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box86.list
   error "Failed to add box86.list file!"
 fi
 
-sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg
-wget -qO- https://raw.githubusercontent.com/ryanfortner/box86-debs/master/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box86-debs-archive-keyring.gpg >/dev/null
+sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg
+sudo mkdir -p /etc/apt/trusted.gpg.d
+wget -qO- https://Pi-Apps-Coders.github.io/box86-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg > /dev/null
 
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box86.list
