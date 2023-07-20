@@ -489,7 +489,9 @@ $(echo "$existing_deps" | sed -z 's|, |\n|g')"
   { #create dummy apt package that depends on the packages this app requires
     
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
-    local depends="$(printf "$packages" | sort | uniq | sed -z 's|\n|, |g')"
+    local depends="$(printf "$packages" | sort -u -t' ' -k1,1 | sed -z 's|\n|, |g')"
+    # remove trailing ', ' from sort always adding a trailing newline if there isn't one present
+    depends="${depends::-2}"
     
     rm -rf ~/$package_name ~/$package_name.deb
     mkdir -p ~/$package_name/DEBIAN
