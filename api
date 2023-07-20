@@ -403,14 +403,16 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #determine the package name from the filename
       packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
+      packageversion="$(dpkg-deb -I "$package" | grep "^ Version:" | awk '{print $2}')"
       [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$package'"
+      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$package'"
       
       #add this local package to the pi-apps-local-packages repository
       repo_add "$package" || return 1
       using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
       
       #replace package filename with name of package
-      packages="$(echo "$packages" | sed "s|$package|$packagename|")"
+      packages="$(echo "$packages" | sed "s|$package|$packagename (>= $packageversion)|")"
       
     #handle urls
     elif [[ "$package" == *://* ]];then
@@ -429,14 +431,16 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #determine the package name from the filename
       packagename="$(dpkg-deb -I "$filename" | grep "^ Package:" | awk '{print $2}')"
+      packageversion="$(dpkg-deb -I "$filename" | grep "^ Version:" | awk '{print $2}')"
       [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
+      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$filename'"
       
       #add this local package to the pi-apps-local-packages repository
       repo_add "$filename" || return 1
       using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
       
       #replace package url with name of package
-      packages="$(echo "$packages" | sed "s|$package|$packagename|")"
+      packages="$(echo "$packages" | sed "s|$package|$packagename (>= $packageversion)|")"
       
     #expand regex (package-name contains *)
     elif echo "$package" | grep -q '*' ;then 
@@ -458,9 +462,6 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
-  #change the $packages list from newline-delimited to space-delimited
-  packages="$(tr '\n' ' ' <<<"$packages")"
-  
   if [ "$using_local_packages" == 1 ];then
     #Initialize the pi-apps-local-packages repository
     repo_refresh || return 1
@@ -481,13 +482,14 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     
     local existing_deps="$(package_dependencies "$package_name")"
     status "The $package_name package is already installed. Inheriting its dependencies: $(echo "$existing_deps")"
-    packages+=" $existing_deps"
+    packages+="
+$(echo "$existing_deps" | sed -z 's|, |\n|g')"
   fi
   
   { #create dummy apt package that depends on the packages this app requires
     
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
-    local depends="$(echo "$packages" | tr ' ' ',' | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort | uniq | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
+    local depends="$(printf "$packages" | sort | uniq | sed -z 's|\n|, |g')"
     
     rm -rf ~/$package_name ~/$package_name.deb
     mkdir -p ~/$package_name/DEBIAN
