@@ -224,13 +224,15 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 find "${DIRECTORY}/logs" -type f -mtime +6 -exec rm -f {} \; &>/dev/null &
 
 #check if hardware and OS is supported
-if [[ "$supported" == "yes" ]] || [[ "$supported" == "no" ]]; then
+if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
   true
 else
   if is_supported_system >/dev/null;then
     export supported=yes
+    export unsupported_message=''
   else
     export supported=no
+    export unsupported_message="$(is_supported_system)"
   fi
 fi
 
@@ -641,16 +643,6 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     exit 0
   fi
   
-  #display warning if hardware and os is unsupported
-  if [ "$supported" == no ];then
-    warning "YOUR SYSTEM IS UNSUPPORTED:\n$(is_supported_system)"
-    sleep 1
-    echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m"
-    sleep 1
-    echo -e "\e[103m\e[30mWaiting 10 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m"
-    sleep 10
-  fi
-  
   #determine path for log file to be created
   logfile="${DIRECTORY}/logs/${action}-incomplete-${app}.log"
   if [ -f "$logfile" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-success-+g')" ] || [ -f "$(echo "$logfile" | sed 's+-incomplete-+-fail-+g')" ];then
@@ -665,6 +657,17 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
       fi
       i=$((i+1))
     done
+  fi
+  
+  #display warning if hardware and os is unsupported
+  if [ "$supported" == no ];then
+    
+    warning "YOUR SYSTEM IS UNSUPPORTED:\n$unsupported_message" 2>&1 | tee -a "$logfile"
+    sleep 1
+    echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m" | tee -a "$logfile"
+    sleep 1
+    echo -e "\e[103m\e[30mWaiting 10 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m" | tee -a "$logfile"
+    sleep 10
   fi
   
   #if this app has scripts, determine which script to run

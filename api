@@ -461,7 +461,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   elif [[ "$packages" == */* ]];then
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
-
+  
   #change the $packages list from newline-delimited to underscore-delimited
   packages="$(tr '\n' '_' <<<"$packages")"
   
@@ -1439,25 +1439,6 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
   local error_caption=()
   #store the general type of error
   local error_type=''
-
-  #frankendebian detector
-  #this can cause many other errors but we want this to be the first reported issue to the user
-  if [ ! -z "$__os_codename" ]; then
-    # if all instances of the primary apt repo(s) do not match the reported $__os_codename, then the user has made a frankendebian
-    if grep "Hit:.*raspbian.raspberrypi.org/raspbian\|Hit:.*archive.raspberrypi.org/debian\|\
-Hit:.*debian.org/debian\|Hit:.*security.debian.org/\|\
-Hit:.*ports.ubuntu.com\|Hit:.*esm.ubuntu.com/apps/ubuntu\|Hit:.*esm.ubuntu.com/infra/ubuntu\|\
-Hit:.*repo.huaweicloud.com/debian\|Hit:.*repo.huaweicloud.com/ubuntu-ports\|\
-Hit:.*apt.pop-os.org\|\
-Hit:.*apt.armbian.com" <<<"$errors" | awk '{print $3}' | grep -qv "$__os_codename"; then
-      error_caption+=("FrankenDebian DETECTED!
-
-Do not break your distro: https://wiki.debian.org/DontBreakDebian
-Your current reported release ($__os_codename) should not be combined with other releases.
-Your install is in a broken unrecoverable state. You will need to re-flash/re-install your Operating System of choice.")
-      error_type="system"
-    fi
-  fi
   
 #------------------------------------------
 #repo issues below
@@ -2260,8 +2241,8 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
     elif [ "$action" == install ] && [ "$(app_type "$app")" == standard ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/$(script_name_cpu "$app")" "${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")" ;then
       text+=$'\n'"Error report cannot be sent because this app is not the official version."
     elif [ "$action" == uninstall ] && [ "$(app_type "$app")" == standard ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/uninstall" "${DIRECTORY}/apps/${app}/uninstall" ;then
-      text+=$'\n'"Error report cannot be sent because this app does not match the official version."
-    elif [ "$supported" == no ];then
+      text+=$'\n'"Error report cannot be sent because this app is not the official version."
+    elif [ "$supported" == no ];then #variable set by the manage script
       text+=$'\n'"Error report cannot be sent because your system is unsupported."
     else
       #if all of the above checks evaluate to FALSE, then display the "Send report" button.
@@ -2275,12 +2256,17 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       text+=$'\n'"Support is available on <a href=\"https://discord.gg/RXSTvaUvuu\">Discord</a> and <a href=\"https://github.com/Botspot/pi-apps/issues/new/choose\">Github</a>."
     fi
     
-    #if the error_caption is empty, display logfile instead
+    #if the error_caption is empty, display logfile in the scrollable text field
     if [ -z "$error_caption" ];then
       text+=$'\n'"You can view the terminal output below. (scroll down)"
       error_caption="$(cat "$logfile")"
     else
       text+=$'\n'"Below, Pi-Apps explains what went wrong and how you can fix it."
+    fi
+    
+    #If system is unsupported, display the reason at the top of the scrollable text
+    if [ "$supported" == no ];then
+      error_caption="$(echo "$unsupported_message" | sed "s/\x1b\[[0-9;]*[a-zA-Z]//g")"$'\n'$'\n'"$error_caption"
     fi
     
     #this dialog may be one in a series of failed_app dialogs. Name the window-close button accordingly.
@@ -2412,6 +2398,22 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
     return 1
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
+    return 1
+  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -v '^#\|^deb-src' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
+debian.org/debian\|security.debian.org/\|\
+ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
+repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
+apt.pop-os.org\|\
+apt.armbian.com" | grep -v $__os_codename)" && [ ! -z "$frankendebian" ];then
+    echo "Congratulations, Linux tinkerer, you broke your system. You have made your system a FrankenDebian.
+This website explains your mistake in more detail: https://wiki.debian.org/DontBreakDebian
+Your current reported release (Debian ${__os_codename^}) should not be combined with other releases.
+Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this line' || echo 'these lines'):"
+    local IFS=$'\n'
+    for line in $frankendebian ;do
+      echo -e "\e[4m$line\e[24m in $(grep "$line" /etc/apt/sources.list /etc/apt/sources.list.d/*.list | awk -F: '{print $1}')"
+    done
+    echo "Your system might be recoverable if you did this recently and have not performed an apt upgrade yet, but otherwise you should probably reinstall your OS."
     return 1
   elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
     echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
