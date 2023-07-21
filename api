@@ -261,7 +261,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
 }
 
 less_apt() { #remove unwanted lines from apt output
-  grep --line-buffered -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|After this operation,\|Selecting previously unselected package\|Preparing to unpack\|Setting up \|Processing triggers for \|^$"
+  grep --line-buffered -v "apt does not have a stable CLI interface.\|Reading package lists...\|Building dependency tree\|Reading state information...\|Need to get\|Selecting previously unselected package\|Preparing to unpack\|Setting up \|Processing triggers for \|^$"
 }
 
 apt_update() { #run an apt update with error-checking and minimal output
