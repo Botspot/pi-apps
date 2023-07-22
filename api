@@ -462,8 +462,8 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
-  #change the $packages list from newline-delimited to underscore-delimited
-  packages="$(tr '\n' '_' <<<"$packages")"
+  #change the $packages list from newline-delimited to comma-delimited
+  packages="$(tr '\n' ',' <<<"$packages")"
   
   if [ "$using_local_packages" == 1 ];then
     #Initialize the pi-apps-local-packages repository
@@ -485,13 +485,13 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     
     local existing_deps="$(package_dependencies "$package_name")"
     status "The $package_name package is already installed. Inheriting its dependencies: $(echo "$existing_deps")"
-    packages+="_""$(echo "$existing_deps" | sed -z 's|, |_|g')"
+    packages+=",""$(echo "$existing_deps" | sed 's/, /,/g')"
   fi
   
   { #create dummy apt package that depends on the packages this app requires
     
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
-    local depends="$(echo "$packages" | sed 's/_/,/g' | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
+    local depends="$(echo "$packages" | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
     
     rm -rf ~/$package_name ~/$package_name.deb
     mkdir -p ~/$package_name/DEBIAN
