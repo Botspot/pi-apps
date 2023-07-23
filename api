@@ -2399,7 +2399,8 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -v '^#\|^deb-src' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
+  # remove lines of deb-src and # as first non-whitespace character and then only print lines where first non-whitespace character is deb
+  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v '^#\|^ \+#\|^deb-src\|^ \+deb-src' | grep '^deb\|^ \+deb' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
@@ -2407,7 +2408,7 @@ apt.pop-os.org\|\
 apt.armbian.com" | grep -v $__os_codename)" && [ ! -z "$frankendebian" ];then
     echo "Congratulations, Linux tinkerer, you broke your system. You have made your system a FrankenDebian.
 This website explains your mistake in more detail: https://wiki.debian.org/DontBreakDebian
-Your current reported release (Debian ${__os_codename^}) should not be combined with other releases.
+Your current reported release (${__os_codename^}) should not be combined with other releases.
 Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this line' || echo 'these lines'):"
     local IFS=$'\n'
     for line in $frankendebian ;do
