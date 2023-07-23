@@ -2399,7 +2399,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -v '^#\|^deb-src' | grep '^deb' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
+  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -o '^[^#]*' | grep '^deb ' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
