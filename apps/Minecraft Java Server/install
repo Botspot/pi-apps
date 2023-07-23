@@ -128,10 +128,10 @@ if [ -z "$server_version" ]; then
   # tell user to choose java 8, 16, or 17
   description="In order to run Minecraft, the game requires a specific version of Java.\
   \nPlease choose below which version of java the server of your choice should run with.\
-  \nJava versions can be 8, 16, or 17.\
+  \nJava versions can be 8 or 17.\
   \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-  \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
-  table=("Java 17" "Java 16" "Java 8")
+  \nMinecraft 1.17+ should use java 17."
+  table=("Java 17" "Java 8")
   userinput_func "$description" "${table[@]}"
   java_selection="$output"
 else
@@ -144,10 +144,7 @@ else
   if [ $(version $server_version) -le $(version "1.16.5") ]; then
     echo "Using Java 8 by default"
     java_selection="Java 8"
-  elif [ $(version $server_version) -le $(version "1.17.1") ]; then
-    echo "Using Java 16 by default"
-    java_selection="Java 16"
-  elif [ $(version $server_version) -ge $(version "1.18") ]; then
+  elif [ $(version $server_version) -ge $(version "1.17") ]; then
     echo "Using Java 17 by default"
     java_selection="Java 17"
   else
@@ -157,7 +154,7 @@ else
     \nJava versions can be 8, 16, or 17.\
     \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
     \nMinecraft 1.17.X should use java 16 and Minecraft 1.18+ should use java 17."
-    table=("Java 17" "Java 16" "Java 8")
+    table=("Java 17" "Java 8")
     userinput_func "$description" "${table[@]}"
     java_selection="$output"
   fi
@@ -167,46 +164,7 @@ install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
   "Java 8"|"Java 17")
-    # temurin repo is NOW live
-    # add temurin repo for java 8/11/17
-    status "Adding Adoptium repository:"
-
-    echo "- public key -> keyring"
-    rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-    wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public || exit 1
-    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key || error "Failed to create a keyring with gpg"
-    rm -f /tmp/adoptium-public-key
-
-    echo " - keyring -> GPG key"
-    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg || error "Failed to create a GPG key"
-    rm -f /tmp/adoptium-keyring.gpg
-
-    echo " - Moving GPG key to /usr/share/keyrings"
-    sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
-
-    echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-    ;;
-  "Java 16")
-    # add old adoptopenjdk for java 16
-    status "Adding AdoptOpenJDK repository:"
-
-    echo "- public key -> keyring"
-
-    rm -f /tmp/adoptopenjdk-public-key /tmp/adoptopenjdk-archive-keyring.gpg
-    wget -O /tmp/adoptopenjdk-public-key https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public || exit 1
-    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --import /tmp/adoptopenjdk-public-key || error "Failed to create a keyring with gpg"
-    rm -f /tmp/adoptopenjdk-public-key
-
-    echo " - keyring -> GPG key"
-    gpg --no-default-keyring --keyring /tmp/adoptopenjdk-keyring.gpg --export --output /tmp/adoptopenjdk-archive-keyring.gpg || error "Failed to create a GPG key"
-    rm -f /tmp/adoptopenjdk-keyring.gpg
-
-    echo " - Moving GPG key to /usr/share/keyrings"
-    sudo mv -f /tmp/adoptopenjdk-archive-keyring.gpg /usr/share/keyrings || error "Failed to move GPG key to /usr/share/keyrings"
-
-    echo " - Creating /etc/apt/sources.list.d/adoptopenjdk.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptopenjdk-archive-keyring.gpg] https://adoptopenjdk.jfrog.io/adoptopenjdk/deb bionic main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list >/dev/null
+    adoptium_installer || exit 1
     ;;
   *)
     error "No java version selected, exiting the script"
@@ -227,45 +185,11 @@ esac
 
 case "$java_selection" in
   "Java 8")
-    (install_packages temurin-8-jre)
-    if [ $? != 0 ]; then
-      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
-        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-        # safe to remove
-        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-        error "Failed to install temurin packages. Adoptium repository has been removed."
-      else
-        error "Failed to install temurin packages."
-      fi
-    fi
+    install_packages temurin-8-jre || exit 1
     java_location="/usr/lib/jvm/temurin-8-jre-$dpkg_arch/bin/java"
     ;;
-  "Java 16")
-    (install_packages adoptopenjdk-16-hotspot-jre)
-    if [ $? != 0 ]; then
-      if ! anything_installed_from_repo "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb" ; then
-        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-        # safe to remove
-        sudo rm -f /etc/apt/sources.list.d/adoptopenjdk.list /usr/share/keyrings/adoptopenjdk-archive-keyring.gpg
-        error "Failed to install adoptopenjdk packages. AdoptOpenJDK repository has been removed."
-      else
-        error "Failed to install adoptopenjdk packages."
-      fi
-    fi
-    java_location="/usr/lib/jvm/adoptopenjdk-16-hotspot-jre-$dpkg_arch/bin/java"
-    ;;
   "Java 17")
-    (install_packages temurin-17-jre)
-    if [ $? != 0 ]; then
-      if ! anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb" ; then
-        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-        # safe to remove
-        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-        error "Failed to install temurin packages. Adoptium repository has been removed."
-      else
-        error "Failed to install temurin packages."
-      fi
-    fi
+    install_packages temurin-17-jre || exit 1
     java_location="/usr/lib/jvm/temurin-17-jre-$dpkg_arch/bin/java"
     ;;
 esac
