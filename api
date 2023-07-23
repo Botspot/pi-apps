@@ -1622,14 +1622,18 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
     # add additional output for the packages that have unmet dependencies
 
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
-    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
-    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs apt-cache show >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a >> "$logfile"
   fi
 
   if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
   fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
