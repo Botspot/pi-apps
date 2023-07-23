@@ -693,6 +693,45 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   fi
 }
 
+adoptium_installer() {
+  status "Adding Adoptium repository:"
+
+  echo "- public key -> keyring"
+  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+  rm -f /tmp/adoptium-public-key
+
+  echo " - keyring -> GPG key"
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+  rm -f /tmp/adoptium-keyring.gpg
+
+  echo " - Moving GPG key to /usr/share/keyrings"
+  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+  case "$__os_codename" in
+  bionic | focal | jammy | buster | bullseye | bookworm)
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  *)
+    # use bionic target name explicitly for any other OS as its the oldest LTS target adoptium continues to support
+    # all supported adoptium OSs use the same debs so the target specified does not actually matter
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb bionic main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  esac
+  apt_update
+  if [ $? != 0 ]; then
+    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+    if [ $? != 0 ]; then
+      # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+      # safe to remove
+      sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+    fi
+    error "Failed to perform apt update after adding Adoptium repository."
+  fi
+}
+
 terminal_manage() { # wrapper for the original terminal_manage function to terminal_mange_multi
   action="$1"
   app="$2" #one app name
