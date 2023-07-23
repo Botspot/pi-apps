@@ -22,119 +22,32 @@ status "Installing Necessary Dependencies"
 case "$__os_id" in
 # Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
 Raspbian | Debian)
-  case "$__os_codename" in
-  bullseye | buster | stretch | jessie)
-    install_packages lsb-release wget apt-transport-https gnupg || error "Failed to install dependencies"
-    hash -r
-
-    status "Adding Adoptium repository:"
-
-    echo "- public key -> keyring"
-    rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-    wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-    rm -f /tmp/adoptium-public-key
-
-    echo " - keyring -> GPG key"
-    gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-    rm -f /tmp/adoptium-keyring.gpg
-
-    echo " - Moving GPG key to /usr/share/keyrings"
-    sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
-
-    echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-
-    echo " - Installing temurin-8-jre temurin-17-jre"
-    #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
-    (install_packages temurin-8-jre temurin-17-jre)
-    if [ $? != 0 ]; then
-      anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
-      if [ $? != 0 ]; then
-        # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-        # safe to remove
-        sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-      fi
-      warning "Failed to install temurin packages. Adoptium repository has been removed." && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
-    fi
-    ;;
-  bookworm | sid)
-    warning "You are running Debian $__os_codename which is an unstable repo, you may not have Java 8 or 17 installed by this script."
-    java_8=""
-    package_available openjdk-8-jre
-    if [[ $? == "0" ]]; then
-      java_8="openjdk-8-jre"
-    fi
-    java_17=""
-    package_available openjdk-17-jre
-    if [[ $? == "0" ]]; then
-      java_17="openjdk-17-jre"
-    fi
-    if [ ! -z "$java_8" ] || [ ! -z "$java_17" ]; then
-      # either java 8 or 17 is found to be available by package_available, attempt to install them
-      install_packages $java_8 $java_17 || warning "Failed to install install a working java 8 or 17. You will have to install these yourself. Continuing the install without them."
-    fi
-    ;;
-  *)
-    error "Debian version ($__os_codename) is too old, update to debian Jessie or newer"
-    ;;
-  esac
-
-  # install normal dependencies from raspbian/debian repos
-  install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
+  if printf '%s\n' "10" "$__os_release" | sort -CV; then
+    adoptium_installer || exit 1
+    install_packages temurin-8-jre temurin-17-jdk || exit 1
+    java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  else
+    error "Debian version ($__os_codename) is too old, update to debian Buster or newer"
+  fi
   ;;
 Kali)
-  install_packages wget apt-transport-https gnupg || error "Failed to install dependencies"
-  hash -r
-
-  status "Adding Adoptium repository:"
-
-  echo "- public key -> keyring"
-  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-  rm -f /tmp/adoptium-public-key
-
-  echo " - keyring -> GPG key"
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-  rm -f /tmp/adoptium-keyring.gpg
-
-  echo " - Moving GPG key to /usr/share/keyrings"
-  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
-
-  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-  echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-
-  echo " - Installing temurin-8-jre temurin-17-jre"
-  #try to install temurin and adoptopenjdk java versions; if it fails, remove repository to avoid breaking user's system
-  (install_packages temurin-8-jre temurin-17-jre)
-  if [ $? != 0 ]; then
-    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
-    if [ $? != 0 ]; then
-      # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-      # safe to remove
-      sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-    fi
-    warning "Failed to install temurin packages. Adoptium repository has been removed." && warning "It is up to you to download and install a working java 8 and 17 version." && echo "" && warning "Continuing the MultiMC5 Install without Java 8 and 17"
-  fi
-
-  # remove old java installs to free up space
-  rm -rf ~/MultiMC/install/java
-  # install normal dependencies from raspbian/debian repos
-  install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev openjdk-11-jdk qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
+  adoptium_installer || exit 1
+  install_packages temurin-8-jre temurin-17-jdk || exit 1
+  java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
   ;;
 Ubuntu)
-  requiredver="18.04"
-  if ! printf '%s\n' "$requiredver" "$__os_release" | sort -CV; then
-    error_user "$__os_codename appears to be too old to run/compile MultiMC5"
-  fi
-  # install dependencies
-  install_packages build-essential libopenal1 x11-xserver-utils git clang cmake curl zlib1g-dev openjdk-8-jre openjdk-11-jdk openjdk-17-jre qtbase5-dev || error "Failed to install dependencies"
+  # ubuntu default repositories now include openjdk-17
+  # install java
+  install_packages openjdk-8-jre openjdk-17-jdk || exit 1
+  java_home="$(dpkg -L openjdk-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
   ;;
 *)
   error "$__os_id appears to be an unsupported OS"
   ;;
 esac
+
+# install normal dependencies
+install_packages build-essential libopenal1 x11-xserver-utils subversion git clang cmake curl zlib1g-dev qtbase5-dev mesa-utils || error "Failed to install dependencies on $__os_codename"
 
 hash -r
 
@@ -210,8 +123,8 @@ get_system
 rm -rf CMakeCache.txt
 status "Generating the CMake File"
 case "$arch" in
-"64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-arm64' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu" -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
-"32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME='/usr/lib/jvm/java-11-openjdk-armhf' -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu" -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
+"64") cmake -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME="$java_home" -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu" -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean/index.json" ../src || error "cmake failed to generate" ;;
+"32") cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLauncher_EMBED_SECRETS=ON -DJAVA_HOME="$java_home" -DLauncher_BUILD_PLATFORM="$model" -DLauncher_BUG_TRACKER_URL="https://github.com/Botspot/pi-apps/issues" -DLauncher_DISCORD_URL="https://discord.gg/RXSTvaUvuu" -DCMAKE_INSTALL_PREFIX=../install -DLauncher_META_URL:STRING="https://raw.githubusercontent.com/theofficialgman/meta-multimc/master-clean-arm32/index.json" ../src || error "cmake failed to generate" ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
