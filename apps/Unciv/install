@@ -2,9 +2,6 @@
 
 version=4.7.9
 
-### Install dependencies
-install_packages lsb-release wget gpg || error "Failed to install dependencies"
-
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
 
@@ -19,38 +16,8 @@ fi
 # so, we will use Temurin OpenJDK 8 installation cause thats the minimal Java version Unciv needs
 # Temurin very smoothly on Raspberry Pi 3B+ without any problems
 
-status "Adding Adoptium repository:"
-
-echo "- public key -> keyring"
-rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
-rm -f /tmp/adoptium-public-key
-
-echo " - keyring -> GPG key"
-gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-rm -f /tmp/adoptium-keyring.gpg
-
-echo " - Moving GPG key to /usr/share/keyrings"
-sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
-
-echo " - Creating /etc/apt/sources.list.d/adoptium.list"
-echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $(get_codename) main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-
-status "Installing temurin-8-jre"
-#try to install temurin-8-jre; if it fails, remove repository to avoid breaking user's system
-(install_packages temurin-8-jre)
-if [ $? != 0 ]; then
-  anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
-  if [ $? != 0 ]; then
-    # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
-    # safe to remove
-    sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
-    error "Failed to install temurin packages. Adoptium repository has been removed."
-  else
-    error "Failed to install temurin packages."
-  fi
-fi
+adoptium_installer || exit 1
+install_packages temurin-8-jre || exit 1
 
 status "Downloading Unciv.jar"
 echo '- writing into /tmp/Unciv.jar'
