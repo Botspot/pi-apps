@@ -2,10 +2,36 @@
 
 version=2022.1.4
 
-# Get dependencies
-install_packages build-essential openjdk-11-jdk || exit 1
+status "Installing Java 17"
+case "$__os_id" in
+# Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
+Raspbian | Debian)
+  if printf '%s\n' "10" "$__os_release" | sort -CV; then
+    adoptium_installer || exit 1
+    install_packages temurin-17-jdk || exit 1
+    java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  else
+    error "Debian version ($__os_codename) is too old, update to debian Buster or newer"
+  fi
+  ;;
+Kali)
+  adoptium_installer || exit 1
+  install_packages temurin-17-jdk || exit 1
+  java_home="$(dpkg -L temurin-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  ;;
+Ubuntu)
+  # ubuntu default repositories now include openjdk-17
+  # install java
+  install_packages openjdk-17-jdk || exit 1
+  java_home="$(dpkg -L openjdk-17-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+  ;;
+*)
+  error "$__os_id appears to be an unsupported OS"
+  ;;
+esac
 
-java_home="$(dpkg -L openjdk-11-jdk | grep "/usr/lib/jvm.*$(dpkg --print-architecture)$")"
+# Get dependencies
+install_packages build-essential || exit 1
 
 sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
 sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
