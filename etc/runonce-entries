@@ -340,4 +340,11 @@ runonce <<"EOF"
   fi
 EOF
 
+#add /opt if not present
+runonce <<"EOF"
+  if [ ! -d /opt ]; then
+    sudo_popup mkdir /opt
+  fi
+EOF
+
 true
