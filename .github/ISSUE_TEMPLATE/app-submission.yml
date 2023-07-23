@@ -41,6 +41,7 @@ body:
     id: confirmations
     attributes:
       label: Confirmations
+      description: All of the following MUST be met. If you can NOT check one of these boxes. Then do NOT create a GitHub Issue. We will close it. The checkboxes are made a requirement on purpose.
       options:
         - label: I have confirmed that this app is legal and not piracy.
           required: true
