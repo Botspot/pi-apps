@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #get java
-install_packages openjdk-11-jdk || exit 1
+adoptium_installer || exit 1
+install_packages temurin-11-jdk || exit 1
 
 rm -rf ~/jgrasp.zip ~/jgrasp
 
