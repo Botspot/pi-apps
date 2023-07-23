@@ -2,15 +2,16 @@
 
 version=2.1.4
 
-install_packages openjdk-11-jre || exit 1
+adoptium_installer || exit 1
+install_packages temurin-17-jre || exit 1
 
 mkdir -p ~/.local/bin
 wget -O ~/.local/bin/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Java.jar || error "Could not download game!"
 
 
 case "$arch" in
-  "64") path=/usr/lib/jvm/java-11-openjdk-arm64/bin/java ;;
-  "32") path=/usr/lib/jvm/java-11-openjdk-armhf/bin/java ;;
+  "64") path=/usr/lib/jvm/temurin-17-jre-arm64/bin/java ;;
+  "32") path=/usr/lib/jvm/temurin-17-jre-armhf/bin/java ;;
   *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
