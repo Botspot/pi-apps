@@ -3,3 +3,4 @@
 sudo rm -f /opt/worldpainter/.install4j/pref_jre.cfg
 
 purge_packages || exit 1
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
