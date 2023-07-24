@@ -2419,6 +2419,10 @@ Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this
     done
     echo "Your system might be recoverable if you did this recently and have not performed an apt upgrade yet, but otherwise you should probably reinstall your OS."
     return 1
+  elif [ -z "$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -o '^[^#]*' | grep '^deb ')" ];then
+    echo "Congratulations, Linux tinkerer, you broke your system. You have removed ALL debian sources from your system.
+All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
+    return 1
   elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
     echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
     return 1
