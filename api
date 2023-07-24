@@ -2415,7 +2415,9 @@ Your current reported release (${__os_codename^}) should not be combined with ot
 Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this line' || echo 'these lines'):"
     local IFS=$'\n'
     for line in $frankendebian ;do
-      echo -e "\e[4m$line\e[24m in $(grep "$line" /etc/apt/sources.list /etc/apt/sources.list.d/*.list | awk -F: '{print $1}')"
+      local site="$(echo "$line" | awk '{print $1}')"
+      local release="$(echo "$line" | awk '{print $2}')"
+      echo -e "\e[4m$line\e[24m in $(apt-get indextargets --no-release-info --format '$(SOURCESENTRY)' "Release: $release" "Site: $site" | awk -F':' '{print $1}' | sort -u)"
     done
     echo "Your system might be recoverable if you did this recently and have not performed an apt upgrade yet, but otherwise you should probably reinstall your OS."
     return 1
