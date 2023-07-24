@@ -12,7 +12,7 @@ fi
 
 sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg
 sudo mkdir -p /etc/apt/trusted.gpg.d
-wget -qO- hhttps://pi-apps-coders.github.io/box86-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg > /dev/null
+wget -qO- https://pi-apps-coders.github.io/box86-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg > /dev/null
 
 if [ $? != 0 ];then
   sudo rm -f /etc/apt/sources.list.d/box86.list
