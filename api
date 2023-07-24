@@ -55,19 +55,19 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "${bg_default}    ${green}🭊${darkgreen}🬹🬹🬹${green}🬿${default}                                          ${darkgreen}                ${default}
  ${blue1}🭇🬭🬭${green}\e[48;5;26m🬎${bg_default}${blue2}🬭🬭🬭${blue3}${green}\e[48;5;26m🬎${bg_default}${blue3}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
- ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▄▄🭞 ▄ ${blue3}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue4}  ▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue3}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue4}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
  ${blue3}🭦${bg_black}🭏🬭🬭🬭${blue4}🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
     echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
  ${blue1}▂▂▂${green}\e[48;5;26m\e[7m▂\e[27m${bg_default}${blue2}▂▂▂${blue3}${green}\e[48;5;26m\e[7m▂\e[27m${bg_default}${blue3}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
- ${blue1}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▄▄\e[7m▂\e[27m ▄ ${blue3}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue4}  ▐${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue3}${bg_default}\e[7m▂\e[27m${bg_black}▃▃▃▃${blue4}▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+ ${bg_black}${blue1}▌  ${red}▄ ▄ ▄${blue3}  ▐${bg_default}${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_black}${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${bg_default}${default}   █▄▄\e[7m▂\e[27m ▄ ${blue3}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_black}${blue2}▌  ${red}▄ ▄ ▄${blue4}  ▐${bg_default}${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue3}\e[7m▂\e[27m${bg_black}▃▃▃▃${blue4}▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
