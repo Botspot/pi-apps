@@ -650,7 +650,7 @@ ubuntu_ppa_installer() { #setup a PPA on an Ubuntu distro. Arguments: ppa_name
   [ -z "$1" ] && error "ubuntu_ppa_installer(): This function is used to add a ppa to a ubuntu based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
@@ -678,7 +678,7 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && error "debian_ppa_installer(): This function is used to add a ppa to a debian based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/ubuntu ${ppa_dist}"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
@@ -1649,8 +1649,8 @@ deb http://archive.raspberrypi.org/debian/ $(get_codename) main
     error_type="system"
   fi
   
-  #if /etc/apt/sources.list missing, display error message
-  if [ ! -f /etc/apt/sources.list ] ;then
+  #if /etc/apt/sources.list and /etc/apt/sources.list.d/ubuntu.sources (default sources in Ubuntu 23.10) missing, display error message
+  if [ ! -f /etc/apt/sources.list ] && [ ! -f /etc/apt/sources.list.d/ubuntu.sources ] ;then
     if [ -f /etc/rpi-issue ] && [ "$arch" == 32 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
