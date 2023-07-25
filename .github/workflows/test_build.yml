@@ -25,7 +25,7 @@ on:
         - 64bit
         - Both
       bookworm_64:
-        description: 'Build on Debian Bookworm 64bit'
+        description: 'Build on PiOS Bookworm Beta'
         required: true
         type: boolean
       bionic_64:
@@ -159,10 +159,12 @@ jobs:
       - name: Test installing app on bookworm arm64
         uses: theofficialgman/arm-runner-action@v10
         with:
-          base_image: https://raspi.debian.net/daily/raspi_4_bookworm.img.xz
+          base_image: ${{ secrets.RPIOS_BOOKWORM_URL }}
           bind_mount_repository: yes
           install_standard_packages: yes
           image_additional_mb: 5000
+          # disable image caching to not leak the URL
+          enable_image_caching: no
           cpu: cortex-a7:cortex-a72
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
