@@ -161,7 +161,6 @@ jobs:
         with:
           base_image: ${{ secrets.RPIOS_BOOKWORM_URL }}
           bind_mount_repository: yes
-          install_standard_packages: yes
           image_additional_mb: 5000
           # disable image caching to not leak the URL
           enable_image_caching: no
