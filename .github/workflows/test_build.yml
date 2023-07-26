@@ -142,7 +142,6 @@ jobs:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
-          use_systemd_nspawn: yes
           cpu: cortex-a7:cortex-a72
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
@@ -165,7 +164,6 @@ jobs:
           image_additional_mb: 5000
           # disable image caching to not leak the URL
           enable_image_caching: no
-          use_systemd_nspawn: yes
           cpu: cortex-a7:cortex-a72
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
