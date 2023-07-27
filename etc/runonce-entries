@@ -55,6 +55,7 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/FreeCAD"
   rm -rf "${DIRECTORY}/apps/LinuxCNC"
   rm -f "${DIRECTORY}/apps/Steam/install-32"
+  rm -rf "${DIRECTORY}/apps/Cawbird"
   
   #remove TBOPlayer if it's not already successfully installed
   if [ "$(app_status TBOPlayer)" != 'installed' ];then

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-purge_packages || exit 1
-remove_repofile_if_unused /etc/apt/sources.list.d/home:IBBoard:cawbird.list
