@@ -855,7 +855,7 @@ session is restarted."
   if [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] && [ ! -z "$(ls /var/lib/flatpak/exports/share/applications)" ] && [ -z "$(ls /usr/share/applications/flatpak-temporary)" ];then
     sudo mkdir -p /usr/share/applications/flatpak-temporary
     sudo mount --bind /var/lib/flatpak/exports/share/applications /usr/share/applications/flatpak-temporary
-  elif [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] ;then
+  elif [[ "$XDG_DATA_DIRS" == */var/lib/flatpak/exports/share* ]] ;then
     sudo rm -rf /usr/share/applications/flatpak-temporary
   fi
   #Additionally, PiOS Buster had a bug where XDG_DATA_DIRS was missing flatpak's entries due to PiOS mods. Pi-Apps fixes this with a runonce.
