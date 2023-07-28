@@ -2,13 +2,13 @@
 
 version=2.6.0
 
-install_packages git libcurl4 libgtk-3-0 libtbb2 zlib1g libdbus-1-3 libxcb1 libxi6 libxfixes3 libatk-bridge2.0-0 libepoxy0 libxinerama1 libxrandr2 libxcursor1 libxcomposite1 libxdamage1 libxkbcommon0 libxcb-shm0 libxcb-render0 libpcre3 libxau6 libxdmcp6 libatspi2.0-0 libexpat1 liblzma5 libbsd0 libgpg-error0 || exit 1
+install_packages git libcurl4 libgtk-3-0 zlib1g libdbus-1-3 libxcb1 libxi6 libxfixes3 libatk-bridge2.0-0 libepoxy0 libxinerama1 libxrandr2 libxcursor1 libxcomposite1 libxdamage1 libxkbcommon0 libxcb-shm0 libxcb-render0 libpcre3 libxau6 libxdmcp6 libatspi2.0-0 libexpat1 liblzma5 libbsd0 libgpg-error0 || exit 1
 # note, libffi.so.6 is linked by the binary and not provided in the appimage (appimage contains libffi.so.7). this appimage probably never worked on bullseye
 
-wget "https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_${version}/PrusaSlicer-version_${version}-armhf.AppImage" -O ~/PrusaSlicer.AppImage || error "Failed to download appimage!"
-chmod +x ~/PrusaSlicer.AppImage || error "Failed to mark as executable!"
-
-mkdir -p ~/prusa-slicer
+wget -O /tmp/PrusaSlicer.AppImage "https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_${version}/PrusaSlicer-version_${version}-armhf.AppImage" || error "Failed to download appimage!"
+sudo mv /tmp/PrusaSlicer.AppImage /opt || error "Failed to move appimage to install location!"
+sudo chmod +x /opt/PrusaSlicer.AppImage || error "Failed to mark as executable!"
+sudo chown root:root /opt/PrusaSlicer.AppImage || error "Failed to set appimage ownership!"
 
 enable_module fuse || exit 1
 
@@ -16,11 +16,11 @@ echo "[Desktop Entry]
 Name=PrusaSlicer
 GenericName=3D Printing Software
 Comment=PrusaSlicer converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=$HOME/PrusaSlicer.AppImage
+Exec=/opt/PrusaSlicer.AppImage
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application
 MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
 Categories=Graphics;Education;Development;Science;
 Keywords=3D;Printing;
-StartupNotify=true" > ~/.local/share/applications/PrusaSlicer.desktop || error "Failed to create menu button!"
+StartupNotify=true" > /usr/local/share/applications/PrusaSlicer.desktop || error "Failed to create menu button!"
