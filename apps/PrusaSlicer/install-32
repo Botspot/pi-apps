@@ -12,6 +12,7 @@ sudo chown root:root /opt/PrusaSlicer.AppImage || error "Failed to set appimage 
 
 enable_module fuse || exit 1
 
+sudo mkdir -p /usr/local/share/applications
 echo "[Desktop Entry]
 Name=PrusaSlicer
 GenericName=3D Printing Software
