@@ -1,11 +1,12 @@
 #!/bin/bash
 
-case $(get_codename) in
+case $__os_codename in
 bionic|focal|jammy|kinetic|lunar)
   ubuntu_ppa_installer "phoerious/keepassxc"
   install_packages keepassxc || exit 1
   ;;
-bookworm|trixie|sid|mantic)
+bookworm)
+  debian_ppa_installer "phoerious/keepassxc" "jammy" "D89C66D0E31FEA2874EBD20561922AB60068FCD6" || exit 1
   install_packages keepassxc || exit 1
   ;;
 bullseye)
