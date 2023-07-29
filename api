@@ -3113,6 +3113,10 @@ if [ -z "$__os_id" ] || [ -z "$__os_desc" ] || [ -z "$__os_release" ] || [ -z "$
   fi
 fi
 
+# add /usr/local/bin to path if not currently present which is often not searched by default if /usr/local/bin did not exist on boot.
+# this path will automatically be added on next boot if a binary is placed in it by a pi-apps script
+[[ "$PATH" != */usr/local/bin* ]] && export PATH="/usr/local/bin:$PATH"
+
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then
   "$@"
