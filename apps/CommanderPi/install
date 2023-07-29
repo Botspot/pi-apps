@@ -6,8 +6,11 @@ fi
 rm -rf ~/CommanderPi &>/dev/null || sudo rm -rf ~/CommanderPi || error "Failed to remove CommanderPi folder!"
 
 # Get dependencies
-install_packages python3-tk python3-pil python3-pil.imagetk || exit 1
+install_packages python3 python3-psutil python3-tk python3-pil python3-pil.imagetk || exit 1
 git_clone https://github.com/Jack477/CommanderPi || error "failed to download repository!"
 cd CommanderPi || error "failed to enter repository!"
-chmod +x install.sh || error "failed to mark install.sh as executable!"
-./install.sh || error "failed to run install.sh!"
+# make sure start.sh is executable
+chmod +x src/start.sh
+sudo python3 c_desktop.py $USER || error "Could not install commanderpi!"
+sudo chown $USER:$USER ~/Desktop/commanderpi.desktop
+chmod +x ~/Desktop/commanderpi.desktop
