@@ -351,14 +351,13 @@ runonce <<"EOF"
   fi
   if [ ! -d /usr/local/share/applications ]; then
     sudo_popup mkdir -p /usr/local/share/applications
-
-    #Pi-Apps tries to avoid unnecessary reboots at all cost. desktop launchers can be installed to /usr/local/share/applications, which is often not searched by default if /usr/local/share did not exist on boot.
-    #This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
-    #If XDG_DATA_DIRS is missing /usr/local/share, then bind-mount /usr/local/share/applications to /usr/share/applications
-    if [[ "$XDG_DATA_DIRS" != */usr/local/share* ]] && [ -z "$(ls /usr/share/applications/usr-local-temporary)" ];then
-      sudo_popup mkdir -p /usr/share/applications/usr-local-temporary
-      sudo_popup mount --bind /usr/local/share/applications /usr/share/applications/usr-local-temporary
-    fi
+  fi
+  #Pi-Apps tries to avoid unnecessary reboots at all cost. desktop launchers can be installed to /usr/local/share/applications, which is often not searched by default if /usr/local/share did not exist on boot.
+  #This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
+  #If XDG_DATA_DIRS is missing /usr/local/share, then bind-mount /usr/local/share/applications to /usr/share/applications
+  if [[ "$XDG_DATA_DIRS" != */usr/local/share* ]] && [ -z "$(ls /usr/share/applications/usr-local-temporary)" ];then
+    sudo_popup mkdir -p /usr/share/applications/usr-local-temporary
+    sudo_popup mount --bind /usr/local/share/applications /usr/share/applications/usr-local-temporary
   fi
 EOF
 
