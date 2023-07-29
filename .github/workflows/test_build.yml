@@ -77,6 +77,9 @@ jobs:
           # set CPUs to use
           cpu: cortex-a7:cortex-a72
 
+          # use custom /proc/cpuinfo
+          cpu_info: cpuinfo/raspberrypi_4b
+
           # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
 
@@ -103,6 +106,7 @@ jobs:
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
@@ -123,6 +127,7 @@ jobs:
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
@@ -143,6 +148,7 @@ jobs:
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
@@ -165,6 +171,7 @@ jobs:
           # disable image caching to not leak the URL
           enable_image_caching: no
           cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true

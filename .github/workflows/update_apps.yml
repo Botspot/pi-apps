@@ -105,6 +105,9 @@ jobs:
           # set CPUs to use
           cpu: cortex-a7:cortex-a72
 
+          # use custom /proc/cpuinfo
+          cpu_info: cpuinfo/raspberrypi_4b
+
           # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
 
@@ -189,6 +192,9 @@ jobs:
 
           # set CPUs to use
           cpu: cortex-a7:cortex-a72
+
+          # use custom /proc/cpuinfo
+          cpu_info: cpuinfo/raspberrypi_4b
 
           # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
