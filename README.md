@@ -78,10 +78,10 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 ## To run Pi-Apps
 - From the start menu: Accessories -> Pi Apps
-- Use the terminal-command: `pi-apps`
+- Use the terminal command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
 
-## To Update Pi-Apps
+## To update Pi-Apps
 - Pi-apps will automatically check for updates on boot and display a notification to update.
 - To manually run the updater, use this command: `~/pi-apps/updater gui`
 - It also supports a cli interface: `~/pi-apps/updater cli`
