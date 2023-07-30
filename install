@@ -20,7 +20,7 @@ if uname -m | grep -qi 'x86\|i686\|i386' ;then
   error "Pi-Apps is not supported on non-ARM CPU architectures. We encourage you to use your distro's app store, like Gnome Software or Discover Software Center."
 fi
 
-sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
+sudo apt update || error "The command 'sudo apt update' failed. For Pi-Apps to work, you must fix your apt package-management system."
 
 #install dependencies
 dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync'
