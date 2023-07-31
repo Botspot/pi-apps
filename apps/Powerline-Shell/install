@@ -19,7 +19,7 @@ elif package_is_new_enough python3 3.7 ; then
   sudo -H python3 -m pip install --upgrade pipx || exit 1
 elif package_available python3.8 ;then
   install_packages python3.8 python3.8-venv || exit 1
-  sudo -H python3.8 -m pip install pipx || exit 1
+  sudo -H python3.8 -m pip install --upgrade pipx || exit 1
 else
   error "pipx is not available so cannot install powerline-shell to python venv"
 fi
