@@ -269,6 +269,9 @@ export GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k"
 export GOOGLE_DEFAULT_CLIENT_ID="77185425430.apps.googleusercontent.com"
 export GOOGLE_DEFAULT_CLIENT_SECRET="OTJgUOQcT7lO7GsGZq2G4IlT"
 EOF
+  echo "Enabling Chrome Sync signin"
+  # we could edit this with jq (as it is a json file), but avoid doing so to not have to install dependencies
+  [ -f "$HOME/.config/chromium/Default/Preferences" ] && ( sed -i 's/"signin":{"allowed":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/Default/Preferences"; sed -i 's/"signin":{"allowed":false,"allowed_on_next_startup":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/Default/Preferences"; )
 else
   #google sync set to false, so remove the file
   if [ -f "${folder}/apikeys" ];then
