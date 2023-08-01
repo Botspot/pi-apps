@@ -259,7 +259,7 @@ echo "Updating menu button..."
 mkdir -p ~/.local/share/applications
 if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -270,7 +270,7 @@ Categories=Utility
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 else
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -294,7 +294,7 @@ gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
 if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps-settings.desktop; then
 echo "Updating Settings menu button..."
 echo "[Desktop Entry]
-Name=Pi Apps Settings
+Name=Pi-Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/settings.png
@@ -309,7 +309,7 @@ if ! grep -q "StartupWMClass" ~/.config/autostart/pi-apps-updater.desktop; then
 echo "Updating autostarted updater..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
-Name=Pi Apps Updater
+Name=Pi-Apps Updater
 Exec=${DIRECTORY}/updater onboot
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
