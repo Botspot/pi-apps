@@ -11,6 +11,7 @@ fi
 
 status "Reverting all changes..."
 echo "Removing these files:
+  - ${folder}/zzzz_combine_values
   - ${folder}/dark_mode
   - ${folder}/site_dark_mode
   - ${folder}/ui_scale
@@ -20,7 +21,8 @@ echo "Removing these files:
   - ${folder}/performance_improvements
   - ${folder}/reduce_writes"
 
-sudo rm -f "${folder}/dark_mode" \
+sudo rm -f "${folder}/zzzz_combine_values" \
+  "${folder}/dark_mode" \
   "${folder}/site_dark_mode" \
   "${folder}/ui_scale" \
   "${folder}/tab_previews" \

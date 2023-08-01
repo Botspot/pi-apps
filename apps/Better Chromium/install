@@ -193,6 +193,35 @@ fi
 #write changes to chromium flag folder
 #
 status "Writing changes..."
+#add zzzz_combine_values script in all cases to combine --enable-features arguments
+echo "Creating workaround script at ${folder}/zzzz_combine_values"
+cat << "EOF" | sudo tee "${folder}/zzzz_combine_values" >/dev/null
+#This script combines multiple invocations of --enable-features and --disable-features into one argument so that Chromium does not ignore any.
+#Written by Botspot for the Pi-Apps Better Chromium script.
+
+IFS=' '
+enable=''
+disable=''
+new_flags=''
+for word in $CHROMIUM_FLAGS ;do
+  if [[ "$word" == '--enable-features='* ]];then
+    enable+=",${word/--enable-features=/}"
+  elif [[ "$word" == '--disable-features='* ]];then
+    enable+=",${word/--disable-features=/}"
+  else
+    new_flags+=" $word"
+  fi
+done
+
+#remove initial comma
+enable="${enable/,/}"
+disable="${disable/,/}"
+
+CHROMIUM_FLAGS="$new_flags"
+[ ! -z "$enable" ] && CHROMIUM_FLAGS+=" --enable-features=$enable"
+[ ! -z "$disable" ] && CHROMIUM_FLAGS+=" --disable-features=$disable"
+EOF
+
 #dark mode
 if [ "$dark_mode" == TRUE ];then
   #I found this flag on https://peter.sh/experiments/chromium-command-line-switches
