@@ -48,7 +48,7 @@ fi
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button"
   echo "[Desktop Entry]
-Name=Pi Apps Settings
+Name=Pi-Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/settings.png
