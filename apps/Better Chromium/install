@@ -281,8 +281,6 @@ for profile in $profiles ;do
   sed -i 's/"signin":{"allowed":false,"allowed_on_next_startup":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
   sed -i 's/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":false,"allowed_on_next_startup":false}/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
 done
-  
-fi
 EOF
 else
   #google sync set to false, so remove the file
