@@ -269,15 +269,42 @@ export GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k"
 export GOOGLE_DEFAULT_CLIENT_ID="77185425430.apps.googleusercontent.com"
 export GOOGLE_DEFAULT_CLIENT_SECRET="OTJgUOQcT7lO7GsGZq2G4IlT"
 EOF
-  echo "Enabling Chrome Sync signin"
-  # we could edit this with jq (as it is a json file), but avoid doing so to not have to install dependencies
-  [ -f "$HOME/.config/chromium/Default/Preferences" ] && ( sed -i 's/"signin":{"allowed":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/Default/Preferences"; sed -i 's/"signin":{"allowed":false,"allowed_on_next_startup":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/Default/Preferences"; )
+  echo "Adding ${folder}/enable_sync script to enable sync settings when Chromium launches"
+  cat << "EOF" | sudo tee "${folder}/enable_sync" >/dev/null
+#!/bin/bash
+
+profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
+IFS=$'\n'
+for profile in $profiles ;do
+  [ ! -f "$HOME/.config/chromium/$profile/Preferences" ] && continue
+  sed -i 's/"signin":{"allowed":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
+  sed -i 's/"signin":{"allowed":false,"allowed_on_next_startup":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
+  sed -i 's/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":false,"allowed_on_next_startup":false}/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
+done
+  
+fi
+EOF
 else
   #google sync set to false, so remove the file
   if [ -f "${folder}/apikeys" ];then
     status "Removing ${folder}/apikeys"
   fi
-  sudo rm -f "${folder}/apikeys"
+  #remove the script that enables sync setting
+  if [ -f "${folder}/enable_sync" ];then
+    status "Removing ${folder}/enable_sync"
+  fi
+  
+  status "Disabling sync settings for all chromium profiles"
+  #turn off sync setting for every profile
+  profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
+  IFS=$'\n'
+  for profile in $profiles ;do
+    [ ! -f "$HOME/.config/chromium/$profile/Preferences" ] && continue
+    sed -i 's/"signin":{"allowed":true}/"signin":{"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+    sed -i 's/"signin":{"allowed":true,"allowed_on_next_startup":true}/"signin":{"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+    sed -i 's/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":true,"allowed_on_next_startup":true}/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+  done
+  sudo rm -f "${folder}/apikeys" "${folder}/enable_sync"
 fi
 
 #performance improvements
@@ -313,16 +340,17 @@ if [ "$reduce_writes" == TRUE ];then
 if [ ! -d /dev/shm ];then
   echo 'Better chromium "Reduce Writes" script: cannot mount folders to /dev/shm because that folder is missing!'
 else
-  
   rm -rf /dev/shm/chromium
-  rm -rf "$HOME/.config/chromium/Default/Service Worker"
-  rm -rf "$HOME/.cache/chromium"
-  
   mkdir -p /dev/shm/chromium
   
-  mkdir -p /dev/shm/chromium/serviceWorker
-  rm -rf "$HOME/.config/chromium/Default/Service Worker"
-  ln -s /dev/shm/chromium/serviceWorker/ "$HOME/.config/chromium/Default/Service Worker"
+  profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
+  IFS=$'\n'
+  for profile in $profiles ;do
+  
+    rm -rf "$HOME/.config/chromium/$profile/Service Worker"
+    mkdir -p "/dev/shm/chromium/$profile/serviceWorker"
+    ln -s "/dev/shm/chromium/$profile/serviceWorker" "$HOME/.config/chromium/$profile/Service Worker"
+  done
   
   mkdir -p /dev/shm/chromium/cache
   rm -rf "$HOME/.cache/chromium"
@@ -336,9 +364,13 @@ else
   sudo rm -f "${folder}/reduce_writes"
   
   #clean up old symlinks
-  if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
-    rm -rf "$HOME/.config/chromium/Default/Service Worker"
-  fi
+  profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
+  IFS=$'\n'
+  for profile in $profiles ;do
+    if [ -L "$HOME/.config/chromium/$profile/Service Worker" ];then
+      rm -rf "$HOME/.config/chromium/$profile/Service Worker"
+    fi
+  done
   if [ -L "$HOME/.cache/chromium" ];then
     rm -rf "$HOME/.cache/chromium"
   fi

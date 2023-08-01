@@ -16,6 +16,7 @@ echo "Removing these files:
   - ${folder}/ui_scale
   - ${folder}/tab_previews
   - ${folder}/apikeys
+  - ${folder}/enable_sync
   - ${folder}/performance_improvements
   - ${folder}/reduce_writes"
 
@@ -24,6 +25,7 @@ sudo rm -f "${folder}/dark_mode" \
   "${folder}/ui_scale" \
   "${folder}/tab_previews" \
   "${folder}/apikeys" \
+  "${folder}/enable_sync" \
   "${folder}/performance_improvements" \
   "${folder}/reduce_writes"
 
@@ -36,12 +38,24 @@ if [ -f $HOME/.chromium-browser.init ] && [ "$(sha1sum $HOME/.chromium-browser.i
 fi
 
 #clean up old symlinks from reduce_writes script - to avoid errors
-if [ -L "$HOME/.config/chromium/Default/Service Worker" ];then
-  rm -rf "$HOME/.config/chromium/Default/Service Worker"
-fi
+profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
+IFS=$'\n'
+for profile in $profiles ;do
+  if [ -L "$HOME/.config/chromium/$profile/Service Worker" ];then
+    rm -rf "$HOME/.config/chromium/$profile/Service Worker"
+  fi
+done
 if [ -L "$HOME/.cache/chromium" ];then
   rm -rf "$HOME/.cache/chromium"
 fi
+
+#turn off sync setting for every profile
+for profile in $profiles ;do
+  [ ! -f "$HOME/.config/chromium/$profile/Preferences" ] && continue
+  sed -i 's/"signin":{"allowed":true}/"signin":{"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+  sed -i 's/"signin":{"allowed":true,"allowed_on_next_startup":true}/"signin":{"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+  sed -i 's/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":true,"allowed_on_next_startup":true}/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
+done
 
 if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
