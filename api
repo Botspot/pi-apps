@@ -738,13 +738,9 @@ pipx_install() {
   # pipx >= 0.16.1 is compatible with python3 >= 3.7
   # some distros lack pipx entirely
   # some distros (raspbian bullseye specifically) have incompatible combinations of pipx (0.12.3) and python3 (3.9) versions, necessitating pipx to be installed/upgraded from pip
-  if package_available pipx && package_is_new_enough pipx 0.16.1 ;then
+  # pipx 1.0.0 is the first stable release and has some features that we would like to assume are available, install it from pip if the distro package is too old
+  if package_available pipx && package_is_new_enough pipx 1.0.0 ;then
     install_packages pipx python3-venv || exit 1
-  elif package_available pipx && ! package_is_new_enough pipx 0.16.1 && ! package_is_new_enough python3 3.9 ;then
-    install_packages pipx python3-venv || exit 1
-  elif package_available pipx && ! package_is_new_enough pipx 0.16.1 && package_is_new_enough python3 3.9 ;then
-    install_packages python3-venv || exit 1
-    sudo -H python3 -m pip install --upgrade pipx || exit 1
   elif package_is_new_enough python3 3.7 ; then
     install_packages python3-venv || exit 1
     sudo -H python3 -m pip install --upgrade pipx || exit 1
