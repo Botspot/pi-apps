@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # note: do not check exit code from pipx since exit code is set to 1 if not already installed
-sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall powerline-shell
+pipx_uninstall powerline-shell || exit 1
 purge_packages || exit 1
 
 #Remove powerline-shell function from ~/.bashrc if already there
