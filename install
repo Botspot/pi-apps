@@ -110,7 +110,8 @@ chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
 
 #copy menu button to Desktop
-cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
+mkdir -p ~/Desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/
 
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
