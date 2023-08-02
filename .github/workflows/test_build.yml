@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Test installing app on buster armhf
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           # this is a buster armhf image
           base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-05-03/2023-05-03-raspios-buster-armhf.img.xz
@@ -100,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye armhf
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2023-05-03/2023-05-03-raspios-bullseye-armhf.img.xz
           bind_mount_repository: yes
@@ -121,7 +121,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on buster arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
           bind_mount_repository: yes
@@ -142,7 +142,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bullseye arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
           bind_mount_repository: yes
@@ -163,7 +163,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bookworm arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: ${{ secrets.RPIOS_BOOKWORM_URL }}
           bind_mount_repository: yes
@@ -186,7 +186,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bionic arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://download.switchroot.org/ubuntu/switchroot-ubuntu-5.1.1-2023-06-12.7z
           # add special arguments for switchroot image format
@@ -218,7 +218,7 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Test installing app on focal arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v3.1/sd_card_b49/jp511-xnx-sd-card-image.zip
           bootpartition:
@@ -241,7 +241,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on jammy arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://cdimage.ubuntu.com/releases/22.04.2/release/ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
@@ -262,7 +262,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on PopOS jammy arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://iso.pop-os.org/22.04/arm64/raspi/3/pop-os_22.04_arm64_raspi_3.img.xz
           bind_mount_repository: yes
@@ -283,7 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on lunar arm64
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://cdimage.ubuntu.com/releases/23.04/release/ubuntu-23.04-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes

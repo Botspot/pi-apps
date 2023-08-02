@@ -190,7 +190,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Test installing updated apps on ${{ matrix.os }} - ${{ matrix.arch }}
-        uses: theofficialgman/arm-runner-action@v11
+        uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: ${{ env.image_url }}
           # bind mount the directory so any changes propogate to outside the chroot
