@@ -1,6 +1,6 @@
 #!/bin/bash
 
-webVer=$(wget https://raw.githubusercontent.com/boxy-svg/boxy-svg-snap/master/snap/snapcraft.yaml -qO- | grep source: -m 1 | tr '?-' '\n' | grep '\.zip$')
+webVer=$(wget -qO- https://raw.githubusercontent.com/flathub/com.boxy_svg.BoxySVG/master/com.boxy_svg.BoxySVG.yaml | grep 'url: https://firebasestorage.googleapis.com' | sed 's/.*url: //g'  | tr '?-' '\n' | grep '\.zip$')
 all_url="https://firebasestorage.googleapis.com/v0/b/boxy-svg.appspot.com/o/linux%2Fapp-${webVer}?alt=media"
 
 # use custom updater due to firebasestorage.googleapis.com not allowing URL verification
