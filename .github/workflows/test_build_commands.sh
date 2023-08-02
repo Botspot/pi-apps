@@ -258,7 +258,7 @@ source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 set +a #stop exporting functions
 
 # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-! package_is_new_enough cmake 3.20 && debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
+package_is_new_enough cmake 3.20 || debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
 
 IFS=$'\n'
 for app in $imported_apps ;do
