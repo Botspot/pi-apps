@@ -292,7 +292,6 @@ chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
 
 #settings menu button
-if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps-settings.desktop; then
 echo "Updating Settings menu button..."
 echo "[Desktop Entry]
 Name=Pi-Apps Settings
@@ -304,9 +303,7 @@ StartupWMClass=Pi-Apps-Settings
 Type=Application
 Categories=Settings;
 StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
-fi
 
-if ! grep -q "StartupWMClass" ~/.config/autostart/pi-apps-updater.desktop; then
 echo "Updating autostarted updater..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
@@ -319,7 +316,6 @@ Type=Application
 X-GNOME-Autostart-enabled=true
 Hidden=false
 NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
-fi
 
 EOF
 
