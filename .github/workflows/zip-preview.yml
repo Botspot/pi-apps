@@ -1,0 +1,47 @@
+name: Zip Preview
+
+on: 
+  issues:
+    types: opened
+    
+permissions:
+  issues: write
+
+jobs:
+  zip_preview:
+    if: contains(github.event.issue.labels.*.name, 'Zip/PR included')
+    runs-on: ubuntu-latest
+    steps:
+      - id: zip_preview
+        run: |
+          zip_url="$(echo "${{ github.event.issue.body }}" | sed -n '/### Upload file or Add PR Link/,/###/p' | grep -v "###" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip")"
+          if [ -z "$zip_url" ]; then
+            exit 0
+          else
+            wget -O download.zip "$zip_url"
+            unzip download.zip
+            rm -f download.zip
+            
+            files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
+            echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            IFS=$'\n'
+            for file in $files; do
+              echo '`'"$file"'`' >> $GITHUB_OUTPUT
+              echo '```' >> $GITHUB_OUTPUT
+              cat "$file" >> $GITHUB_OUTPUT
+              echo $'\n''```' >> $GITHUB_OUTPUT
+            done
+            echo '' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Add zip preview comment
+        uses: peter-evans/create-or-update-comment@v3
+        if: steps.zip_preview.outputs.zip_preview
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            A zipfile was found in the body of your issue.
+            The contents can be previewed below:
+            
+            ${{ steps.zip_preview.outputs.zip_preview }}
