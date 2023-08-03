@@ -2344,7 +2344,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       local close_button=(--button="Close!${DIRECTORY}/icons/exit.png":1)
     fi
     
-    echo "$error_caption" | yad "${yadflags[@]}" --class Pi-Apps --name "Pi Apps" --text-info --width=700 --height=300 --title="Error occured when $(echo "${action}ing" | sed 's/updateing/updating/g') $app ($i/$num_lines)" \
+    echo "$error_caption" | yad "${yadflags[@]}" --class Pi-Apps --name "Pi-Apps" --text-info --width=700 --height=300 --title="Error occured when $(echo "${action}ing" | sed 's/updateing/updating/g') $app ($i/$num_lines)" \
       --image="${DIRECTORY}/icons/error.png" --image-on-top \
       --text="$text" --wrap --fontname=12 \
       --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
@@ -3062,7 +3062,7 @@ elif [ "$guimode" == xlunch-dark ];then
 fi
 
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
-yadflags=(--class Pi-Apps --name "Pi Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+yadflags=(--class Pi-Apps --name "Pi-Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then

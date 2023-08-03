@@ -77,7 +77,7 @@ This will not uninstall any apps that you installed through Pi-Apps.
 </details>
 
 ## To run Pi-Apps
-- From the start menu: Accessories -> Pi Apps
+- From the start menu: Accessories -> Pi-Apps
 - Use the terminal command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
 

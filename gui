@@ -178,7 +178,7 @@ if [ ! -z "$3" ];then
     
     #display app details window
     get_positions
-    (cat "${DIRECTORY}/apps/$app/description" || echo "Description unavailable") | yad --class Pi-Apps --name "Pi Apps" --text-info --fontname=12 --wrap --show-uri \
+    (cat "${DIRECTORY}/apps/$app/description" || echo "Description unavailable") | yad --class Pi-Apps --name "Pi-Apps" --text-info --fontname=12 --wrap --show-uri \
       --text="$(sed 's/&/&amp;/g' <<<"$abovetext")" \
       "${imageline[@]}" \
       --title="Details of ${app}" --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -513,7 +513,7 @@ if [[ "$guimode" == yad* ]];then
     
     #constantly read from the pipe and send all output to yad
     #if an item is selected, this script will be run with the row's contents
-    { yad --class Pi-Apps --name "Pi Apps" --center --title='Pi-Apps' \
+    { yad --class Pi-Apps --name "Pi-Apps" --center --title='Pi-Apps' \
       --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
       --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
       --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \

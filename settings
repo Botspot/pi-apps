@@ -147,7 +147,7 @@ $(echo "$params" | grep -vx "$curval")"
   done
   IFS="$PREIFS"
   
-  output="$(yad --class Pi-Apps-Settings --name "Pi Apps Settings" --center --title='Pi-Apps Settings' --width=310 --height=300 \
+  output="$(yad --class Pi-Apps-Settings --name "Pi-Apps Settings" --center --title='Pi-Apps Settings' --width=310 --height=300 \
     --form --separator='\n' --window-icon="${DIRECTORY}/icons/settings.png" --columns=2 \
     "${tooltips[@]}" \
     --field='Categories'!"${DIRECTORY}/icons/categories.png"!"Does an App belong in Editors instead of Tools? This lets you move it.":FBTN "bash -c '${DIRECTORY}/etc/categoryedit 1>&2'" \
