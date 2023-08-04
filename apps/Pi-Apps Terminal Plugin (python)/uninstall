@@ -1,8 +1,0 @@
-#!/bin/bash
-#Removing PiAppsTerminalAdvanced.py
-rm "${DIRECTORY}/PiAppsTerminalAdvanced.py"
-#Restoring old binary file
-echo "#!/bin/bash
-${DIRECTORY}/gui" | sudo tee /usr/local/bin/pi-apps >/dev/null
-
-sudo chmod +x /usr/local/bin/pi-apps
