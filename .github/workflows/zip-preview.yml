@@ -22,7 +22,7 @@ jobs:
             exit 0
           else
             wget -O download.zip "$zip_url"
-            echo "sha1=$(sha1sum download.zip)" >> $GITHUB_OUTPUT
+            echo "sha1=$(sha1sum download.zip | awk {'print $1}')" >> $GITHUB_OUTPUT
             unzip download.zip
             rm -f download.zip
             
@@ -70,7 +70,7 @@ jobs:
             exit 0
           else
             wget -O download.zip "$zip_url"
-            echo "sha1=$(sha1sum download.zip)" >> $GITHUB_OUTPUT
+            echo "sha1=$(sha1sum download.zip | awk {'print $1}')" >> $GITHUB_OUTPUT
             unzip download.zip
             rm -f download.zip
             
