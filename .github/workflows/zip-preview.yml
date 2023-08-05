@@ -52,6 +52,7 @@ jobs:
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.issue.number }}
+          edit-mode: replace
           body: |
             A zipfile was found in the body of your issue.
             The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
@@ -100,6 +101,7 @@ jobs:
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.issue.number }}
+          edit-mode: replace
           body: |
             A zipfile was found in the body of an issue comment.
             The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
