@@ -11,9 +11,7 @@ permissions:
 
 jobs:
   zip_preview_issue:
-    if: |
-      contains(github.event_name, 'issues') &&
-      contains(github.event.issue.labels.*.name, 'Zip/PR included')
+    if: ${{ contains(github.event_name, 'issues') && contains(github.event.issue.labels.*.name, 'Zip/PR included') }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate Preview Content
@@ -61,10 +59,7 @@ jobs:
             
             ${{ steps.zip_preview.outputs.zip_preview }}
   zip_preview_issue_comment:
-    if: |
-      contains(github.event_name, 'issue_comment') &&
-      contains(github.event.issue.labels.*.name, 'Zip/PR included') &&
-      ${{ !github.event.issue.pull_request }}
+    if: ${{ !contains(github.event_name, 'issues') && contains(github.event_name, 'issue_comment') && contains(github.event.issue.labels.*.name, 'Zip/PR included') && !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate Preview Content
