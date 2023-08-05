@@ -17,7 +17,7 @@ jobs:
       - name: Generate Preview Content
         id: zip_preview
         run: |
-          zip_url="$(echo "${{ github.event.issue.body }}" | sed -n '/### Upload file or Add PR Link/,/###/p' | grep -v "###" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
+          zip_url="$(echo '${{ github.event.issue.body }}' | sed -n '/### Upload file or Add PR Link/,/###/p' | grep -v "###" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
           if [ -z "$zip_url" ]; then
             exit 0
           else
@@ -66,7 +66,7 @@ jobs:
       - name: Generate Preview Content
         id: zip_preview
         run: |
-          zip_url="$(echo "${{ github.event.comment.body }}" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
+          zip_url="$(echo '${{ github.event.comment.body }}' | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
           if [ -z "$zip_url" ]; then
             exit 0
           else
