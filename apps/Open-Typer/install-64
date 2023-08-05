@@ -19,7 +19,7 @@ status "Creating Menu Button"
 sudo mkdir -p /usr/local/share/applications
 echo "[Desktop Entry]
 Name=Open-Typer
-Comment=An Open Source spiritual successor to the flash game Line Rider
+Comment=A free and open source typing tutor program
 Icon=$(dirname "$0")/icon-64.png
 Exec=/opt/Open-Typer.AppImage %f
 Type=Application
