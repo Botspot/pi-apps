@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v5.2.0
+version=5.2.0
 
 #Install Depends
 install_packages libfuse2 || exit 1
