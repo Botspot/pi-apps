@@ -24,4 +24,4 @@ Icon=$(dirname "$0")/icon-64.png
 Exec=/opt/Open-Typer.AppImage %f
 Type=Application
 Terminal=false
-Categories=Utility;" | sudo tee /usr/local/share/applications/Open-Typer.desktop >/dev/null || error "Failed to create menu button!"
+Categories=Education;" | sudo tee /usr/local/share/applications/Open-Typer.desktop >/dev/null || error "Failed to create menu button!"
