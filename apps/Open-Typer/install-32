@@ -6,7 +6,7 @@ version=v5.2.0
 install_packages libfuse2 || exit 1
 
 #Download Open-Typer build from repo
-wget -O /tmp/Open-Typer.AppImage https://github.com/Open-Typer/Open-Typer/releases/download/${version}/Open-Typer-armhf.AppImage || error "Failed to download AppImage!"
+wget -O /tmp/Open-Typer.AppImage https://github.com/Open-Typer/Open-Typer/releases/download/v${version}/Open-Typer-armhf.AppImage || error "Failed to download AppImage!"
 
 #Move Open-Typer.AppImage to /opt
 sudo mv /tmp/Open-Typer.AppImage /opt || error "Failed to move from /tmp to /opt!"
