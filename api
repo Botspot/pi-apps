@@ -757,6 +757,33 @@ pipx_uninstall() {
   sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall "$@" || error "Failed to uninstall $* with pipx"
 }
 
+remove_deprecated_app() { # prompts a user to uninstall a deprecated pi-apps application and then removes the application folder if it exists
+  local app="$1" # on app name
+  local removal_arch="$2" # 32 or 64 to only remove one architecture if specified
+  [ -z "$app" ] && error "remove_deprecated_app(): requires an pi-apps app name"
+  local app_status="$(app_status "${app}")"
+  if [ ! -z "$removal_arch" ] && [ "$arch" == "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app for ${removal_arch}-bit OSs which you currently have installed.
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  elif [ ! -z "$removal_arch" ] && [ "$arch" != "$removal_arch" ]; then
+    rm -f "${DIRECTORY}/apps/$app/install-$removal_arch"
+    return 0
+  elif [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app which you currently have installed.
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  else
+    rm -rf "${DIRECTORY}/apps/$app"
+    return 0
+  fi
+  if [ "$output" == "Uninstall now" ]; then
+    "${DIRECTORY}/manage" uninstall "$app"
+  fi
+  rm -rf "${DIRECTORY}/apps/$app"
+  return 0
+}
+
 terminal_manage() { # wrapper for the original terminal_manage function to terminal_mange_multi
   action="$1"
   app="$2" #one app name
@@ -1374,6 +1401,54 @@ ${category}"
       --text="No results found for "\""<b>$query</b>"\""." \
       --button=OK:0
     return 0
+  fi
+}
+
+userinput_func() { # userinput function to display yad/cli prompts to the user
+  [ -z "$1" ] && error "userinput_func(): requires a description"
+  [ -z "$2" ] && error "userinput_func(): requires at least one output selection option"
+  local text_lines=$(echo -e "$1" | wc -l)
+  # there is no good universal way to calculate the required height of the window
+  # the users theme, default text size, and window scaling all affect it
+  # the idea is the height should be a function of the number of lines of input text and the number of list options
+  local height_list=$(echo $(( text_lines * 17 + $(( ${#@} - 1 )) * 29 + 65 )))
+  local commonflags=(--fixed --no-escape --undecorated --center --borders=20)
+  if [ "${#@}" == "2" ];then
+    yad "${yadflags[@]}" "${commonflags[@]}" \
+      --image "dialog-information" \
+      --text="$1" \
+      --button="$2":0
+    output="$2"
+  elif [ "${#@}" == "3" ];then
+    yad "${yadflags[@]}" "${commonflags[@]}" \
+      --image "dialog-question" \
+      --text="$1" \
+      --button="$2":0 \
+      --button="$3":1
+    if [ $? -ne 0 ]; then
+      output="$3"
+    else
+      output="$2"
+    fi
+  else
+    unset uniq_selection
+    for string in "${@:2}"; do
+      local uniq_selection+=(FALSE "$string")
+    done
+    local uniq_selection[0]=TRUE
+    output=$(yad "${yadflags[@]}" "${commonflags[@]}" \
+      --height=$height_list\
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="OK":0 \
+      "${uniq_selection[@]}")
   fi
 }
 
