@@ -81,6 +81,7 @@ runonce <<"EOF"
   remove_deprecated_app "Pi-Apps Terminal Plugin (python)"
   remove_deprecated_app "Sysmon"
   remove_deprecated_app "BlockPi"
+  remove_deprecated_app "TBOPlayer"
 EOF
   ;;
 esac
@@ -92,11 +93,6 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Back to Chromium v78"
   if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
     echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
-  fi
-  
-  #remove TBOPlayer if it's not already successfully installed
-  if [ "$(app_status TBOPlayer)" != 'installed' ];then
-    rm -rf "${DIRECTORY}/apps/TBOPlayer"
   fi
   
   #rename 'Turbo Scratch' app to 'Turbowarp'
