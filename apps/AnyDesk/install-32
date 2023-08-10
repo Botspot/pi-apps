@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=6.2.1-1
+version=6.3.0-1
 
 install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles-dev libegl-dev || exit 1
 
