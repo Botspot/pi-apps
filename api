@@ -1763,10 +1763,13 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
     grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
     grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
     grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
     grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
   fi
 
   if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
