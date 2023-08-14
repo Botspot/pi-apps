@@ -40,7 +40,7 @@ unset url_list_2
 #chromium version can be specified by $1
 #usage: /path/to/this-script 78
 
-if [ -z "$1" ];then
+if [ -z "$1" ] || [ "$1" == update ];then
   yad_list="$(echo "$version_list" | sed 's/^/false\nChromium version /g')"
   
   version=''
