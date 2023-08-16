@@ -30,6 +30,8 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run app update scripts
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         run: |
           # print user info
           echo $USER $USERNAME $(id) $(whoami)
@@ -44,19 +46,19 @@ jobs:
 
           #add special functions
           get_release() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/^v//g
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/^v//g
           }
 
           get_release_raw() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name'
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name'
           }
 
           get_prerelease() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/^v//g
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/^v//g
           }
 
           get_prerelease_raw() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name'
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name'
           }
 
           function validate_url(){
