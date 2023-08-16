@@ -1,8 +1,10 @@
 #!/bin/bash
 
+version=v0.11.1
+
 case "$arch" in
-"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.11_arm64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
-"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.11_arm32.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm32.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
