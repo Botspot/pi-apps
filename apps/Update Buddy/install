@@ -18,4 +18,3 @@ chmod +x $HOME/update-buddy/onstartup.sh
 echo "Running Update Buddy for the first time..."
 #first time run
 setsid $HOME/update-buddy/onstartup.sh &
-
