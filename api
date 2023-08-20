@@ -1067,6 +1067,8 @@ read_category_files() { #Generates a combined categories-list from several sourc
   fi
   if [[ ! -z "$jetson_model" ]] && [[ "$version_id" == "18.04" ]]; then
     device_override="${DIRECTORY}/etc/category-overrides-jetson-18.04"
+  elif [[ ! -z "$jetson_model" ]]; then
+    device_override="${DIRECTORY}/etc/category-overrides-jetson-generic"
   fi
   
   #list the user-overrides file     and the device specific override  and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
