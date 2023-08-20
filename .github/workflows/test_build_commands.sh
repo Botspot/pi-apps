@@ -84,7 +84,10 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   # fix nvidia jank
   # update sources list for t210
   sudo sed -i "s/<SOC>/t210/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
-  # add ld conf files
+fi
+
+if [[ "$GITHUB_JOB" == "bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-64bit" ]]; then
+  # add ld conf files (normally handled by service on first launch)
   echo "/usr/lib/aarch64-linux-gnu/tegra-egl" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_EGL.conf
   echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
   # skip joycond postinst
@@ -93,13 +96,6 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   # note that we are in a chroot to skip bootfile configuration
   sudo mkdir -p /opt/switchroot
   sudo touch /opt/switchroot/image_prep
-  #correct switchroot apt key if necessary
-  apt-key list 2>/dev/null | grep -q 'expired] Switchroot Apt Repo Automated Signing Key'
-  if [ $? == 0 ]; then
-    echo -e "\e[96mThe Switchroot Apt Repo Signing Key has expired. Please provide your password if requested to update it.\e[0m"
-    sudo apt-key del 92813F6A23DB6DFC
-    wget -O - https://newrepo.switchroot.org/pubkey | sudo apt-key add -
-  fi
 fi
 
 if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
