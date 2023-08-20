@@ -40,8 +40,8 @@ on:
         description: 'Build on RPI Ubuntu Jammy 64bit'
         required: true
         type: boolean
-      popos_jammy_64:
-        description: 'Build on RPI PopOS Jammy 64bit'
+      l4t_jammy_64:
+        description: 'Build on L4T Ubuntu Jammy 64bit'
         required: true
         type: boolean
       lunar_64:
@@ -256,19 +256,22 @@ jobs:
             export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
-  popos-jammy-64bit:
+  l4t-jammy-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.popos_jammy_64 }}
+    if: ${{ inputs.l4t_jammy_64 }}
     steps:
       - uses: actions/checkout@v3
-      - name: Test installing app on PopOS jammy arm64
+      - name: Test installing app on L4T jammy arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://iso.pop-os.org/22.04/arm64/raspi/3/pop-os_22.04_arm64_raspi_3.img.xz
+          base_image: https://github.com/theofficialgman/testing/releases/download/gmans-releases/theofficialgman-ubuntu-jammy-5.1.1-2023-08-19.7z
+          # add special arguments for switchroot image format
+          bootpartition:
+          rootpartition: 1
           bind_mount_repository: yes
           image_additional_mb: 5000
-          cpu: cortex-a7:cortex-a72
-          cpu_info: cpuinfo/raspberrypi_4b
+          # use TX1 ARM CPU cores
+          cpu: cortex-a7:cortex-a57
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
