@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=v20.5.1
-version2=v0.39.4
+version2=v0.39.5
 
 #Checking if using armv6
 if [ ! -z "$(cat /proc/cpuinfo | grep ARMv6)" ];then
