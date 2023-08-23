@@ -1,4 +1,7 @@
 #!/bin/bash
+
+purge_packages || exit 1
+
 rm -rf ~/libreoffice-ms-theme
 git_clone --depth=1 https://github.com/Botspot/libreoffice-ms-theme || error "Failed to git_clone libreoffice-ms-theme repository!"
 ~/libreoffice-ms-theme/revert.sh || error "revert.sh failed"
