@@ -1,0 +1,12 @@
+#!/bin/bash
+
+version=v1.3.2
+
+"${DIRECTORY}/manage" install-if-not-installed ArmCord || error "Failed to install dependency: ArmCord"
+
+cd /tmp || error "Could not move to /tmp directory"
+rm -f rpi-4b-aarch64.zip
+wget "https://github.com/RiiConnect24/RiiTag-RPC/releases/download/${version}/rpi-4b-aarch64.zip" || error "Could not download riitag-rpc release"
+unzip rpi-4b-aarch64.zip
+sudo chmod a+x riitag-rpc
+sudo mv riitag-rpc /usr/local/bin/riitag-rpc || error "Could not install riitag-rpc"

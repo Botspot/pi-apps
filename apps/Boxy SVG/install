@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=3.96.0.zip
+version=4.2.3.zip
 
 install_packages libfontconfig-dev || exit 0
 
@@ -40,55 +40,10 @@ sudo cp ./metadata/com.boxy_svg.BoxySVG.png /usr/local/share/icons
 cd $HOME
 rm -rf /tmp/app
 
-#compile xseticon to set the program's window icon
-install_packages libxmu-headers libgd-dev libxmu-dev libx11-dev libglib2.0-dev || exit 1
-if ! command -v xseticon >/dev/null ;then
-  echo "Compiling xseticon..."
-  cd /tmp
-  git_clone https://github.com/xeyownt/xseticon || exit 1
-  cd /tmp/xseticon
-  make || error "Failed to compile xseticon with the 'make' command!"
-  sudo cp -f "$PWD/xseticon" /usr/local/bin
-  cd $HOME
-  rm -rf /tmp/xseticon
-fi
-
-#create a runscript to set the window icon
+#create a terminal command to run Boxy without chrome sandbox for better performance
 cat << "EOF" | sudo tee /usr/local/bin/boxy-svg >/dev/null
 #!/bin/bash
-#This script runs Boxy SVG and will set its window-icon.
-
-#determine how many Boxy SVG windows are already open
-numwindows="$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)"
-
-#run boxy-svg in background
-/opt/boxy-svg/boxy-svg --no-sandbox "$@" &
-pid=$!
-#if this script is terminated, also kill boxy svg
-trap "kill $pid &>/dev/null" EXIT
-
-#run a loop in the background to always check for new boxy svg windows and set the window icon
-IFS=$'\n'
-if [ $numwindows == 0 ];then #only run one instance of the daemon
-  while true;do
-    if [ "$numwindows" != "$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)" ];then
-      for windowid in $(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | awk '{print $1}') ;do
-        xseticon -id $windowid "/usr/local/share/icons/com.boxy_svg.BoxySVG.png"
-      done
-      numwindows="$(xwininfo -tree -root | grep '^        .*("boxy.svg" "Boxy.SVG")' -i | wc -l)"
-    fi
-    sleep 0.5
-  done &
-  loop_pid=$!
-fi
-
-#wait for window background-process to be closed before returning to shell
-wait $pid
-
-#stop the icon-setting loop
-code=$?
-kill $loop_pid &>/dev/null
-exit $code
+/opt/boxy-svg/boxy-svg --no-sandbox "$@"
 EOF
 sudo chmod +x /usr/local/bin/boxy-svg
 

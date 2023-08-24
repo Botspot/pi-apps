@@ -9,10 +9,19 @@ on:
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# this workflow contains 3 jobs that run sequentially: get-latest-app-versions, test-updated-apps, and create-pr
+# get-latest-app-versions gets the latests app versions and modifies the working directory of the repository with those changes. then it uploads that working directory of the git repository as an artifact for use in later jobs
+# test-updated-apps runs a matrix of testcases where all updated apps from the first job are tested for successful installation/uninstallation in the working directory of the git repoistory downloaded from the artifact
+# create-pr then uses the output from get-latest-app-versions and test-updated-apps to finalize a PR where only apps that passed all testcases are updated and any that fail have a descriptive error written in the PR comment
 jobs:
-  update-apps:
+  get-latest-app-versions:
+    name: Get Latest App Versions
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    outputs:
+      UPDATED_APPS: ${{ steps.updated.outputs.UPDATED_APPS }}
+      FAILED_APPS: ${{ steps.failed.outputs.FAILED_APPS }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -21,6 +30,8 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run app update scripts
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         run: |
           # print user info
           echo $USER $USERNAME $(id) $(whoami)
@@ -35,19 +46,19 @@ jobs:
 
           #add special functions
           get_release() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/^v//g
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed s/^v//g
           }
 
           get_release_raw() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name'
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name'
           }
 
           get_prerelease() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/^v//g
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name' | sed s/^v//g
           }
 
           get_prerelease_raw() {
-            curl -s --header "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name'
+            curl -s --header "Authorization: token $GH_PERSONAL_ACCESS_TOKEN" "https://api.github.com/repos/$1/releases" | jq -r 'map(select(.prerelease)) | first | .tag_name'
           }
 
           function validate_url(){
@@ -78,32 +89,126 @@ jobs:
             "$GITHUB_WORKSPACE/$app_directory"
           done
           cd
+
+      - name: Output updated apps
+        id: updated
+        run: |
           if test -f /tmp/updated_apps; then
             sort -u /tmp/updated_apps > /tmp/updated_apps_sorted
-            echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
-            cat /tmp/updated_apps_sorted >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+            echo "UPDATED_APPS<<EOF" >> $GITHUB_OUTPUT
+            cat /tmp/updated_apps_sorted >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
-
+      - name: Output failed apps
+        id: failed
+        run: |
           if test -f /tmp/failed_apps; then
-            echo "FAILED_APPS<<EOF" >> $GITHUB_ENV
-            cat /tmp/failed_apps | sed '0~1 a\\' >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+            echo "FAILED_APPS<<EOF" >> $GITHUB_OUTPUT
+            cat /tmp/failed_apps | sed '0~1 a\\' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
+      - name: Tar GITHUB_WORKSPACE
+        run: |
+          cd ${{ runner.temp }}
+          tar -C $GITHUB_WORKSPACE -cvf GITHUB_WORKSPACE.tar .
 
-      - name: Test installing updated apps on buster armhf
-        uses: theofficialgman/arm-runner-action@v9
+      - name: Upload GITHUB_WORKSPACE Artifact
+        uses: actions/upload-artifact@v3
         with:
-          # this is a buster armhf image
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-05-03/2023-05-03-raspios-buster-armhf.img.xz
+          name: GITHUB_WORKSPACE
+          path: ${{ runner.temp }}/GITHUB_WORKSPACE.tar
+
+  test-updated-apps:
+    runs-on: ubuntu-latest
+    needs: get-latest-app-versions
+    strategy:
+      matrix:
+        include:
+          - os: buster
+            arch: armhf
+            image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-05-03/2023-05-03-raspios-buster-armhf.img.xz
+            cache: yes
+          - os: buster
+            arch: arm64
+            image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
+            cache: yes
+          - os: bullseye
+            arch: armhf
+            image: https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2023-05-03/2023-05-03-raspios-bullseye-armhf.img.xz
+            cache: yes
+          - os: bullseye
+            arch: arm64
+            image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
+            cache: yes
+          - os: bookworm
+            arch: arm64
+            image: RPIOS_BOOKWORM_URL
+            cache: no
+    name: Testing on ${{ matrix.os }} - ${{ matrix.arch }}
+    outputs:
+      FAILED_UPDATE_APPS_buster_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_buster_armhf || '' }}
+      FAILED_UPDATE_APPS_buster_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_buster_arm64 || '' }}
+      FAILED_UPDATE_APPS_bullseye_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bullseye_armhf || '' }}
+      FAILED_UPDATE_APPS_bullseye_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bullseye_arm64 || '' }}
+      FAILED_UPDATE_APPS_bookworm_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bookworm_arm64 || '' }}
+      UPDATED_APPS_buster_armhf: ${{ steps.updated.outputs.UPDATED_APPS_buster_armhf || '' }}
+      UPDATED_APPS_buster_arm64: ${{ steps.updated.outputs.UPDATED_APPS_buster_arm64 || '' }}
+      UPDATED_APPS_bullseye_armhf: ${{ steps.updated.outputs.UPDATED_APPS_bullseye_armhf || '' }}
+      UPDATED_APPS_bullseye_arm64: ${{ steps.updated.outputs.UPDATED_APPS_bullseye_arm64 || '' }}
+      UPDATED_APPS_bookworm_arm64: ${{ steps.updated.outputs.UPDATED_APPS_bookworm_arm64 || '' }}
+    steps:
+      # restore GITHUB_WORKSPACE
+      - uses: actions/download-artifact@v3
+        with:
+          name: GITHUB_WORKSPACE
+          path: ${{ runner.temp }}
+      - name: Extract GITHUB_WORKSPACE
+        run: |
+          cd ${{ runner.temp }}
+          tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
+
+      - name: Replace secret reference with contents
+        if: ${{ matrix.image == 'RPIOS_BOOKWORM_URL' }}
+        run: |
+          image_url=${{ secrets[matrix.image] }}
+          echo "::add-mask::$image_url"
+          echo "image_url=$image_url" >> "$GITHUB_ENV"
+
+      - name: Replace non-secret reference with contents
+        if: ${{ matrix.image != 'RPIOS_BOOKWORM_URL' }}
+        run: |
+          image_url=${{ matrix.image }}
+          echo "image_url=$image_url" >> "$GITHUB_ENV"
+
+      - name: Write UPDATED_APPS and FAILED_APPS from OUTPUT of get-latest-app-versions to ENV
+        run: |
+          echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
+          echo "${{needs.get-latest-app-versions.outputs.UPDATED_APPS}}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "FAILED_APPS<<EOF" >> $GITHUB_ENV
+          echo "${{needs.get-latest-app-versions.outputs.FAILED_APPS}}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Test installing updated apps on ${{ matrix.os }} - ${{ matrix.arch }}
+        uses: theofficialgman/arm-runner-action@v12
+        with:
+          base_image: ${{ env.image_url }}
           # bind mount the directory so any changes propogate to outside the chroot
           bind_mount_repository: yes
 
           # give the image more space
           image_additional_mb: 5000
 
+          # disable image caching to not leak the URL on some systems
+          enable_image_caching: ${{ matrix.cache }}
+
           # set CPUs to use
           cpu: cortex-a7:cortex-a72
+
+          # use custom /proc/cpuinfo
+          cpu_info: cpuinfo/raspberrypi_4b
 
           # user runner name as default path
           copy_repository_path: /home/runner/pi-apps
@@ -141,123 +246,134 @@ jobs:
             cd ${DIRECTORY}
 
             # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-            debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
+            package_is_new_enough cmake 3.20 || debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
 
-            # store apps changed from last commit to working directory in varaible
+            # store apps changed from last commit to working directory in variable
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
 
             # clean out any app status files
             rm -rf ./data/status
 
             # attempt to install updated apps using manage script loop
-            # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
-            for app in "${changed_apps[@]}"; do
-              # only attempt install/uninstall if updated app is supported on this architecture
-              scriptname="$(script_name_cpu "$app")" #will be install, install-32, or package
-              if [ -z "$scriptname" ];then
-                continue
-              fi
+            # if any app fails, add it to the FAILED_INSTALL_APPS or FAILED_UNINSTALL_APPS variable
+            if [[ ${{ matrix.arch }} == armhf ]]; then
               # skip checking DDNet (due to Rust) if on arm32 under QEMU: https://github.com/rust-lang/cargo/issues/8719
               # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
               # skip WPS Office on 32bit as it requires  "64bit" kernel to be detected. QEMU reports an armv7 kernel. WPS Office is still tested on arm64 (which will verify if the deb works and installs correctly)
-              skiplist=( "DDNet" "Microsoft PowerShell" "WPS Office" )
-              if [[ ! " ${skiplist[*]} " =~ " ${app} " ]]; then
-                ./manage install "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to install $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-                ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to uninstall $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-              fi
-            done
-
-            if test -f /tmp/failed_update_apps; then
-              echo "FAILED_UPDATE_APPS_ARM32<<EOF" >> $GITHUB_ENV
-              cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
-              echo "EOF" >> $GITHUB_ENV
-              echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
-              echo "$UPDATED_APPS" >> $GITHUB_ENV
-              echo "EOF" >> $GITHUB_ENV
-            fi
-
-      - name: Test installing updated apps on bullseye arm64
-        uses: theofficialgman/arm-runner-action@v9
-        with:
-          # this is a bullseye arm64 image
-          base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
-          # bind mount the directory so any changes propogate to outside the chroot
-          bind_mount_repository: yes
-
-          # give the image more space
-          image_additional_mb: 5000
-
-          # set CPUs to use
-          cpu: cortex-a7:cortex-a72
-
-          # user runner name as default path
-          copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
-          export_github_env: yes
-
-          import_github_env: true
-
-          # set shell to bash
-          shell: /bin/bash
-          commands: |
-            sudo chown runner:docker /home/runner
-            # print user info
-            echo $USER $USERNAME $(id) $(whoami)
-            sudo bash -c 'echo $USER $USERNAME $(id) $(whoami)'
-
-            # create standard directories
-            mkdir -p  $HOME/.local/share/applications $HOME/.local/bin
-            sudo mkdir -p /usr/local/bin /usr/local/share/applications
-
-            # install pi-apps dependencies
-            sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
-
-            # runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
-            #for the will_reinstall() and list_intersect() functions
-            set -a #make all functions in the api available to subprocesses
-            #make DIRECTORY equal to GITHUB_WORKSPACE, for subscripts and api functions
-            DIRECTORY=$(pwd)
-            source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-            #Run runonce entries
-            "${DIRECTORY}/etc/runonce-entries"
-            set +a #stop exporting functions
-            cd ${DIRECTORY}
-
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-            debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
-
-            # store apps changed from last commit to working directory in varaible
-            mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
-
-            # clean out any app status files
-            rm -rf ./data/status
-
-            # attempt to install updated apps using manage script loop
-            # if any app fails, checkout the previous version and add it to the /tmp/failed_update_apps file
+              skiplist="DDNet
+            Microsoft PowerShell
+            WPS Office"
+            else
+              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
+              skiplist="Microsoft PowerShell"
+            fi            
             for app in "${changed_apps[@]}"; do
               # only attempt install/uninstall if updated app is supported on this architecture
-              scriptname="$(script_name_cpu "$app")" #will be install, install-64, or package
+              scriptname="$(script_name_cpu "$app")" #will be install, install-32, install-64, or package
               if [ -z "$scriptname" ];then
                 continue
               fi
-              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
-              skiplist=( "Microsoft PowerShell" )
-              if [[ ! " ${skiplist[*]} " =~ " ${app} " ]]; then
-                ./manage install "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to install $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-                ./manage uninstall "$app" || { git checkout -- "apps/$app"; echo '> ![badge-error][badge-error]'" Failed to uninstall $app, reverting to previous version." >> /tmp/failed_update_apps; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              # skip app if is in the skiplist
+              if echo "$skiplist" | grep -Fxq "$app"; then
+                continue
               fi
+              ./manage install "$app" || { FAILED_INSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              ./manage uninstall "$app" || { FAILED_UNINSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
             done
 
-            if test -f /tmp/failed_update_apps; then
-              echo "FAILED_UPDATE_APPS_ARM64<<EOF" >> $GITHUB_ENV
-              cat /tmp/failed_update_apps | sed '0~1 a\\' >> $GITHUB_ENV
+            if [ ! -z "$FAILED_INSTALL_APPS" ] || [ ! -z "$FAILED_UNINSTALL_APPS" ]; then
+              echo "FAILED_UPDATE_APPS<<EOF" >> $GITHUB_ENV
+              echo "$FAILED_INSTALL_APPS$FAILED_UNINSTALL_APPS" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
               echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
               echo "$UPDATED_APPS" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
+      - name: Write FAILED_APPS to OUTPUT
+        id: failed
+        run: |
+          echo "FAILED_UPDATE_APPS_${{ matrix.os }}_${{ matrix.arch }}<<EOF" >> $GITHUB_OUTPUT
+          echo "${{env.FAILED_UPDATE_APPS}}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Write UPDATED_APPS to OUTPUT
+        id: updated
+        run: |
+          echo "UPDATED_APPS_${{ matrix.os }}_${{ matrix.arch }}<<EOF" >> $GITHUB_OUTPUT
+          echo "${{env.UPDATED_APPS}}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  create-pr:
+    needs: [get-latest-app-versions,test-updated-apps]
+    runs-on: ubuntu-latest
+    steps:
+      # restore GITHUB_WORKSPACE
+      - uses: actions/download-artifact@v3
+        with:
+          name: GITHUB_WORKSPACE
+          path: ${{ runner.temp }}
+      - name: Extract GITHUB_WORKSPACE
+        run: |
+          cd ${{ runner.temp }}
+          tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
+      - name: Delete artifact
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: GITHUB_WORKSPACE
+          failOnError: false
+
+      - name: Revert failed apps and generate list
+        run: |
+          ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"
+          ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS" | sort -u | awk NF)"
+          echo "ALL_FAILED_APPS<<EOF" >> $GITHUB_ENV
+          echo "$ALL_FAILED_APPS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          error_string=""
+          IFS=$'\n'
+          for app in $ALL_FAILED_APPS; do
+            git checkout -- "apps/$app"
+            error_string+='![badge-error][badge-error]'" Failed to install $app on "
+
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_armhf}}" | grep -Fxq "$app"; then
+              error_string+="buster armhf, "
+            fi
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_arm64}}" | grep -Fxq "$app"; then
+              error_string+="buster arm64, "
+            fi
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_armhf}}" | grep -Fxq "$app"; then
+              error_string+="bullseye armhf, "
+            fi
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_arm64}}" | grep -Fxq "$app"; then
+              error_string+="bullseye arm64, "
+            fi
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -Fxq "$app"; then
+              error_string+="bookworm arm64, "
+            fi
+
+            error_string+="reverting to previous version."$'\n'$'\n'
+          done
+          true
+          echo "ALL_FAILED_APPS_ERROR_STRING<<EOF" >> $GITHUB_ENV
+          echo "$error_string" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Generate updated apps list
+        run: |
+          list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1 using the UPDATED_APP format
+            # for example, the following two inputs will be a match
+            # - BlockBench-arm64: 4.7.4 -> 4.8.0
+            # BlockBench
+            #                       change \n to -\n     | change '^' to '- '
+            grep -ve "$(echo "$1" | sed -z 's/\n/\-\n/g' | sed 's/^/- /g')"
+            true
+          }
+          ALL_UPDATED_APPS="${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_arm64}}"
+          ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | sort -u | awk NF)"
+          [ ! -z "$ALL_UPDATED_APPS" ] && ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | list_subtract "$ALL_FAILED_APPS")"
+          echo "ALL_UPDATED_APPS<<EOF" >> $GITHUB_ENV
+          echo "$ALL_UPDATED_APPS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
@@ -266,7 +382,7 @@ jobs:
           commit-message: |
             Update App Versions, run by GitHub Actions - Apps updated:
 
-            ${{ env.UPDATED_APPS }}
+            ${{ env.ALL_UPDATED_APPS }}
           branch: "auto-app-updates-NOT-FOR-USERS"
           title: "[AUTO] Update App Versions"
           body: |
@@ -279,8 +395,7 @@ jobs:
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Apps updated:
             ```
-            ${{ env.UPDATED_APPS }}
+            ${{ env.ALL_UPDATED_APPS }}
             ```
-            ${{ env.FAILED_APPS }}
-            ${{ env.FAILED_UPDATE_APPS_ARM32 }}
-            ${{ env.FAILED_UPDATE_APPS_ARM64 }}
+            ${{needs.get-latest-app-versions.outputs.FAILED_APPS}}
+            ${{ env.ALL_FAILED_APPS_ERROR_STRING }}

@@ -1,5 +1,6 @@
 #!/bin/bash
 
 purge_packages || exit 1
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
 
 rm -f ~/.local/share/applications/shatteredpd.desktop ~/.local/bin/ShatteredPD-Desktop.jar

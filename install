@@ -23,7 +23,7 @@ fi
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
 #install dependencies
-dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync'
+dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync'
 
 if ! dpkg -s $dependencies &>/dev/null ;then
   sudo apt install $dependencies -y -f --no-install-recommends
@@ -85,7 +85,7 @@ fi
 mkdir -p ~/.local/share/applications
 if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then #If on PiOS, place launcher in Accessories as it has always been there and is more intuitive there
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -96,7 +96,7 @@ Categories=Utility
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 else #if not on PiOS, place launcher in Preferences to match the wider decision of putting app installers there (see PR #2388)
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -110,7 +110,8 @@ chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
 
 #copy menu button to Desktop
-cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
+mkdir -p ~/Desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/
 
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
@@ -120,7 +121,7 @@ if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button..."
 fi
 echo "[Desktop Entry]
-Name=Pi Apps Settings
+Name=Pi-Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/settings.png
@@ -135,7 +136,7 @@ if [ ! -f ~/.config/autostart/pi-apps-updater.desktop ];then
 fi
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
-Name=Pi Apps Updater
+Name=Pi-Apps Updater
 Exec=${DIRECTORY}/updater onboot
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false

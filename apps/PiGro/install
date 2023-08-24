@@ -1,11 +1,9 @@
 #!/bin/bash
 
-version=23.02
+version=23.03
 
 # Get dependencies
-install_packages xterm python3-pil python3-pil.imagetk python3-pip python3-dev mpg123 lolcat || exit 1
-# Get Python dependencies
-pip3 install playsound psutil distro py-notifier
+install_packages xterm python3-pil python3-pil.imagetk python3-pip python3-psutil python3-distro python3-bs4 python3-dev python3-requests mpg123 lolcat || exit 1
 
 rm -rf ~/PiGro-Aid- || error "Failed to first remove ~/PiGro-Aid- folder!"
 git_clone https://github.com/actionschnitzel/PiGro-Aid- -b $version --depth=1 || error "Failed to clone repository!"

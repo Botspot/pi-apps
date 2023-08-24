@@ -61,14 +61,14 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
       true
     elif ([ "$action" == update ] || [ "$action" == refresh ]) && [ ! -d "${DIRECTORY}/update/pi-apps/apps/${app}" ];then
       
-      yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
+      yad --class Pi-Apps --name "Pi-Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
       
       #remove the app from list
       queue="$(echo "$queue" | sed ${i}d)"
     elif [ "$action" != update ] &&  [ "$action" != refresh ] && [ ! -d "${DIRECTORY}/apps/${app}" ];then
-      yad --class Pi-Apps --name "Pi Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
+      yad --class Pi-Apps --name "Pi-Apps" --text="Invalid app "\""<b>$app</b>"\"". Cannot $action it." \
         --text-align=center --center --title='Error' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=OK!"${DIRECTORY}/icons/check.png":0
       
@@ -91,7 +91,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
       # skip app validation
       true
     elif [ "$(app_status "${app}")" == "${action}ed" ];then
-      yad --class Pi-Apps --name "Pi Apps" --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
+      yad --class Pi-Apps --name "Pi-Apps" --text="<b>$app</b> is already ${action}ed. Are you sure you want to $action it again?" \
         --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" \
         --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
       
@@ -121,7 +121,7 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
         
         "${DIRECTORY}/updater" set-status &>/dev/null & #check for updates in background, so if user chooses "Yes", the updater will be guaranteed to have the app listed
         
-        yad --class Pi-Apps --name "Pi Apps" --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to install the newest official version of $app?</b>" \
+        yad --class Pi-Apps --name "Pi-Apps" --text="Hold up..."$'\n'"<b>$app</b>'s $script_name_cpu script does not match the online version. Either you are about to install an outdated version, or you've made changes to the script yourself."$'\n\n'"<b>Would you like to install the newest official version of $app?</b>" \
           --text-align=center --center --title='Quick question' --window-icon="${DIRECTORY}/icons/logo.png" --width=400 \
           --image="${DIRECTORY}/apps/$app/icon-64.png" \
           --button="I know what I am doing, Install current version"!"${DIRECTORY}/icons/forward.png":1 --button="Yes, Install newest official version"!"${DIRECTORY}/icons/download.png"!"In most cases, this is the button you should click.":0
@@ -170,7 +170,7 @@ removal_list="$(find /var/lib/apt/lists -type f -name '*Packages' -size 0 2>/dev
 if [ ! -z "$removal_list" ]; then
   if [ x$DISPLAY != x ] ; then
     while ! sudo -n true; do
-      yad --class Pi-Apps --name "Pi Apps" --title="Broken Local Packages Repo Detected" --text="Please enter your user password \nso pi-apps can attempt a repair:" --image="dialog-password" --entry --hide-text 2>/dev/null | sudo -S echo "" 2>&1 >/dev/null
+      yad --class Pi-Apps --name "Pi-Apps" --title="Broken Local Packages Repo Detected" --text="Please enter your user password \nso pi-apps can attempt a repair:" --image="dialog-password" --entry --hide-text 2>/dev/null | sudo -S echo "" 2>&1 >/dev/null
     done
   fi
   echo "$removal_list" | xargs sudo rm -f
@@ -190,7 +190,7 @@ if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_dat
   upstream_git_date="$(curl https://api.github.com/repos/Botspot/pi-apps/commits/master 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%s -d 2>/dev/null)"
   
   if [[ "$upstream_git_date" =~ ^[0-9]+$ ]] && ([ -z "$current_git_date" ] || [ "$upstream_git_date" -gt $(($current_git_date + 7776000)) ]);then
-    yad --class Pi-Apps --name "Pi Apps" --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+    yad --class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
       --text="Your Pi-Apps installation is somehow 3 months out-of-date."$'\n'"Reinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old..." &
     yadpid=$!
     
@@ -431,7 +431,7 @@ $app"
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad --class Pi-Apps --name "Pi Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \

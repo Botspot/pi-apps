@@ -1,4 +1,7 @@
 #!/bin/bash
 
 version=3.9.1
-install_packages openjdk-11-jdk rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1
+adoptium_installer || exit 1
+# install temurin-17-jre first so that when apt looks for "Provides: java11-runtime" to satisfy ipscan dependencies it will be there
+install_packages temurin-17-jre || exit 1
+install_packages rpm fakeroot "https://github.com/angryip/ipscan/releases/download/${version}/ipscan_${version}_all.deb" || exit 1

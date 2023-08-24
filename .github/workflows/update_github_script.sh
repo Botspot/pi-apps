@@ -68,7 +68,7 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
         status "Pi-Apps install-32 version for $app_name is current!"
         if ! validate_url "$armhf_url"; then
             warning "Current $app_name install-32 may be broken, the upstream file $armhf_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Current $app_name install-32 may be broken, the upstream file $armhf_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Current $app_name install-32 may be broken, the upstream file $armhf_url does NOT exist." >> /tmp/failed_apps
         fi
     else
         #If version is not current do:
@@ -79,7 +79,7 @@ if [ -n "$pi_apps_ver_32" ]  && [ -a "$DIRECTORY/apps/$app_name/install-32" ]; t
             echo "- $app_name-armhf: $pi_apps_ver_32 -> ${webVer} " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Updating $app_name install-32 had been skipped, the upstream file $armhf_url does NOT exist." >> /tmp/failed_apps
         fi
     fi
 fi
@@ -92,7 +92,7 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
         status "Pi-Apps install-64 version for $app_name is current!"
         if ! validate_url "$arm64_url"; then
             warning "Current $app_name install-64 may be broken, the upstream file $arm64_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Current $app_name install-64 may be broken, the upstream file $arm64_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Current $app_name install-64 may be broken, the upstream file $arm64_url does NOT exist." >> /tmp/failed_apps
         fi
     else
         if validate_url "$arm64_url"; then
@@ -102,7 +102,7 @@ if [ -n "$pi_apps_ver_64" ] && [ -a "$DIRECTORY/apps/$app_name/install-64" ]; th
             echo "- $app_name-arm64: $pi_apps_ver_64 -> ${webVer} " >> /tmp/updated_apps
         else
             warning "Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Updating $app_name install-64 had been skipped, the upstream file $arm64_url does NOT exist." >> /tmp/failed_apps
         fi
     fi
 fi
@@ -115,7 +115,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name
         status "Pi-Apps install version for $app_name is current!"
         if ! validate_url "$all_url"; then
             warning "Current $app_name install may be broken, the upstream file $all_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Current $app_name install may be broken, the upstream file $all_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Current $app_name install may be broken, the upstream file $all_url does NOT exist." >> /tmp/failed_apps
         fi
     else
         if validate_url "$all_url"; then
@@ -125,7 +125,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$all_url" ] && [ -a "$DIRECTORY/apps/$app_name
             echo "- $app_name-all: $pi_apps_ver -> ${webVer} " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $all_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Updating $app_name install had been skipped, the upstream file $all_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Updating $app_name install had been skipped, the upstream file $all_url does NOT exist." >> /tmp/failed_apps
         fi
     fi
 fi
@@ -138,7 +138,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "
         status "Pi-Apps install version for $app_name is current!"
         if ! ( validate_url "$armhf_url" && validate_url "$arm64_url" ); then
             warning "Current $app_name install may be broken, the upstream file $armhf_url or $arm64_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Current $app_name install may be broken, the upstream file $armhf_url or $arm64_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Current $app_name install may be broken, the upstream file $armhf_url or $arm64_url does NOT exist." >> /tmp/failed_apps
         fi
     else
         if validate_url "$armhf_url" && validate_url "$arm64_url"; then
@@ -148,7 +148,7 @@ if [ -n "$pi_apps_ver" ] && [ -n "$armhf_url" ] && [ -n "$arm64_url" ] && [ -a "
             echo "- $app_name-all: $pi_apps_ver -> ${webVer} " >> /tmp/updated_apps
         else
             warning "Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist."
-            echo '> ![badge-warning][badge-warning]'" Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist." >> /tmp/failed_apps
+            echo '![badge-warning][badge-warning]'" Updating $app_name install had been skipped, the upstream file $armhf_url or $arm64_url does NOT exist." >> /tmp/failed_apps
         fi
     fi
 fi
@@ -157,7 +157,7 @@ done
 else
 
 warning "webVer variable is missing for $app_name update script, please fix this script, skipping update check."
-echo '> ![badge-issue][badge-issue]'" webVer variable is missing for $app_name update script, please fix this script, skipping update check." >> /tmp/failed_apps
+echo '![badge-issue][badge-issue]'" webVer variable is missing for $app_name update script, please fix this script, skipping update check." >> /tmp/failed_apps
 
 fi
 

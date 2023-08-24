@@ -1,8 +1,10 @@
 #!/bin/bash
 
+version=v0.11.1
+
 case "$arch" in
-"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.10.3_aarch64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
-"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_v0.10.3_armv7l.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm32.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
@@ -11,8 +13,8 @@ sudo unzip /tmp/pixelorama.zip -d /usr/share/Pixelorama
 rm -f /tmp/pixelorama.zip
 
 case "$arch" in
-"64") sudo ln -s /usr/share/Pixelorama/Pixelorama.aarch64 /usr/bin/pixelorama || error "Could not create symbolic link" ;;
-"32") sudo ln -s /usr/share/Pixelorama/Pixelorama.armv7l /usr/bin/pixelorama || error "Could not create symbolic link" ;;
+"64") sudo ln -s /usr/share/Pixelorama/Pixelorama.arm64 /usr/bin/pixelorama || error "Could not create symbolic link" ;;
+"32") sudo ln -s /usr/share/Pixelorama/Pixelorama.arm32 /usr/bin/pixelorama || error "Could not create symbolic link" ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 

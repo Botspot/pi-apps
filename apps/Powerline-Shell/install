@@ -1,12 +1,15 @@
 #!/bin/bash
 
 install_packages python3 python3-pip python3-dev fonts-powerline fonts-fantasque-sans || exit 1
+pipx_install powerline-shell || exit 1
 
-sudo pip3 install powerline-shell || error "Failed to install powerline shell with pip3"
-
-#Remove new powerline ~/.bashrc function if already there
+#Remove powerline-shell function from ~/.bashrc if already there
 sed -i '/powerline-shell/d' ~/.bashrc
+# Remove powerline-shell function from /etc/bash.bashrc if already there
+sudo sed -i '/powerline-shell/d' /etc/bash.bashrc
 
-#Add powerline to ~/.bashrc
-echo 'if [ $TERM != linux ] && [[ ! $PROMPT_COMMAND =~ "powerline-shell" ]]; then PROMPT_COMMAND="PS1="\"""\$"(powerline-shell)"\""; $PROMPT_COMMAND" ; fi' >> ~/.bashrc
-
+#Add powerline to /etc/bash.bashrc
+echo 'if [ $TERM != linux ] && [[ ! $PROMPT_COMMAND =~ "powerline-shell" ]]; then PROMPT_COMMAND="PS1="\"""\$"(powerline-shell)"\""; $PROMPT_COMMAND" ; fi' | sudo tee -a /etc/bash.bashrc > /dev/null || error "Could not modify /etc/bash.bashrc"
+#Also add to users ~/.bashrc . Some terminals (eg: gnome-terminal) overwrite the PROMPT_COMMAND with their own contents after /etc/bash.bashrc so is necessary for them
+#The following will only affect the current users install
+echo 'if [ $TERM != linux ] && [[ ! $PROMPT_COMMAND =~ "powerline-shell" ]]; then PROMPT_COMMAND="PS1="\"""\$"(powerline-shell)"\""; $PROMPT_COMMAND" ; fi' | tee -a ~/.bashrc > /dev/null || error "Could not modify ~/.bashrc"

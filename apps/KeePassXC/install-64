@@ -1,15 +1,21 @@
 #!/bin/bash
 
-case $(get_codename) in
-bionic|focal|jammy|kinetic)
-  apt_lock_wait
-  sudo add-apt-repository ppa:phoerious/keepassxc -y
+case $__os_codename in
+bionic|focal|jammy|kinetic|lunar)
+  ubuntu_ppa_installer "phoerious/keepassxc"
+  install_packages keepassxc || exit 1
+  ;;
+bookworm)
+  debian_ppa_installer "phoerious/keepassxc" "jammy" "D89C66D0E31FEA2874EBD20561922AB60068FCD6" || exit 1
   install_packages keepassxc || exit 1
   ;;
 bullseye)
   install_packages https://github.com/Pi-Apps-Coders/files/raw/main/keepassxc_2.6.6-1_arm64.deb || exit 1
   ;;
-*)
+buster)
   install_packages https://github.com/ryanfortner/ryanfortner/releases/download/1002/keepassxc_2.6.6-5_arm64.deb || exit 1
+  ;;
+*)
+  install_packages keepassxc || exit 1
   ;;
 esac

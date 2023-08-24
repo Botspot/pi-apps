@@ -9,7 +9,7 @@ function error {
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
 #Use 'settings' window icon on all windows of this script
-yadflags=(--class Pi-Apps-Settings --name "Pi Apps Settings" --center --window-icon="${DIRECTORY}/icons/settings.png" --title="Pi-Apps" --separator='\n')
+yadflags=(--class Pi-Apps-Settings --name "Pi-Apps Settings" --center --window-icon="${DIRECTORY}/icons/settings.png" --title="Pi-Apps" --separator='\n')
 
 #you can specify a pre-existing app with variable 1
 if [ ! -z "$1" ];then

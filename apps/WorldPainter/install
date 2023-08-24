@@ -1,16 +1,17 @@
 #!/bin/bash
 
-version=2.18.4
+version=2.21.1
 
-install_packages openjdk-11-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
+adoptium_installer || exit 1
+install_packages temurin-17-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
 
 # force java-11
 case "$arch" in
   "64")
-    echo /usr/lib/jvm/java-11-openjdk-arm64 | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
+    echo /usr/lib/jvm/temurin-17-jre-arm64 | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
     ;;
   "32")
-    echo /usr/lib/jvm/java-11-openjdk-armhf | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
+    echo /usr/lib/jvm/temurin-17-jre-armhf | sudo tee /opt/worldpainter/.install4j/pref_jre.cfg >/dev/null
     ;;
   *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac

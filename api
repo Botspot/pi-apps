@@ -55,19 +55,19 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
     echo -e "${bg_default}    ${green}🭊${darkgreen}🬹🬹🬹${green}🬿${default}                                          ${darkgreen}                ${default}
  ${blue1}🭇🬭🬭${green}\e[48;5;26m🬎${bg_default}${blue2}🬭🬭🬭${blue3}${green}\e[48;5;26m🬎${bg_default}${blue3}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
- ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ▋${default}   █▄▄🭞 ▄ ${blue3}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue4}  ▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ${bg_default}▋${default}   █▄▄🭞 ▄ ${blue3}▄▄${default} 🭂▀▀█ █▀▀🭍 █▀▀🭍 🭂🬰🬰🬰       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${blue2}🮉${bg_black}  ${red}▄ ▄ ▄${blue4}  ${bg_default}▋${default}   █    █    🭓▄▄█ █▄▄🭞 █▄▄🭞 ▄▄▄🭞       ${darkgreen}      ${black}    ${darkgreen}      ${default}
  ${blue3}🭦${bg_black}🭏🬭🬭🬭${blue4}🬭🬭🬭🬭🭄${bg_default}🭛${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   else
     echo -e "${white}${bg_default}    ${green}▅${darkgreen}▅▅▅${green}▅${default}                                          ${darkgreen}                ${default}
  ${blue1}▂▂▂${green}\e[48;5;26m\e[7m▂\e[27m${bg_default}${blue2}▂▂▂${blue3}${green}\e[48;5;26m\e[7m▂\e[27m${bg_default}${blue3}▂▂▂${white}${default}                                       ${darkgreen}                ${default}
- ${blue1}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${default}   █▄▄\e[7m▂\e[27m ▄ ${blue3}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
- ${blue2}▌  ${red}▄ ▄ ▄${blue4}  ▐${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
- ${blue3}${bg_default}\e[7m▂\e[27m${bg_black}▃▃▃▃${blue4}▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
+ ${bg_black}${blue1}▌  ${red}▄ ▄ ▄${blue3}  ▐${bg_default}${default}   █▀▀▆ ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_black}${blue2}▌  ${red}▄ ▄ ▄${blue3}  ▐${bg_default}${default}   █▄▄\e[7m▂\e[27m ▄ ${blue3}▄▄${default} ▆▀▀█ █▀▀▆ █▀▀▆ ▆\e[7m━━━\e[27m       ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
+ ${bg_black}${blue2}▌  ${red}▄ ▄ ▄${blue4}  ▐${bg_default}${default}   █    █    \e[7m▂\e[27m▄▄█ █▄▄\e[7m▂\e[27m █▄▄\e[7m▂\e[27m ▄▄▄\e[7m▂\e[27m       ${darkgreen}      ${black}    ${darkgreen}      ${default}
+ ${blue3}\e[7m▂\e[27m${bg_black}▃▃▃▃${blue4}▃▃▃▃▃${bg_default}\e[7m▂\e[27m${default}                  █    █               ${darkgreen}    ${black}        ${darkgreen}    ${default}
 \e[0m                                                   ${darkgreen}    ${black}        ${darkgreen}    ${default}
                                                    ${darkgreen}    ${black}  ${darkgreen}    ${black}  ${darkgreen}    ${default}"
   fi
@@ -462,8 +462,8 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     error "install_packages(): failed to remove all filenames from the package list:\n$packages"
   fi #package list contains no '*' characters, urls, local filepaths
   
-  #change the $packages list from newline-delimited to underscore-delimited
-  packages="$(tr '\n' '_' <<<"$packages")"
+  #change the $packages list from newline-delimited to comma-delimited
+  packages="$(tr '\n' ',' <<<"$packages")"
   
   if [ "$using_local_packages" == 1 ];then
     #Initialize the pi-apps-local-packages repository
@@ -485,13 +485,13 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     
     local existing_deps="$(package_dependencies "$package_name")"
     status "The $package_name package is already installed. Inheriting its dependencies: $(echo "$existing_deps")"
-    packages+="_""$(echo "$existing_deps" | sed -z 's|, |_|g')"
+    packages+=",""$(echo "$existing_deps" | sed 's/, /,/g')"
   fi
   
   { #create dummy apt package that depends on the packages this app requires
     
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
-    local depends="$(echo "$packages" | sed 's/_/,/g' | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
+    local depends="$(echo "$packages" | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
     
     rm -rf ~/$package_name ~/$package_name.deb
     mkdir -p ~/$package_name/DEBIAN
@@ -650,7 +650,7 @@ ubuntu_ppa_installer() { #setup a PPA on an Ubuntu distro. Arguments: ppa_name
   [ -z "$1" ] && error "ubuntu_ppa_installer(): This function is used to add a ppa to a ubuntu based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
@@ -678,7 +678,7 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
   [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && error "debian_ppa_installer(): This function is used to add a ppa to a debian based install but a required input argument was missing."
   local ppa_grep="$ppa_name"
   [[ "${ppa_name}" != */ ]] && local ppa_grep="${ppa_name}/ubuntu ${ppa_dist}"
-  local ppa_added=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | grep -v deb-src | grep deb | grep -v '#' | grep "$ppa_grep" | wc -l)
+  local ppa_added=$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}' | grep "$ppa_grep" | wc -l)
   if [[ $ppa_added -eq "1" ]]; then
     status "Skipping $ppa_name PPA, already added"
   else
@@ -691,6 +691,97 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
     fi
     apt_update || exit 1
   fi
+}
+
+adoptium_installer() {
+  status "Adding Adoptium repository:"
+
+  echo "- public key -> keyring"
+  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
+  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+  rm -f /tmp/adoptium-public-key
+
+  echo " - keyring -> GPG key"
+  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
+  rm -f /tmp/adoptium-keyring.gpg
+
+  echo " - Moving GPG key to /usr/share/keyrings"
+  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+
+  echo " - Creating /etc/apt/sources.list.d/adoptium.list"
+  case "$__os_codename" in
+  bionic | focal | jammy | buster | bullseye | bookworm)
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb $__os_codename main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  *)
+    # use bionic target name explicitly for any other OS as its the oldest LTS target adoptium continues to support
+    # all supported adoptium OSs use the same debs so the target specified does not actually matter
+    echo "deb [signed-by=/usr/share/keyrings/adoptium-archive-keyring.gpg] https://adoptium.jfrog.io/artifactory/deb bionic main" | sudo tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    ;;
+  esac
+  apt_update
+  if [ $? != 0 ]; then
+    anything_installed_from_repo "https://adoptium.jfrog.io/artifactory/deb"
+    if [ $? != 0 ]; then
+      # nothing installed from repo, this check is to prevent removing repos which other pi-apps scripts or the user have used successfully
+      # safe to remove
+      sudo rm -f /etc/apt/sources.list.d/adoptium.list /usr/share/keyrings/adoptium-archive-keyring.gpg
+    fi
+    error "Failed to perform apt update after adding Adoptium repository."
+  fi
+}
+
+pipx_install() {
+  # install pipx keeping in mind distro issues
+  # pipx <= 0.16.1 is compatible with 3.7 <= python3 < 3.9
+  # pipx >= 0.16.1 is compatible with python3 >= 3.7
+  # some distros lack pipx entirely
+  # some distros (raspbian bullseye specifically) have incompatible combinations of pipx (0.12.3) and python3 (3.9) versions, necessitating pipx to be installed/upgraded from pip
+  # pipx 1.0.0 is the first stable release and has some features that we would like to assume are available, install it from pip if the distro package is too old
+  if package_available pipx && package_is_new_enough pipx 1.0.0 ;then
+    install_packages pipx python3-venv || exit 1
+  elif package_is_new_enough python3 3.7 ; then
+    install_packages python3-venv || exit 1
+    sudo -H python3 -m pip install --upgrade pipx || exit 1
+  elif package_available python3.8 ;then
+    install_packages python3.8 python3.8-venv || exit 1
+    sudo -H python3.8 -m pip install --upgrade pipx || exit 1
+  else
+    error "pipx is not available so cannot install powerline-shell to python venv"
+  fi
+  sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "$@" || error "Failed to install $* with pipx"
+}
+
+pipx_uninstall() {
+  sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall "$@" || error "Failed to uninstall $* with pipx"
+}
+
+remove_deprecated_app() { # prompts a user to uninstall a deprecated pi-apps application and then removes the application folder if it exists
+  local app="$1" # on app name
+  local removal_arch="$2" # 32 or 64 to only remove one architecture if specified
+  [ -z "$app" ] && error "remove_deprecated_app(): requires an pi-apps app name"
+  local app_status="$(app_status "${app}")"
+  if [ ! -z "$removal_arch" ] && [ "$arch" == "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app for ${removal_arch}-bit OSs which you currently have installed.
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  elif [ ! -z "$removal_arch" ] && [ "$arch" != "$removal_arch" ]; then
+    rm -f "${DIRECTORY}/apps/$app/install-$removal_arch"
+    return 0
+  elif [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app which you currently have installed.
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  else
+    rm -rf "${DIRECTORY}/apps/$app"
+    return 0
+  fi
+  if [ "$output" == "Uninstall now" ]; then
+    "${DIRECTORY}/manage" uninstall "$app"
+  fi
+  rm -rf "${DIRECTORY}/apps/$app"
+  return 0
 }
 
 terminal_manage() { # wrapper for the original terminal_manage function to terminal_mange_multi
@@ -816,7 +907,7 @@ session is restarted."
   if [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] && [ ! -z "$(ls /var/lib/flatpak/exports/share/applications)" ] && [ -z "$(ls /usr/share/applications/flatpak-temporary)" ];then
     sudo mkdir -p /usr/share/applications/flatpak-temporary
     sudo mount --bind /var/lib/flatpak/exports/share/applications /usr/share/applications/flatpak-temporary
-  elif [[ "$XDG_DATA_DIRS" != */var/lib/flatpak/exports/share* ]] ;then
+  elif [[ "$XDG_DATA_DIRS" == */var/lib/flatpak/exports/share* ]] ;then
     sudo rm -rf /usr/share/applications/flatpak-temporary
   fi
   #Additionally, PiOS Buster had a bug where XDG_DATA_DIRS was missing flatpak's entries due to PiOS mods. Pi-Apps fixes this with a runonce.
@@ -976,6 +1067,8 @@ read_category_files() { #Generates a combined categories-list from several sourc
   fi
   if [[ ! -z "$jetson_model" ]] && [[ "$version_id" == "18.04" ]]; then
     device_override="${DIRECTORY}/etc/category-overrides-jetson-18.04"
+  elif [[ ! -z "$jetson_model" ]]; then
+    device_override="${DIRECTORY}/etc/category-overrides-jetson-generic"
   fi
   
   #list the user-overrides file     and the device specific override  and the global categories file   |-----and all apps------------|     filter out duplicates   no '\n\n'
@@ -1313,6 +1406,54 @@ ${category}"
   fi
 }
 
+userinput_func() { # userinput function to display yad/cli prompts to the user
+  [ -z "$1" ] && error "userinput_func(): requires a description"
+  [ -z "$2" ] && error "userinput_func(): requires at least one output selection option"
+  local text_lines=$(echo -e "$1" | wc -l)
+  # there is no good universal way to calculate the required height of the window
+  # the users theme, default text size, and window scaling all affect it
+  # the idea is the height should be a function of the number of lines of input text and the number of list options
+  local height_list=$(echo $(( text_lines * 17 + $(( ${#@} - 1 )) * 29 + 65 )))
+  local commonflags=(--fixed --no-escape --undecorated --center --borders=20)
+  if [ "${#@}" == "2" ];then
+    yad "${yadflags[@]}" "${commonflags[@]}" \
+      --image "dialog-information" \
+      --text="$1" \
+      --button="$2":0
+    output="$2"
+  elif [ "${#@}" == "3" ];then
+    yad "${yadflags[@]}" "${commonflags[@]}" \
+      --image "dialog-question" \
+      --text="$1" \
+      --button="$2":0 \
+      --button="$3":1
+    if [ $? -ne 0 ]; then
+      output="$3"
+    else
+      output="$2"
+    fi
+  else
+    unset uniq_selection
+    for string in "${@:2}"; do
+      local uniq_selection+=(FALSE "$string")
+    done
+    local uniq_selection[0]=TRUE
+    output=$(yad "${yadflags[@]}" "${commonflags[@]}" \
+      --height=$height_list\
+      --text "$1" \
+      --list \
+      --no-headers \
+      --radiolist \
+      --center \
+      --column "" \
+      --column "Selection" \
+      --print-column=2 \
+      --separator='' \
+      --button="OK":0 \
+      "${uniq_selection[@]}")
+  fi
+}
+
 generate_app_icons() { #This converts the given $1 image into icon-24.png and icon-64.png files for the $2 app
   icon="$1"
   app="$2"
@@ -1622,14 +1763,21 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
     # add additional output for the packages that have unmet dependencies
 
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
-    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
-    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs apt-cache show >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
   fi
 
   if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | uniq | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs apt-cache show >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
   fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
@@ -1645,8 +1793,8 @@ deb http://archive.raspberrypi.org/debian/ $(get_codename) main
     error_type="system"
   fi
   
-  #if /etc/apt/sources.list missing, display error message
-  if [ ! -f /etc/apt/sources.list ] ;then
+  #if /etc/apt/sources.list and /etc/apt/sources.list.d/ubuntu.sources (default sources in Ubuntu 23.10) missing, display error message
+  if [ ! -f /etc/apt/sources.list ] && [ ! -f /etc/apt/sources.list.d/ubuntu.sources ] ;then
     if [ -f /etc/rpi-issue ] && [ "$arch" == 32 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
@@ -1926,7 +2074,7 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.curl: .* transfer closed with .* bytes remaining to read" <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read" <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
@@ -2276,7 +2424,7 @@ diagnose_apps() { #Given a list of apps that failed to install/uninstall, loop t
       local close_button=(--button="Close!${DIRECTORY}/icons/exit.png":1)
     fi
     
-    echo "$error_caption" | yad "${yadflags[@]}" --class Pi-Apps --name "Pi Apps" --text-info --width=700 --height=300 --title="Error occured when $(echo "${action}ing" | sed 's/updateing/updating/g') $app ($i/$num_lines)" \
+    echo "$error_caption" | yad "${yadflags[@]}" --class Pi-Apps --name "Pi-Apps" --text-info --width=700 --height=300 --title="Error occured when $(echo "${action}ing" | sed 's/updateing/updating/g') $app ($i/$num_lines)" \
       --image="${DIRECTORY}/icons/error.png" --image-on-top \
       --text="$text" --wrap --fontname=12 \
       --button='View log'!"${DIRECTORY}/icons/log-file.png"!"Review the output from when <b>$app</b> tried to $action.":"bash -c 'view_file "\""$logfile"\""'" \
@@ -2399,7 +2547,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif local frankendebian="$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/*.list | cut -d':' -f2- | sed 's/^ *//g' | grep -v '^#\|^deb-src' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
+  elif local frankendebian="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
@@ -2407,13 +2555,23 @@ apt.pop-os.org\|\
 apt.armbian.com" | grep -v $__os_codename)" && [ ! -z "$frankendebian" ];then
     echo "Congratulations, Linux tinkerer, you broke your system. You have made your system a FrankenDebian.
 This website explains your mistake in more detail: https://wiki.debian.org/DontBreakDebian
-Your current reported release (Debian ${__os_codename^}) should not be combined with other releases.
+Your current reported release (${__os_codename^}) should not be combined with other releases.
 Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this line' || echo 'these lines'):"
     local IFS=$'\n'
     for line in $frankendebian ;do
-      echo -e "\e[4m$line\e[24m in $(grep "$line" /etc/apt/sources.list /etc/apt/sources.list.d/*.list | awk -F: '{print $1}')"
+      local site="$(echo "$line" | awk '{print $1}')"
+      local release="$(echo "$line" | awk '{print $2}')"
+      echo -e "\e[4m$line\e[24m in $(apt-get indextargets --no-release-info --format '$(SOURCESENTRY)' "Release: $release" "Site: $site" | awk -F':' '{print $1}' | sort -u)"
     done
     echo "Your system might be recoverable if you did this recently and have not performed an apt upgrade yet, but otherwise you should probably reinstall your OS."
+    return 1
+  elif ! package_available init; then
+    echo "Congratulations, Linux tinkerer, you broke your system. The init package can not be found, which means you have removed the default debian sources from your system.
+All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
+    return 1
+  elif [ -z "$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE)' | sort -u | awk 'NF==2 {print}')" ];then
+    echo "Congratulations, Linux tinkerer, you broke your system. You have removed ALL debian sources from your system.
+All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
     return 1
   elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
     echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
@@ -2826,7 +2984,8 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     fi
     
     #use these flags for aria2c
-    aria2_flags=(-c -x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false --allow-overwrite=true --auto-file-renaming=false \
+    aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false \
+      --allow-overwrite=true --auto-file-renaming=false --remove-control-file --auto-save-interval=0 \
       --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" -d "$(dirname "${file}")" -o "$(basename "${file}")")
     
     #suppress output if -q flag passed
@@ -2988,7 +3147,7 @@ elif [ "$guimode" == xlunch-dark ];then
 fi
 
 #this array stores flags that are used in all yad windows - saves on the typing and makes it easy to change an attribute on all dialogs from one place.
-yadflags=(--class Pi-Apps --name "Pi Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+yadflags=(--class Pi-Apps --name "Pi-Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
 
 #determine if host system is 64 bit arm64 or 32 bit armhf
 if [ "$(od -An -t x1 -j 4 -N 1 "$(readlink -f /sbin/init)")" = ' 02' ];then
@@ -3063,6 +3222,10 @@ if [ -z "$__os_id" ] || [ -z "$__os_desc" ] || [ -z "$__os_release" ] || [ -z "$
     export __os_codename="${os[3]}"
   fi
 fi
+
+# add /usr/local/bin to path if not currently present which is often not searched by default if /usr/local/bin did not exist on boot.
+# this path will automatically be added on next boot if a binary is placed in it by a pi-apps script
+[[ "$PATH" != */usr/local/bin* ]] && export PATH="/usr/local/bin:$PATH"
 
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then

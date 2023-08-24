@@ -3,6 +3,9 @@ if ! command -v libreoffice >/dev/null ;then
   error "User error: Libreoffice is not installed, so this theme is useless to you.\nTo install libreoffice, run this in a terminal:\nsudo apt install libreoffice libreoffice-gtk2"
 fi
 
+#Ensure libreoffice-gtk3 is installed. It is installed by default on PiOS, but reinstaling libreoffice will not bring it back, resulting in a Win95 interface and no tabbed theme.
+install_packages libreoffice-gtk3 || exit 1
+
 rm -rf ~/libreoffice-ms-theme
 git_clone --depth=1 https://github.com/Botspot/libreoffice-ms-theme || error "Failed to git_clone libreoffice-ms-theme repository!"
 ~/libreoffice-ms-theme/apply.sh || error "apply.sh failed"

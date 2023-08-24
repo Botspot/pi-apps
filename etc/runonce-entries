@@ -19,6 +19,32 @@ if ! command -v runonce >/dev/null ;then
   source "${DIRECTORY}/api"
 fi
 
+#add ~/Desktop /opt /usr/local/bin and /usr/local/share/applications if not present
+runonce <<"EOF"
+  if [ -f "$HOME/Desktop" ]; then
+    rm -f "$HOME/Desktop"
+    mkdir -p "$HOME/Desktop"
+  elif [ ! -d "$HOME/Desktop" ]; then
+    mkdir -p "$HOME/Desktop"
+  fi
+  if [ ! -d /opt ]; then
+    sudo_popup mkdir /opt
+  fi
+  if [ ! -d /usr/local/bin ]; then
+    sudo_popup mkdir -p /usr/local/bin
+  fi
+  if [ ! -d /usr/local/share/applications ]; then
+    sudo_popup mkdir -p /usr/local/share/applications
+  fi
+  #Pi-Apps tries to avoid unnecessary reboots at all cost. desktop launchers can be installed to /usr/local/share/applications, which is often not searched by default if /usr/local/share did not exist on boot.
+  #This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
+  #If XDG_DATA_DIRS is missing /usr/local/share, then bind-mount /usr/local/share/applications to /usr/share/applications
+  if [[ "$XDG_DATA_DIRS" != */usr/local/share* ]] && [ -z "$(ls /usr/share/applications/usr-local-temporary)" ];then
+    sudo_popup mkdir -p /usr/share/applications/usr-local-temporary
+    sudo_popup mount --bind /usr/local/share/applications /usr/share/applications/usr-local-temporary
+  fi
+EOF
+
 #generate settings
 runonce <<"EOF"
   if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
@@ -36,6 +62,30 @@ runonce <<"EOF"
   refresh_all_pkgapp_status
 EOF
 
+# remove deprecated apps (only when running in a visible terminal)
+case $(ps -o stat= -p $$) in
+  *+*) # Running in foreground
+runonce <<"EOF"
+  #remove deprecated apps
+  remove_deprecated_app "FreeCAD (precompiled)"
+  remove_deprecated_app "Chromium Media Edition"
+  remove_deprecated_app "Cordless"
+  remove_deprecated_app "Retropie"
+  remove_deprecated_app "Raspi2png"
+  remove_deprecated_app "Falkon"
+  remove_deprecated_app "FreeCAD"
+  remove_deprecated_app "LinuxCNC"
+  remove_deprecated_app "Steam" "32"
+  remove_deprecated_app "Cawbird"
+  remove_deprecated_app "Email Checker"
+  remove_deprecated_app "Pi-Apps Terminal Plugin (python)"
+  remove_deprecated_app "Sysmon"
+  remove_deprecated_app "BlockPi"
+  remove_deprecated_app "TBOPlayer"
+EOF
+  ;;
+esac
+
 #remove old apps and migrate chromium downgrading apps to the new "Downgrade Chromium" app
 runonce <<"EOF"
   #rework chromium downgrading apps to one single new app: 'Downgrade Chromium'
@@ -43,22 +93,6 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Back to Chromium v78"
   if [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v78" 2>/dev/null)" == installed ] || [ "$(cat "${DIRECTORY}/data/status/Back to Chromium v86" 2>/dev/null)" == installed ];then
     echo "installed" > "${DIRECTORY}/data/status/Downgrade Chromium"
-  fi
-  
-  #remove deprecated apps
-  rm -rf "${DIRECTORY}/apps/FreeCAD (precompiled)"
-  rm -rf "${DIRECTORY}/apps/Chromium Media Edition"
-  rm -rf "${DIRECTORY}/apps/Cordless"
-  rm -rf "${DIRECTORY}/apps/Retropie"
-  rm -rf "${DIRECTORY}/apps/Raspi2png"
-  rm -rf "${DIRECTORY}/apps/Falkon"
-  rm -rf "${DIRECTORY}/apps/FreeCAD"
-  rm -rf "${DIRECTORY}/apps/LinuxCNC"
-  rm -f "${DIRECTORY}/apps/Steam/install-32"
-  
-  #remove TBOPlayer if it's not already successfully installed
-  if [ "$(app_status TBOPlayer)" != 'installed' ];then
-    rm -rf "${DIRECTORY}/apps/TBOPlayer"
   fi
   
   #rename 'Turbo Scratch' app to 'Turbowarp'
@@ -258,7 +292,7 @@ echo "Updating menu button..."
 mkdir -p ~/.local/share/applications
 if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -269,7 +303,7 @@ Categories=Utility
 StartupNotify=true" > ~/.local/share/applications/pi-apps.desktop
 else
 echo "[Desktop Entry]
-Name=Pi Apps
+Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
 Exec=${DIRECTORY}/gui
 Icon=${DIRECTORY}/icons/logo.png
@@ -284,16 +318,16 @@ chmod 755 ~/.local/share/applications/pi-apps.desktop
 gio set ~/.local/share/applications/pi-apps.desktop "metadata::trusted" yes
 
 #copy menu button to Desktop
-cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop
+mkdir -p ~/Desktop
+cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/
 
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
 
 #settings menu button
-if ! grep -q "StartupWMClass" ~/.local/share/applications/pi-apps-settings.desktop; then
 echo "Updating Settings menu button..."
 echo "[Desktop Entry]
-Name=Pi Apps Settings
+Name=Pi-Apps Settings
 Comment=Configure Pi-Apps or create an App
 Exec=${DIRECTORY}/settings
 Icon=${DIRECTORY}/icons/settings.png
@@ -302,13 +336,11 @@ StartupWMClass=Pi-Apps-Settings
 Type=Application
 Categories=Settings;
 StartupNotify=true" > ~/.local/share/applications/pi-apps-settings.desktop
-fi
 
-if ! grep -q "StartupWMClass" ~/.config/autostart/pi-apps-updater.desktop; then
 echo "Updating autostarted updater..."
 mkdir -p ~/.config/autostart
 echo "[Desktop Entry]
-Name=Pi Apps Updater
+Name=Pi-Apps Updater
 Exec=${DIRECTORY}/updater onboot
 Icon=${DIRECTORY}/icons/logo.png
 Terminal=false
@@ -317,7 +349,6 @@ Type=Application
 X-GNOME-Autostart-enabled=true
 Hidden=false
 NoDisplay=false" > ~/.config/autostart/pi-apps-updater.desktop
-fi
 
 EOF
 

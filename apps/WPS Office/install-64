@@ -2,7 +2,7 @@
 
 #package found in: https://linux.wps.cn/
 
-version=11.1.0.11698
+version=11.1.0.11704
 
 if package_is_new_enough firejail 0.9.58 ;then
   firejail_package="firejail"
@@ -13,4 +13,4 @@ fi
 install_packages "$firejail_package" "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" || exit 1
 
 #Prevent application from connecting to the internet
-sudo sed -i 's/^Exec=/Exec=firejail --net=none /g' /usr/share/applications/wps*.desktop
+sudo sed -i 's|^Exec=|Exec=firejail --net=none --noblacklist=~/.local/share/Kingsoft --noblacklist=~/.config/Kingsoft|g' /usr/share/applications/wps*.desktop

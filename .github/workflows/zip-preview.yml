@@ -1,0 +1,114 @@
+name: Zip Preview
+
+on: 
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+    
+permissions:
+  issues: write
+
+jobs:
+  zip_preview_issue:
+    if: ${{ contains(github.event_name, 'issues') && contains(github.event.issue.labels.*.name, 'Zip/PR included') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Preview Content
+        id: zip_preview
+        env:
+          body: ${{ github.event.issue.body }}
+        run: |
+          zip_url="$(echo "$body" | sed -n '/### Upload file or Add PR Link/,/###/p' | grep -v "###" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
+          if [ -z "$zip_url" ]; then
+            exit 0
+          else
+            wget -O download.zip "$zip_url"
+            echo "sha1=$(sha1sum download.zip | awk {'print $1}')" >> $GITHUB_OUTPUT
+            unzip download.zip
+            rm -f download.zip
+            
+            files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
+            echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            IFS=$'\n'
+            for file in $files; do
+              echo '`'"$file"'`' >> $GITHUB_OUTPUT
+              echo '```' >> $GITHUB_OUTPUT
+              cat "$file" >> $GITHUB_OUTPUT
+              echo $'\n''```' >> $GITHUB_OUTPUT
+            done
+            echo '' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        if: steps.zip_preview.outputs.zip_preview
+        id: fc
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}"
+      - name: Add zip preview comment for issue
+        uses: peter-evans/create-or-update-comment@v3
+        if: steps.zip_preview.outputs.zip_preview
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.issue.number }}
+          edit-mode: replace
+          body: |
+            A zipfile was found in the body of your issue.
+            The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
+            The contents can be previewed below:
+            
+            ${{ steps.zip_preview.outputs.zip_preview }}
+  zip_preview_issue_comment:
+    if: ${{ !contains(github.event_name, 'issues') && contains(github.event_name, 'issue_comment') && contains(github.event.issue.labels.*.name, 'Zip/PR included') && !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Preview Content
+        id: zip_preview
+        env:
+          body: ${{ github.event.comment.body }}
+        run: |
+          zip_url="$(echo "$body" | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*.zip(\?raw=true|)" | head -n 1)"
+          if [ -z "$zip_url" ]; then
+            exit 0
+          else
+            wget -O download.zip "$zip_url"
+            echo "sha1=$(sha1sum download.zip | awk {'print $1}')" >> $GITHUB_OUTPUT
+            unzip download.zip
+            rm -f download.zip
+            
+            files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
+            echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            IFS=$'\n'
+            for file in $files; do
+              echo '`'"$file"'`' >> $GITHUB_OUTPUT
+              echo '```' >> $GITHUB_OUTPUT
+              cat "$file" >> $GITHUB_OUTPUT
+              echo $'\n''```' >> $GITHUB_OUTPUT
+            done
+            echo '' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        if: steps.zip_preview.outputs.zip_preview
+        id: fc
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}"
+      - name: Add zip preview comment for issue comment
+        uses: peter-evans/create-or-update-comment@v3
+        if: steps.zip_preview.outputs.zip_preview
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.issue.number }}
+          edit-mode: replace
+          body: |
+            A zipfile was found in the body of an issue comment.
+            The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
+            The contents can be previewed below:
+            
+            ${{ steps.zip_preview.outputs.zip_preview }}

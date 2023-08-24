@@ -1,3 +1,4 @@
 #!/bin/bash
 
-install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/GitHubDesktop-linux-arm64-3.2.3-linux1.deb || exit 1
+version=3.2.7-linux2
+install_packages https://github.com/shiftkey/desktop/releases/download/release-${version}/GitHubDesktop-linux-arm64-${version}.deb || exit 1

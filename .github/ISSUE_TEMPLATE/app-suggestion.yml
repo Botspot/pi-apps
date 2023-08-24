@@ -1,6 +1,6 @@
 name: App suggestion
 title: EDIT ME Include the app name
-description: Suggest an app to be added Pi Apps. pi-apps developers may choose to assist in adding your app suggestion.
+description: Suggest an app to be added Pi-Apps. pi-apps developers may choose to assist in adding your app suggestion.
 labels: App Request
 body:
   - type: input
@@ -32,6 +32,7 @@ body:
     id: confirmations
     attributes:
       label: Confirmations
+      description: All of the following MUST be met. If you can NOT check one of these boxes. Then do NOT create a GitHub Issue. We will close it. The checkboxes are made a requirement on purpose.
       options:
         - label: I have confirmed that this app is legal and not piracy.
           required: true

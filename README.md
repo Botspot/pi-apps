@@ -35,6 +35,10 @@
 
 <p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
 
+<p align="center">
+    Check out our website: <a href="https://pi-apps.io">pi-apps.io</a>
+</p>
+
 ## Introduction
 Let's be honest: **Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.  
 There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
@@ -52,11 +56,12 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 
 #### Supported systems:
 
-- [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): fully supported.
-- [Switchroot L4T Ubuntu Bionic](https://wiki.switchroot.org/en/Linux/Ubuntu-Install-Guide): fully supported (incompatible apps are hidden)
-- [Raspberry Pi Ubuntu](https://ubuntu.com/desktop/flavours) (GNOME, Mate, KDE, Budgie, etc) and [Raspberry Pi Pop_OS!](https://pop.system76.com/): you may encounter errors installing or running some apps
-- [Nvidia Jetson](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/), [Pine64](https://www.pine64.org/), [Orange Pi](http://www.orangepi.org/), [Radxa](https://rockpi.org/), [Bananna Pi](https://banana-pi.org/), [Khadas](https://www.khadas.com/), [Inovato](https://www.inovato.com/), [Libre Computer](https://libre.computer/), and other ARM Debian/Ubuntu Based Devices: not actively tested, most apps should work (pi-specific apps are hidden)
-- Android, ChromeOS, Kali Linux, non-ARM, other Debian and non-Debian operating systems: Not supported. Your mileage may vary.
+- <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Buster/Bullseye): <span style="color:var(--success-dark);">fully supported</span>
+- <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Bionic**](https://wiki.switchroot.org/en/Linux/Ubuntu-Install-Guide): <span style="color:var(--success-dark);">fully supported (incompatible apps are hidden)</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Raspberry Pi Ubuntu**](https://ubuntu.com/desktop/flavours) (GNOME, Mate, KDE, Budgie, etc) <span style="color:var(--warn-dark);">not actively tested, but we fix issues if they are reported</span>
+- <img src="https://pi-apps.io/img/other-icons/pop-os.svg" height="14"> [**Raspberry Pi Pop_OS!**](https://pop.system76.com/): <span style="color:var(--warn-dark);">you may encounter errors installing or running some apps</span>
+- [**Nvidia Jetson**](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/), [**Pine64**](https://www.pine64.org/), [**Orange Pi**](http://www.orangepi.org/), [**Radxa**](https://rockpi.org/), [**Bananna Pi**](https://banana-pi.org/), [**Khadas**](https://www.khadas.com/), [**Inovato**](https://www.inovato.com/), [**Libre Computer**](https://libre.computer/), and other **ARM Debian/Ubuntu** Based Devices: <span style="color:var(--warn-dark);">not actively tested, most apps should work (pi-specific apps are hidden). Only official Debian/Ubuntu ports should be used on these devices for the best compatibility</span>
+- **Android**, **ChromeOS**, **Kali Linux**, **non-ARM**, **other Debian** and **non-Debian** operating systems: <span style="color:var(--danger-dark);">Not supported. Your mileage may vary. Expect the majority of apps to be broken</span>
 
 <details>
 <summary><b>To install Pi-Apps manually</b> if you prefer to see what happens under the hood</summary>
@@ -77,11 +82,11 @@ This will not uninstall any apps that you installed through Pi-Apps.
 </details>
 
 ## To run Pi-Apps
-- From the start menu: Accessories -> Pi Apps
-- Use the terminal-command: `pi-apps`
+- From the start menu: Accessories -> Pi-Apps
+- Use the terminal command: `pi-apps`
 - Run Pi-Apps from its directory: `~/pi-apps/gui`
 
-## To Update Pi-Apps
+## To update Pi-Apps
 - Pi-apps will automatically check for updates on boot and display a notification to update.
 - To manually run the updater, use this command: `~/pi-apps/updater gui`
 - It also supports a cli interface: `~/pi-apps/updater cli`
