@@ -20,6 +20,11 @@ fi
 # set GUI format versioning
 export GUI_FORMAT_VERSION=2
 
+#Transition from the GUI that calls itself to the self-contained GUI: when called by the old GUI, kill that yad window and treat this subprocess as the new main thread
+if [ -z "$1" ] && [ ! -z "$2" ] && [ ! -z "$3" ] ;then
+  kill $(ps -fC yad | grep "yad --class Pi-Apps --name Pi-Apps --center --title=Pi-Apps --image" | awk '{print $2}')
+  unset YAD_XID #new gui, don't try to get dimensions of the now closed app list
+
 #display first 4 arguments this script receives (for debugging)
 if false;then
   echo "1 $1" 1>&2
@@ -320,67 +325,72 @@ guimode="$(cat "${DIRECTORY}/data/settings/App List Style")"
 #In Xlunch mode, the window must be centered, but xlunch only handles absolute offsets.
 get_positions() {
   #determine screen_width and screen_height
-  screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
-  if [ -z "$screen_dimensions" ];then
-    # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
-    # workaround is to get the first output returned for the connected display
-    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+  if [ -z "$screen_width" ] || [ -z "$screen_height" ];then
+    screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | sed -n -e 's/^.*primary //p' | tr 'x+' ' ' | tr ',+' ' ')"
+    if [ -z "$screen_dimensions" ];then
+      # if screen_dimensions is empty, this could be a single monitor wayland display which does not have the word "primary" in the output
+      # workaround is to get the first output returned for the connected display
+      screen_dimensions="$(xrandr --nograb --current | awk -F 'connected |\\+|\\('  '/ connected.*[0-9]+x[0-9]+\+/ && $2 {printf $2 ", "}' | tr 'x+' ' ' | tr ',+' ' ')"
+    fi
+    screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
+    screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
   fi
-  screen_width="$(awk '{print $1}' <<<"$screen_dimensions")"
-  screen_height="$(awk '{print $2}' <<<"$screen_dimensions")"
-  unset screen_dimensions
   
   if [[ "$guimode" == yad* ]];then
-
+    
     # if this is being run by yad, there should be a yad window id
     # store in arrary of x and y
     # this allows for windows to be moved by the user and the second window to still show up where expected
     main_yad_window=$YAD_XID
     if [ -n "${main_yad_window}" ]; then
       window_info=$(xwininfo -id $main_yad_window)
-      # for speed of execution, we are assuming the order of matches from xwininfo
-      # this is safe as the output order has been standardized for over a decade
-      # this is the location of where the window content starts inside the title bar and window borders (pos x then pos y)
-      main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
-      # these are the dimensions of where the window content starts inside the title bar and window borders (dim x then dim y)
-      main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
-      # again, for speed, all border widths are saved to one array
-      # left, right, title, bottom [0, 1, 2, 3]
-      # this is the size of the window borders (including title bar)
-      border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
-      #total dimensions for both yad windows side by side
-      if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
-        #gui size for small screens
-        height=${main_yad_window_dim[1]}
-        width=600
+      
+      #skip calculating offsets if yad window is in the same place as last time
+      if [ -z "$last_window_info" ] || [ -z "$geometry1" ] || [ -z "$geometry2" ] || [ "$last_window_info" != "$window_info" ];then
+        # for speed of execution, we are assuming the order of matches from xwininfo
+        # this is safe as the output order has been standardized for over a decade
+        # this is the location of where the window content starts inside the title bar and window borders (pos x then pos y)
+        main_yad_window_pos=($(echo "$window_info" | sed -n 's/Absolute upper-left.*://p'))
+        # these are the dimensions of where the window content starts inside the title bar and window borders (dim x then dim y)
+        main_yad_window_dim=($(echo "$window_info" | sed -n 's/Width://p;s/Height://p'))
+        # again, for speed, all border widths are saved to one array
+        # left, right, title, bottom [0, 1, 2, 3]
+        # this is the size of the window borders (including title bar)
+        border_widths=($(xprop _NET_FRAME_EXTENTS -id "$main_yad_window" | sed -n  's/_NET_FRAME_EXTENTS.*=//p' | tr ',' '\n'))
+        #total dimensions for both yad windows side by side
+        if [ $screen_width -le 1000 ] || [ $screen_height -le 600 ];then
+          #gui size for small screens
+          height=${main_yad_window_dim[1]}
+          width=600
+          
+          #width of first window
+          width1=${main_yad_window_dim[0]}
+          #width of second window
+          width2=350
+        else
+          #gui size for large screens
+          height=${main_yad_window_dim[1]}
+          width=800
+          
+          #width of first window
+          width1=${main_yad_window_dim[0]}
+          #width of second window
+          width2=480
+        fi
+        #how far down the top of the title bar of yad window is from the top of the screen
+        yoffset=$((main_yad_window_pos[1]-border_widths[2]))
         
-        #width of first window
-        width1=${main_yad_window_dim[0]}
-        #width of second window
-        width2=350
-      else
-        #gui size for large screens
-        height=${main_yad_window_dim[1]}
-        width=800
+        #screen offsets for window 1
+        #use current position of the left side of the main window border
+        xoffset1=$((main_yad_window_pos[0]-border_widths[0]))
+        #screen offsets for window 2
+        #use current position of the right side of the main window border
+        xoffset2=$((xoffset1+border_widths[0]+width1+border_widths[1]))
         
-        #width of first window
-        width1=${main_yad_window_dim[0]}
-        #width of second window
-        width2=480
+        #set completed location arguments for both yad windows
+        geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
+        geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
       fi
-      #how far down the top of the title bar of yad window is from the top of the screen
-      yoffset=$((main_yad_window_pos[1]-border_widths[2]))
-      
-      #screen offsets for window 1
-      #use current position of the left side of the main window border
-      xoffset1=$((main_yad_window_pos[0]-border_widths[0]))
-      #screen offsets for window 2
-      #use current position of the right side of the main window border
-      xoffset2=$((xoffset1+border_widths[0]+width1+border_widths[1]))
-      
-      #set completed location arguments for both yad windows
-      geometry1="--geometry=${width1}x${height}+${xoffset1}+${yoffset}"
-      geometry2="--geometry=${width2}x${height}+${xoffset2}+${yoffset}"
     else
       # default positions when the main window does not exist yet
       #total dimensions for both yad windows side by side
@@ -494,57 +504,285 @@ if [ ! -f "${DIRECTORY}/data/announcements" ] || [ ! -z "$(find "${DIRECTORY}/da
   echo "$announcements" > "${DIRECTORY}/data/announcements"
 fi & #use $announcements and & here to avoid delaying launch or emptying the file before download completes
 
+details_window() { #input: prefix/app
+  local input="$1"
+
+  [ -z "$input" ] && return
+  
+  # make sure terminal_manage function is available
+  # the old updater did not source the new api script
+  typeset -f terminal_manage &>/dev/null || { set -a; source "${DIRECTORY}/api"; }
+  
+  #app is in format $prefix/$app, so split them out
+  local app="$(basename "$input")"
+  local prefix="$(dirname "$input")"
+  
+  #add status heading
+  local app_status="$(app_status "${app}")"
+  
+  #text to the right of the app icon
+  local abovetext="<b>$app</b> ($(sed 's/corrupted/corrupted - installation failed/g' <<<"$app_status" | sed 's/disabled/disabled - installation is prevented on your system/g'))"
+  
+  #If package-app, show what packages it installs
+  if [ -f "${DIRECTORY}/apps/${app}/packages" ];then
+    local packages="$(cat "${DIRECTORY}/apps/${app}/packages")"
+    if [ "$(wc -w <<<"$packages")" == 1 ];then
+      #if package-app uses only 1 package, use singular case
+      abovetext+=$'\n'"- This app installs the <b>${packages}</b> package."
+    else
+      #if package-app uses multiple packages, use plural case
+      abovetext+=$'\n'"- This app installs these packages: <b>$(sed 's/ /, /g' <<<"$packages")</b>"
+    fi
+  fi
+  
+  #show app's website if available
+  if [ -f "${DIRECTORY}/apps/${app}/website" ];then
+    local website="$(head -n1 "${DIRECTORY}/apps/${app}/website")"
+    abovetext+=$'\n'"- Website: <a href="\""$website"\"">$website</a>"
+    
+    #show credits link if available - on same line as website link
+    if [ -f "${DIRECTORY}/apps/${app}/credits" ];then
+      abovetext+=" | <a href="\""file://${DIRECTORY}/apps/${app}/credits"\"">Credits</a>"
+    fi
+    
+  else #website unavailable
+    #show credits link standalone, if available
+    if [ -f "${DIRECTORY}/apps/${app}/credits" ];then
+      abovetext+=$'\n'"- <a href="\""file://${DIRECTORY}/apps/${app}/credits"\"">Credits</a>"
+    fi
+  fi
+  
+  local num_users="$(usercount "$app")"
+  if [ ! -z "$num_users" ] && [ "$num_users" -gt 20 ];then
+    #list the number of users, using this printf command to add commas (,) for every thousand number
+    abovetext+=$'\n'"- <b>$(printf "%'d" "$num_users")</b> users"
+    
+    if [ "$num_users" -ge 10000 ];then
+      #if this app has over 10,000 users, add two exclamation points!!
+      abovetext+="!!"
+    elif [ "$num_users" -ge 1500 ];then
+      #if this app has over 1500 users, add an exclamation point!
+      abovetext+="!"
+    fi
+  fi
+  
+  #array holding various buttons that may be passed to yad
+  local whichbutton=()
+  
+  if [ -f "${DIRECTORY}/apps/$app/uninstall" ] || [ -f "${DIRECTORY}/apps/$app/install" ] || [ -f "${DIRECTORY}/apps/$app/install-$arch" ];then
+    whichbutton+=("--button=Scripts!${DIRECTORY}/icons/shellscript.png!Feel free to see how an app is installed!"$'\n'"Perfect for learning or troubleshooting.:6")
+  fi
+  if [ "$(cat "${DIRECTORY}/data/settings/Show Edit button")" == 'Yes' ];then
+    #if edit button enabled, show it
+    whichbutton+=("--button=Edit!${DIRECTORY}/icons/edit.png!Make changes to the app:8")
+  fi
+  
+  #display buttons based on app's installation status
+  if [ "$app_status" == 'installed' ];then
+    #if installed, display uninstall button
+    whichbutton+=("--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2")
+  elif [ "$app_status" == 'uninstalled' ];then
+    #if uninstalled, display install button
+    whichbutton+=("--button=Install!${DIRECTORY}/icons/install.png:4")
+  elif [ "$app_status" == 'disabled' ];then
+    #if disabled, display only an 'enable' button
+    whichbutton+=("--button=<b>Enable</b>!!Force this app to install on your system."$'\n'"This app was disabled for a reason so if you enable it..."$'\n'"YOU HAVE BEEN WARNED.:12")
+  else
+    #if app status is 'corrupted', and a log file exists for this app, then display a button to view the log file
+    if [ "$app_status" == 'corrupted' ];then
+      local logfile="$(ls "$DIRECTORY/logs"/* -t | grep "fail-${app}" | head -n1)"
+      if [ ! -z "$logfile" ];then
+        whichbutton+=("--button=Errors!${DIRECTORY}/icons/log-file.png!$app failed to $(echo "$(basename "$logfile")" | awk -F'-' '{print $1}'). Click this button to view the error output saved in the log file.:14")
+      fi
+    fi
+    #if status is corrupted or unknown, then show both buttons
+    whichbutton+=("--button=Uninstall!${DIRECTORY}/icons/uninstall.png:2" "--button=Install!${DIRECTORY}/icons/install.png:4")
+  fi
+  
+  #only display app icon if it exists
+  if [ -f "${DIRECTORY}/apps/${app}/icon-64.png" ];then
+    local imageline=(--image="${DIRECTORY}/apps/${app}/icon-64.png" --image-on-top)
+  fi
+  
+  #Make sure app details window is focused (necessary for openbox window manager)
+  (i=0
+    while [ "$(xdotool getactivewindow getwindowname)" != "Details of ${app}" ] && [ $i -lt 20 ]; do
+      wmctrl -a "Details of ${app}" #Raise the window named "Details of ${app}"
+      sleep 0.2
+      i=$((i+1))
+    done) &
+  
+  #display app details window
+  get_positions
+  
+    (cat "${DIRECTORY}/apps/$app/description" || echo "Description unavailable") | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
+    --text="$(sed 's/&/&amp;/g' <<<"$abovetext")" \
+    "${imageline[@]}" \
+    --title="Details of ${app}" --window-icon="${DIRECTORY}/icons/logo.png" \
+    $geometry2 --skip-taskbar \
+    "${whichbutton[@]}"
+  button=$?
+  
+  case $button in
+  4) #install
+    terminal_manage install "$app" &
+    ;;
+    
+  2) #uninstall
+    terminal_manage uninstall "$app" &
+    ;;
+    
+  6) #scripts
+    install_script="${DIRECTORY}/apps/${app}/$(script_name_cpu "$app")"
+    uninstall_script="${DIRECTORY}/apps/${app}/uninstall"
+    
+    text_editor "$uninstall_script" &
+    sleep 0.1
+    text_editor "$install_script" &
+    
+    details_window "$@" #open details window again
+    ;;
+    
+  8) #edit
+    "${DIRECTORY}/createapp" "$app"
+    refresh_list
+    ;;
+    
+  12) #enable
+    
+    #remove status file containing 'disabled'
+    rm -f "${DIRECTORY}/data/status/${app}"
+    refresh_list &
+    details_window "$@" #open details window again
+    ;;
+    
+  14) #viewlog
+    echo "Viewing error log of $app..."
+    echo "Log filepath: $logfile"
+    "${DIRECTORY}/etc/viewlog" "$logfile"
+    
+    details_window "$@" #open details window again
+    ;;
+  esac
+}
+
 if [[ "$guimode" == yad* ]];then
   
   #create a named pipe to send app list through to yad
   pipe="$(mktemp -u)" #get a random filename to work with
   mkfifo $pipe #make the named pipe
-  trap "rm -f $pipe" EXIT #remove this named pipe on exit
+  #create a named pipe to store detailspid
+  detailspid="$(mktemp -u)" #get a random filename to work with
+  mkfifo $detailspid #make the named pipe
+  trap "rm -f $pipe; rm -f $detailspid" EXIT #remove the named pipes on exit
   echo pipe is $pipe
+  echo detailspid is $detailspid
   
-  while true;do #main operating loop for yad window
-    #in background process, send initial app list to yad; first echo line waits until yad is accepting input, then use small delay to prevent items from being missed
-    (echo -e '\f' > $pipe
-    sleep 0.5
-    "${DIRECTORY}/preload" yad '' >> $pipe) &
+  #in background process, send initial app list to yad; first echo line waits until yad is accepting input, then use small delay to prevent items from being missed
+  (echo -e '\f' > $pipe
+  sleep 0.5
+  "${DIRECTORY}/preload" yad '' >> $pipe) &
+  
+  #retrieve a random line from the announcements file for this session
+  motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
+  
+  refresh_list() { #Refresh the current list of apps in the event of a change
+    if [ ! -z "$pipe" ];then
+      echo -e "\f" > "$pipe"
+      "${DIRECTORY}/preload" yad "$prefix" > "$pipe" 2>/dev/null
+    fi
+  }
+  
+  kill_details() { #close the details window in 1 second for better UX. Uses the $detailspid variable. To close it immediately add an argument of 0
+    echo "" >> $detailspid &
+    detailspidlist="$(cat $detailspid)"
+    (
+    if [ "$1" != 0 ];then
+      sleep 1.5
+    fi
     
-    #retrieve a random line from the announcements file for this session
-    motd="$(shuf -n 1 "${DIRECTORY}/data/announcements")"
-    
-    #constantly read from the pipe and send all output to yad
-    #if an item is selected, this script will be run with the row's contents
-    { yad --class Pi-Apps --name "Pi-Apps" --center --title='Pi-Apps' \
-      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
-      --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
-      --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-      --tooltip-column=4 \
-      --dclick-action "env pipe=$pipe '${DIRECTORY}/gui'" --select-action "env pipe=$pipe '${DIRECTORY}/gui'" \
-      --button="!${DIRECTORY}/icons/search.png"!'Search':"env pipe=$pipe '${DIRECTORY}/gui' '' '' Search/ Search/" \
-      --button="!${DIRECTORY}/icons/options.png"!'Settings':2 \
-      "$geometry1"; button=$?; kill "$!"; } < <(exec tail -f --retry $pipe)
-    
-    case $button in
-    2) #settings
-      # remove pipe early so that nothing attempts to write to it
-      rm -f "$pipe"
-      "${DIRECTORY}/settings"
-      "${DIRECTORY}/gui" "$@" #run new instance of this script
-      exit 0
-      ;;
+    echo "$detailspidlist" | while read line ; do
+      [ ! -z "$line" ] && pkill -P "$line" 2>/dev/null
+      [ ! -z "$line" ] && kill "$line" 2>/dev/null
+    done
+    ) &
+  }
+  
+  run_user_selection() { #Function that is run in yad gui to execute user selection
+    yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps" --separator='\n')
+    echo "YAD_XID is $YAD_XID"
+    input="$3"
+    if [[ "$input" == *'Updates/' ]];then
+      #updater window
+      kill_details
       
-    3) #search
-      app="$(yadflags+=("$geometry2") ; app_search_gui)"
+      get_positions
+      "${DIRECTORY}/updater" gui fast $geometry2 --skip-taskbar --close-on-unfocus
+      exitcode=$? #0 if update successful, 1 if list of updates was closed
       
-      if [ ! -z "$app" ];then
-        "${DIRECTORY}/gui" '' "$app" "/$app" "$app"
+      #figure out which prefix we are on and refresh the app list
+      prefix="$(echo "$input" | sed 's+Updates/$++g')"
+      
+      if [ $exitcode == 0 ];then
+        refresh_list
       fi
-      ;;
-    *) #unknown button
-      exit 0
-      ;;
-    esac
-  done
-  #END of yad main window loop
+    elif [ "$input" == 'Search/' ];then
+      #search window
+      kill_details
+      
+      details_window_check(){
+        local input
+        read input
+        [ -z "$input" ] && return
+        details_window "/$input"
+      }
+      get_positions
+      #show app details window for this selected app
+      yadflags+=("$geometry2" --close-on-unfocus)
+      app_search_gui | details_window_check &
+      echo "$!" >> $detailspid &
+      
+    elif [[ "$input" == */ ]];then
+      #app folder selected
+      echo -e '\f' > $pipe #clear the yad list
+      "${DIRECTORY}/preload" yad "${input::-1}" >> $pipe #send yad the app-list - derived from folder name but dropping the final slash character
+      
+    elif [[ "$input" == 'YAD_XID is'* ]];then
+      YAD_XID="$(echo "$input" | awk '{print $3}')"
+    elif [ ! -z "$input" ];then #app details window
+      
+      get_positions
+      
+      #show app details window, and close the previous one
+      kill_details
+      details_window "$input" &
+      echo "$!" >> $detailspid &
+    fi
+  }
+  { yad "${yadflags[@]}" \
+    --image="${DIRECTORY}/icons/logo-64.png" --image-on-top --text "$motd" \
+    --list --no-headers --column=:IMG  --column=Name --column=Sysname:HD --column=tip:HD --column=@fore@:HD \
+    --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+    --tooltip-column=4 \
+    --dclick-action "bash -c "\""run_user_selection %s"\""" --select-action="bash -c "\""run_user_selection %s"\""" \
+    --button="!${DIRECTORY}/icons/search.png"!'Search':"bash -c "\""run_user_selection '' '' Search/"\""" \
+    --button="!${DIRECTORY}/icons/options.png"!'Settings':2 \
+    "$geometry1"; button=$?; kill "$!"; } < <(exec tail -f --retry $pipe)
+  
+  kill_details 0 #immediately close details window without delay
+  unset YAD_XID #avoid trying to get dimensions of a now closed yad window (fixes badWindow error in get_positions after returning from settings)
+  
+  if [ "$button" == 2 ];then
+  
+    # remove pipe early so that nothing attempts to write to it
+    rm -f "$pipe"
+    rm -f "$detailspid"
+    
+    "${DIRECTORY}/settings"
+    "${DIRECTORY}/gui" "$@" #run new instance of this script
+  fi
+
+  #END of yad main window
   
 elif [[ "$guimode" == xlunch* ]];then
   
@@ -598,29 +836,29 @@ elif [[ "$guimode" == xlunch* ]];then
     echo "$("${DIRECTORY}/preload" xlunch '')" > $pipe) &
   
   #read pipe      pipe to xlunch               read output of xlunch
-  tail -f --retry $pipe | xlunch "${xlunchflags[@]}" | while read -r line; do
-    echo "Received '$line'"
+  tail -f --retry $pipe | xlunch "${xlunchflags[@]}" | while read -r input; do
+    echo "Received '$input'"
     
-    if [ "$line" == 'Updates/' ];then
+    if [ "$input" == 'Updates/' ];then
       echo > $pipe #clear list
       
-      #in subprocess, open details window for app
-      geometry2="--center --height=$((height/2)) --width=$width" pipe='' "${DIRECTORY}/gui" '' '' "$line" "$line"
+      "${DIRECTORY}/updater" gui fast --skip-taskbar --close-on-unfocus
+      exitcode=$? #0 if update successful, 1 if list of updates was closed
       
-      #back to main level
+      #refresh main level
       "${DIRECTORY}/preload" xlunch '' > $pipe
       
     #category selected
-    elif [[ "$line" == */ ]];then
+    elif [[ "$input" == */ ]];then
       echo > $pipe #clear list
-      "${DIRECTORY}/preload" xlunch "$(echo "$line" | sed 's+/$++g')" > $pipe
+      "${DIRECTORY}/preload" xlunch "$(echo "$input" | sed 's+/$++g')" > $pipe
       
-    #pi-apps logo button clicked
-    elif [ "$line" == 'pi-apps-homepage' ];then
+    #pi-apps logo button clicked - go to homepage in web browser
+    elif [ "$input" == 'pi-apps-homepage' ];then
       x-www-browser "$(cat "${DIRECTORY}/etc/git_url")" &
       
     #Settings button clicked
-    elif [ "$line" == 'pi-apps-settings' ];then
+    elif [ "$input" == 'pi-apps-settings' ];then
       #close xlunch
       echo ':quit' > $pipe
       
@@ -636,13 +874,12 @@ elif [[ "$guimode" == xlunch* ]];then
       echo > $pipe #clear list
       
       #in subprocess, open details window for app
-      geometry2="--center --height=$((height/2)) --width=$width" pipe='' "${DIRECTORY}/gui" '' '' "$line" "$line"
+      geometry2="--center --height=$((height/2)) --width=$width" details_window "$input"
       
       #show app list again
-      "${DIRECTORY}/preload" xlunch "$(dirname "$line" | sed 's/^.$//g')" > $pipe
+      "${DIRECTORY}/preload" xlunch "$(dirname "$input" | sed 's/^.$//g')" > $pipe
     fi
   done
   
 fi
-
 
