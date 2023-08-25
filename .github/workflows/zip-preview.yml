@@ -32,8 +32,13 @@ jobs:
             echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
             IFS=$'\n'
             for file in $files; do
+              file_basename="$(basename "$file")"
               echo '`'"$file"'`' >> $GITHUB_OUTPUT
-              echo '```' >> $GITHUB_OUTPUT
+              if [ "$file_basename" == install ] || [ "$file_basename" == install-32 ] || [ "$file_basename" == install-64 ] || [ "$file_basename" == uninstall ]; then
+                echo '```bash' >> $GITHUB_OUTPUT
+              else
+                echo '```' >> $GITHUB_OUTPUT
+              fi
               cat "$file" >> $GITHUB_OUTPUT
               echo $'\n''```' >> $GITHUB_OUTPUT
             done
@@ -83,8 +88,13 @@ jobs:
             echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
             IFS=$'\n'
             for file in $files; do
+              file_basename="$(basename "$file")"
               echo '`'"$file"'`' >> $GITHUB_OUTPUT
-              echo '```' >> $GITHUB_OUTPUT
+              if [ "$file_basename" == install ] || [ "$file_basename" == install-32 ] || [ "$file_basename" == install-64 ] || [ "$file_basename" == uninstall ]; then
+                echo '```bash' >> $GITHUB_OUTPUT
+              else
+                echo '```' >> $GITHUB_OUTPUT
+              fi
               cat "$file" >> $GITHUB_OUTPUT
               echo $'\n''```' >> $GITHUB_OUTPUT
             done
