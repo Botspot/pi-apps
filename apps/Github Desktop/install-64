@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version=3.2.7-linux2
+version=3.2.9-linux1
 install_packages https://github.com/shiftkey/desktop/releases/download/release-${version}/GitHubDesktop-linux-arm64-${version}.deb || exit 1
