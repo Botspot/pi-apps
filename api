@@ -2055,7 +2055,7 @@ sudo apt purge --autoremove linux-image-*-arm64")
   fi
   
   #NON-APT ERRORS BELOW
-  if grep -qF "Could not resolve host: github.com" <<<"$errors" ;then
+  if grep -q "Could not resolve host: github\.com\|Failed to connect to github\.com port 443: Connection timed out" <<<"$errors" ;then
     error_caption+=("Failed to connect to github.com.
 
 Check your internet connection and try again.")
