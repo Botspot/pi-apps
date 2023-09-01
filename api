@@ -2841,9 +2841,29 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
       fi
     fi
   fi
+
+  if ! package_installed kmod ;then
+    if [ ! -z "$app" ];then
+      #this function is being used within an app-installation. Make kmod a dependency since it is not installed.
+      install_packages kmod
+      hash -r
+    else
+      #NOT being used within an app-installation and kmod is not installed.
+      apt_update
+      sudo apt install -y kmod --no-install-recommends
+      hash -r
+    fi
+  fi
   
+  # if module is builtin, skip remaining checks
+  # this check is not foolproof on all kernels so some may still have the module builtin and fail the below check
+  if [[ "$(modinfo --filename "$module")" == "(builtin)" ]]; then
+    return 0
+  fi
+
   #load the module now if not already loaded
-  if ! lsmod | awk '{print $1}' | grep -qxF "$module" ;then
+  #all active kernel modules have a folder in /sys/module matching the module name
+  if [[ ! -d "/sys/module/$module" ]]; then
     errors="$(sudo modprobe "$module" 2>&1)"
     if [ $? != 0 ];then
       #if modprobe fails, the module may be missing because user upgraded the kernel and has not rebooted yet.
@@ -2857,8 +2877,8 @@ Please reboot to load the new kernel, then try again."
     fi
   fi
   
-  #make it load on boot
-  if [ ! -f "/etc/modules-load.d/${module}.conf" ];then
+  #make it load on boot if system supports loading modules
+  if [ -f /proc/modules ] && [ ! -f "/etc/modules-load.d/${module}.conf" ];then
     echo "$module" | sudo tee "/etc/modules-load.d/${module}.conf" >/dev/null
   fi
 }
