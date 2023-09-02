@@ -82,6 +82,7 @@ runonce <<"EOF"
   remove_deprecated_app "Sysmon"
   remove_deprecated_app "BlockPi"
   remove_deprecated_app "TBOPlayer"
+  remove_deprecated_app "Minecraft Java MultiMC5"
 EOF
   ;;
 esac
