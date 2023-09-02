@@ -52,7 +52,7 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: "The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}"
+          body-includes: "A zipfile was found in the body of your issue."
       - name: Add zip preview comment for issue
         uses: peter-evans/create-or-update-comment@v3
         if: steps.zip_preview.outputs.zip_preview
