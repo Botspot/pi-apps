@@ -30,6 +30,9 @@ jobs:
             
             files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
             echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            echo '<details>' >> $GITHUB_OUTPUT
+            echo '<summary>Click to show contents preview</summary>' >> $GITHUB_OUTPUT
+            echo '' >> $GITHUB_OUTPUT
             IFS=$'\n'
             for file in $files; do
               file_basename="$(basename "$file")"
@@ -43,6 +46,7 @@ jobs:
               echo $'\n''```' >> $GITHUB_OUTPUT
             done
             echo '' >> $GITHUB_OUTPUT
+            echo '</details>' >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
@@ -63,7 +67,6 @@ jobs:
           body: |
             A zipfile was found in the body of your issue.
             The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
-            The contents can be previewed below:
             
             ${{ steps.zip_preview.outputs.zip_preview }}
   zip_preview_issue_comment:
@@ -86,6 +89,9 @@ jobs:
             
             files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
             echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            echo '<details>' >> $GITHUB_OUTPUT
+            echo '<summary>Click to show contents preview</summary>' >> $GITHUB_OUTPUT
+            echo '' >> $GITHUB_OUTPUT
             IFS=$'\n'
             for file in $files; do
               file_basename="$(basename "$file")"
@@ -99,6 +105,7 @@ jobs:
               echo $'\n''```' >> $GITHUB_OUTPUT
             done
             echo '' >> $GITHUB_OUTPUT
+            echo '</details>' >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
@@ -119,6 +126,5 @@ jobs:
           body: |
             A zipfile was found in the body of an issue comment.
             The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}
-            The contents can be previewed below:
             
             ${{ steps.zip_preview.outputs.zip_preview }}
