@@ -532,7 +532,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     fi
     
     local i=0
-    while [ $i -le 5 ];do #retry loop ; run apt update and apt install again if apt's records of the local repo goes missing
+    while true;do #retry loop ; run apt update and apt install again if apt's records of the local repo goes missing
       #run an apt update
       apt_update "${apt_flags[@]}" || exit 1
       
@@ -543,7 +543,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
       local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
       status "Apt finished."
       
-      if [ "$using_local_packages" == 1 ] && [ ! -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages ];then
+      if [ "$using_local_packages" == 1 ] && [ ! -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages ] && [ $i != 5];then
         #another apt update process deleted apt's knowledge of the pi-apps local repo. Warn the user and try again, up to 5 tries.
         i=$((i+1))
         warning "Local packages failed to install because another apt update process erased apt's knowledge of the pi-apps local repository.\nTrying again... (attempt $i of 5)"
