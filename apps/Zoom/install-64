@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.15.11.7239
+version=5.15.12.7665
 
 #install box64
 "${DIRECTORY}/manage" install-if-not-installed 'Box64' || error "Box64 installation failed!"
