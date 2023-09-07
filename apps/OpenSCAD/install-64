@@ -1,10 +1,14 @@
 #!/bin/bash
 
+enable_module fuse || exit 1
+
 wget 'https://github.com/koendv/openscad-raspberrypi/releases/download/v1.7/OpenSCAD-2021.09.13-aarch64.AppImage' -O /tmp/OpenSCAD.AppImage || error "Failed to download appimage!"
 sudo mv /tmp/OpenSCAD.AppImage /opt/OpenSCAD.AppImage
 sudo chmod +x /opt/OpenSCAD.AppImage || error "Failed to mark as executable!"
 
-enable_module fuse || exit 1
+#make terminal command
+sudo rm -f /usr/local/bin/openscad
+sudo ln -s /opt/OpenSCAD.AppImage /usr/local/bin/openscad || error "Failed to make /usr/local/bin/openscad terminal symlink!"
 
 status -n "Creating .scad mimetype... "
 echo '<?xml version="1.0" encoding="UTF-8"?>

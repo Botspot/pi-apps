@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo rm -f /opt/OpenSCAD.AppImage ~/.local/share/applications/OpenSCAD.desktop /usr/share/mime/packages/openscad.xml /usr/share/applications/OpenSCAD.desktop /usr/share/icons/openscad.png
+sudo rm -f /opt/OpenSCAD.AppImage /usr/local/bin/openscad ~/.local/share/applications/OpenSCAD.desktop /usr/share/mime/packages/openscad.xml /usr/share/applications/OpenSCAD.desktop /usr/share/icons/openscad.png
