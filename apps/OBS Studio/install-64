@@ -37,6 +37,12 @@ elif [ "$__os_codename" == "bionic" ]; then
   ubuntu_ppa_installer "okirby/qt6-backports"
 
   install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-28.1.2-1-arm64-bionic.deb || exit 1
+elif [ "$__os_codename" == "focal" ]; then
+  # install focal version
+  apt_lock_wait
+  ubuntu_ppa_installer "okirby/qt6-backports"
+
+  install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-29.1.3-1-arm64-focal.deb || exit 1
 elif [ "$__os_codename" == "jammy" ]; then
   # install jammy version
   install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-29.1.3-3-arm64-jammy.deb || exit 1
