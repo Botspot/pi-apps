@@ -13,6 +13,8 @@ fi
 purge_packages || exit 1
 
 remove_repofile_if_unused /etc/apt/sources.list.d/okirby-ubuntu-qt6-backports-bionic.list
+remove_repofile_if_unused /etc/apt/sources.list.d/okirby-ubuntu-qt6-backports-focal.list
+remove_repofile_if_unused /etc/apt/sources.list.d/bullseye-backports.list
 
 sudo rm -f /usr/bin/obs
 sudo rm -f /usr/bin/obs-exec
