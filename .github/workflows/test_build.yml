@@ -17,17 +17,17 @@ on:
         description: 'Build on PiOS Bullseye'
         required: true
         type: boolean
+      bookworm:
+        description: 'Build on PiOS Bookworm Beta'
+        required: true
+        type: boolean        
       architecture:
         type: choice
-        description: 'For Buster/Bullseye, test on 32bit, 64bit, or Both if available'
+        description: 'For Buster/Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
         options:
         - 32bit
         - 64bit
         - Both
-      bookworm_64:
-        description: 'Build on PiOS Bookworm Beta'
-        required: true
-        type: boolean
       bionic_64:
         description: 'Build on Switchroot Ubuntu 5.1.1 Bionic 64bit'
         required: true
@@ -115,6 +115,29 @@ jobs:
             export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
+  bookworm-32bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.bookworm && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on bookworm armhf
+        uses: theofficialgman/arm-runner-action@v12
+        with:
+          base_image: ${{ secrets.RPIOS_BOOKWORM_ARMHF_URL }}
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          # disable image caching to not leak the URL
+          enable_image_caching: no
+          cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
   buster-64bit:
     runs-on: ubuntu-latest
     if: ${{ inputs.buster && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
@@ -159,7 +182,7 @@ jobs:
 
   bookworm-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.bookworm_64 }}
+    if: ${{ inputs.bookworm && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
     steps:
       - uses: actions/checkout@v3
       - name: Test installing app on bookworm arm64
