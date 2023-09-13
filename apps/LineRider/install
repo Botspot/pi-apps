@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Bot automatically updates this when I make a new release.
-version=2023.1.1
+version=2023.9.1
 
 #Install Depends
 install_packages apt-transport-https dirmngr gnupg ffmpeg mono-devel unzip zip || exit 1
