@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=8.15
+version=8.16
 
 pkill -9 wine
 command -v wineserver >/dev/null && wineserver -k
