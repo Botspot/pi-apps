@@ -15,9 +15,9 @@ fi
 
 sudo snap refresh
 sudo systemctl restart snapd.service || error "Unable to restart snapd.service"
-enable_module squashfs || exit 1
+sudo modprobe squashfs || exit 1
 
-sudo snap install core22 || error "Snapd was unable to install core22"
+sudo snap install core18 || error "Snapd was unable to install core18"
 sudo snap install core || error "Snapd was unable to install core"
 sudo snap install snapd || error "Snapd was unable to install snapd"
 
@@ -27,14 +27,5 @@ echo "Output of 'snap version':"
 snap version
 sudo snap install snap-store || error "Unable to install snap store"
 sudo rm -rf /usr/share/applications/snap
+ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || sudo ln -s /var/lib/snapd/desktop/applications /usr/share/applications/snap || error "Failed to create symlink for Snap app shortcuts!"
 
-#Pi-Apps tries to avoid unnecessary reboots at all cost. Snap places desktop launchers in /var/lib/snapd/desktop/applications, which is not searched by default.
-#This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
-#If there are files in /var/lib/snapd/desktop/applications, and XDG_DATA_DIRS is missing snap paths, then bind-mount to /usr/share/applications
-if [[ "$XDG_DATA_DIRS" != */var/lib/snapd/desktop* ]] && [ ! -z "$(ls /var/lib/snapd/desktop/applications)" ] && [ -z "$(ls /usr/share/applications/snapd-temporary)" ];then
-  sudo mkdir -p /usr/share/applications/snapd-temporary
-  sudo mount --bind /var/lib/snapd/desktop/applications /usr/share/applications/snapd-temporary
-elif [[ "$XDG_DATA_DIRS" == */var/lib/snapd/desktop* ]] ;then
-  sudo rm -rf /usr/share/applications/snapd-temporary
-fi
-#Additionally, PiOS Buster had a bug where XDG_DATA_DIRS was missing snap's entries due to PiOS mods. Pi-Apps fixes this with a runonce.

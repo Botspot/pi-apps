@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo rm -rf /var/snap/snap-store /usr/share/applications/snapd-temporary
+sudo rm -rf /var/snap/snap-store
 if command -v snap >/dev/null ;then
   sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd"
 
