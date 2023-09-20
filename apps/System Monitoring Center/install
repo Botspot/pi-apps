@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=2.22.1
-version2=1.43.10
+version2=1.43.11
 
 if ! package_available gir1.2-gtk-4.0 ; then
   install_packages https://github.com/hakandundar34coding/system-monitoring-center/releases/download/v${version2}/system-monitoring-center_${version2}_all.deb || exit 1
