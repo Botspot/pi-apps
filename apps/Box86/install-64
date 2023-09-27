@@ -1,5 +1,10 @@
 #!/bin/bash
 
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+  error "16K pagesize not supported on box86. Check if your system supports running 32bit ARM binaries and open an issue on Box86 GitHub if it can."
+fi
+
 function check-armhf() {
 	ARMHF="$(dpkg --print-foreign-architectures | grep "armhf")"
 }
