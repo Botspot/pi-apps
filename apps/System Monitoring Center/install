@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.22.1
+version=2.22.2
 version2=1.43.11
 
 if ! package_available gir1.2-gtk-4.0 ; then
