@@ -8,6 +8,12 @@ sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
 ppa_name="mozillateam/ppa"
 case "$__os_id" in
 Ubuntu) ppa_dist="$__os_codename" ;;
-*) ppa_dist="bionic" ;;
+*)
+  case $__os_codename in
+  bookworm) ppa_dist="jammy" ;;
+  bullseye) ppa_dist="focal" ;;
+  *) ppa_dist="bionic" ;;
+  esac
+  ;;
 esac
 remove_repofile_if_unused /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
