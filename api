@@ -2676,6 +2676,8 @@ get_model() { # populates the model and jetson_model variables with information 
       SOC_ID="g12b"
     elif [[ ${CHIP} =~ "g12b" ]]; then
       SOC_ID="g12b"
+    elif [[ ${CHIP} =~ "bcm2712" ]]; then
+      SOC_ID="bcm2712"
     elif [[ ${CHIP} =~ "bcm2711" ]]; then
       SOC_ID="bcm2711"
     elif [[ ${CHIP} =~ "bcm2837" ]]; then
