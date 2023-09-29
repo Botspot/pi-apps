@@ -1,5 +1,10 @@
 #!/bin/bash
 
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+   error "User error (reporting allowed): 16K pagesize not supported on box86 and your system is currently running a 32bit ARM OS. Consider opening an issue on Box86 GitHub."
+fi
+
 if dpkg -l box86 &>/dev/null ;then
   sudo apt purge -y --allow-change-held-packages box86*
 fi
