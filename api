@@ -2318,10 +2318,20 @@ sudo apt install --reinstall lsb_release")
   fi
   
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
+  #In this case we do not allow sending the error report to Pi-Apps
   if grep -q "^User error: " <<<"$errors" ;then
     #return all lines of output after a line mentions "User error: "
     error_caption+=("$(sed -ne '/^User error: /,$ p' <<<"$errors" | sed 's/^User error: //g')")
     error_type="system"
+  fi
+
+  #Individual scripts can self-diagnose by outputting "User error (reporting allowed): ", followed by the diagnosis.
+  #In this case we still allow sending the error report to Pi-Apps
+  if grep -q "^User error (reporting allowed): " <<<"$errors" ;then
+    #return all lines of output after a line mentions "User error (reporting allowed): "
+    error_caption+=("$(sed -ne '/^User error (reporting allowed): /,$ p' <<<"$errors" | sed 's/^User error (reporting allowed): //g')")
+    # system internet and package error types are blocked from sending error reports. Specify some other error type.
+    error_type="unknown"
   fi
   
   #if no known error was detected, set the error_type to 'unknown'
