@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #note to maintainer, if you change the below version make sure to update it in the uninstall script as well
-version=8.16
+version=8.17
 
 #install box64
 "${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
