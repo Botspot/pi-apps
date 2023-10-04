@@ -2,7 +2,14 @@
 
 version=4.4.2-0
 
-install_packages https://download.bleachbit.org/bleachbit_${version}_all_debian11.deb || exit 1
+if ! package_is_new_enough bleachbit 4.4.2-0 ;then
+  install_packages https://download.bleachbit.org/bleachbit_${version}_all_debian11.deb || exit 1
+else
+  install_packages bleachbit || exit 1
+fi
 
-# Move BleachBit to Accessories category
-sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop /usr/share/applications/org.bleachbit.BleachBit-root.desktop || :
+# Move BleachBit to Accessories category on PiOS
+if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then
+  sudo sed -i s/"Categories=System;FileTools;GTK;"/"Categories=Utility"/g /usr/share/applications/org.bleachbit.BleachBit.desktop /usr/share/applications/org.bleachbit.BleachBit-root.desktop
+fi
+true
