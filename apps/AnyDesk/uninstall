@@ -2,6 +2,20 @@
 
 purge_packages || exit 1
 
+if [ "$arch" == 64 ];then
+  # remove armhf architecture if no packages from it are currently installed
+  apt list --installed | awk '$3 == "armhf" { print }' | grep -q installed || sudo dpkg --remove-architecture armhf
+  
+  #unlink libs
+  IFS=' '
+  for i in /usr/lib/arm-linux-gnueabihf/libbcm_host.so /usr/lib/arm-linux-gnueabihf/libvcos.so /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so /usr/lib/arm-linux-gnueabihf/libbrcmGLESv2.so /usr/lib/arm-linux-gnueabihf/libbrcmEGL.so ;do
+    if [ -L $i ];then
+      sudo rm -f $i
+    fi
+  done
+  
+fi
+
 #remove symlinked libraries
 if [ -L /usr/lib/libbrcmGLESv2.so ];then
   sudo rm -f /usr/lib/libbrcmGLESv2.so

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+version=6.3.0-1
+
+function check-armhf() {
+	ARMHF="$(dpkg --print-foreign-architectures | grep "armhf")"
+}
+
+#add armhf architecture (multiarch)
+check-armhf
+if [[ "$ARMHF" == *"armhf"* ]]; then
+  echo "armhf arcitecture already added..."
+else
+  sudo dpkg --add-architecture armhf
+  check-armhf
+  if [[ "$ARMHF" != *"armhf"* ]]; then
+    error "armhf architecture should be added by now, but it isn't!"
+  fi
+fi
+
+unset rpi_arm_userspace
+# only install the libraspberrypi0 arm32 package if the user already has the libraspberrypi0 arm64 package installed
+if package_installed libraspberrypi0 ; then
+  rpi_arm_userspace="libraspberrypi0:armhf"
+fi
+
+install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles-dev:armhf libegl-dev:armhf libpolkit-gobject-1-0:armhf $rpi_arm_userspace || exit 1
+
+#As libraspberrypi-dev:armhf cannot be installed with multiarch, symlink the required libs from libraspberrypi0:armhf
+if [ -e /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0 ] && [ -e /usr/lib/arm-linux-gnueabihf/libvcos.so.0 ] && [ -e /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0 ];then
+  sudo ln -s /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0 /usr/lib/arm-linux-gnueabihf/libbcm_host.so
+  sudo ln -s /usr/lib/arm-linux-gnueabihf/libvcos.so.0 /usr/lib/arm-linux-gnueabihf/libvcos.so
+  sudo ln -s /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0 /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so
+else
+  error "Could not locate needed libs to symlink! Please ask pi-apps developers for help about this."
+fi
+# Solve error on Bullseye: "anydesk: error while loading shared libraries: libbrcmGLESv2.so: cannot open shared object file: No such file or directory"
+
+[ ! -e /usr/lib/libbrcmGLESv2.so ] && sudo ln -s /usr/lib/arm-linux-gnueabihf/libGLESv2.so /usr/lib/arm-linux-gnueabihf/libbrcmGLESv2.so
+[ ! -e /usr/lib/libbrcmEGL.so ] && sudo ln -s /usr/lib/arm-linux-gnueabihf/libEGL.so /usr/lib/arm-linux-gnueabihf/libbrcmEGL.so
+exit 0
