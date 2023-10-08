@@ -141,6 +141,10 @@ jobs:
             image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
             cache: yes
           - os: bookworm
+            arch: armhf
+            image: RPIOS_BOOKWORM_ARMHF_URL
+            cache: no
+          - os: bookworm
             arch: arm64
             image: RPIOS_BOOKWORM_URL
             cache: no
@@ -150,11 +154,13 @@ jobs:
       FAILED_UPDATE_APPS_buster_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_buster_arm64 || '' }}
       FAILED_UPDATE_APPS_bullseye_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bullseye_armhf || '' }}
       FAILED_UPDATE_APPS_bullseye_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bullseye_arm64 || '' }}
+      FAILED_UPDATE_APPS_bookworm_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bookworm_armhf || '' }}
       FAILED_UPDATE_APPS_bookworm_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bookworm_arm64 || '' }}
       UPDATED_APPS_buster_armhf: ${{ steps.updated.outputs.UPDATED_APPS_buster_armhf || '' }}
       UPDATED_APPS_buster_arm64: ${{ steps.updated.outputs.UPDATED_APPS_buster_arm64 || '' }}
       UPDATED_APPS_bullseye_armhf: ${{ steps.updated.outputs.UPDATED_APPS_bullseye_armhf || '' }}
       UPDATED_APPS_bullseye_arm64: ${{ steps.updated.outputs.UPDATED_APPS_bullseye_arm64 || '' }}
+      UPDATED_APPS_bookworm_armhf: ${{ steps.updated.outputs.UPDATED_APPS_bookworm_armhf || '' }}
       UPDATED_APPS_bookworm_arm64: ${{ steps.updated.outputs.UPDATED_APPS_bookworm_arm64 || '' }}
     steps:
       # restore GITHUB_WORKSPACE
@@ -169,14 +175,14 @@ jobs:
           cd $GITHUB_WORKSPACE
 
       - name: Replace secret reference with contents
-        if: ${{ matrix.image == 'RPIOS_BOOKWORM_URL' }}
+        if: ${{ matrix.image == 'RPIOS_BOOKWORM_URL' || matrix.image == 'RPIOS_BOOKWORM_ARMHF_URL' }}
         run: |
           image_url=${{ secrets[matrix.image] }}
           echo "::add-mask::$image_url"
           echo "image_url=$image_url" >> "$GITHUB_ENV"
 
       - name: Replace non-secret reference with contents
-        if: ${{ matrix.image != 'RPIOS_BOOKWORM_URL' }}
+        if: ${{ matrix.image != 'RPIOS_BOOKWORM_URL' && matrix.image != 'RPIOS_BOOKWORM_ARMHF_URL' }}
         run: |
           image_url=${{ matrix.image }}
           echo "image_url=$image_url" >> "$GITHUB_ENV"
@@ -324,7 +330,7 @@ jobs:
 
       - name: Revert failed apps and generate list
         run: |
-          ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"
+          ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"
           ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS" | sort -u | awk NF)"
           echo "ALL_FAILED_APPS<<EOF" >> $GITHUB_ENV
           echo "$ALL_FAILED_APPS" >> $GITHUB_ENV
@@ -347,6 +353,9 @@ jobs:
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bullseye_arm64}}" | grep -Fxq "$app"; then
               error_string+="bullseye arm64, "
             fi
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}" | grep -Fxq "$app"; then
+              error_string+="bookworm armhf, "
+            fi
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -Fxq "$app"; then
               error_string+="bookworm arm64, "
             fi
@@ -368,7 +377,7 @@ jobs:
             grep -ve "$(echo "$1" | sed -z 's/\n/\-\n/g' | sed 's/^/- /g')"
             true
           }
-          ALL_UPDATED_APPS="${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_arm64}}"
+          ALL_UPDATED_APPS="${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_buster_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_arm64}}"
           ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | sort -u | awk NF)"
           [ ! -z "$ALL_UPDATED_APPS" ] && ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | list_subtract "$ALL_FAILED_APPS")"
           echo "ALL_UPDATED_APPS<<EOF" >> $GITHUB_ENV
