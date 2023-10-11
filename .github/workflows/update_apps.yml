@@ -142,12 +142,12 @@ jobs:
             cache: yes
           - os: bookworm
             arch: armhf
-            image: RPIOS_BOOKWORM_ARMHF_URL
-            cache: no
+            image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2023-10-10/2023-10-10-raspios-bookworm-armhf.img.xz
+            cache: yes
           - os: bookworm
             arch: arm64
-            image: RPIOS_BOOKWORM_URL
-            cache: no
+            image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-10-10/2023-10-10-raspios-bookworm-arm64.img.xz
+            cache: yes
     name: Testing on ${{ matrix.os }} - ${{ matrix.arch }}
     outputs:
       FAILED_UPDATE_APPS_buster_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_buster_armhf || '' }}
@@ -175,14 +175,14 @@ jobs:
           cd $GITHUB_WORKSPACE
 
       - name: Replace secret reference with contents
-        if: ${{ matrix.image == 'RPIOS_BOOKWORM_URL' || matrix.image == 'RPIOS_BOOKWORM_ARMHF_URL' }}
+        if: ${{ matrix.image == 'RPIOS_TRIXIE_URL' || matrix.image == 'RPIOS_TRIXIE_ARMHF_URL' }}
         run: |
           image_url=${{ secrets[matrix.image] }}
           echo "::add-mask::$image_url"
           echo "image_url=$image_url" >> "$GITHUB_ENV"
 
       - name: Replace non-secret reference with contents
-        if: ${{ matrix.image != 'RPIOS_BOOKWORM_URL' && matrix.image != 'RPIOS_BOOKWORM_ARMHF_URL' }}
+        if: ${{ matrix.image != 'RPIOS_TRIXIE_URL' && matrix.image != 'RPIOS_TRIXIE_ARMHF_URL' }}
         run: |
           image_url=${{ matrix.image }}
           echo "image_url=$image_url" >> "$GITHUB_ENV"
