@@ -325,6 +325,11 @@ cp -f ~/.local/share/applications/pi-apps.desktop ~/Desktop/
 chmod 755 ~/Desktop/pi-apps.desktop
 gio set ~/Desktop/pi-apps.desktop "metadata::trusted" yes
 
+#copy icon to local icons directory (necessary on some wayland DEs like on PiOS Wayfire)
+mkdir -p ~/.local/share/icons
+cp -f ${DIRECTORY}/icons/logo.png ~/.local/share/icons/pi-apps.png
+cp -f ${DIRECTORY}/icons/settings.png ~/.local/share/icons/pi-apps-settings.png
+
 #settings menu button
 echo "Updating Settings menu button..."
 echo "[Desktop Entry]
