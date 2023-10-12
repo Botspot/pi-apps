@@ -34,10 +34,14 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   # also allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
   case $__os_codename in
   bookworm)
-    # remove old ppa if present
-    sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
-    debian_ppa_installer "mozillateam/ppa" "jammy" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
-    echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+    if [ -f /etc/rpi-issue ]; then
+      status "PiOS Bookworm supports the latest HW Accelerated Firefox out of the box. Skipping adding Mozilla PPA"
+    else
+      # remove old ppa if present
+      sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
+      debian_ppa_installer "mozillateam/ppa" "jammy" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
+      echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+    fi
     ;;
   bullseye)
     # remove old ppa if present
