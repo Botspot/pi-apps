@@ -2541,7 +2541,7 @@ files_match() { #$1 and $2 are paths to files
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
   local DEFAULT_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(TARGET_OF)' | sort -u | awk '{if ($3=="deb") print $1" "$2 }' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
-raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|
+raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
