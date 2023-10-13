@@ -3206,7 +3206,9 @@ else
   error "Failed to detect OS CPU architecture! Something is very wrong."
 fi
 
-#Make dual-pane yad windows work correctly on wayland
+#Make dual-pane yad windows work correctly on wayland by using xwayland
+#We need support for setting window position for dual-pane yad windows to be supported via a wayland protocol, implemented in compositors, and supported in gtk
+#Relevant draft PRs for the wayland protocol https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/247 https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/249
 export GDK_BACKEND=x11
 
 # add upstream and original lsb-release info for all scripts to use
