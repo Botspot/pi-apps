@@ -767,18 +767,33 @@ pipx_uninstall() {
 remove_deprecated_app() { # prompts a user to uninstall a deprecated pi-apps application and then removes the application folder if it exists
   local app="$1" # on app name
   local removal_arch="$2" # 32 or 64 to only remove one architecture if specified
+  local message="$3" # custom message addendum to show to the user (if given)
   [ -z "$app" ] && error "remove_deprecated_app(): requires an pi-apps app name"
   local app_status="$(app_status "${app}")"
-  if [ ! -z "$removal_arch" ] && [ "$arch" == "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+  if [ -z "$message" ] && [ ! -z "$removal_arch" ] && [ "$arch" == "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
     local text="Pi-Apps has deprecated $app for ${removal_arch}-bit OSs which you currently have installed.
-Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  elif [ ! -z "$message" ] && [ ! -z "$removal_arch" ] && [ "$arch" == "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app for ${removal_arch}-bit OSs which you currently have installed.
+
+$message
+
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
     userinput_func "$text" "Uninstall now" "Leave installed"
   elif [ ! -z "$removal_arch" ] && [ "$arch" != "$removal_arch" ]; then
     rm -f "${DIRECTORY}/apps/$app/install-$removal_arch"
     return 0
-  elif [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+  elif [ -z "$message" ] && [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
     local text="Pi-Apps has deprecated $app which you currently have installed.
-Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with pi-apps later."
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
+    userinput_func "$text" "Uninstall now" "Leave installed"
+  elif [ ! -z "$message" ] && [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
+    local text="Pi-Apps has deprecated $app which you currently have installed.
+
+$message
+
+Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
     userinput_func "$text" "Uninstall now" "Leave installed"
   else
     rm -rf "${DIRECTORY}/apps/$app"
