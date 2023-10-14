@@ -2,7 +2,7 @@
 
 status "Downloading tarfile"
 
-version=https://github.com/TeamRizu/OutFox/releases/download/OF4.14.1/OutFox-alpha-0.4.14.1HF-RPi-Linux-arm64v8-date-20220327.tar.gz
+version=https://github.com/TeamRizu/OutFox/releases/download/OF4.19.0/OutFox-0.4.19-LTS-Linux-Rpi64bit-arm64v8-modern-date-20230415.tar.gz
 
 mkdir -p ~/ProjectOutFox && cd ~/ProjectOutFox || error "Could not create or move to directory"
 rm -rf ./*
