@@ -77,6 +77,8 @@ runonce <<"EOF"
   remove_deprecated_app "LinuxCNC"
   remove_deprecated_app "Steam" "32" "Due to upstream changes from Valve, Steam can no longer be used on 32bit OSs.
 You can install Steam from Pi-Apps on a 64bit OS."
+  remove_deprecated_app "Pale Moon" "32" "Upstream has stopped packaging Pale Moon for armhf and has removed all builds from their repos.
+You can install Pale Moon from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Cawbird"
   remove_deprecated_app "Email Checker"
   remove_deprecated_app "Pi-Apps Terminal Plugin (python)"
