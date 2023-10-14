@@ -2555,8 +2555,11 @@ apt.armbian.com")"
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
     echo "Pi-Apps is not supported on WSL."
     return 1
-  elif ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) && ! printf '%s\n' "11" "$__os_release" | sort -CV ; then
+  elif ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) && ! printf '%s\n' "10" "$__os_release" | sort -CV ; then
     echo "Pi-Apps is not supported on your outdated $__os_id $__os_release operating system. Expect many apps to fail. Consider upgrading your operating system."
+    return 1
+  elif [ "$__os_id" == "Raspbian" ] && ! printf '%s\n' "11" "$__os_release" | sort -CV ; then
+    echo "Pi-Apps is no longer supported on your Pi OS $__os_release operating system. Consider upgrading to Pi OS Bookworm. https://www.raspberrypi.com/news/bookworm-the-new-version-of-raspberry-pi-os/"
     return 1
   elif [ "$__os_id" == "Ubuntu" ] && ! printf '%s\n' "20.04" "$__os_release" | sort -CV ; then
     echo "Pi-Apps is not supported on your outdated $__os_id $__os_release operating system. Expect many apps to fail. Consider upgrading your operating system."
