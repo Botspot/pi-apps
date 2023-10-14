@@ -1784,7 +1784,14 @@ Please run this command in a terminal: sudo apt update --allow-releaseinfo-chang
 In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3rd-party APT repos first, and if that doesn't work then ask for help.")
     error_type="system"
   fi
+  
+  if grep -qF "E: The value 'stable' is invalid for APT::Default-Release as such a release is not available in the sources" <<<"$errors" ;then
+    error_caption+=("APT encountered an issue reading a source file for a repository. Most likely, you were trying to change your sources and did not format the file correctly.
 
+In any case, Pi-Apps cannot work until you solve this issue. Check around in the /etc/apt/sources.list file and the /etc/apt/sources.list.d folder for duplicate mentions of the word 'stable'.")
+    error_type="system"
+  fi
+  
   if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
     # we want these errors to come to pi-apps logs if the user sends them, so don't add an error type
     # add additional output for the packages that have unmet dependencies
