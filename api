@@ -781,7 +781,8 @@ $message
 
 Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
     userinput_func "$text" "Uninstall now" "Leave installed"
-  elif [ ! -z "$removal_arch" ] && [ "$arch" != "$removal_arch" ]; then
+  elif [ ! -z "$removal_arch" ]; then
+    # remove per-architecture script regardless of the current arch
     rm -f "${DIRECTORY}/apps/$app/install-$removal_arch"
     return 0
   elif [ -z "$message" ] && [ -z "$removal_arch" ] && [ -d "${DIRECTORY}/apps/$app" ] && [ "$app_status" == "installed" ]; then
@@ -795,8 +796,12 @@ $message
 
 Would you like to uninstall it now or leave it installed? You will NOT be able to uninstall $app with Pi-Apps later."
     userinput_func "$text" "Uninstall now" "Leave installed"
-  else
+  elif [ -z "$removal_arch" ]; then
+    # only remove folder if the desired removal arch is unset (so remove on all architectures)
     rm -rf "${DIRECTORY}/apps/$app"
+    return 0
+  else
+    # do nothing otherwise
     return 0
   fi
   if [ "$output" == "Uninstall now" ]; then
