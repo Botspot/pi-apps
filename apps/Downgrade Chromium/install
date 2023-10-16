@@ -19,7 +19,7 @@ if [ -z "$url_list" ];then
 fi
 
 #determine the available versions of Chromium
-version_list="$(echo "$url_list" | grep '^chromium-browser-l10n_' | sed 's/\..*//' | sed 's/.*_//' | sort -V | uniq)"
+version_list="$(echo "$url_list" | grep '^chromium-browser-l10n_' | sed 's/\..*//' | sed 's/.*_//' | sort | list_intersect "$(echo "$url_list" | grep '^chromium-browser_' | sed 's/\..*//' | sed 's/.*_//' | sort)" | sort -V | uniq)"
 
 #determine the main package names available. (chromium-browser, chromium-codecs-ffmpeg, etc.)
 package_names="$(echo "$url_list" | sed 's/_.*//' | sort | uniq)"
@@ -109,16 +109,16 @@ wget -O l10n.deb "https://archive.raspberrypi.org/debian/pool/main/c/chromium-br
 wget -O ffmpeg_extra.deb "https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/$ffmpeg_extra_url" || error "Failed to download $ffmpeg_extra_url"
 
 status "Installing the packages..."
-"${DIRECTORY}/api" apt_lock_wait
+apt_lock_wait
 sudo apt install -fy --allow-downgrades --allow-change-held-packages "$(pwd)/cb.deb" "$(pwd)/l10n.deb" "$(pwd)/ffmpeg_extra.deb" || error "APT failed to install the packages"
 rm -f cb.deb l10n.deb ffmpeg_extra.deb || error "Failed to remove cb.deb l10n.deb ffmpeg_extra.deb"
 
 status "Holding Chromium version so it won't upgrade..."
-"${DIRECTORY}/api" apt_lock_wait
+apt_lock_wait
 echo "chromium-browser hold" | sudo dpkg --set-selections
-"${DIRECTORY}/api" apt_lock_wait
+apt_lock_wait
 echo "chromium-browser-l10n hold" | sudo dpkg --set-selections
-"${DIRECTORY}/api" apt_lock_wait
+apt_lock_wait
 echo "chromium-codecs-ffmpeg-extra hold" | sudo dpkg --set-selections
 
 if [ "$version" -le 88 ] && [ "$(get_codename)" == 'bullseye' ];then
