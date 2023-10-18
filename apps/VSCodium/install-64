@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium.gpg
 
-version=1.83.0.23283
+version=1.83.1.23285
 
 install_packages "https://github.com/VSCodium/vscodium/releases/download/${version}/codium_${version}_arm64.deb" || exit 1
 
