@@ -1,12 +1,19 @@
 #!/bin/bash
 
-version=1.25.9
+version=1.26.7
+version2=1.26.7
 
 case $(get_codename) in
 bionic)
   install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/veracrypt-1.25.9-Ubuntu-18.04-arm64.deb || exit 1
   ;;
-*)
-  install_packages https://sourceforge.net/projects/veracrypt/files/VeraCrypt%20${version}/Linux/veracrypt-${version}-Debian-10-arm64.deb || exit 1
+buster)
+  install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version}/veracrypt-${version}-Debian-10-arm64.deb || exit 1
+  ;;
+bullseye)
+  install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version2}/veracrypt-${version2}-Debian-11-arm64.deb || exit 1
+  ;;
+bookworm)
+  install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/veracrypt-1.26.7-Debian-12-arm64.deb || exit 1
   ;;
 esac
