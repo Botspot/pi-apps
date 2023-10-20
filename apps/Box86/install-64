@@ -60,7 +60,7 @@ install_packages libc6:armhf libstdc++6:armhf \
   libssl1.1:armhf '|' libssl3:armhf libssh-gcrypt-4:armhf \
   libcups2:armhf \
   libgssapi-krb5-2:armhf libkrb5-3:armhf \
-  $rpi_arm_userspace $mesa_va_drivers libegl1-mesa:armhf libgl1-mesa-glx:armhf libgles2-mesa:armhf
+  $rpi_arm_userspace $mesa_va_drivers libegl1:armhf libglx-mesa0:armhf libgl1:armhf libgles2:armhf
 
 sudo wget https://pi-apps-coders.github.io/box86-debs/box86.list -O /etc/apt/sources.list.d/box86.list
 if [ $? != 0 ];then
