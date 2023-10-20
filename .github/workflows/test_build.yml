@@ -18,7 +18,7 @@ on:
         required: true
         type: boolean
       bookworm:
-        description: 'Build on PiOS Bookworm Beta'
+        description: 'Build on PiOS Bookworm'
         required: true
         type: boolean        
       architecture:
