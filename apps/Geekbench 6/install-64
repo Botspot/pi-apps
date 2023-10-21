@@ -2,6 +2,20 @@
 
 version=6.2.1
 
+# https://github.com/raspberrypi/bookworm-feedback/issues/107
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+  #switch to 4K pagesize kernel
+  if [ -f /boot/config.txt ]; then
+    echo "[pi5]" | sudo tee --append /boot/config.txt >/dev/null
+    echo "kernel=kernel8.img" | sudo tee --append /boot/config.txt >/dev/null
+    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to /boot/config.txt\nPlease reboot and install the Geekbench6 app again."
+    sleep infinity
+  else
+    error "User error (reporting allowed): Your current running kernel is build with 16K PageSize and is incompatible with Geekbench6. Changing kernels automatically cannot be done since no /boot/config.txt file was found."
+  fi
+fi
+
 wget -O /tmp/Geekbench6.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
 tar -xf /tmp/Geekbench6.tar.gz -C /tmp || error "Failed to extract files!"
 rm -f /tmp/Geekbench6.tar.gz ./Geekbench6.tar.gz

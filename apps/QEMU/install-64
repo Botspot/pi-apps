@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# https://github.com/raspberrypi/bookworm-feedback/issues/107
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+  #switch to 4K pagesize kernel
+  if [ -f /boot/config.txt ]; then
+    echo "[pi5]" | sudo tee --append /boot/config.txt >/dev/null
+    echo "kernel=kernel8.img" | sudo tee --append /boot/config.txt >/dev/null
+    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to /boot/config.txt\nPlease reboot and install the QEMU app again."
+    sleep infinity
+  else
+    error "User error (reporting allowed): Your current running kernel is build with 16K PageSize and is incompatible with QEMU. Changing kernels automatically cannot be done since no /boot/config.txt file was found."
+  fi
+fi
+
 if [[ "$(get_codename)" == "buster" ]]; then
   #Remove any qemu packages first to prevent conflicting packages
   apt_lock_wait
