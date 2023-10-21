@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.1.4
+version=2.2.0
 
 adoptium_installer || exit 1
 install_packages temurin-17-jre || exit 1
