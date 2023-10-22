@@ -1,4 +1,4 @@
 #!/bin/bash
 
 purge_packages || exit 1
-sudo rm -rf /opt/Open-Typer.AppImage /usr/local/share/applications/Open-Typer.desktop ~/.local/share/applications/Open-Typer.desktop
+sudo rm -rf /opt/Open-Typer.AppImage /usr/local/share/applications/Open-Typer.desktop

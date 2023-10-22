@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.2.0
+version=5.2.1
 
 #Install Depends
 enable_module fuse || exit 1
