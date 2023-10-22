@@ -2,7 +2,7 @@
 
 cd /tmp || error "Could not move to /tmp folder"
 status "Installing Dependencies"
-install_packages libsdl2-mixer-dev libsdl2-dev libsdl2-image-dev libsndio-dev || exit 1
+install_packages build-essential libsdl2-mixer-dev libsdl2-dev libsdl2-image-dev libsndio-dev || exit 1
 status "Downloading the game"
 sudo rm -rf /tmp/ccleste
 git clone https://github.com/lemon32767/ccleste.git --depth=1 && cd ccleste || error "Could Not Pull Latest Source Code"
