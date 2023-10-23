@@ -31,6 +31,7 @@ mate-terminal
 lxterm
 uxterm
 xterm
+urxvt
 konsole
 terminator
 gnome-terminal
@@ -79,6 +80,9 @@ elif [ "$choice" == uxterm ];then
   
 elif [ "$choice" == xterm ];then
   xterm -e bash -c "$commands" &
+  
+elif [ "$choice" == urxvt ];then
+  urxvt -e bash -c "$commands" &
   
 elif [ "$choice" == konsole ];then
   konsole -e bash <(echo "$commands") &
