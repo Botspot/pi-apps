@@ -1,5 +1,5 @@
 #!/bin/bash
-
+{
 #$1 is the command to be run.
 #$2 is the title.
 commands="$1"
@@ -126,4 +126,5 @@ if [ ! -z "$temp_pid_file" ];then
   
 fi
 
-true
+exit 0
+}
