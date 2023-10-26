@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #note to maintainer, if you change the below version make sure to update it in the uninstall script as well
-version=8.17
+version=8.18
 
 # https://github.com/raspberrypi/bookworm-feedback/issues/107
 PAGE_SIZE="$(getconf PAGE_SIZE)"
