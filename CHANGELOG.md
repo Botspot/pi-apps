@@ -229,6 +229,14 @@ Last updated: May 21, 2023 by [@Botspot](https://github.com/Botspot)
 - **04/28/2023** Added Krita app
 - **04/30/2023** Added Gnome Software app
 - **05/17/2023** Added Monero GUI app
+- **05/25/2023** Rename Geekbench to Geekbench 5
+- **05/25/2023** Added Geekbench 6 app
+- **05/30/2023** Added Wine (x64) app
+- **07/06/2023** Added Caskaydia Cove NF app
+- **07/06/2023** Added Oh My Posh app
+- **08/02/2023** Added RiiTag-RPC app
+- **09/21/2023** Added Gnumeric app
+- **10/21/2023** Added Open-Typer app
 
 ## Other notable changes:
 
@@ -339,3 +347,4 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **1/12-14/2023** Updated Pi-Apps icons and logo for 2023
 - **5/3/2023** Major improvements to [pi-apps.io](https://pi-apps.io) website
 - **5/21/2023** Changed nearly all app descriptions to explicitly say how to run the app.
+- **10/14/2023** Increase minimum supported versions of Debian to Bullseye (11) and Ubuntu to Focal (20.04)
