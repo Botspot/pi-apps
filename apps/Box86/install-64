@@ -12,6 +12,7 @@ Would you like to automatically switch to a 4K PageSize Linux Kernel?"
     if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
       error "User error: Your current running kernel is built with 16K PageSize and is incompatible with Box86. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing Box86."
     fi
+    echo "" | sudo tee --append /boot/config.txt >/dev/null
     echo "[pi5]" | sudo tee --append /boot/config.txt >/dev/null
     echo "kernel=kernel8.img" | sudo tee --append /boot/config.txt >/dev/null
     "${DIRECTORY}/manage" uninstall "Box64"

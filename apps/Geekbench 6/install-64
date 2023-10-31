@@ -7,12 +7,21 @@ PAGE_SIZE="$(getconf PAGE_SIZE)"
 if [[ "$PAGE_SIZE" == "16384" ]]; then
   #switch to 4K pagesize kernel
   if [ -f /boot/config.txt ]; then
+    text="Raspberry Pi 5 PiOS images ship by default with a 16K PageSize Linux Kernel.
+This kernel causes incompatibilities with some software including Geekbench 6 https://github.com/raspberrypi/bookworm-feedback/issues/107
+
+Would you like to automatically switch to a 4K PageSize Linux Kernel?"
+    userinput_func "$text" "No, keep 16K PageSize Kernel and Exit" "Yes, switch to 4K PageSize Kernel"
+    if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
+      error "User error: Your current running kernel is built with 16K PageSize and is incompatible with Geekbench 6. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing Geekbench 6."
+    fi
+    echo "" | sudo tee --append /boot/config.txt >/dev/null
     echo "[pi5]" | sudo tee --append /boot/config.txt >/dev/null
     echo "kernel=kernel8.img" | sudo tee --append /boot/config.txt >/dev/null
-    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to /boot/config.txt\nPlease reboot and install the Geekbench6 app again."
+    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to /boot/config.txt\nPlease reboot and install the Geekbench 6 app again."
     sleep infinity
   else
-    error "User error (reporting allowed): Your current running kernel is build with 16K PageSize and is incompatible with Geekbench6. Changing kernels automatically cannot be done since no /boot/config.txt file was found."
+    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Geekbench 6. Changing kernels automatically cannot be done since no /boot/config.txt file was found."
   fi
 fi
 
