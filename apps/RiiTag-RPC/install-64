@@ -6,7 +6,6 @@ version=v1.3.4
 
 cd /tmp || error "Could not move to /tmp directory"
 rm -f rpi-4b-aarch64.zip
-wget "https://github.com/RiiConnect24/RiiTag-RPC/releases/download/${version}/rpi-4b-aarch64.zip" || error "Could not download riitag-rpc release"
-unzip rpi-4b-aarch64.zip
-sudo chmod a+x riitag-rpc
-sudo mv riitag-rpc /usr/local/bin/riitag-rpc || error "Could not install riitag-rpc"
+wget "https://github.com/RiiConnect24/RiiTag-RPC/releases/download/${version}/RiiTag-RPC_Rpi4B" || error "Could not download riitag-rpc release"
+sudo chmod a+x RiiTag-RPC_Rpi4B
+sudo mv RiiTag-RPC_Rpi4B /usr/local/bin/riitag-rpc || error "Could not install riitag-rpc"
