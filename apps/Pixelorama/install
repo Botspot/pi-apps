@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v0.11.2
+version=v0.11.3
 
 case "$arch" in
 "64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
