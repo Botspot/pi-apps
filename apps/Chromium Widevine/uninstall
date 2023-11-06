@@ -1,5 +1,0 @@
-#!/bin/bash
-sudo rm -rf /opt/WidevineCdm /usr/lib/chromium-browser/libwidevinecdm.so
-
-rm -rf ~/chromium-v84-widevine ~/.local/share/applications/widevine-chromium.desktop ~/.config/chromium-browser/WidevineCdm/latest-component-updated-widevine-cdm &>/dev/null
-exit 0
