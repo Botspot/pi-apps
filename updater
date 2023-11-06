@@ -494,9 +494,6 @@ refresh_app() { #first arg is app name
   #Set terminal title
   [ "$no_status" != true ] && echo -ne "\e]0;Refreshing ${app}\a"
   
-  #move old program to trash - this allows app-developers to recover their work if update was accidental
-  gio trash "${DIRECTORY}/apps/${app}" 2>/dev/null
-  #failsafe
   rm -rf "${DIRECTORY}/apps/${app}"
   
   #copy new version from update/ to apps/
