@@ -11,7 +11,7 @@ Ubuntu)
   if printf '%s\n' "22.04" "$__os_release" | sort -CV || [[ "$__os_release" == "18.04" ]]; then
     ubuntu_ppa_installer "mozillateam/ppa"
     # also disable firefox snap apt package from Ubuntu
-    echo 'Package: *
+    echo 'Package: firefox*
 Pin: release o=LP-PPA-mozillateam
 Pin-Priority: 1000
 
