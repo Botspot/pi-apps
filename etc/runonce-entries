@@ -66,6 +66,8 @@ EOF
 case $(ps -o stat= -p $$) in
   *+*) # Running in foreground
 runonce <<"EOF"
+  #populate yadflags since array contents are not passed into runonce
+  yadflags=(--class Pi-Apps --name "Pi-Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps")
   #remove deprecated apps
   remove_deprecated_app "FreeCAD (precompiled)"
   remove_deprecated_app "Chromium Media Edition"
