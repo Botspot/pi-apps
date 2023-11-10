@@ -1815,15 +1815,15 @@ In any case, Pi-Apps cannot work until you solve this issue. Check around in the
   fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
-  if [ -f /etc/rpi-issue ] && [ ! -f /etc/apt/sources.list.d/raspi.list ] ;then
-    error_caption+=("Packages failed to install because you seem to have deleted an important repository file in /etc/apt/sources.list.d
+  if [ -f /etc/rpi-issue ] && ( [ ! -f /etc/apt/sources.list.d/raspi.list ] || ! grep -q "^deb http://archive.raspberrypi.org/debian\|^deb https://archive.raspberrypi.org/debian\|^deb http://archive.raspberrypi.com/debian\|^deb https://archive.raspberrypi.com/debian" /etc/apt/sources.list.d/raspi.list ) ;then
+    error_caption+=("Packages failed to install because you seem to have deleted or altered an important repository file in /etc/apt/sources.list.d
 
-This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing, but you may have deleted other files as well.
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing or altered, but you may have deleted other files as well.
 The raspi.list file should contain this:
 
-deb http://archive.raspberrypi.org/debian/ $(get_codename) main
+deb http://archive.raspberrypi.com/debian/ $(get_codename) main
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://archive.raspberrypi.org/debian/ $(get_codename) main")
+#deb-src http://archive.raspberrypi.com/debian/ $(get_codename) main")
     error_type="system"
   fi
   
