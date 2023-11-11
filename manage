@@ -487,9 +487,6 @@ $app"
     action="$(echo "$line" | awk -F';' '{print $1}')"
     app="$(echo "$line" | awk -F';' '{print $2}')"
     
-    #Set terminal title
-    echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
-    
     #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is 'dropped input'
     if [ -z "$write_list_pid" ] || ! process_exists "$write_list_pid" ;then
       write_list "$queue" &
@@ -509,12 +506,18 @@ $app"
     
     #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
     if [ "$action" == update-file ];then
+      #Set terminal title
+      echo -ne "\e]0;Updating ${app} file\a"
       update_file "$app"
       exitcode=$?
     elif [ "$action" == refresh ];then
+      #Set terminal title
+      echo -ne "\e]0;${action^}ing ${app}\a"
       refresh_app "$app"
       exitcode=$?
     else
+      #Set terminal title
+      echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
       "${DIRECTORY}/manage" "$action" "$app"
       exitcode=$?
     fi
@@ -580,18 +583,21 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
-    
-    #Set terminal title
-    echo -ne "\e]0;${action^}ing ${app}\a"
 
     #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
     if [ "$action" == update-file ];then
+      #Set terminal title
+      echo -ne "\e]0;Updating ${app} file\a"
       update_file "$app"
       exitcode=$?
     elif [ "$action" == refresh ];then
+      #Set terminal title
+      echo -ne "\e]0;${action^}ing ${app}\a"
       refresh_app "$app"
       exitcode=$?
     else
+      #Set terminal title
+      echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
       "${DIRECTORY}/manage" "$action" "$app"
       exitcode=$?
     fi
