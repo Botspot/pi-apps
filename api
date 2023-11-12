@@ -2646,7 +2646,8 @@ get_device_info() { #returns information about current install and hardware
   echo "Kernel: $(uname -m) $(uname -r)"
   # obtain model name
   get_model
-  echo "Device model: $model $jetson_model"
+  echo "Device model: $model"
+  [[ ! -z "$SOC_ID" ]] && echo "SOC identifier: $SOC_ID"
   echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
