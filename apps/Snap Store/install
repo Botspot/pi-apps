@@ -1,6 +1,6 @@
 #!/bin/bash
 # Get dependencies
-install_packages libsquashfuse0 squashfuse fuse libgconf-2-4 || exit 1
+install_packages libsquashfuse0 squashfuse fuse || exit 1
 sudo apt install -y snapd || error "APT failed to install snapd"
 
 sudo systemctl enable --now snapd.socket || error "Unable to enable snapd.socket"
