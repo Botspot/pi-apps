@@ -2572,6 +2572,7 @@ raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
+deb-multimedia.org|\
 apt.pop-os.org\|\
 apt.armbian.com")"
   if uname -m | grep -qi 'x86\|i686\|i386'; then
