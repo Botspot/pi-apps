@@ -116,7 +116,7 @@ else
   widevine=FALSE
 fi
 #detect if Widevine can be enabled
-if [ $arch == 32 ];then
+if package_available libwidevinecdm0;then
   widevine_possible=TRUE
   widevine_message=(--field="Enable Widevine DRM (for Netflix, Spotify)":CHK "$widevine")
 else
@@ -404,19 +404,17 @@ else
 fi
 
 #widevine
-if [ "$widevine_possible" == TRUE ] && [ "$widevine" == TRUE ] && [ ! -d /opt/WidevineCdm ];then
-  #install Chromium Widevine app
-  "${DIRECTORY}/manage" install "Chromium Widevine"
-  
-elif [ "$widevine_possible" == TRUE ] && [ "$widevine" == FALSE ];then
-  #disable Chromium Widevine
-  if package_installed libwidevinecdm0 ;then
-    sudo apt purge -y libwidevinecdm0
+if [ "$widevine_possible" == TRUE ] && [ "$widevine" == TRUE ];then
+  #install libwidevinecdm0
+  if ! package_installed libwidevinecdm0 ;then
+    apt_lock_wait
+    sudo apt install -y libwidevinecdm0
   fi
-  
-  if [ -d /opt/WidevineCdm ];then
-    #uninstall Chromium Widevine app
-    "${DIRECTORY}/manage" uninstall "Chromium Widevine"
+elif [ "$widevine_possible" == TRUE ] && [ "$widevine" == FALSE ];then
+  #uninstall libwidevinecdm0
+  if package_installed libwidevinecdm0 ;then
+    apt_lock_wait
+    sudo apt purge -y libwidevinecdm0
   fi
 fi
 
