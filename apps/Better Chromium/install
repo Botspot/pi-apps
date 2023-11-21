@@ -18,8 +18,18 @@ elif [ -d /snap/chromium ] && [ -f /snap/bin/chromium ];then
   fi
   folder=/etc/chromium.d
   
-elif [ -d /etc/chromium-browser/customizations ];then
+elif [ -d /etc/chromium-browser ];then
+  sudo mkdir -p /etc/chromium-browser/customizations
   folder=/etc/chromium-browser/customizations
+elif [ -d /etc/chromium-browser-stable ];then
+  sudo mkdir -p /etc/chromium-browser-stable/customizations
+  folder=/etc/chromium-browser-stable/customizations
+elif [ -d /etc/chromium-browser-beta ];then
+  sudo mkdir -p /etc/chromium-browser-beta/customizations
+  folder=/etc/chromium-browser-beta/customizations
+elif [ -d /etc/chromium-browser-unstable ];then
+  sudo mkdir -p /etc/chromium-browser-unstable/customizations
+  folder=/etc/chromium-browser-unstable/customizations
   
 else
   error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
