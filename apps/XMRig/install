@@ -134,7 +134,7 @@ function setup_wizard() {
 }
 EOT
   else #User skipped setup wizard
-    echo -e "You chose to not set up a configuration for xmrig."
+    echo -e "You chose to not set up a configuration for XMRig."
   fi
   
 } # End setup_wizard()
@@ -181,7 +181,7 @@ if true;then
   cd
   rm -rf $HOME/xmrig
   
-  status_green "xmrig program compiled and installed successfully."
+  status_green "XMRig program compiled and installed successfully."
 fi
 
 output=""
@@ -197,7 +197,7 @@ fi
 
 userinput_func "Should XMRig run whenever this device is not being used?" "${default_table[@]}"
 if [ "$output" == "Yes" ]; then
-  echo -e "OK.\nThe new 'xmrig-daemon' command will run xmrig only when no sound is playing and when the mouse/keyboard have been stationary for a while.\n"
+  echo -e "OK.\nThe new 'xmrig-daemon' command will run XMRig only when no sound is playing and when the mouse/keyboard have been stationary for a while.\n"
   
   status -n 'Creating script at /usr/local/bin/xmrig-daemon... '
   cat << "EOF" | sudo tee /usr/local/bin/xmrig-daemon >/dev/null
@@ -230,10 +230,10 @@ while true;do
   #Every second, check if user-action was less than 1 second ago, or if audio is playing (stackoverflow.com/a/17404952)
   while true ;do
     if [ "$(xprintidle)" -lt 1000 ];then
-      echo -n "Stopping xmrig because mouse/keyboard is active... "
+      echo -n "Stopping XMRig because mouse/keyboard is active... "
       break
     elif grep -rq RUNNING /proc/asound/card*/pcm*/sub*/status ;then
-      echo -n "Stopping xmrig because audio is playing... "
+      echo -n "Stopping XMRig because audio is playing... "
       break
     fi
     sleep 1
