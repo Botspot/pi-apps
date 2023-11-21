@@ -32,7 +32,7 @@ elif [ -d /etc/chromium-browser-unstable ];then
   folder=/etc/chromium-browser-unstable/customizations
   
 else
-  error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
+  error "User error (reporting allowed): Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
 fi
 
 #Fix edge case where both an old version of chromium and a newer version are installed simultaneously
