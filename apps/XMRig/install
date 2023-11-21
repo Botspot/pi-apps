@@ -274,5 +274,5 @@ fi
 if [ -s $HOME/.config/xmrig.json ];then
   status "\nSince your configuration is ready to use, you can run 'xmrig' in a terminal to start the miner.\nOtherwize, you can use command-line flags to specify Wallet Address, mining pool, and so forth.\nHave fun!"
 else
-  status "\nSince you don't have a configuration yet, you can either create one later at '$HOME/.config/xmrig.json', or run 'xmrig' with command-line flags specify Wallet Address, mining pool, and so forth.\nHave fun!"
+  status "\nSince you don't have a configuration yet, you can either create one later at '$HOME/.config/xmrig.json', or run 'xmrig' with command-line flags to specify Wallet Address, mining pool, and so forth.\nHave fun!"
 fi
