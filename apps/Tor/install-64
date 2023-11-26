@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=12.5.6
+version=13.0.3
 
 #if ~/tor-browser_en-US folder exists, prepare to import its user-data
 if [ -d ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser ];then
@@ -13,7 +13,7 @@ if [ -d ~/tor-browser/Browser/TorBrowser/Data/Browser ];then
 fi
 
 rm -f ~/tor.tar.xz
-wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-arm64-${version}_ALL.tar.xz/download || error "Failed to download!"
+wget -O ~/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-arm64-${version}.tar.xz/download || error "Failed to download!"
 tar -xf ~/tor.tar.xz || error "Failed to extract!"
 rm -f ~/tor.tar.xz
 
