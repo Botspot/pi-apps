@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v3.0.2
+version=v3.1.0
 
 mkdir -p /tmp/cascadia || error "Failed to create /tmp/cascadia folder!"
 wget -O /tmp/cascadia/CascadiaCode.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/${version}/CascadiaCode.zip" || error "Failed to download Caskaydia Cove NF!"
