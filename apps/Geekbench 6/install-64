@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=6.2.1
+version=6.2.2
 
 # https://github.com/raspberrypi/bookworm-feedback/issues/107
 PAGE_SIZE="$(getconf PAGE_SIZE)"
