@@ -7,5 +7,7 @@ rm -rf $HOME/AlephOneData
 #executable file
 sudo rm -rf /usr/local/bin/alephone /usr/local/share/AlephOne /usr/local/share/mime/packages/alephone.xml
 
+purge_packages || exit 1
+
 status_green "You just uninstalled the Aleph One app, but it's not completely gone yet.
 Save files and configs are in the $HOME/.alephone folder"
