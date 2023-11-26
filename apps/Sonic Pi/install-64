@@ -1,15 +1,13 @@
 #!/bin/bash
 
-version=4.4.0_1
+version=4.5.0_1
 
-#get version of glibc
-glibc_ver="$(ldd --version | head -n1 | awk '{print $NF}')" # example value: 2.30
-maj="$(awk -F. '{print $1}' <<<"$glibc_ver")"
-min="$(awk -F. '{print $2}' <<<"$glibc_ver")"
-
+#only use bookworm deb if glibc is 2.36 or greater
+if package_is_new_enough libc6 2.36 ;then
+  install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_bookworm.arm64.deb || exit 1
 #only use bullseye deb if glibc is 2.30 or greater
-if [ $maj -eq 2 ] && [ $min -ge 30 ] || [ $maj -gt 2 ];then
-  install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_bullseye.arm64.deb libconfig9 || exit 1
+elif package_is_new_enough libc6 2.30 ;then
+  install_packages https://sonic-pi.net/files/releases/v4.4.0/sonic-pi_4.4.0_1_bullseye.arm64.deb libconfig9 || exit 1
 else
-  error "User error: Sonic Pi is not available for 64-bit Debian Buster. Either switch to 32-bit Buster, or upgrade to 64-bit Bullseye."
+  error "User error: Sonic Pi is not available for older Debian/Ubuntu distros. Upgrade to a newer Debian/Ubuntu distribution."
 fi
