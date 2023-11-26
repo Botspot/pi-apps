@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v2.1.1
+version=v2.3
 
 echo -e "==============\n"
 echo " · More info: run "\""scrcpy --help"\"" or visit https://github.com/Genymobile/scrcpy"
@@ -32,9 +32,9 @@ cd /tmp
 git_clone https://github.com/Genymobile/scrcpy -b ${version} || error "Failed to download repo!"
 cd scrcpy
 
-# fixme: upstream v2.0 release does not build. upstream still has not fixed with a new release after a month
-wget https://github.com/Genymobile/scrcpy/commit/6b769675fa68e60c9765022e43c4d7b1e329353a.patch
-git apply 6b769675fa68e60c9765022e43c4d7b1e329353a.patch
+# fixme: upstream v2.3 release does not build. upstream has not made a new release but fixed in master
+wget https://github.com/Genymobile/scrcpy/commit/4135c411af419f4f86dc9ec9301c88012d616c49.patch
+git apply 4135c411af419f4f86dc9ec9301c88012d616c49.patch
 
 status "Downloading prebuilt scrcpy-server that gets pushed to the android device"
 wget https://github.com/Genymobile/scrcpy/releases/download/${version}/scrcpy-server-${version} -O scrcpy-server || error "Failed to download scrcpy-server prebuilt!"
