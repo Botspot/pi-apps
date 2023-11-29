@@ -2,27 +2,20 @@
 
 version=23.04
 
-# Get dependencies
-install_packages xterm python3-pil python3-pil.imagetk python3-pip python3-psutil python3-distro python3-bs4 python3-dev python3-requests mpg123 lolcat || exit 1
+# Check if ~/PiGro-Aid- exists. | 23.04 or earlier. New Dir is /opt/
+if [ -d ~/PiGro-Aid- ]; then
+    # Purge packages and exit with code 1 if unsuccessful
+    purge_packages || exit 1
+    
+    # Remove directory ~/PiGro-Aid-
+    rm -rf ~/PiGro-Aid-
+    
+    # Remove desktop file from Desktop and ~/.local/share/applications/
+    rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
+else
+    echo "Directory ~/PiGro-Aid- not found. No action taken."
+fi
 
-rm -rf ~/PiGro-Aid- || error "Failed to first remove ~/PiGro-Aid- folder!"
-git_clone https://github.com/actionschnitzel/PiGro-Aid- -b $version --depth=1 || error "Failed to clone repository!"
 
-cd PiGro-Aid- || error "Failed to enter directory!"
-chmod +x start.sh
 
-mkdir -p $HOME/Desktop $HOME/.local/share/applications
-echo "[Desktop Entry]
-Version=2.1
-Exec=$HOME/PiGro-Aid-/start.sh
-Name=PiGro
-GenericName=PiGro
-Encoding=UTF-8
-Terminal=false
-Type=Application
-Categories=System
-Icon=$HOME/PiGro-Aid-/images/icons/logo.png
-Path=$HOME/PiGro-Aid-/" > ~/Desktop/pigro.desktop
-
-chmod +x ~/Desktop/pigro.desktop
-cp ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
+install_packages https://github.com/actionschnitzel/PiGro-Aid-/releases/download/${version}/pigro-jci-${version}.deb || exit 1
