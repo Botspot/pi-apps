@@ -1,18 +1,7 @@
 #!/bin/bash
 
-# Check if ~/PiGro-Aid- exists (Github install method). New dir is /opt/ (.deb)
-if [ -d ~/PiGro-Aid- ]; then
-    # Purge packages and exit with code 1 if unsuccessful
-    purge_packages || exit 1
-    
-    # Remove directory ~/PiGro-Aid-
-    rm -rf ~/PiGro-Aid-
-    
-    # Remove desktop file from Desktop and ~/.local/share/applications/
-    rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
-elif [ -d /opt/PiGro-Aid- ]; then
-    # Purge packages and exit with code 1 if unsuccessful
-    purge_packages || exit 1
-else
-    echo "Directory ~/PiGro-Aid- or /opt/PiGro-Aid- not found. No action taken."
-fi
+purge_packages || exit 1
+
+# remove legacy folders/files if present
+rm -rf ~/PiGro-Aid-
+rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
