@@ -2,4 +2,8 @@
 
 version=23.04
 
+# remove legacy folders/files if present
+rm -rf ~/PiGro-Aid-
+rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
+
 install_packages https://github.com/actionschnitzel/PiGro-Aid-/releases/download/${version}/pigro-jci-${version}.deb || exit 1
