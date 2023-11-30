@@ -2,20 +2,4 @@
 
 version=23.04
 
-# Check if ~/PiGro-Aid- exists. | 23.04 or earlier. New Dir is /opt/
-if [ -d ~/PiGro-Aid- ]; then
-    # Purge packages and exit with code 1 if unsuccessful
-    purge_packages || exit 1
-    
-    # Remove directory ~/PiGro-Aid-
-    rm -rf ~/PiGro-Aid-
-    
-    # Remove desktop file from Desktop and ~/.local/share/applications/
-    rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
-else
-    echo "Directory ~/PiGro-Aid- not found. No action taken."
-fi
-
-
-
 install_packages https://github.com/actionschnitzel/PiGro-Aid-/releases/download/${version}/pigro-jci-${version}.deb || exit 1
