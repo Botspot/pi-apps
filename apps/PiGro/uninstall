@@ -1,7 +1,7 @@
 #!/bin/bash
 
 purge_packages || exit 1
+
+# remove legacy folders/files if present
 rm -rf ~/PiGro-Aid-
-
 rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
-
