@@ -16,6 +16,7 @@ echo "Removing these files:
   - ${folder}/site_dark_mode
   - ${folder}/ui_scale
   - ${folder}/tab_previews
+  - ${folder}/chromerefresh2023
   - ${folder}/apikeys
   - ${folder}/enable_sync
   - ${folder}/performance_improvements
@@ -26,6 +27,7 @@ sudo rm -f "${folder}/zzzz_combine_values" \
   "${folder}/site_dark_mode" \
   "${folder}/ui_scale" \
   "${folder}/tab_previews" \
+  "${folder}/chromerefresh2023" \
   "${folder}/apikeys" \
   "${folder}/enable_sync" \
   "${folder}/performance_improvements" \

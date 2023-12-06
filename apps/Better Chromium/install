@@ -61,7 +61,7 @@ if [ -d /snap/chromium ] || [ -d /var/lib/flatpak/app/org.chromium.Chromium ];th
       exit 1
     fi
   fi
-
+  
   #The ~/.chromium-browser.init file is the one single entrypoint for running scripts during a Snap Chromium's launch.
   #I encountered significant difficulty making this work. Normal Chromium-browser uses bash to source things, but Snap /snap/chromium/2003/bin/chromium.launcher is /bin/sh
   cat << "EOF" > $HOME/.chromium-browser.init
@@ -98,11 +98,11 @@ else
   google_sync=FALSE
 fi
 
-#detect if tab previews is currently enabled by this tool
-if [ -f "${folder}/tab_previews" ];then
-  tab_previews=TRUE
+#detect if chromerefresh2023 is currently enabled by this tool
+if [ -f "${folder}/chromerefresh2023" ];then
+  chromerefresh2023=TRUE
 else
-  tab_previews=FALSE
+  chromerefresh2023=FALSE
 fi
 
 #detect if various performance improvements are currently enabled by this tool
@@ -150,7 +150,7 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --field="Dark Mode for all websites":CHK "$site_dark_mode" \
   --field="<a href="\""https://chrome.google.com/webstore/search/neon%20kingdom%20-tabs?_category=themes"\"">Click to see more themes</a>:LBL" '' \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
-  --field="Tab previews":CHK "$tab_previews" \
+  --field="New UI 2023":CHK "$chromerefresh2023" \
   --field="Enable Google Sync":CHK "$google_sync" \
   --field="Performance Improvements":CHK "$performance_improvements" \
   --field="Reduce SD card writes":CHK "$reduce_writes" \
@@ -170,8 +170,8 @@ echo "site_dark_mode: $site_dark_mode"
 #skip line 3 because that was an empty field from "Click to see more themes" links
 ui_scale="$(sed -n 4p <<<"$output")"
 echo "ui_scale: $ui_scale"
-tab_previews="$(sed -n 5p <<<"$output")"
-echo "tab_previews: $tab_previews"
+chromerefresh2023="$(sed -n 5p <<<"$output")"
+echo "chromerefresh2023: $chromerefresh2023"
 google_sync="$(sed -n 6p <<<"$output")"
 echo "google_sync: $google_sync"
 performance_improvements="$(sed -n 7p <<<"$output")"
@@ -280,20 +280,20 @@ else
   sudo rm -f "${folder}/ui_scale"
 fi
 
-#Tab previews
-if [ "$tab_previews" == TRUE ];then
+#New 2023 chrome UI
+if [ "$chromerefresh2023" == TRUE ];then
   #I found this flag after experimenting with chrome://flags and chrome://version
-  echo "Adding --enable-features=TabHoverCardImages to ${folder}/tab_previews"
+  echo "Adding --enable-features=ChromeRefresh2023 to ${folder}/chromerefresh2023"
   
-  cat << EOF | sudo tee "${folder}/tab_previews" >/dev/null
-export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=TabHoverCardImages"
+  cat << EOF | sudo tee "${folder}/chromerefresh2023" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ChromeRefresh2023"
 EOF
 else
-  #tab previews set to false - so remove the file
-  if [ -f "${folder}/tab_previews" ];then
-    status "Removing ${folder}/tab_previews"
+  #chromerefresh2023 set to false - so remove the file
+  if [ -f "${folder}/chromerefresh2023" ];then
+    status "Removing ${folder}/chromerefresh2023"
   fi
-  sudo rm -f "${folder}/tab_previews"
+  sudo rm -f "${folder}/chromerefresh2023"
 fi
 
 #google_sync
