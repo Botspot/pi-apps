@@ -24,8 +24,17 @@ if package_installed steamlink ; then
   sudo apt purge -y steamlink
 fi
 
+#prevent lxterm dependency from becoming default terminal
+default_terminal="$(readlink -f /usr/bin/x-terminal-emulator)"
+
 echo "Installing steam_latest.deb"
 install_packages https://repo.steampowered.com/steam/archive/stable/steam_latest.deb || exit 1
+
+#check if terminal choice was changed after steam was installed
+if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
+  #restore previous choice
+  sudo update-alternatives --set x-terminal-emulator "$default_terminal"
+fi
 
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
@@ -46,9 +55,7 @@ sudo chmod +x /usr/local/bin/steam
 sudo cp /usr/share/applications/steam.desktop /usr/local/share/applications/steam.desktop
 sudo sed -i 's:Exec=/usr/bin/steam:Exec=/usr/local/bin/steam:' /usr/local/share/applications/steam.desktop
 
-# remove deb
-rm /tmp/steam.deb
-rm -f /home/${USER}/Desktop/steam.desktop
+rm -f $HOME/Desktop/steam.desktop
 
 if ! echo "$XDG_DATA_DIRS" | grep -q "/usr/local/share" || ! echo "$PATH" | grep -q "/usr/local/bin" ; then
   warning "YOU NEED TO REBOOT before starting steam. This is because Steam is the first application on your system to be installed into the /usr/local folder."
