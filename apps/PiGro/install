@@ -6,4 +6,13 @@ version=23.04
 rm -rf ~/PiGro-Aid-
 rm -f ~/Desktop/pigro.desktop ~/.local/share/applications/pigro.desktop
 
+#prevent lxterm dependency from becoming default terminal
+default_terminal="$(readlink -f /usr/bin/x-terminal-emulator)"
+
 install_packages https://github.com/actionschnitzel/PiGro-Aid-/releases/download/${version}/pigro-jci-${version}.deb || exit 1
+
+#check if terminal choice was changed after pigro was installed
+if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
+  #restore previous choice
+  sudo update-alternatives --set x-terminal-emulator "$default_terminal"
+fi
