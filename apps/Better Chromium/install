@@ -126,7 +126,7 @@ else
   widevine=FALSE
 fi
 #detect if Widevine can be enabled
-if package_available libwidevinecdm0;then
+if package_available libwidevinecdm0 && package_installed chromium-browser;then
   widevine_possible=TRUE
   widevine_message=(--field="Enable Widevine DRM (for Netflix, Spotify)":CHK "$widevine")
 else
