@@ -214,22 +214,22 @@ enable=''
 disable=''
 new_flags=''
 for word in $CHROMIUM_FLAGS ;do
-  if [[ "$word" == '--enable-features='* ]];then
-    enable+=",${word/--enable-features=/}"
-  elif [[ "$word" == '--disable-features='* ]];then
-    enable+=",${word/--disable-features=/}"
+  if echo "$word" | grep -q '^--enable-features=' ;then
+    enable="${enable},$(echo "$word" | sed 's/^--enable-features=//g')"
+  elif echo "$word" | grep -q '^--disable-features=' ;then
+    disable="${disable},$(echo "$word" | sed 's/^--disable-features=//g')"
   else
-    new_flags+=" $word"
+    new_flags="$new_flags $word"
   fi
 done
 
 #remove initial comma
-enable="${enable/,/}"
-disable="${disable/,/}"
+enable="$(echo "$enable" | sed 's/^,//g')"
+disable="$(echo "$disable" | sed 's/^,//g')"
 
 CHROMIUM_FLAGS="$new_flags"
-[ ! -z "$enable" ] && CHROMIUM_FLAGS+=" --enable-features=$enable"
-[ ! -z "$disable" ] && CHROMIUM_FLAGS+=" --disable-features=$disable"
+[ ! -z "$enable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --enable-features=$enable"
+[ ! -z "$disable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --disable-features=$disable"
 EOF
 
 #dark mode
@@ -313,8 +313,7 @@ EOF
 #!/bin/bash
 
 profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
-IFS=$'\n'
-for profile in $profiles ;do
+echo "$profiles" | while read -r profile ;do
   [ ! -f "$HOME/.config/chromium/$profile/Preferences" ] && continue
   sed -i 's/"signin":{"allowed":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
   sed -i 's/"signin":{"allowed":false,"allowed_on_next_startup":false}/"signin":{"allowed":true,"allowed_on_next_startup":true}/g' "$HOME/.config/chromium/$profile/Preferences"
@@ -381,8 +380,7 @@ else
   mkdir -p /dev/shm/chromium
   
   profiles="$(find "$HOME/.config/chromium/" -maxdepth 1 -type d '(' -name Default -o -name 'Profile *' ')' | sed 's+.*/++g')"
-  IFS=$'\n'
-  for profile in $profiles ;do
+  echo "$profiles" | while read -r profile ;do
   
     rm -rf "$HOME/.config/chromium/$profile/Service Worker"
     mkdir -p "/dev/shm/chromium/$profile/serviceWorker"
