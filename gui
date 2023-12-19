@@ -6,7 +6,7 @@ error() { #red text and exit 1
 }
 
 if ! command -v yad &>/dev/null; then
-  error "YAD needs to be installed to run Pi-Apps."
+  error "YAD needs to be installed to run Pi-Apps. Most likely you did not install Pi-Apps correctly. Please run the install script."
 fi
 
 if [[ $(id -u) == 0 ]]; then
