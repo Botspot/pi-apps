@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=6.16
+version=6.17
 version2=0.07
 install_packages clamav https://github.com/dave-theunsub/clamtk/releases/download/v${version}/clamtk_${version}-1_all.deb || exit 1
 
