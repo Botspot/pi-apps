@@ -134,11 +134,11 @@ jobs:
             cache: yes
           - os: bookworm
             arch: armhf
-            image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2023-10-10/2023-10-10-raspios-bookworm-armhf.img.xz
+            image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2023-12-06/2023-12-05-raspios-bookworm-armhf.img.xz
             cache: yes
           - os: bookworm
             arch: arm64
-            image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-10-10/2023-10-10-raspios-bookworm-arm64.img.xz
+            image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-12-06/2023-12-05-raspios-bookworm-arm64.img.xz
             cache: yes
     name: Testing on ${{ matrix.os }} - ${{ matrix.arch }}
     outputs:
