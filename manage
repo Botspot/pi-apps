@@ -195,25 +195,36 @@ if [ -z "$current_git_date" ] || [ "$current_local_date" -gt $(($current_git_dat
     yadpid=$!
     
     clear
-    echo -e "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
+    status "\nYour Pi-Apps installation is somehow 3 months out-of-date.\nReinstalling Pi-Apps and saving the old version to ${DIRECTORY}-3-months-old...\n\n" 1>&2
     cd $HOME
     rm -rf ~/pi-apps-forced-update
     command -v git >/dev/null || sudo apt install -y git
-    git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 && \
-    cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update && \
-    cp -af "${DIRECTORY}/apps" ~/pi-apps-forced-update && \
-    mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" && \
-    mv -f ~/pi-apps-forced-update "$DIRECTORY"
-    sleep 10
-    
-    kill $yadpid 2>/dev/null
-    
-    #run new manage script in background
-    "${DIRECTORY}/manage" "$@"
-    
-    #run updater to update apps
-    "${DIRECTORY}/updater" gui
-    exit $?
+    if git clone "$(cat "${DIRECTORY}/etc/git_url")" pi-apps-forced-update 1>&2 ;then
+      cp -af "${DIRECTORY}/data" ~/pi-apps-forced-update
+      cp -af "${DIRECTORY}/apps" ~/pi-apps-forced-update
+      mv -f "$DIRECTORY" "${DIRECTORY}-3-months-old" || rm -rf "$DIRECTORY" #if backup of pi-apps folder already exists, delete this one so the new one can be copied in place.
+      mv -f ~/pi-apps-forced-update "$DIRECTORY"
+      sleep 10
+      
+      kill $yadpid 2>/dev/null
+      #run new manage script in background
+      "${DIRECTORY}/manage" "$@"
+      
+      #run updater to update apps
+      "${DIRECTORY}/updater" gui
+      exit $?
+    else
+      #download of pi-apps repo failed, so run manage script normally with a warning
+      sleep 5
+      kill $yadpid 2>/dev/null
+      yad --class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --width=500 --no-buttons --center --title="Auto-updating Pi-Apps" \
+        --text="FAILED to download fresh Pi-Apps repo."$'\n'"Proceeding with the old version." &
+      yadpid=$!
+      
+      warning "FAILED to download fresh Pi-Apps repo."$'\n'"Proceeding with the old version."
+      sleep 10
+      kill $yadpid 2>/dev/null
+    fi
   fi
 fi
 }
