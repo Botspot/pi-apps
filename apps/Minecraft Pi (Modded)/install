@@ -24,7 +24,7 @@ if [[ "$PAGE_SIZE" == "16384" ]]; then
 fi
 
 # Version
-version=2.5.2
+version=2.5.3
 
 # Install
 if [ "${arch}" = "64" ]; then
