@@ -758,7 +758,7 @@ pipx_install() {
     install_packages python3.8 python3.8-venv || exit 1
     sudo -H python3.8 -m pip install --upgrade pipx || exit 1
   else
-    error "pipx is not available so cannot install powerline-shell to python venv"
+    error "pipx is not available on your distro and so cannot install $* to python venv"
   fi
   sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "$@" || error "Failed to install $* with pipx"
 }
