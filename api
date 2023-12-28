@@ -744,11 +744,14 @@ adoptium_installer() {
 
 pipx_install() {
   # install pipx keeping in mind distro issues
-  # pipx <= 0.16.1 is compatible with 3.7 <= python3 < 3.9
-  # pipx >= 0.16.1 is compatible with python3 >= 3.7
+  # pipx < 0.16.0 is compatible with 3.6 <= python3 < 3.9
+  # 0.16.0 <= pipx < 1.1.0 is compatible with python3 >= 3.6
+  # 1.1.0 <= pipx < 1.3.0 is compatible with python3 >= 3.7
+  # pipx >= 1.3.0 is compatible with python3 >= 3.8
   # some distros lack pipx entirely
   # some distros (raspbian bullseye specifically) have incompatible combinations of pipx (0.12.3) and python3 (3.9) versions, necessitating pipx to be installed/upgraded from pip
   # pipx 1.0.0 is the first stable release and has some features that we would like to assume are available, install it from pip if the distro package is too old
+  # pi-apps scripts and functions should assume that ONLY a minimum pipx version of 1.0.0 is available
   if package_available pipx && package_is_new_enough pipx 1.0.0 ;then
     install_packages pipx python3-venv || exit 1
   elif package_is_new_enough python3 3.7 ; then
