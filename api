@@ -706,18 +706,14 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
 adoptium_installer() {
   status "Adding Adoptium repository:"
 
-  echo "- public key -> keyring"
-  rm -f /tmp/adoptium-public-key /tmp/adoptium-archive-keyring.gpg
-  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --import /tmp/adoptium-public-key
+  echo "- downloading public key"
   rm -f /tmp/adoptium-public-key
+  wget -O /tmp/adoptium-public-key https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public || error "Failed to download adoptium public key"
 
-  echo " - keyring -> GPG key"
-  gpg --no-default-keyring --keyring /tmp/adoptium-keyring.gpg --export --output /tmp/adoptium-archive-keyring.gpg
-  rm -f /tmp/adoptium-keyring.gpg
-
-  echo " - Moving GPG key to /usr/share/keyrings"
-  sudo mv -f /tmp/adoptium-archive-keyring.gpg /usr/share/keyrings
+  echo " - storing binary format public key in /usr/share/keyrings"
+  # the dearmor command converts arbitrary input (OpenPGP ASCII armor or binary format) into binary format
+  cat /tmp/adoptium-public-key | gpg --dearmor | sudo tee /usr/share/keyrings/adoptium-archive-keyring.gpg >/dev/null
+  rm -f /tmp/adoptium-public-key
 
   echo " - Creating /etc/apt/sources.list.d/adoptium.list"
   case "$__os_codename" in
