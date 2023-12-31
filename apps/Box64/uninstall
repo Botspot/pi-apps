@@ -1,6 +1,7 @@
 #!/bin/bash
 purge_packages || exit 1
 
-sudo rm -f /etc/apt/sources.list.d/box64.list || error "Failed to remove repo!"
+# remove deprecated key locations
+sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg
 
-sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg || error "Failed to remove GPG key!"
+rm_external_repo "box64"

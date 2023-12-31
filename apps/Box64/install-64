@@ -4,19 +4,12 @@ if dpkg -l box64 &>/dev/null ;then
   sudo apt purge -y --allow-change-held-packages box64*
 fi
 
-sudo wget https://pi-apps-coders.github.io/box64-debs/box64.list -O /etc/apt/sources.list.d/box64.list
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/box64.list
-  error "Failed to add box64.list file!"
-fi
+add_external_repo "box64" "https://Pi-Apps-Coders.github.io/box64-debs/debian ./" "https://pi-apps-coders.github.io/box64-debs/KEY.gpg" || exit 1
 
-sudo rm -f /usr/share/keyrings/box64-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg
-sudo mkdir -p /etc/apt/trusted.gpg.d
-wget -qO- https://pi-apps-coders.github.io/box64-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg > /dev/null
-
-if [ $? != 0 ];then
-  sudo rm -f /etc/apt/sources.list.d/box64.list
-  error "Failed to add KEY.gpg to APT keyring!"
+apt_update
+if [ $? != 0 ]; then
+  rm_external_repo "box64"
+  error "Failed to perform apt update after adding box64 repository."
 fi
 
 # obtain SOC_ID
