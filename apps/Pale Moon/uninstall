@@ -1,4 +1,8 @@
 #!/bin/bash
 
 purge_packages || exit 1
-remove_repofile_if_unused /etc/apt/sources.list.d/home:stevenpusser.list
+
+#remove deprecated files
+sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
+
+rm_external_repo "stevenpusser"

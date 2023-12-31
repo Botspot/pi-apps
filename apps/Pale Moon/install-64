@@ -1,10 +1,14 @@
 #!/bin/bash
-echo 'deb http://download.opensuse.org/repositories/home:/stevenpusser/Debian_10/ /' | sudo tee /etc/apt/sources.list.d/home:stevenpusser.list >/dev/null
-curl -fsSL https://download.opensuse.org/repositories/home:stevenpusser/Debian_10/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_stevenpusser.gpg >/dev/null
 
-(install_packages palemoon)
-if [ $? != 0 ];then
-  #if package-installation failed, remove repository to avoid breaking apt updates
-  sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
-  exit 1
+#remove deprecated files
+sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
+
+add_external_repo "stevenpusser" "http://download.opensuse.org/repositories/home:/stevenpusser/Debian_10/ /" "https://download.opensuse.org/repositories/home:stevenpusser/Debian_10/Release.key" || exit 1
+
+apt_update
+if [ $? != 0 ]; then
+  rm_external_repo "stevenpusser"
+  error "Failed to perform apt update after adding stevenpusser repository."
 fi
+
+install_packages palemoon || exit 1
