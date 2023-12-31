@@ -16,7 +16,7 @@ if [[ "$1" != "update" ]];then
     sudo systemctl daemon-reload
     
     purge_packages || error "Dependencies failed to uninstall"
-    remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+    rm_external_repo "adoptium"
     remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list
 else
     echo "Uninstall skipped because run from the updater"
