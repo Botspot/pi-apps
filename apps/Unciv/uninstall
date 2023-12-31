@@ -6,7 +6,7 @@ if [[ "$1" != "update" ]]; then
 
   purge_packages || exit 1
 
-  remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+  rm_external_repo "adoptium"
 else
   echo "Uninstall skipped because run from the updater"
 fi

@@ -2,7 +2,7 @@
 
 purge_packages || exit 1
 
-remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+rm_external_repo "adoptium"
 
 echo "Deleting /opt/pycharm-community directory"
 sudo rm -rf /opt/pycharm-community || error "Failed to delete /opt/pycharm-community directory"

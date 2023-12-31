@@ -1,6 +1,6 @@
 #!/bin/bash
 purge_packages || exit 1
-remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+rm_external_repo "adoptium"
 
 sudo rm -rf /opt/xdman || error "Failed to remove /opt/xdman/ directpry!"
 sudo rm -f /usr/share/applications/xdman.desktop || error "Failed to remove menu shortcut!"

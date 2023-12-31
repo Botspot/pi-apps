@@ -2,7 +2,7 @@
 
 purge_packages || exit 1
 
-remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+rm_external_repo "adoptium"
   
 sudo rm -rf /opt/ideaIC /usr/share/applications/intellijidea.desktop
 # cleanup files leftover from potential failed install
