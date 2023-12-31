@@ -9,9 +9,10 @@ function check-armhf() {
 
 purge_packages || exit 1
 
-sudo rm -f /etc/apt/sources.list.d/box86.list || error "Failed to remove repo!"
+# remove deprecated key locations
+sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg
 
-sudo rm -f /usr/share/keyrings/box86-debs-archive-keyring.gpg /etc/apt/trusted.gpg.d/box86-debs-archive-keyring.gpg || error "Failed to remove GPG key!"
+rm_external_repo "box86"
 
 if [ "$arch" == 64 ]; then
   # remove armhf architecture if no packages from it are currently installed
