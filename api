@@ -207,10 +207,16 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
   #return now if the list file does not exist
   [ -f "$file" ] || return 0
-  
-  #determine what repo-urls are in the file
-  local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
-  
+
+  if [ "${file##*.}" == "list" ]; then
+    #determine what repo-urls are in the file
+    local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
+  elif [ "${file##*.}" == "sources" ]; then
+    #determine what repo-urls are in the file
+    local urls="$(cat "$file" | grep -v '^#' | grep '^URIs: ' | sed 's/URIs: //g')"
+  else
+    error "$file was not of apt list or sources type"
+  fi
   #there could be multiple urls in one file. Check each url and set the in_use variable to 1 if any packages are found
   local IFS=$'\n'
   local in_use=0
@@ -225,7 +231,7 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   if [ "$in_use" == 0 ] && [ "$testmode" == test ];then
     echo "The given repository is not in use and can be deleted:"$'\n'"$file" 1>&2
   elif [ "$in_use" == 0 ];then
-    status "Removing the $(basename "$file" | sed 's/.list$//g') repo as it is not being used"
+    status "Removing the $(basename "$file" | sed 's/.list$//g' | sed 's/.sources$//g') repo as it is not being used"
     sudo rm -f "$file"
     [ -f "$key" ] && sudo rm -f "$key" || true
   fi
@@ -704,19 +710,25 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
 }
 
 add_external_repo() { # add an external apt repo and its gpg key.
-  # follows https://wiki.debian.org/DebianRepository/UseThirdParty specification with one-line-style format https://repolib.readthedocs.io/en/latest/deb822-format.html#one-line-format
+  # follows https://wiki.debian.org/DebianRepository/UseThirdParty specification with deb822 format https://repolib.readthedocs.io/en/latest/deb822-format.html
+  # required inputs
   local reponame="$1"
-  # "URI SUITE COMPONENT"
-  local repopath="$2"
-  local pubkeyurl="$3"
+  local pubkeyurl="$2"
+  local uris="$3"
+  local suites="$4"
+  # potentially optional inputs
+  # components is not used when suite is an absolute path
+  local components="$5"
+  # additional options can be specified as the 6th, 7th, 8th, etc argument (eg: "Architectures: arm64")
 
-  # check if all needed vars are set
-  [ -z "$repopath" ] && error "add_external_repo: repopath not set"
+  # check if all needed vars are set  
   [ -z "$reponame" ] && error "add_external_repo: reponame not set"
+  [ -z "$uris" ] && error "add_external_repo: uris not set"
+  [ -z "$suites" ] && error "add_external_repo: suites not set"
   [ -z "$pubkeyurl" ] && error "add_external_repo: pubkeyurl not set"
 
-  # exit if reponame contains space, since apt doesn't accept .list files with spaces in filename or keyname.
-  if [[ $reponame = *" "* ]]; then
+  # exit if reponame or uri or suite contains space
+  if [[ $reponame = *" "* ]] || [[ $uris = *" "* ]] || [[ $suites = *" "* ]]; then
     error "add_external_repo: provided reponame contains a space."
   fi
 
@@ -733,6 +745,11 @@ add_external_repo() { # add an external apt repo and its gpg key.
     sudo rm -f /etc/apt/sources.list.d/${reponame}.list || error "add_external_repo: failed to remove conflicting .list file."
   fi
 
+  # check if .sources file already exists
+  if [ -f /etc/apt/sources.list.d/${reponame}.sources ]; then
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.sources || error "add_external_repo: failed to remove conflicting .sources file."
+  fi
+
   # download gpg key from specified url
   if [ -f /usr/share/keyrings/${reponame}-archive-keyring.gpg ]; then
     sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
@@ -740,16 +757,25 @@ add_external_repo() { # add an external apt repo and its gpg key.
   wget -qO- "$pubkeyurl" | sudo gpg --dearmor -o /usr/share/keyrings/${reponame}-archive-keyring.gpg
 
   if [ $? != 0 ];then
-    sudo rm -f /etc/apt/sources.list.d/${reponame}.list
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.sources
     sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
     error "add_external_repo: download from specified pubkeyurl failed."
   fi
 
-  # create .list file
-  echo "deb [signed-by=/usr/share/keyrings/${reponame}-archive-keyring.gpg] $repopath" | sudo tee /etc/apt/sources.list.d/${reponame}.list >/dev/null
+  # create .sources file
+  echo "Types: deb
+URIs: $uris
+Suites: $suites" | sudo tee /etc/apt/sources.list.d/${reponame}.sources >/dev/null
+  if [ ! -z "$components" ]; then
+    echo "Components: $components" | sudo tee -a /etc/apt/sources.list.d/${reponame}.sources >/dev/null
+  fi
+  for input in "${@: 6}"; do
+    echo "$input" | sudo tee -a /etc/apt/sources.list.d/${reponame}.sources >/dev/null
+  done
+  echo "Signed-By: /usr/share/keyrings/${reponame}-archive-keyring.gpg" | sudo tee -a /etc/apt/sources.list.d/${reponame}.sources >/dev/null
 
   if [ $? != 0 ];then
-    sudo rm -f /etc/apt/sources.list.d/${reponame}.list
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.sources
     sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg
     error "add_external_repo: failed to create ${reponame}.list file"
   fi
@@ -767,27 +793,32 @@ rm_external_repo() { # remove an external apt repo and its gpg key, if the repo 
     error "rm_external_repo: provided reponame contains a space."
   fi
 
-  # exit gracefully if .list file does not exist
-  [ -f "/etc/apt/sources.list.d/$reponame.list" ] || exit 0
+  # always remove deprecated .list file if present
+  if [ -f /etc/apt/sources.list.d/${reponame}.list ]; then
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.list
+  fi
+
+  # exit gracefully if .sources file does not exist
+  [ -f "/etc/apt/sources.list.d/$reponame.sources" ] || exit 0
   
   if [ "$force" == force ]; then
     rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg || error "rm_external_repo: removal of ${reponame}-archive-keyring.gpg failed"
-    sudo rm -f /etc/apt/sources.list.d/${reponame}.list || error "rm_external_repo: removal of ${reponame}.list failed"
+    sudo rm -f /etc/apt/sources.list.d/${reponame}.sources || error "rm_external_repo: removal of ${reponame}.sources failed"
     exit 0
   fi
 
-  remove_repofile_if_unused /etc/apt/sources.list.d/${reponame}.list "" /usr/share/keyrings/${reponame}-archive-keyring.gpg
+  remove_repofile_if_unused /etc/apt/sources.list.d/${reponame}.sources "" /usr/share/keyrings/${reponame}-archive-keyring.gpg
 }
 
 adoptium_installer() {
   case "$__os_codename" in
   bionic | focal | jammy | buster | bullseye | bookworm)
-    add_external_repo "adoptium" "https://adoptium.jfrog.io/artifactory/deb $__os_codename main" "https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public" || exit 1
+    add_external_repo "adoptium" "https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public" "https://adoptium.jfrog.io/artifactory/deb" "$__os_codename" "main" || exit 1
     ;;
   *)
     # use bionic target name explicitly for any other OS as its the oldest LTS target adoptium continues to support
     # all supported adoptium OSs use the same debs so the target specified does not actually matter
-    add_external_repo "adoptium" "https://adoptium.jfrog.io/artifactory/deb bionic main" "https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public" || exit 1
+    add_external_repo "adoptium" "https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public" "https://adoptium.jfrog.io/artifactory/deb" "bionic" "main" || exit 1
     ;;
   esac
   apt_update

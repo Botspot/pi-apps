@@ -3,7 +3,7 @@
 #remove deprecated files
 sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
 
-add_external_repo "stevenpusser" "http://download.opensuse.org/repositories/home:/stevenpusser/Debian_10/ /" "https://download.opensuse.org/repositories/home:stevenpusser/Debian_10/Release.key" || exit 1
+add_external_repo "stevenpusser" "https://download.opensuse.org/repositories/home:stevenpusser/Debian_10/Release.key" "http://download.opensuse.org/repositories/home:/stevenpusser/Debian_10/" "/" || exit 1
 
 apt_update
 if [ $? != 0 ]; then
