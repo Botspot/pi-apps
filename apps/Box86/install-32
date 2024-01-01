@@ -9,7 +9,7 @@ if dpkg -l box86 &>/dev/null ;then
   sudo apt purge -y --allow-change-held-packages box86*
 fi
 
-add_external_repo "box86" "https://Pi-Apps-Coders.github.io/box86-debs/debian ./" "https://pi-apps-coders.github.io/box86-debs/KEY.gpg" || exit 1
+add_external_repo "box86" "https://pi-apps-coders.github.io/box86-debs/KEY.gpg" "https://Pi-Apps-Coders.github.io/box86-debs/debian" "./" || exit 1
 
 apt_update
 if [ $? != 0 ]; then
