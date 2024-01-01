@@ -90,6 +90,7 @@ You can install Pale Moon from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Minecraft Java MultiMC5" "" "Due to upstream changes, MultiMC5 for ARM can no longer support any newer versions of Mincraft so it has been removed from Pi-Apps.
 All users are encouraged to install Prism Launcher from Pi-Apps (a MultiMC fork with many improvements and new features)."
   remove_deprecated_app "Chromium Widevine" "" "Use the Better Chromium app to handle enabling/disabling of Widevine in Chromium."
+  remove_deprecated_app "Temps" "" "This application has been abandoned by its developers and is not compatible and unsafe to use on modern Linux distros."
 EOF
   ;;
 esac
