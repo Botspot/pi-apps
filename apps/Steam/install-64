@@ -9,8 +9,10 @@
 install_packages libnss3:armhf libnm0:armhf libdbus-glib-1-2:armhf libnspr4:armhf libgudev-1.0-0:armhf libxtst6:armhf libsm6:armhf libice6:armhf libusb-1.0-0:armhf libnss3 libnm0 libdbus-glib-1-2 libudev1 libnspr4 libgudev-1.0-0 libxtst6 libsm6 libice6 libusb-1.0-0 || exit 1
 
 # perform an apt upgrade to make sure the latest version of box64 and box86 are installed
+echo "Upgrading Box86 and Box64 if necessary:"
+apt_update
 apt_lock_wait
-sudo apt upgrade -y || exit 1
+sudo apt install --only-upgrade box86-* box64-* -y
 
 if package_installed steam-devices ; then
   echo "Removing steam-devices package because it conflicts with steam-launcher..."
