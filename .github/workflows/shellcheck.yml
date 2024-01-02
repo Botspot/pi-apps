@@ -3,8 +3,42 @@ on:
   pull_request_target:
     branches:
       - master
+    paths:
+      - api
+      - createapp
+      - gui
+      - install
+      - manage
+      - preload
+      - settings
+      - uninstall
+      - updater
+      - etc/preload-daemon
+      - etc/runonce-entries
+      - etc/terminal-run 
+      - apps/*/install
+      - apps/*/install-32
+      - apps/*/install-64
+      - apps/*/uninstall
   push:
     branches: '**'
+    paths:
+      - api
+      - createapp
+      - gui
+      - install
+      - manage
+      - preload
+      - settings
+      - uninstall
+      - updater
+      - etc/preload-daemon
+      - etc/runonce-entries
+      - etc/terminal-run 
+      - apps/*/install
+      - apps/*/install-32
+      - apps/*/install-64
+      - apps/*/uninstall
   workflow_dispatch:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
