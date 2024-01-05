@@ -194,6 +194,7 @@ echo
 $(declare -f error)
 $(declare -f status)
 $(declare -f warning)
+$(declare -f userinput_func)
 
 if [ "\$(id -u)" == 0 ];then
   error "Please don't run this script with sudo."
@@ -214,7 +215,14 @@ if [ -e "\$HOME/.wine" ];then
   # Boot wine and check for errors (make fresh wineprefix)
   output="\$(set -o pipefail; wine wineboot 2>&1 | tee /dev/stderr; )" #this won't display any dialog boxes that require a button to be clicked
   if [ "\$?" != 0 ]; then
-    warning "Your previously existing Wine prefix failed with an error (see above). It has been removed and will be re-generated."
+    text="Your previously existing Wine prefix failed with an error (see terminal log).
+
+Would you like to remove and regeneral your Wine prefix? Doing so will delete everything you may have installed into your Wine prefix."
+    userinput_func "\$text" "No, keep broken Wine prefix and Exit" "Yes, delete and regenerate Wine prefix"
+    if [ "\$output" == "No, keep broken Wine prefix and Exit" ]; then
+      error "User error: Your current Wine prefix caused Wine to error on launch and you chose to keep it. Manually correct your Wine prefix before installing or updating Wine (x64)."
+    fi
+    warning "Your previously existing Wine prefix failed with an error (see above). You chose to remove it and so it will be re-generated."
     rm -rf "\$HOME/.wine"
     wine wineboot #this won't display any dialog boxes that require a button to be clicked
   fi
@@ -430,9 +438,10 @@ sleep 2
 while [ ! -z "\$(pgrep -i 'wine C:')" ];do
   sleep 1
 done
+true
 EOF
 
 sudo chmod +x /usr/local/bin/generate-wine-prefix
-/usr/local/bin/generate-wine-prefix
+/usr/local/bin/generate-wine-prefix || exit 1
 
 exit 0
