@@ -2,28 +2,45 @@
 
 #get java
 adoptium_installer || exit 1
-install_packages temurin-11-jdk || exit 1
+install_packages temurin-11-jdk libxt-dev || exit 1
 
-rm -rf ~/jgrasp.zip ~/jgrasp
+# remove deprecated files
+sudo rm -rf "$HOME/.local/share/applications/jgrasp.desktop" /usr/share/applications/jgrasp.desktop ~/jgrasp.zip ~/jgrasp
 
-wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_10.zip' -O ~/jgrasp.zip || error "Failed to download jgrasp.zip!"
-unzip ~/jgrasp.zip || error "Failed to extract jgrasp.zip!"
-rm -f ~/jgrasp.zip
+# create required directories
+sudo mkdir -p /usr/local/bin/ /usr/local/share/applications/ /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
 
-echo "Running jgrasp's configure script..."
-~/jgrasp/src/configure || error "jgrasp's configure script failed!"
+# remove previous installation files
+sudo rm -rf /tmp/jgrasp.zip /usr/local/bin/jgrasp /usr/local/share/jgrasp
 
+wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_12.zip' -O /tmp/jgrasp.zip || error "Failed to download jgrasp.zip!"
+sudo unzip /tmp/jgrasp.zip -d /usr/local/share/ || error "Failed to extract jgrasp.zip!"
+rm -f /tmp/jgrasp.zip
+
+status "Running jgrasp's configure and make scripts..."
+cd /usr/local/share/jgrasp/src || error "Could not move to jgrasp directory!"
+sudo ./configure || error "jgrasp's configure script failed!"
+sudo ./Make.sh || error "jgrasp's make script failed!"
+
+status "Creating jgrasp binary link and icons"
+cd /usr/local/bin || error "Could not move to /usr/local/bin directory"
+sudo ln -s ../share/jgrasp/bin/jgrasp jgrasp || error "Could not create jgrasp binary link"
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/jgrasp.png || error "Failed to install jgrasp icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/jgrasp.png || error "Failed to install jgrasp icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+status "Creating menu button..."
 echo "[Desktop Entry]
 Encoding=UTF-8
 Version=1.0
 Name=jGRASP
 GenericName=IDE
-Exec=$HOME/jgrasp/bin/jgrasp %F
+Exec=jgrasp %F
 Terminal=false
-Icon=$(dirname "$0")/icon-64.png
+Icon=jgrasp
 Type=Application
 Categories=Application;Development;IDE;
 Comment=jGRASP IDE
 StartupNotify=true
-Keywords=Text;Editor;" > "$([ -e "$HOME/.local/share/applications" ] && echo "$HOME/.local/share/applications" || echo /usr/share/applications)/jgrasp.desktop"
-
+Keywords=Text;Editor;" | sudo tee /usr/local/share/applications/jgrasp.desktop >/dev/null || error "Failed to create menu shortcut!"

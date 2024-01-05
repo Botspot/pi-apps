@@ -1,6 +1,5 @@
 #!/bin/bash
-rm -rf ~/jgrasp.zip ~/jgrasp
-
+sudo rm -rf ~/jgrasp.zip ~/jgrasp /tmp/jgrasp.zip /usr/local/bin/jgrasp /usr/local/share/jgrasp /usr/local/share/icons/hicolor/64x64/apps/jgrasp.png /usr/local/share/icons/hicolor/24x24/apps/jgrasp.png /usr/local/share/applications/jgrasp.desktop
 
 purge_packages || exit 1
 rm_external_repo "adoptium"
