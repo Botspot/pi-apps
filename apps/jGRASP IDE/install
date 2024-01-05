@@ -2,7 +2,7 @@
 
 #get java
 adoptium_installer || exit 1
-install_packages temurin-11-jdk libxt-dev || exit 1
+install_packages temurin-11-jdk libxt-dev build-essential || exit 1
 
 # remove deprecated files
 sudo rm -rf "$HOME/.local/share/applications/jgrasp.desktop" /usr/share/applications/jgrasp.desktop ~/jgrasp.zip ~/jgrasp
