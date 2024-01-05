@@ -22,6 +22,21 @@ fi
 set -a #make all functions in the api available to apps
 source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
 
+#run is_supported_system once mostly to check for unsupported ubuntu/debian distros and warn the user with a blocking GUI popup
+runonce <<"EOF"
+  if ! is_supported_system >/dev/null;then
+    text="YOUR SYSTEM IS UNSUPPORTED:
+$(is_supported_system)
+
+Pi-Apps will disable the sending of any error reports until you have resolved the issue above.
+Your mileage may vary with using Pi-Apps in this state. Expect the majority of apps to be broken."
+
+    yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps")
+    userinput_func "$text" "Ok"
+  fi
+  true
+EOF
+
 validate_apps_gui() { #Given a list of actions and apps, graphically notify the user if there is a problem or ask for confirmation. Result is sent to stdout.
   #action and app are separated by semicolon. (;)
   #example line of input on $1: "install;Zoom"
