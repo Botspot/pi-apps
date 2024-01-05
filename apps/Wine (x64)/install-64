@@ -58,7 +58,7 @@ rm -f /tmp/wine-${version}.tar.gz
 sudo sed -i 's/winemenubuilder.exe -a -r/winemenubuilder.exe -r/' /opt/wine-${version}/share/wine/wine.inf #See: https://askubuntu.com/a/400430
 
 #download winetricks
-wget -O /tmp/winetricks "https://raw.githubusercontent.com/theofficialgman/winetricks/master/src/winetricks" || exit 1
+wget -O /tmp/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" || exit 1
 sudo mv /tmp/winetricks /opt/wine-${version}/bin/winetricks || error "Failed to move winetricks script to /opt/wine-${version}/bin folder!"
 sudo chmod +x /opt/wine-${version}/bin/winetricks
 
