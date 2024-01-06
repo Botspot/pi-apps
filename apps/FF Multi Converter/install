@@ -1,17 +1,18 @@
 #!/bin/bash
 
-cd /tmp
+version=2.1.4
+
+# remove deprecated files. Old installations used a multitude of install methods so the files could be in many places.
+if [ -f /usr/local/bin/ffmulticonverter ] || [ -f /usr/local/share/applications/ffmulticonverter.desktop ]; then
+	for i in $(find /usr -path "*ffmulticonverter*"); do
+		sudo rm -rf $i
+	done
+fi
+
 install_packages python3 python3-pyqt5 python3-distutils ffmpeg imagemagick unoconv || exit 1
-git_clone https://github.com/ilstam/FF-Multi-Converter || exit 1
+pipx_install --system-site-packages "ffconverter==$version" || exit 1
 
-cd FF-Multi-Converter || error 'Failed to cd into "FF-Multi-Converter" directory!'
-
-case $__os_codename in
-mantic|bookworm)
-  errors="$(sudo python3 setup.py install --old-and-unmanageable 2>&1)" || error "Failed to install FF Multi Converter!\nErrors:\n$errors"
-  ;;
-*)
-  errors="$(sudo python3 setup.py install 2>&1)" || error "Failed to install FF Multi Converter!\nErrors:\n$errors"
-  ;;
-esac
-sudo rm -rf FF-Multi-Converter
+# add .desktop symlinks since pipx does not create them https://github.com/pypa/pipx/issues/717
+sudo mkdir -p /usr/local/share/applications /usr/local/share/icons
+sudo ln -sf /usr/local/pipx/venvs/ffconverter/share/applications/ffconverter.desktop /usr/local/share/applications/ffconverter.desktop
+sudo ln -sf /usr/local/pipx/venvs/ffconverter/share/pixmaps/ffconverter.png /usr/local/share/icons/ffconverter.png

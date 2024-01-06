@@ -1,7 +1,12 @@
 #!/bin/bash
 
-for i in $(find /usr -path "*ffmulticonverter*"); do
-	sudo rm -rf $i
-done
+# remove deprecated files. Old installations used a multitude of install methods so the files could be in many places.
+if [ -f /usr/local/bin/ffmulticonverter ] || [ -f /usr/local/share/applications/ffmulticonverter.desktop ]; then
+	for i in $(find /usr -path "*ffmulticonverter*"); do
+		sudo rm -rf $i
+	done
+fi
 
+pipx_uninstall ffconverter || exit 1
 purge_packages || exit 1
+sudo rm -f /usr/local/share/applications/ffconverter.desktop /usr/local/share/icons/ffconverter.png
