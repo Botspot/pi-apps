@@ -4,20 +4,22 @@ shopt -s extglob
 
 #skip uninstallation if executed from an update
 if [[ "$1" != "update" ]];then
-    cd $HOME/Minecraft-Java-Server && rm -rf !(world|mods|versions)
-    rm -rf $HOME/.local/share/applications/Minecraft-Java-Server.desktop || error "Failed to remove the desktop file"
-    # stop the server
-    sudo systemctl stop minecraft-server
-    # disable server from starting on boot
-    sudo systemctl disable minecraft-server
-    
-    # remove the systemd service
-    sudo rm -f /etc/systemd/system/minecraft-server.service
-    sudo systemctl daemon-reload
-    
-    purge_packages || error "Dependencies failed to uninstall"
-    rm_external_repo "adoptium"
-    remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list
+  text="You chose to uninstall the Minecraft Java Server script.\nAll files within your $HOME/Minecraft-Java-Server folder will be deleted except the worlds, mods, and versions subfolders.\nIf you would like to backup any other files/folders do that NOW before clicking the prompt."
+  userinput_func "$text" "Ok, I have made any backups I wish, continue"
+  cd $HOME/Minecraft-Java-Server && rm -rf !(world|mods|versions)
+  rm -rf $HOME/.local/share/applications/Minecraft-Java-Server.desktop || error "Failed to remove the desktop file"
+  # stop the server
+  sudo systemctl stop minecraft-server
+  # disable server from starting on boot
+  sudo systemctl disable minecraft-server
+  
+  # remove the systemd service
+  sudo rm -f /etc/systemd/system/minecraft-server.service
+  sudo systemctl daemon-reload
+  
+  purge_packages || error "Dependencies failed to uninstall"
+  rm_external_repo "adoptium"
+  remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list
 else
-    echo "Uninstall skipped because run from the updater"
+  echo "Uninstall skipped because run from the updater"
 fi
