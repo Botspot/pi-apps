@@ -9,7 +9,7 @@ if [ -f /usr/local/bin/ffmulticonverter ] || [ -f /usr/local/share/applications/
 	done
 fi
 
-install_packages python3 python3-pyqt5 python3-distutils ffmpeg imagemagick unoconv || exit 1
+install_packages python3 python3-pyqt5 python3-distutils ffmpeg imagemagick unoconv tar binutils squashfs-tools pandoc || exit 1
 pipx_install --system-site-packages "ffconverter==$version" || exit 1
 
 # add .desktop symlinks since pipx does not create them https://github.com/pypa/pipx/issues/717
