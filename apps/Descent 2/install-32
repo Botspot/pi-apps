@@ -9,11 +9,11 @@ cd ~/.d2x-rebirth
 for i in $( ls | grep [A-Z] ); do mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
 if [ ! -f descent2.hog -a ! -f d2demo.hog ]; then
     echo No game content detected, downloading shareware version
-    wget -q --show-progress https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip || error "failed to download game content!"
+    wget -q --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip || error "failed to download game content!"
     unzip descent2-pc-demo.zip
     rm descent2-pc-demo.zip
 fi
-wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
+wget -N -q --show-progress https://web.archive.org/web/20221208193320if_/https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
 wget -N -q --show-progress https://github.com/dimag0g/dxx-rebirth/releases/download/v0.61-switch/d2x-rebirth-rpi || error "failed to download the executable!"
 chmod a+x d2x-rebirth-rpi
 

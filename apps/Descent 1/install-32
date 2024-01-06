@@ -9,12 +9,12 @@ cd ~/.d1x-rebirth
 for i in $( ls | grep [A-Z] ); do mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
 if [ ! -f descent.hog ]; then
     echo No game content detected, downloading shareware version
-    wget -q --show-progress https://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip || error "failed to download game content!"
+    wget -q --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip || error "failed to download game content!"
     unzip descent-pc-shareware.zip
     rm descent-pc-shareware.zip
 fi
-wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa || error "failed to download hires pack!"
-wget -N -q --show-progress https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
+wget -N -q --show-progress https://web.archive.org/web/20230702124034if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa || error "failed to download hires pack!"
+wget -N -q --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa || error "failed to download ogg soundtrack!"
 wget -N -q --show-progress https://github.com/dimag0g/dxx-rebirth/releases/download/v0.61-switch/d1x-rebirth-rpi || error "failed to download the executable!"
 chmod a+x d1x-rebirth-rpi
 echo "ResolutionX=640
