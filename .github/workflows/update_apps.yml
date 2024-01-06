@@ -386,6 +386,7 @@ jobs:
             [badge-info]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/info.svg?raw=true 'Info'
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            For the cleanest looking merge remember to use the "Rebase and merge" option.
             Apps updated:
             ```
             ${{ env.ALL_UPDATED_APPS }}
