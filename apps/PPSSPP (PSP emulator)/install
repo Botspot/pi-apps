@@ -1,0 +1,40 @@
+#!/bin/bash
+
+version=v1.16.6
+
+# remove deprecated files
+rm -f ~/.local/share/applications/ppsspp.desktop ~/ppsspp
+
+cd /tmp || error "Could not move to /tmp folder"
+install_packages build-essential cmake libgl1-mesa-dev libglew-dev libsdl2-dev libsdl2-ttf-dev libvulkan-dev libfontconfig1-dev libcurl4-openssl-dev || exit 1
+rm -rf ppsspp
+git clone https://github.com/hrydgard/ppsspp.git --recurse-submodules --shallow-submodules --depth=1 -b "$version" || error "Failed to clone the repo"
+cd ppsspp || error "Could not move to ppsspp folder"
+mkdir build || error "Could not make build folder"
+cd build || error "Could not move to build folder"
+# vulkan does not work for some systems in SDL backend on Linux https://github.com/hrydgard/ppsspp/pull/13054
+# vulkan does not work at all in QT backend on Linux https://github.com/hrydgard/ppsspp/issues/11628
+# QT backend does not work with wayland https://github.com/hrydgard/ppsspp/issues/16254
+# GL cannot be used on QT backend on ARM32 due to QT5 being built with GLES and not GL on ARM32
+# SDL is not guaranteed to have Wayland support builtin, so check for the headers before enabling it
+# changing to vulkan in the UI does nothing and OpenGL continues to be used
+# enabling it causes no compilation issues and it can not be fully disabled (always shows in the UI) so keep it enabled
+# disable system FFMPEG as recommended by upstream (can be incompatible with some custom HW decoders and newew FFMPEG versions)
+# bundled FFMPEG requires minimum GLIBC 2.28 and is available for armv7l and armv8
+# architecture detection when kernel architecture does not match the userspace architecture is broken https://github.com/hrydgard/ppsspp/issues/18673
+if [ $arch == 32 ] && grep -q '\-lwayland' /usr/lib/arm-linux-gnueabihf/pkgconfig/sdl2.pc ;then
+  cmake .. -DUSING_QT_UI=OFF -DUSE_SYSTEM_FFMPEG=OFF -DUSING_GLES2=ON -DUSING_EGL=ON -DUSE_WAYLAND_WSI=ON -DFORCED_CPU=armv7l || error "cmake failed to configure the build"
+elif [ $arch == 32 ];then
+  cmake .. -DUSING_QT_UI=OFF -DUSE_SYSTEM_FFMPEG=OFF -DUSING_GLES2=ON -DUSING_EGL=ON -DFORCED_CPU=armv7l || error "cmake failed to configure the build"
+elif [ $arch == 64 ] && grep -q '\-lwayland' /usr/lib/aarch64-linux-gnu/pkgconfig/sdl2.pc ;then
+  cmake .. -DUSING_QT_UI=OFF -DUSE_SYSTEM_FFMPEG=OFF -DUSE_WAYLAND_WSI=ON || error "cmake failed to configure the build"
+elif [ $arch == 64 ]; then
+  cmake .. -DUSING_QT_UI=OFF -DUSE_SYSTEM_FFMPEG=OFF -DUSE_WAYLAND_WSI=OFF || error "cmake failed to configure the build"
+else
+  error "Failed to detect OS CPU architecture! Something is very wrong."
+fi
+make -j$(nproc) || error "Could not build ppsspp"
+sudo make install || error "Could not install ppsspp"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+rm -rf /tmp/ppsspp

@@ -1,6 +1,8 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm -f ~/.local/share/applications/ppsspp.desktop || error "Failed to remove desktop entry!"
 
-rm -rf ~/ppsspp || error "Failed to remove install directory!"
+# remove deprecated files
+rm -f ~/.local/share/applications/ppsspp.desktop ~/ppsspp
+
+sudo rm -rf /usr/local/share/icons/hicolor/*/apps/ppsspp* /usr/local/share/mime/packages/ppsspp.xml /usr/local/share/applications/PPSSPPQt.desktop /usr/local/share/applications/PPSSPPSDL.desktop /usr/local/share/ppsspp /usr/local/bin/PPSSPPQt /usr/local/bin/PPSSPPSDL
