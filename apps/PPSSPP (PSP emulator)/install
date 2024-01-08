@@ -3,7 +3,7 @@
 version=v1.16.6
 
 # remove deprecated files
-rm -f ~/.local/share/applications/ppsspp.desktop ~/ppsspp
+rm -rf ~/.local/share/applications/ppsspp.desktop ~/ppsspp
 
 cd /tmp || error "Could not move to /tmp folder"
 install_packages build-essential cmake libgl1-mesa-dev libglew-dev libsdl2-dev libsdl2-ttf-dev libvulkan-dev libfontconfig1-dev libcurl4-openssl-dev || exit 1
