@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.1.4
+version=2.2.0
 
 # remove deprecated files. Old installations used a multitude of install methods so the files could be in many places.
 if [ -f /usr/local/bin/ffmulticonverter ] || [ -f /usr/local/share/applications/ffmulticonverter.desktop ]; then
