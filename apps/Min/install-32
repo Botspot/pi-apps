@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.30.0
+version=1.31.0
 
 if ! package_installed min ;then
   sudo rm -f /usr/bin/min
