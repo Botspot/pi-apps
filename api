@@ -2659,8 +2659,9 @@ files_match() { #$1 and $2 are paths to files
 }
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
-  PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
-  local DEFAULT_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(TARGET_OF)' | sort -u | awk '{if ($3=="deb") print $1" "$2 }' | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
+  local PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
+  local AVAILABLE_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(TARGET_OF)' | sort -u | awk '{if ($3=="deb") print $1" "$2 }')"
+  local DEFAULT_REPOS="$(echo "$AVAILABLE_REPOS" | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|\
 debian.org/debian\|security.debian.org/\|\
 ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
@@ -2715,9 +2716,15 @@ Specifically, the issue is $(wc -l <<<"$frankendebian" | grep -q 1 && echo 'this
     echo "Congratulations, Linux tinkerer, you broke your system. The init package can not be found, which means you have removed the default debian sources from your system.
 All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
     return 1
-  elif [ -z "$DEFAULT_REPOS" ];then
+  elif [ -z "$AVAILABLE_REPOS" ];then
     echo "Congratulations, Linux tinkerer, you broke your system. You have removed ALL debian sources from your system.
 All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
+  # Debian, Ubuntu, and Raspbian should not have an __os_original_id variable set (since there is no upstream repo) but check anyway just incase
+  elif ([ ! -z "$__os_original_id" ] && ! ([ "$__os_original_id" == "Debian" ] || [ "$__os_original_id" == "Raspbian" ] || [ "$__os_original_id" == "Ubuntu" ]));then
+    echo "Pi-Apps is not supported on $__os_original_desc, Pi-Apps is only officially supported on the latest two LTS releases of Raspberry Pi OS, Raspbian, Debian, and Ubuntu."
+    return 1
+  elif ([ -z "$__os_original_id" ] && ! ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ] || [ "$__os_id" == "Ubuntu" ]));then
+    echo "Pi-Apps is not supported on $__os_desc, Pi-Apps is only officially supported on the latest two LTS releases of Raspberry Pi OS, Raspbian, Debian, and Ubuntu."
     return 1
   elif [ "$__os_id" == "Ubuntu" ] && ! ( echo "$DEFAULT_REPOS" | grep -q $__os_codename && \
     echo "$DEFAULT_REPOS" | grep -q $__os_codename-updates && \
