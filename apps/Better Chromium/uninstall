@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
+purge_packages
+rm_external_repo "pi-apps-coders-chromium" force
+sudo rm -f /etc/apt/preferences.d/pi-apps-coders-chromium
+
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
   folder=/etc/chromium.d

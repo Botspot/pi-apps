@@ -7,6 +7,46 @@ else
   error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
 fi
 
+# obtain model
+get_model &>/dev/null
+if [[ "$model" == *"Raspberry Pi"* ]] && [[ "$__os_id" == Ubuntu ]] && printf '%s\n' "22.04" "$__os_release" | sort -CV; then
+  # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
+  add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
+  # also disable chromium snap apt package from Ubuntu
+
+  # Ubuntu must be 22.10+ (GLIBC 2.36+) to be compatible with widevine
+  if printf '%s\n' "22.10" "$__os_release" | sort -CV; then
+    echo 'Package: chromium-*
+Pin: release o=Pi-Apps-Coders chromium-debs
+Pin-Priority: 1000
+
+Package: libwidevinecdm0
+Pin: release o=Pi-Apps-Coders chromium-debs
+Pin-Priority: 500
+
+Package: chromium-*
+Pin: release o=Ubuntu*
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
+  else
+    echo 'Package: chromium-*
+Pin: release o=Pi-Apps-Coders chromium-debs
+Pin-Priority: 1000
+
+Package: libwidevinecdm0
+Pin: release o=Pi-Apps-Coders chromium-debs
+Pin-Priority: -1
+
+Package: chromium-*
+Pin: release o=Ubuntu*
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
+  fi
+  install_packages chromium-browser || exit 1
+  # install_packages will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
+  # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
+  apt_lock_wait
+  sudo apt --only-upgrade --allow-downgrades install chromium-browser -y | less_apt
+fi
+
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
   folder=/etc/chromium.d
