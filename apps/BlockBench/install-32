@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.8.3
+version=4.9.3
 
-install_packages https://github.com/ryanfortner/blockbench-arm/raw/master/blockbench_${version}_armhf.deb || exit 1
+install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Blockbench_armv7l_${version}.deb || exit 1
 
