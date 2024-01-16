@@ -1,22 +1,49 @@
 #!/bin/bash
 
+# obtain model
+get_model &>/dev/null
+
+ubuntu_pios_chromium_available=0
+if [[ "$model" == *"Raspberry Pi"* ]] && [[ "$__os_id" == Ubuntu ]] && printf '%s\n' "22.04" "$__os_release" | sort -CV; then
+  ubuntu_pios_chromium_available=1
+fi
+
 #determine if chromium is installed
 if command -v chromium >/dev/null || command -v chromium-browser >/dev/null || [ -d /snap/chromium ] || [ -d /var/lib/flatpak/app/org.chromium.Chromium ];then
   echo "Chromium is installed. Continuing..."
+# chromium is not installed but PiOS chromium could be installed
+elif [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
+  description="Chromium is not installed but the PiOS chromium browser is available. Install it?"
+  userinput_func "$description" "Yes, install PiOS chromium" "No, exit Better Chromium now"
+  if [ "$output" == "No, exit Better Chromium now" ]; then
+    error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
+  fi
 else
   error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
 fi
 
-# obtain model
-get_model &>/dev/null
-if [[ "$model" == *"Raspberry Pi"* ]] && [[ "$__os_id" == Ubuntu ]] && printf '%s\n' "22.04" "$__os_release" | sort -CV; then
-  # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
-  add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
-  # also disable chromium snap apt package from Ubuntu
-
+#install PiOS chromium on Raspberry Pi Ubuntu
+if [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
   # Ubuntu must be 22.10+ (GLIBC 2.36+) to be compatible with widevine
+  pin_hide_widevine=1
   if printf '%s\n' "22.10" "$__os_release" | sort -CV; then
-    echo 'Package: chromium-*
+    pin_hide_widevine=0
+    description="The PiOS chromium browser is faster and supports widevine. Install it?"
+  else
+    description="The PiOS chromium browser is faster. Install it?"
+  fi  
+  if [ -d /snap/chromium ]; then
+    userinput_func "$description" "Yes, uninstall Ubuntu snap chromium and install PiOS chromium" "No, leave my Ubuntu snap chromium untouched"
+  else
+    # do not prompt user again for installing PiOS chromium when they do not currently have the snap installed
+    output="Yes, uninstall Ubuntu snap chromium and install PiOS chromium"
+  fi
+  if [ "$output" == "Yes, uninstall Ubuntu snap chromium and install PiOS chromium" ]; then
+    # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
+    add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
+    # also disable chromium snap apt package from Ubuntu
+    if [[ "$pin_hide_widevine" == 0 ]]; then
+     echo 'Package: chromium-*
 Pin: release o=Pi-Apps-Coders chromium-debs
 Pin-Priority: 1000
 
@@ -27,8 +54,8 @@ Pin-Priority: 500
 Package: chromium-*
 Pin: release o=Ubuntu*
 Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
-  else
-    echo 'Package: chromium-*
+    else
+      echo 'Package: chromium-*
 Pin: release o=Pi-Apps-Coders chromium-debs
 Pin-Priority: 1000
 
@@ -39,12 +66,24 @@ Pin-Priority: -1
 Package: chromium-*
 Pin: release o=Ubuntu*
 Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
+    fi
+    # regular apt installs will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
+    # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
+    apt_update
+    apt_lock_wait
+    sudo apt --allow-downgrades install chromium-browser -y | less_apt
+    # remove snap chromium
+    [ -d /snap/chromium ] && sudo snap remove chromium
+    # copy snap chromium config over to ~/.config/chromium if it does not already exist
+    if [ ! -d ~/.config/chromium ]; then
+      mkdir -p ~/.config
+      if [ -d ~/snap/chromium/current/.config/chromium ]; then
+        cp -R ~/snap/chromium/current/.config/chromium ~/.config/
+      elif [ -d ~/snap/chromium/common/chromium ]; then
+        cp -R ~/snap/chromium/common/chromium ~/.config/
+      fi
+    fi
   fi
-  install_packages chromium-browser || exit 1
-  # install_packages will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
-  # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
-  apt_lock_wait
-  sudo apt --only-upgrade --allow-downgrades install chromium-browser -y | less_apt
 fi
 
 #determine where the Chromium customizations folder is.

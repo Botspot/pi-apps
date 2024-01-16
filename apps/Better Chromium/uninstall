@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
-purge_packages
-rm_external_repo "pi-apps-coders-chromium" force
-sudo rm -f /etc/apt/preferences.d/pi-apps-coders-chromium
+if [[ "$1" != "update" ]];then
+  # rpi ubuntu (22.04+) can use Pi OS packaged chromium for better hardware support
+  if [ -f /etc/apt/sources.list.d/pi-apps-coders-chromium.sources ]; then
+    warning "When installing Better Chromium, you switched to PiOS chromium build. If you want to revert to the snap version, here's commands to do that:\n\n"\
+'~/pi-apps/api rm_external_repo "pi-apps-coders-chromium" "force"\n'\
+'sudo rm -f /etc/apt/preferences.d/pi-apps-coders-chromium\n'\
+'sudo apt install --only-upgrade chromium-* -y\n'\
+'sudo apt purge libwidevinecdm0'
+  fi
+fi
 
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
