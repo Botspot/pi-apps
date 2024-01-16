@@ -800,12 +800,12 @@ rm_external_repo() { # remove an external apt repo and its gpg key, if the repo 
   fi
 
   # exit gracefully if .sources file does not exist
-  [ -f "/etc/apt/sources.list.d/$reponame.sources" ] || exit 0
+  [ -f "/etc/apt/sources.list.d/$reponame.sources" ] || return 0
   
   if [ "$force" == force ]; then
     sudo rm -f /usr/share/keyrings/${reponame}-archive-keyring.gpg || error "rm_external_repo: removal of ${reponame}-archive-keyring.gpg failed"
     sudo rm -f /etc/apt/sources.list.d/${reponame}.sources || error "rm_external_repo: removal of ${reponame}.sources failed"
-    exit 0
+    return 0
   fi
 
   remove_repofile_if_unused /etc/apt/sources.list.d/${reponame}.sources "" /usr/share/keyrings/${reponame}-archive-keyring.gpg
