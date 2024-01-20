@@ -1,6 +1,9 @@
 #!/bin/bash
 
+# remove deprecated file locations
+rm -rf ~/.local/bin/ShatteredPD-Desktop.jar ~/.local/share/applications/shatteredpd.desktop
+
 purge_packages || exit 1
 rm_external_repo "adoptium"
 
-rm -f ~/.local/share/applications/shatteredpd.desktop ~/.local/bin/ShatteredPD-Desktop.jar
+sudo rm -rf /usr/local/bin/shattered-pixel-dungeon /usr/local/share/shattered-pixel-dungeon /usr/local/share/icons/hicolor/64x64/apps/shattered-pixel-dungeon.png /usr/local/share/icons/hicolor/24x24/apps/shattered-pixel-dungeon.png /usr/local/share/applications/shattered-pixel-dungeon.desktop

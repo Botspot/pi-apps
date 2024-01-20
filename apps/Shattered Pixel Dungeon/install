@@ -1,13 +1,15 @@
 #!/bin/bash
 
-version=2.2.1
+version=2.3.0
+
+# remove deprecated file locations
+rm -rf ~/.local/bin/ShatteredPD-Desktop.jar ~/.local/share/applications/shatteredpd.desktop
 
 adoptium_installer || exit 1
 install_packages temurin-17-jre || exit 1
 
-mkdir -p ~/.local/bin
-wget -O ~/.local/bin/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Java.jar || error "Could not download game!"
-
+sudo mkdir -p /usr/local/share/shattered-pixel-dungeon || error "Could not make directory!"
+sudo wget -O /usr/local/share/shattered-pixel-dungeon/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Java.jar || error "Could not download game!"
 
 case "$arch" in
   "64") path=/usr/lib/jvm/temurin-17-jre-arm64/bin/java ;;
@@ -15,12 +17,23 @@ case "$arch" in
   *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
+echo '#!/bin/bash
+
+'"$path -jar /usr/local/share/shattered-pixel-dungeon/ShatteredPD-Desktop.jar" | sudo tee /usr/local/bin/shattered-pixel-dungeon >/dev/null || error "Failed to create run script!"
+sudo chmod 755 /usr/local/bin/shattered-pixel-dungeon || error "Failed to set script executable permissions!"
+
+# install application icons
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/shattered-pixel-dungeon.png || error "Failed to install shattered-pixel-dungeon icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/shattered-pixel-dungeon.png || error "Failed to install shattered-pixel-dungeon icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
 echo "[Desktop Entry]
 Encoding=UTF-8
 Name=Shattered Pixel Dungeon
-Exec=$path -jar $HOME/.local/bin/ShatteredPD-Desktop.jar
+Exec=/usr/local/bin/shattered-pixel-dungeon
 Terminal=false
-Icon=$(dirname "$0")/icon-64.png
+Icon=shattered-pixel-dungeon
 Type=Application
 Categories=Application;Game
-Comment=Roguelike Dungeon Crawler RPG with pixel art graphics." > ~/.local/share/applications/shatteredpd.desktop || error "Could not create .desktop file!"
+Comment=Roguelike Dungeon Crawler RPG with pixel art graphics." | sudo tee /usr/local/share/applications/shattered-pixel-dungeon.desktop >/dev/null || error "Failed to create menu button!"
