@@ -385,7 +385,7 @@ runonce <<"EOF"
   fi
 EOF
 
-#fix unintended wget-log pollution due to wget bug
+#fix unintended wget-log pollution due to wget bug https://savannah.gnu.org/bugs/?51181
 runonce <<"EOF"
   if ls ~/wget-log*; then
     sudo_popup rm -rf ~/wget-log*
