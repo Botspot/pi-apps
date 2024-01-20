@@ -30,102 +30,104 @@ elif echo "$vmsplit_output" | grep -q "^CONFIG_VMSPLIT_2G=y" || echo "$vmsplit_o
   #note that bcm2709 dts has a compatible tag of bcm2836 so SOC_ID will be bcm2836
   # obtain SOC_ID
   get_model
-  if [ "$SOC_ID" == 'bcm2836' ] || [ "$SOC_ID" == 'bcm2837' ];then
-    true
+  if [ "$SOC_ID" == 'bcm2836' ]; then
+    description="You are using a kernel with a 2G/2G memory split.
+Wine will not work on such systems. What would you like to do?
+
+- Compile a 3G/1G kernel (several hours)
+- Install a precompiled 3G/1G kernel (about 2 minutes but might be outdated)
+- Exit now"
+    userinput_func "$description" "Compile 3G/1G kernel" "Install precompiled 3G/1G kernel" "Exit"
+  elif [ "$SOC_ID" == 'bcm2837' ];then
+    description="You are using a kernel with a 2G/2G memory split.
+Wine will not work on such systems. What would you like to do?
+
+- Switch to the 64-bit kernel (about 2 minutes)
+- Compile a 3G/1G kernel (several hours)
+- Install a precompiled 3G/1G kernel (about 2 minutes but might be outdated)
+- Exit now"
+    userinput_func "$description" "Switch to a 64-bit kernel" "Compile 3G/1G kernel" "Install precompiled 3G/1G kernel" "Exit"
   else
     error "User error: This script is not capable of handling your $SOC_ID soc with a 2G/2G memory split.\nWhatever you did to get yourself into this situation, undo it and try installing Wine again."
   fi
   
-  #continue asking until valid answer
-  while true;do
-    echo -e "You are using a kernel with a 2G/2G memory split.\nWine will not work on such systems. What would you like to do?
-1. Switch to the 64-bit kernel (about 2 minutes)
-2. Compile a 3G/1G kernel (several hours)
-3. Install a precompiled 3G/1G kernel (about 2 minutes but might be outdated)
-4. Exit"
-    read -n1 answer
-    echo ''
-    if [ "$answer" == 1 ];then
-      #switch to 64bit kernel
-      
-      echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the Wine app again."
-      sleep infinity
-    elif [ "$answer" == 2 ];then
-      #compile 3g/1g kernel
-      
-      #backup ~/linux if it exists
-      rm -rf ~/linux.bak
-      [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
-      
-      #download kernel source code
-      git_clone --depth=1 https://github.com/raspberrypi/linux || error "Failed to git_clone the raspberry pi kernel repo!"
-      
-      echo "Installing necessary build packages..."
-      install_packages raspberrypi-kernel-headers build-essential bc git wget bison flex libssl-dev make libncurses-dev || exit 1
-      
-      #build for pi3
-      cd ~/linux || error "Failed to enter the ~/linux folder!"
-      KERNEL=kernel7
-      make -j8 bcm2709_defconfig || error "The make command exited with failure. Full command: 'make -j8 bcm2709_defconfig'"
-      
-      #change memory split config
-      echo "Setting memory split to 3G/1G"
-      sed -i 's/CONFIG_VMSPLIT_2G=y/# CONFIG_VMSPLIT_2G is not set/g' ~/linux/.config || error "sed failed to edit $HOME/linux/.config file!"
-      sed -i 's/# CONFIG_VMSPLIT_3G is not set/CONFIG_VMSPLIT_3G=1/g' ~/linux/.config
-      
-      echo '' | make -j8 zImage modules dtbs || error "Failed to make bcm2709_defconfig zImage modules dtbs!"
-      
-      #install
-      echo "Copying new files to /boot/..."
-      sudo make modules_install || error "sudo make modules_install failed!"
-      sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
-      sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
-      sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
-      sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
-      cd
-      rm -rf ~/linux
-      
-      echo "Removing the utilities that were used to compile the kernel..."
-      purge_packages
-      
-      #message
-      echo -e "It appears the 3G/1G kernel has been built and installed successfully.\nPlease reboot and install the Wine app again."
-      sleep infinity
-    elif [ "$answer" == 3 ];then 
-      #install precompiled 3g/1g kernel
-      
-      #backup ~/linux if it exists
-      rm -rf ~/linux.bak
-      [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
-      #download precompiled kernel
-      cd $HOME
-      echo "Downloading precompiled kernel..."
-      wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/5/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
-      #extract precompiled kernel
-      echo "Extracting prebuilt kernel..."
-      sleep 0.5 # so user has time to read what is happening
-      unzip ~/3g1g-rpi-kernel.zip || error "Failed to extract kernel!"
-      cd linux || error "Failed to change folder to ~/linux!"
-      #install the precompiled kernel
-      export KERNEL=kernel7
-      sudo make modules_install || error "sudo make modules_install failed!"
-      sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
-      sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
-      sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
-      sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
-      cd
-      rm -rf linux ~/3g1g-rpi-kernel.zip
-      #message
-      echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
-      sleep infinity
-    elif [ "$answer" == 4 ];then
-      echo "User error: exited."
-      exit 1
-    else
-      echo "Invalid response. Must be '1', '2', '3' or '4'."
-    fi
-  done
+  if [ "$output" == "Switch to a 64-bit kernel" ];then
+    #switch to 64bit kernel
+    
+    echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
+    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the Wine app again."
+    sleep infinity
+  elif [ "$output" == "Compile 3G/1G kernel" ];then
+    #compile 3g/1g kernel
+    
+    #backup ~/linux if it exists
+    rm -rf ~/linux.bak
+    [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
+    
+    #download kernel source code
+    git_clone --depth=1 https://github.com/raspberrypi/linux || error "Failed to git_clone the raspberry pi kernel repo!"
+    
+    echo "Installing necessary build packages..."
+    install_packages raspberrypi-kernel-headers build-essential bc git wget bison flex libssl-dev make libncurses-dev || exit 1
+    
+    #build for pi3
+    cd ~/linux || error "Failed to enter the ~/linux folder!"
+    KERNEL=kernel7
+    make -j8 bcm2709_defconfig || error "The make command exited with failure. Full command: 'make -j8 bcm2709_defconfig'"
+    
+    #change memory split config
+    echo "Setting memory split to 3G/1G"
+    sed -i 's/CONFIG_VMSPLIT_2G=y/# CONFIG_VMSPLIT_2G is not set/g' ~/linux/.config || error "sed failed to edit $HOME/linux/.config file!"
+    sed -i 's/# CONFIG_VMSPLIT_3G is not set/CONFIG_VMSPLIT_3G=1/g' ~/linux/.config
+    
+    echo '' | make -j8 zImage modules dtbs || error "Failed to make bcm2709_defconfig zImage modules dtbs!"
+    
+    #install
+    echo "Copying new files to /boot/..."
+    sudo make modules_install || error "sudo make modules_install failed!"
+    sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
+    sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
+    sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
+    sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
+    cd
+    rm -rf ~/linux
+    
+    echo "Removing the utilities that were used to compile the kernel..."
+    purge_packages
+    
+    #message
+    echo -e "It appears the 3G/1G kernel has been built and installed successfully.\nPlease reboot and install the Wine app again."
+    sleep infinity
+  elif [ "$output" == "Install precompiled 3G/1G kernel" ];then
+    #install precompiled 3g/1g kernel
+    
+    #backup ~/linux if it exists
+    rm -rf ~/linux.bak
+    [ -e ~/linux ] && (echo "$HOME/linux already exists, moving it to $HOME/linux.bak" ; mv -f ~/linux ~/linux.bak)
+    #download precompiled kernel
+    cd $HOME
+    echo "Downloading precompiled kernel..."
+    wget https://github.com/Itai-Nelken/RPi-3g-1g-kernel-wine/releases/download/5/rpi23_3g1g_kernel.zip -O ~/3g1g-rpi-kernel.zip || error "Failed to download prebuilt kernel!"
+    #extract precompiled kernel
+    echo "Extracting prebuilt kernel..."
+    sleep 0.5 # so user has time to read what is happening
+    unzip ~/3g1g-rpi-kernel.zip || error "Failed to extract kernel!"
+    cd linux || error "Failed to change folder to ~/linux!"
+    #install the precompiled kernel
+    export KERNEL=kernel7
+    sudo make modules_install || error "sudo make modules_install failed!"
+    sudo cp arch/arm/boot/dts/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
+    sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
+    sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
+    sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
+    cd
+    rm -rf linux ~/3g1g-rpi-kernel.zip
+    #message
+    echo -e "\e[1mIt appears the precompiled 3G/1G kernel has been installed successfully.\nPlease reboot and install the Wine app again.\e[0m"
+    sleep infinity
+  else
+    error "User error: exited."
+  fi
 else
   echo "Your system is using a 3G/1G kernel. Continuing..."
 fi
