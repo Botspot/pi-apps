@@ -6,6 +6,11 @@ get_model &>/dev/null
 ubuntu_pios_chromium_available=0
 if [[ "$model" == *"Raspberry Pi"* ]] && [[ "$__os_id" == Ubuntu ]] && printf '%s\n' "22.04" "$__os_release" | sort -CV; then
   ubuntu_pios_chromium_available=1
+  # Ubuntu must be 22.10+ (GLIBC 2.36+) to be compatible with widevine
+  pin_hide_widevine=1
+  if printf '%s\n' "22.10" "$__os_release" | sort -CV; then
+    pin_hide_widevine=0
+  fi
 fi
 
 #determine if chromium is installed
@@ -13,10 +18,14 @@ if command -v chromium >/dev/null || command -v chromium-browser >/dev/null || [
   echo "Chromium is installed. Continuing..."
 # chromium is not installed but PiOS chromium could be installed
 elif [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
-  description="Chromium is not installed but the PiOS chromium browser is available. Install it?"
+  if [[ "$pin_hide_widevine" == 0 ]]; then
+    description="Chromium is not installed but the PiOS chromium browser is available and is faster and supports widevine. Install it?"
+  else
+    description="Chromium is not installed but the PiOS chromium browser is available and is faster. Install it?"
+  fi
   userinput_func "$description" "Yes, install PiOS chromium" "No, exit Better Chromium now"
   if [ "$output" == "No, exit Better Chromium now" ]; then
-    error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
+    error "User error: Chromium is not installed and you choose not to install PiOS chromium! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
   fi
 else
   error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
@@ -24,21 +33,20 @@ fi
 
 #install PiOS chromium on Raspberry Pi Ubuntu
 if [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
-  # Ubuntu must be 22.10+ (GLIBC 2.36+) to be compatible with widevine
-  pin_hide_widevine=1
-  if printf '%s\n' "22.10" "$__os_release" | sort -CV; then
-    pin_hide_widevine=0
+  if [[ "$pin_hide_widevine" == 0 ]]; then
     description="The PiOS chromium browser is faster and supports widevine. Install it?"
   else
     description="The PiOS chromium browser is faster. Install it?"
-  fi  
+  fi
   if [ -d /snap/chromium ]; then
     userinput_func "$description" "Yes, uninstall Ubuntu snap chromium and install PiOS chromium" "No, leave my Ubuntu snap chromium untouched"
+  elif [ -d /var/lib/flatpak/app/org.chromium.Chromium ]; then
+    userinput_func "$description" "Yes, uninstall flatpak chromium and install PiOS chromium" "No, leave my flatpak chromium untouched"
   else
-    # do not prompt user again for installing PiOS chromium when they do not currently have the snap installed
-    output="Yes, uninstall Ubuntu snap chromium and install PiOS chromium"
+    # do not prompt user again for installing PiOS chromium when they do not currently have the snap or flatpak installed
+    output="Yes, install PiOS chromium"
   fi
-  if [ "$output" == "Yes, uninstall Ubuntu snap chromium and install PiOS chromium" ]; then
+  if [[ "$output" == "Yes"* ]]; then
     # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
     add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
     # also disable chromium snap apt package from Ubuntu
@@ -74,13 +82,17 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/de
     sudo apt --allow-downgrades install chromium-browser -y | less_apt
     # remove snap chromium
     [ -d /snap/chromium ] && sudo snap remove chromium
-    # copy snap chromium config over to ~/.config/chromium if it does not already exist
+    # remove flatpak chromium
+    [ -d /var/lib/flatpak/app/org.chromium.Chromium ] && sudo flatpak uninstall org.chromium.Chromium -y
+    # copy snap or flatpak chromium config over to ~/.config/chromium if it does not already exist
     if [ ! -d ~/.config/chromium ]; then
       mkdir -p ~/.config
       if [ -d ~/snap/chromium/current/.config/chromium ]; then
         cp -R ~/snap/chromium/current/.config/chromium ~/.config/
       elif [ -d ~/snap/chromium/common/chromium ]; then
         cp -R ~/snap/chromium/common/chromium ~/.config/
+      elif [ -d ~/.var/app/org.chromium.Chromium/config/chromium ]; then
+        cp -R ~/.var/app/org.chromium.Chromium/config/chromium ~/.config/
       fi
     fi
   fi
