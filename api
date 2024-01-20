@@ -1901,6 +1901,34 @@ In any case, Pi-Apps cannot work until you solve this issue. Check around in the
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
   fi
 
+  if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
+    if grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+      error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
+
+$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u)
+
+You will need to unmark the packages with the following command before installation can proceed:
+sudo apt-mark unhold $(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | tr "\n" " ")")
+      error_type="system"
+    elif grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+      error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
+
+$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u)
+
+You will need to unmark the packages with the following command before installation can proceed:
+sudo apt-mark unhold $(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u)")
+      error_type="system"
+    elif grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+      error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
+
+$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')
+
+You will need to unmark the packages with the following command before installation can proceed:
+sudo apt-mark unhold $(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')")
+      error_type="system"
+    fi
+  fi
+
   if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
     grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
