@@ -385,4 +385,11 @@ runonce <<"EOF"
   fi
 EOF
 
+#fix unintended wget-log pollution due to wget bug
+runonce <<"EOF"
+  if ls ~/wget-log*; then
+    sudo_popup rm -rf ~/wget-log*
+  fi
+EOF
+
 true

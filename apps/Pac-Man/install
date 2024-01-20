@@ -15,7 +15,7 @@ sudo make install || error "Could not install pacman"
 
 rm -rf /tmp/pacman
 
-sudo wget -O /usr/local/share/pacman_sdl/txt/gamecontrollerdb.txt  https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
+sudo wget -qO /usr/local/share/pacman_sdl/txt/gamecontrollerdb.txt  https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
 
 status_green 'Installation is now done! To run: Menu -> Games -> Pacman (SDL)'
 

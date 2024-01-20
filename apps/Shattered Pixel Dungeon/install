@@ -9,7 +9,9 @@ adoptium_installer || exit 1
 install_packages temurin-17-jre || exit 1
 
 sudo mkdir -p /usr/local/share/shattered-pixel-dungeon || error "Could not make directory!"
-sudo wget -O /usr/local/share/shattered-pixel-dungeon/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Java.jar || error "Could not download game!"
+wget -O /tmp/ShatteredPD-Desktop.jar https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v${version}/ShatteredPD-v${version}-Java.jar || error "Could not download game!"
+sudo mv -f /tmp/ShatteredPD-Desktop.jar /usr/local/share/shattered-pixel-dungeon/ShatteredPD-Desktop.jar || error "Could not copy game to install folder!"
+sudo chown root:root /usr/local/share/shattered-pixel-dungeon/ShatteredPD-Desktop.jar || error "Could not set game ownership!"
 
 case "$arch" in
   "64") path=/usr/lib/jvm/temurin-17-jre-arm64/bin/java ;;

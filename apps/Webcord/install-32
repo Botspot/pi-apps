@@ -9,7 +9,7 @@ install_packages "https://github.com/SpacingBat3/WebCord/releases/download/v${ve
 if false;then
   sudo sed -i 's/Name=.*/Name=Discord/g' /usr/share/applications/webcord.desktop
 
-  sudo wget -O /usr/share/pixmaps/webcord.png 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-7-1.png' || sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/pixmaps/webcord.png
+  sudo wget -qO /usr/share/pixmaps/webcord.png 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-7-1.png' || sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/pixmaps/webcord.png
   
   sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.asar.unpacked/sources/assets/icons/app.png
   sudo cp -f /usr/share/pixmaps/webcord.png /usr/lib/webcord/resources/app.png
