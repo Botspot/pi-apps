@@ -26,9 +26,8 @@ sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps w
 dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums'
 
 if ! dpkg -s $dependencies &>/dev/null ;then
-  sudo apt install $dependencies -y -f --no-install-recommends
+  sudo apt install $dependencies -y -f --no-install-recommends || error "Pi-Apps dependencies failed to install and so the Pi-Apps install has been aborted. Before Pi-Apps can be installed you must solve any errors above."
 fi
-echo
 
 #remove annoying "YAD icon browser" launcher
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
