@@ -50,9 +50,17 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   bg_black='\e[40m'
   bg_white='\e[107m'
   
-  #use simpler logo if OS is Buster or lower - to fix issue https://github.com/Botspot/pi-apps/issues/1441
-  local version_id="$(grep 'VERSION_ID=' /etc/os-release | tr -cd '0123456789.')"
-  if [[ "$version_id" != *\.* ]] && [ "$version_id" -ge 11 ];then
+  #complex logo requires Unicode 13 support (libicu66+)
+  #this is available in Ubuntu 20.04+ and Debian 11+
+  #use simpler logo when not supported to fix issue https://github.com/Botspot/pi-apps/issues/1441
+  if [ -f /usr/lib/aarch64-linux-gnu/libicudata.so ]; then
+    local version="$(file /usr/lib/aarch64-linux-gnu/libicudata.so | sed -n 's/.*libicudata.so.//p')"
+  elif [ -f /usr/lib/arm-linux-gnueabihf/libicudata.so ]; then
+    local version="$(file /usr/lib/arm-linux-gnueabihf/libicudata.so | sed -n 's/.*libicudata.so.//p')"
+  else
+    local version="65"
+  fi
+  if (( $(echo "$version >= 66" | bc -l) )); then
     echo -e "${bg_default}    ${green}🭊${darkgreen}🬹🬹🬹${green}🬿${default}                                          ${darkgreen}                ${default}
  ${blue1}🭇🬭🬭${green}\e[48;5;26m🬎${bg_default}${blue2}🬭🬭🬭${blue3}${green}\e[48;5;26m🬎${bg_default}${blue3}🬭🬭🬼${default}                                       ${darkgreen}                ${default}
  ${blue1}🮉${bg_black}  ${red}▄ ▄ ▄${blue3}  ${bg_default}▋${default}   █▀▀🭍 ▄                              ${darkgreen}  ${black}    ${darkgreen}    ${black}    ${darkgreen}  ${default}
