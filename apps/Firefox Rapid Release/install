@@ -3,7 +3,9 @@
 # remove deprecated repofilename
 sudo rm -f /etc/apt/sources.list.d/firefox-ubuntu.list
 # remove /etc/apt/preferences.d/99bionic-updates which was added when bionic default repositories were added
-sudo rm -f /etc/apt/preferences.d/99bionic-updates  
+sudo rm -f /etc/apt/preferences.d/99bionic-updates
+# get local dpkg architecture for error logs
+arch="$(dpkg --print-architecture)"
 case "$__os_id" in
 Ubuntu)
   # starting on 22.04 the apt package for firefox is a snap so we need to add the ppa
@@ -19,10 +21,12 @@ Package: firefox*
 Pin: release o=Ubuntu*
 Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   
-  # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
-  echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+    # allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
+    echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+    install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu ${__os_codename^}. Please contact Mozilla Team for any issues https://launchpad.net/~mozillateam/+archive/ubuntu/ppa"
+  else
+    install_packages firefox || exit 1
   fi
-  install_packages firefox || exit 1
   # install_packages will not switch an already installed 1:1snap* package to a XXX firefox package since this would constitute a downgrade
   # the pin priorities added above will prevent Ubuntu repository firefox packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the ppa version of firefox
   apt_lock_wait
@@ -36,11 +40,13 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   bookworm)
     if [ -f /etc/rpi-issue ]; then
       status "PiOS Bookworm supports the latest HW Accelerated Firefox out of the box. Skipping adding Mozilla PPA"
+      install_packages firefox || exit 1
     else
       # remove old ppa if present
       sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
       debian_ppa_installer "mozillateam/ppa" "jammy" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
       echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+      install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Jammy (used for Debian Bookworm). Please contact Mozilla Team for any issues https://launchpad.net/~mozillateam/+archive/ubuntu/ppa"
     fi
     ;;
   bullseye)
@@ -48,13 +54,14 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
     sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
     debian_ppa_installer "mozillateam/ppa" "focal" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
     echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:focal";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null    
+    install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Focal (used for Debian Bullseye). Please contact Mozilla Team for any issues https://launchpad.net/~mozillateam/+archive/ubuntu/ppa"
     ;;
   *)
     debian_ppa_installer "mozillateam/ppa" "bionic" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
     echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:bionic";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+    install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Bionic. Please contact Mozilla Team for any issues https://launchpad.net/~mozillateam/+archive/ubuntu/ppa"
     ;;
   esac
-  install_packages firefox || exit 1
   sudo apt --only-upgrade install firefox -y | less_apt
   true
   ;;
