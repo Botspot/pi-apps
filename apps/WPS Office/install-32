@@ -3,31 +3,32 @@
 IFS=$'\n'
 # Hardware and kernel checks
 if grep -q ARMv6 /proc/cpuinfo; then
-  error "This app requires an ARM64 kernel, so is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
+  error "User error: This app requires an ARM64 kernel, so is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
 fi
 
 if [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
   status 'You have a 64-bit kernel. Continuing...'
 else
-  while true; do
-    read -n 3 -p 'You need a 64-bit kernel to install WPS Office. Do you want to enable the 64-bit kernel now? [Y/n] ' input
-    case $input in
-    Y|y|yes|Yes|YES)
-      #User accepted, so enable the 64-bit kernel
-      if [ ! -f /boot/config.txt ]; then
-        error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
-      fi
-      echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-      echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install WPS Office again."
-      sleep infinity
-    ;;
-    N|n|no|No|NO)
-      error "User error: 64-bit kernel is required but user chose to not enable it."
-    ;;
-    *) echo 'Invalid input! Please answer y/n, or yes/no.'
-    ;;
-    esac
-  done
+  #ensure hardware is not armv6 or armv7 through another check
+  get_model
+  if [ "$SOC_ID" == 'bcm2835' ] || [ "$SOC_ID" == 'bcm2836' ]; then
+    error "User error: This app requires an ARM64 kernel, so is not compatible with ARMv6 or ARMv7 Raspberry Pi boards."
+  elif [ ! -f /boot/config.txt ]; then
+    error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
+  fi
+
+  userinput_func "You need a 64-bit kernel to install WPS Office. Alternatively, you may want to install a 64-bit operating system.
+Do you want to enable the 64-bit kernel now?" "Yes, switch to a 64-bit kernel" "No, exit the script"
+  
+  if [ "$output" == "Yes, switch to a 64-bit kernel" ];then
+    #switch to 64bit kernel
+
+    echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
+    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install WPS Office again."
+    sleep infinity
+  else
+    error "User error: 64-bit kernel is required but user chose to not enable it."
+  fi
 fi
 
 #install packages to create the chroot
