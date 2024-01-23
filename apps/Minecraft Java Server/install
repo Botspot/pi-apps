@@ -39,6 +39,7 @@ case "$server_category" in
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
+    status "Selected $server_category version $server_version"
     loader_version=$(curl -s https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
     installer_verison=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
     server_jar="fabric-server-mc.$server_version-loader.$loader_version-launcher.$installer_verison.jar"
@@ -51,6 +52,7 @@ case "$server_category" in
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
+    status "Selected $server_category version $server_version"
     installer_version=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
 
     # example file formats
@@ -67,6 +69,7 @@ case "$server_category" in
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
+    status "Selected $server_category version $server_version"
     server_jar="${server_category,,}-$server_version.jar"
     wget -O "$server_jar" "https://serverjars.com/api/fetchJar/Servers/$server_category/$server_version" || exit 1
     ;;
@@ -76,6 +79,7 @@ case "$server_category" in
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
+    status "Selected $server_category version $server_version"
     server_jar="${server_category,,}-$server_version.jar"
     wget -O "$server_jar" "https://serverjars.com/api/fetchJar/Vanilla/$server_category/$server_version" || exit 1
     ;;
