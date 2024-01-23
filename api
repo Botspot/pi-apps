@@ -1941,7 +1941,15 @@ sudo apt-mark unhold $(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
     grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
     grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null >> "$logfile"
+
+    if grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null | awk '{print $2}' | grep -q FAILED; then
+      error_caption+=("You have overwritten system files which prevent packages that share files from being able to install.
+You need to reinstall the following packages to restore the integrity of your apt managed system packages:
+
+$(grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1')")
+      error_type="system"
+    fi
   fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
