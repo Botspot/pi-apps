@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=4.2.1.240230938-experimental
+
 if [ $arch == 32 ];then
   url_arch=armv7l
 elif [ $arch == 64 ];then
@@ -15,7 +17,7 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O "/tmp/MuseScore.AppImage" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/MuseScore-4.2.0.233521126-${url_arch}.AppImage" || exit 1
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version%.*}/MuseScore-${version}-${url_arch}.AppImage" || exit 1
 
 chmod +x "/tmp/MuseScore.AppImage"
 
