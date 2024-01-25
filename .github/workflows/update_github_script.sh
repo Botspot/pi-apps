@@ -22,6 +22,11 @@
 # webVer=$(get_release subhra74/xdm)
 # all_url="https://github.com/subhra74/xdm/releases/download/${webVer}/xdm-setup-${webVer}.tar.xz"
 
+# alternatively, this script also supports using the variable "version" instead of "webVer"
+if [ -n "$version" ]; then
+webVer=("${version[@]}")
+fi
+
 # make sure webVer variable is supplied by the sourcing script
 if [ -n "$webVer" ]; then
 #iterate through all webVer supplied if an array
@@ -162,6 +167,7 @@ echo '![badge-issue][badge-issue]'" webVer variable is missing for $app_name upd
 fi
 
 unset webVer
+unset version
 unset pi_apps_ver_32
 unset pi_apps_ver_64
 unset pi_apps_ver
