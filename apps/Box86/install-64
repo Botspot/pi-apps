@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -z "$__cpu_op_mode_32" ]; then
+  error "User error: Box86 requires a CPU capable of executing ARM32 instructions. Your CPU is only capable of executing ARM64 instructions."
+fi
+
 PAGE_SIZE="$(getconf PAGE_SIZE)"
 if [[ "$PAGE_SIZE" == "16384" ]]; then
   #switch to 4K pagesize kernel

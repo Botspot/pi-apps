@@ -3,9 +3,11 @@
 # Get dependencies
 # obtain model and jetson_model
 get_model &>/dev/null
-if [[ -z "$jetson_model" ]]; then
+if [[ -z "$jetson_model" ]] && [ ! -z "$__cpu_op_mode_32" ]; then
   sudo dpkg --add-architecture armhf
   install_packages libx11-6:armhf libxext6:armhf libegl1:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf || exit 1
+else
+  warning "Your system is only capable of running the ARM64 versions of Minecraft Bedrock. You will be unable to run older ARM32 versions of Minecraft Bedrock that you may find in this launcher."
 fi
 
 #Download file
