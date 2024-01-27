@@ -2,9 +2,9 @@ name: Update_Apps
 
 # Controls when the workflow will run
 on:
-  # run at 00:00 UTC every Wednesday
+  # run at 00:00 and 12:00 UTC every Day
   schedule:
-    - cron: "0 0 * * 3"
+    - cron: "0 0,12 * * *"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -301,10 +301,12 @@ jobs:
           echo "${{env.UPDATED_APPS}}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-  create-pr:
+  create-commit:
     needs: [get-latest-app-versions,test-updated-apps]
     runs-on: ubuntu-latest
     steps:
+      # setup github environment variables
+      - uses: actions/checkout@v3
       # restore GITHUB_WORKSPACE
       - uses: actions/download-artifact@v3
         with:
@@ -313,7 +315,7 @@ jobs:
       - name: Extract GITHUB_WORKSPACE
         run: |
           cd ${{ runner.temp }}
-          tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE
+          tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE --exclude=".git"
           cd $GITHUB_WORKSPACE
       - name: Delete artifact
         uses: geekyeggo/delete-artifact@v2
@@ -371,28 +373,25 @@ jobs:
           echo "$ALL_UPDATED_APPS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+      - name: Create Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          commit-message: |
+          commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          commit_message: |
             Update App Versions, run by GitHub Actions - Apps updated:
 
             ${{ env.ALL_UPDATED_APPS }}
-          branch: "auto-app-updates-NOT-FOR-USERS"
-          title: "[AUTO] Update App Versions"
-          body: |
-            [badge-error]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/error.svg?raw=true 'Error'
-            [badge-warning]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/warning.svg?raw=true 'Warning'
-            [badge-issue]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/issue.svg?raw=true 'Issue'
-            [badge-check]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/check.svg?raw=true 'Check'
-            [badge-info]: https://github.com/Pi-Apps-Coders/GitHub-Markdown/blob/main/blockquotes/badge/dark-theme/info.svg?raw=true 'Info'
-            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
-            Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            For the cleanest looking merge remember to use the "Rebase and merge" option.
-            Apps updated:
-            ```
-            ${{ env.ALL_UPDATED_APPS }}
-            ```
-            ${{needs.get-latest-app-versions.outputs.FAILED_APPS}}
-            ${{ env.ALL_FAILED_APPS_ERROR_STRING }}
+
+      - name: Create or Update issue
+        if: ${{ needs.get-latest-app-versions.outputs.FAILED_APPS != '' || env.ALL_FAILED_APPS_ERROR_STRING != '' }}
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          FAILED_APPS: ${{needs.get-latest-app-versions.outputs.FAILED_APPS}}
+          ALL_FAILED_APPS_ERROR_STRING: ${{ env.ALL_FAILED_APPS_ERROR_STRING }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          update_existing: true
+          search_existing: all
+          filename: .github/update_apps_issue_template.md
