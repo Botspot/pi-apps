@@ -3467,6 +3467,21 @@ if [ -z "$__os_id" ] || [ -z "$__os_desc" ] || [ -z "$__os_release" ] || [ -z "$
   fi
 fi
 
+# add CPU op-modes for all scripts to use
+if ([ -z "$__cpu_op_mode_32" ] && [ -z "$__cpu_op_mode_64" ]) || [ -z "$__cpu_op_modes" ]; then
+  if lscpu | grep "CPU op-mode(s):" | grep -q "32-bit, 64-bit"; then
+    export __cpu_op_modes="32/64"
+    export __cpu_op_mode_32=true
+    export __cpu_op_mode_64=true
+  elif lscpu | grep "CPU op-mode(s):" | grep -q "32-bit"; then
+    export __cpu_op_modes="32"
+    export __cpu_op_mode_32=true
+  elif lscpu | grep "CPU op-mode(s):" | grep -q "64-bit"; then
+    export __cpu_op_modes="64"
+    export __cpu_op_mode_64=true
+  fi
+fi
+
 # add /usr/local/bin to path if not currently present which is often not searched by default if /usr/local/bin did not exist on boot.
 # this path will automatically be added on next boot if a binary is placed in it by a pi-apps script
 [[ "$PATH" != */usr/local/bin* ]] && export PATH="/usr/local/bin:$PATH"
