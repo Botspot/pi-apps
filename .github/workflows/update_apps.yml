@@ -126,11 +126,11 @@ jobs:
         include:
           - os: bullseye
             arch: armhf
-            image: https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2023-05-03/2023-05-03-raspios-bullseye-armhf.img.xz
+            image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-12-06/2023-12-05-raspios-bullseye-armhf.img.xz
             cache: yes
           - os: bullseye
             arch: arm64
-            image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2023-05-03/2023-05-03-raspios-bullseye-arm64.img.xz
+            image: https://downloads.raspberrypi.org/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2023-12-06/2023-12-05-raspios-bullseye-arm64.img.xz
             cache: yes
           - os: bookworm
             arch: armhf
