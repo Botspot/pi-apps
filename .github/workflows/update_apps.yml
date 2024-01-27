@@ -212,6 +212,9 @@ jobs:
 
           import_github_env: true
 
+          # disable debug which shows all commands to be executed
+          debug: no
+
           # set shell to bash
           shell: /bin/bash
           commands: |
