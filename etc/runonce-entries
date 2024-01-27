@@ -23,18 +23,18 @@ fi
 runonce <<"EOF"
   if [ -f "$HOME/Desktop" ]; then
     rm -f "$HOME/Desktop"
-    mkdir -p "$HOME/Desktop"
+    mkdir -p "$HOME/Desktop" || exit 1
   elif [ ! -d "$HOME/Desktop" ]; then
-    mkdir -p "$HOME/Desktop"
+    mkdir -p "$HOME/Desktop" || exit 1
   fi
   if [ ! -d /opt ]; then
-    sudo_popup mkdir /opt
+    sudo_popup mkdir /opt || exit 1
   fi
   if [ ! -d /usr/local/bin ]; then
-    sudo_popup mkdir -p /usr/local/bin
+    sudo_popup mkdir -p /usr/local/bin || exit 1
   fi
   if [ ! -d /usr/local/share/applications ]; then
-    sudo_popup mkdir -p /usr/local/share/applications
+    sudo_popup mkdir -p /usr/local/share/applications || exit 1
   fi
   #Pi-Apps tries to avoid unnecessary reboots at all cost. desktop launchers can be installed to /usr/local/share/applications, which is often not searched by default if /usr/local/share did not exist on boot.
   #This path is added to $XDG_DATA_DIRS on the next reboot, but we don't want to wait for that!
