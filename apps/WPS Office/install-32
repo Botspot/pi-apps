@@ -13,8 +13,8 @@ else
   get_model
   if [ "$SOC_ID" == 'bcm2835' ] || [ "$SOC_ID" == 'bcm2836' ]; then
     error "User error: This app requires an ARM64 kernel, so is not compatible with ARMv6 or ARMv7 Raspberry Pi boards."
-  elif [ ! -f /boot/config.txt ]; then
-    error 'User error: The /boot/config.txt file is missing! You must be on an unsupported system.'
+  elif [ ! -f /boot/config.txt ] && [ ! -f /boot/firmware/config.txt ]; then
+    error 'User error: The /boot/config.txt and/or /boot/firmware/config.txt file is missing! You must be on an unsupported system.'
   fi
 
   userinput_func "You need a 64-bit kernel to install WPS Office. Alternatively, you may want to install a 64-bit operating system.
@@ -22,9 +22,14 @@ Do you want to enable the 64-bit kernel now?" "Yes, switch to a 64-bit kernel" "
   
   if [ "$output" == "Yes, switch to a 64-bit kernel" ];then
     #switch to 64bit kernel
-
-    echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install WPS Office again."
+    if [ -f /boot/firmware/config.txt ]; then
+      boot_config="/boot/firmware/config.txt"
+    elif [ -f /boot/config.txt ]; then
+      boot_config="/boot/config.txt"
+    fi
+    echo "" | sudo tee --append $boot_config >/dev/null
+    echo "arm_64bit=1" | sudo tee --append $boot_config >/dev/null
+    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to $boot_config\nPlease reboot and install WPS Office again."
     sleep infinity
   else
     error "User error: 64-bit kernel is required but user chose to not enable it."

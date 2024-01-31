@@ -7,7 +7,12 @@ fi
 PAGE_SIZE="$(getconf PAGE_SIZE)"
 if [[ "$PAGE_SIZE" == "16384" ]]; then
   #switch to 4K pagesize kernel
-  if [ -f /boot/config.txt ]; then
+  if [ -f /boot/config.txt ] || [ -f /boot/firmware/config.txt ]; then
+    if [ -f /boot/firmware/config.txt ]; then
+      boot_config="/boot/firmware/config.txt"
+    elif [ -f /boot/config.txt ]; then
+      boot_config="/boot/config.txt"
+    fi
     text="Raspberry Pi 5 PiOS images ship by default with a 16K PageSize Linux Kernel.
 This kernel causes incompatibilities with some software including Box86 https://github.com/raspberrypi/bookworm-feedback/issues/107
 
@@ -16,14 +21,13 @@ Would you like to automatically switch to a 4K PageSize Linux Kernel?"
     if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
       error "User error: Your current running kernel is built with 16K PageSize and is incompatible with Box86. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing Box86."
     fi
-    echo "" | sudo tee --append /boot/config.txt >/dev/null
-    echo "[pi5]" | sudo tee --append /boot/config.txt >/dev/null
-    echo "kernel=kernel8.img" | sudo tee --append /boot/config.txt >/dev/null
-    "${DIRECTORY}/manage" uninstall "Box64"
-    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to /boot/config.txt\nPlease reboot now and install the Box86 (and Box64 if you had it previously installed) app again."
+    echo "" | sudo tee --append $boot_config >/dev/null
+    echo "[pi5]" | sudo tee --append $boot_config >/dev/null
+    echo "kernel=kernel8.img" | sudo tee --append $boot_config >/dev/null
+    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to $boot_config\nPlease reboot now and install the Box86 app again."
     sleep infinity
   else
-    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Box86. Changing kernels automatically cannot be done since no /boot/config.txt file was found."
+    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Box86. Changing kernels automatically cannot be done since no /boot/config.txt or /boot/firmware/config.txt file was found."
   fi
 fi
 

@@ -53,9 +53,16 @@ Wine will not work on such systems. What would you like to do?
   
   if [ "$output" == "Switch to a 64-bit kernel" ];then
     #switch to 64bit kernel
-    
-    echo "arm_64bit=1" | sudo tee --append /boot/config.txt >/dev/null
-    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to /boot/config.txt\nPlease reboot and install the Wine app again."
+    if [ -f /boot/firmware/config.txt ]; then
+      boot_config="/boot/firmware/config.txt"
+    elif [ -f /boot/config.txt ]; then
+      boot_config="/boot/config.txt"
+    else
+      error 'User error: The /boot/config.txt and /boot/firmware/config.txt files are missing! You must be on an unsupported system.'
+    fi
+    echo "" | sudo tee --append $boot_config >/dev/null
+    echo "arm_64bit=1" | sudo tee --append $boot_config >/dev/null
+    echo -e "The 64-bit kernel has been enabled by adding 'arm_64bit=1' to $boot_config\nPlease reboot and install the Wine app again."
     sleep infinity
   elif [ "$output" == "Compile 3G/1G kernel" ];then
     #compile 3g/1g kernel
