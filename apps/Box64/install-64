@@ -14,7 +14,6 @@ fi
 
 # obtain SOC_ID
 get_model
-PAGE_SIZE="$(getconf PAGE_SIZE)"
 if [[ "$SOC_ID" == "tegra-x1" ]] || [[ "$SOC_ID" == "tegra-x2" ]]; then
   install_packages box64-tegrax1 || exit 1
 elif [[ "$SOC_ID" == "rk3399" ]]; then
@@ -23,10 +22,6 @@ elif [[ "$SOC_ID" == "bcm2711" ]]; then
   install_packages box64-rpi4arm64 || exit 1
 elif [[ "$SOC_ID" == "bcm2837" ]]; then
   install_packages box64-rpi3arm64 || exit 1
-elif cat /proc/cpuinfo | grep -q aes && [[ "$PAGE_SIZE" == "16384" ]]; then
-  warning "There is no box64 pre-build for your device $SOC_ID $model and it has a 16K pagesize"
-  warning "Installing the generic arm page16k box64 build as a fallback (crypto extensions enabled)"
-  install_packages box64-generic-arm-page16k || exit 1
 elif cat /proc/cpuinfo | grep -q aes; then
   warning "There is no box64 pre-build for your device $SOC_ID $model"
   warning "Installing the generic arm box64 build as a fallback (crypto extensions enabled)"
