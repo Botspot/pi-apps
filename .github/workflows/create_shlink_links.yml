@@ -28,6 +28,7 @@ jobs:
             'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
+          echo "Online shortcodes: $online_shortcodes"
           #create links
           applist="$(ls $GITHUB_WORKSPACE/apps | grep .)"
           # get local shortcodes
@@ -47,6 +48,7 @@ jobs:
           }
 
           # needed shortcodes
+          echo "Local shortcodes: $local_shortcodes"
           new_shortcodes="$(echo "$local_shortcodes" | sort | list_subtract "$online_shortcodes")"
           IFS=$'\n'
           for shortcode in $new_shortcodes ;do
