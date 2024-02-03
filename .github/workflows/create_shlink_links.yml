@@ -24,11 +24,11 @@ jobs:
           SHLINK_KEY: ${{ secrets.SHLINK_KEY }}
         run: |
           # get all available URLs
-          curl -X 'GET' \
+          curl -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
             'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY"
-          online_shortcodes="$(curl -s -X 'GET' \
+          online_shortcodes="$(curl -s -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
             'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
             -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
@@ -58,7 +58,7 @@ jobs:
           for shortcode in $new_shortcodes ;do
             echo "Creating missing shortcode: $shortcode"
             curl -s -X 'POST' \
-              'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls' \
+              'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
               -H 'accept: application/json' \
               -H "X-Api-Key: $SHLINK_KEY" \
               -H 'Content-Type: application/json' \
