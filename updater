@@ -310,9 +310,9 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables, outpu
     updatable_files="$(cat "${DIRECTORY}/data/update-status/updatable-files")"
   fi
   
-  local LIST
+  local LIST=''
   local app
-  local compressed_update
+  local compressed_update=''
   for app in $updatable_apps ;do #generate a yad list for every updatable app
     # get app tooltip
     read -r 2>/dev/null line <"${DIRECTORY}/update/pi-apps/apps/${app}/description" || line="Description unavailable"
@@ -597,7 +597,7 @@ update_now_gui() { #input: updatable_files and updatable_apps variables
 }
 
 update_now_background() { #input: updatable_apps and updatable_files variables
-  # only safe updates that can be done in the background are performed (app refreshes and script updates)
+  # only safe updates that can be done in the background are performed (app refreshes and file updates)
   local IFS=$'\n'
   
   #If updatable_apps and updatable_files variables empty, set them to the results of the last update-check
@@ -607,8 +607,8 @@ update_now_background() { #input: updatable_apps and updatable_files variables
   fi
   
   local app
-  local background_updatable_apps
-  for app in $updatable_apps ;do #generate a yad list for every updatable app
+  local background_updatable_apps=''
+  for app in $updatable_apps ;do #narrow down safe $updatable_apps entries
     # if ${app} folder did not exist before and install-${arch}, install, or packages file is in the new update, then this is a "new app"
     # results in applications that only have support for a different architecture to show under the compressed update
     if [ ! -d "${DIRECTORY}/apps/${app}" ] && ( [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/packages" ] ); then
@@ -619,14 +619,14 @@ update_now_background() { #input: updatable_apps and updatable_files variables
     # similar to the above. if install script is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       continue
-    # if app will be reinstalled then include it on the list and notify the user that it will be reinstalled
+    # if app will be reinstalled then don't try to reinstall it in the background
     elif will_reinstall "$app"; then
       continue
-    # if app has been installed in the past then show it on the list. Useful to notify users that their app, which failed to install in the past, may now work.
+    # if app failed to install last time, show this app refresh to the user.
     elif [ "$(app_status "${app}")" == 'corrupted' ];then
       continue
-    else # app is not new or getting reinstalled, add to compressed update list
-      background_updatable_apps+=$'\n'"${app}"
+    else # app is not new or getting reinstalled, safe to refresh it now
+      background_updatable_apps+="${app}"$'\n'
     fi
   done
   
@@ -701,10 +701,12 @@ if [ "$runmode" == autostarted ];then #if update-interval allows, and one app in
   updatable_apps="$(get_updatable_apps)"
   updatable_files="$(get_updatable_files)"
 
+  #Auto-refresh pi-apps files and apps that are not new and are not going to be reinstalled
   if [ ! -z "$updatable_files" ] || [ ! -z "$updatable_apps" ];then
     #run background updater
     update_now_background
     
+    #check what is updatable again
     updatable_apps="$(get_updatable_apps)"
     updatable_files="$(get_updatable_files)"
   fi
