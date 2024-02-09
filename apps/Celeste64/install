@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#get version of glibc
+glibc_ver="$(ldd --version | head -n1 | awk '{print $NF}')" # example value: 2.30
+maj="$(awk -F. '{print $1}' <<<"$glibc_ver")"
+min="$(awk -F. '{print $2}' <<<"$glibc_ver")"
+
+#exit if glibc is lower than 2.35
+if [ $maj -eq 2 ] && [ $min -ge 30 ] || [ $maj -gt 2 ];then
+  true
+else
+  error "User error: Celeste64 can only run on Ubuntu Jammy 22.04 or Debian Bookworm 12 and newer."
+fi
+
+cd /tmp || error "Could not move to /tmp folder"
+
+version="1.1.1"
+
+#determine filename of download
+if [ $arch == 32 ];then
+  filename="https://github.com/ExOK/Celeste64/releases/download/v$version/Celeste64-v$version-Linux-arm.zip"
+elif [ $arch == 64 ];then
+  filename="https://github.com/ExOK/Celeste64/releases/download/v$version/Celeste64-v$version-Linux-arm64.zip"
+fi
+
+status "Downloading the game"
+rm -f Celeste64.zip
+wget -O Celeste64.zip "$filename"
+
+# create program directory
+sudo mkdir -p /usr/local/bin/ /usr/local/share/applications/ /usr/local/share/Celeste64 /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
+
+status "Installing the game"
+# extract game to
+sudo unzip -o Celeste64.zip -d /usr/local/share/Celeste64 || error "Failed to unzip game to install folder"
+rm -f Celeste64.zip
+
+status "Creating launcher script..."
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+if ! command -v glxinfo >/dev/null ;then
+  install_packages mesa-utils || exit 1
+fi
+
+# detect if script is running on a system with OpenGL lower than 3.3
+if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
+  warning "You are running a device that is not OpenGL 3.3 compliant or the OpenGL version could not be determined."
+  warning "Adding a MESA_GL_VERSION_OVERRIDE to 3.3"
+  echo '#!/bin/bash
+DOTNET_EnableArm64AdvSimd=0 MESA_GL_VERSION_OVERRIDE=3.3 /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
+else
+  echo '#!/bin/bash
+DOTNET_EnableArm64AdvSimd=0 /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
+fi
+sudo chmod +x /usr/local/bin/Celeste64 || error "Failed to make launcher script executable!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/Celeste64.png || error "Failed to install Celeste64 icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/Celeste64.png || error "Failed to install Celeste64 icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+status "Adding to applications menu"
+
+sudo tee /usr/local/share/applications/Celeste64.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Exec=/usr/local/bin/Celeste64
+Terminal=false
+Name=Celeste64
+Icon=Celeste64
+Categories=Game
+EOF
+
+status_green "Game installed!"

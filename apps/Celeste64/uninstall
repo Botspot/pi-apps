@@ -1,0 +1,4 @@
+#!/bin/bash
+
+purge_packages || exit 1
+sudo rm -rf /usr/local/bin/Celeste64 /usr/local/share/Celeste64 /usr/local/share/applications/Celeste64.desktop /usr/local/share/icons/hicolor/64x64/apps/Celeste64.png /usr/local/share/icons/hicolor/24x24/apps/Celeste64.png || error "Could not uninstall Celeste64"
