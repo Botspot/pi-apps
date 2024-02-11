@@ -6,8 +6,15 @@ wget -O /tmp/Cura.AppImage https://github.com/smartavionics/Cura/releases/downlo
 sudo mv /tmp/Cura.AppImage /opt
 sudo chmod +x /opt/Cura.AppImage
 
-#ensure libfuse2 is installed to avoid "error loading libfuse.so.2" error
-install_packages libfuse2 libgles-dev || exit 1
+#installs libfuse2
+enable_module fuse || exit 1
+
+#mesa-utils gets better layer rendering instead of compatibility view
+if package_available mesa-utils ;then
+  install_packages libgles-dev mesa-utils || exit 1
+else
+  install_packages libgles-dev || exit 1
+fi
 
 #get stl-thumb package - non-fatal as it's not crucial to Cura's function
 (install_packages "https://github.com/unlimitedbacon/stl-thumb/releases/download/v${version2}/stl-thumb_${version2}_armhf.deb") || warning "Failed to install stl-thumb package, but continuing as it's not crucial to Cura's operation."
