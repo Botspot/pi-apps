@@ -12,6 +12,10 @@ else
   error "User error: Celeste64 can only run on Ubuntu Jammy 22.04 or Debian Bookworm 12 and newer."
 fi
 
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
+if ! command -v glxinfo >/dev/null ;then
+  install_packages mesa-utils || exit 1
+fi
 # detect if script is running on a system with OpenGL lower than 3.3
 env_variables="DOTNET_EnableArm64AdvSimd=0"
 if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
@@ -46,11 +50,6 @@ sudo unzip -o Celeste64.zip -d /usr/local/share/Celeste64 || error "Failed to un
 rm -f Celeste64.zip
 
 status "Creating launcher script..."
-
-function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
-if ! command -v glxinfo >/dev/null ;then
-  install_packages mesa-utils || exit 1
-fi
 
 echo '#!/bin/bash
 '"$env_variables"' /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
