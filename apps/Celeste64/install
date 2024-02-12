@@ -12,6 +12,16 @@ else
   error "User error: Celeste64 can only run on Ubuntu Jammy 22.04 or Debian Bookworm 12 and newer."
 fi
 
+# detect if script is running on a system with OpenGL lower than 3.3
+env_variables="DOTNET_EnableArm64AdvSimd=0"
+if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
+  # detect if GLSL 3.30 or higher is available when overwriting to GL 3.3
+  if [ $(version $(MESA_GL_VERSION_OVERRIDE=3.3 glxinfo -B | sed -n "s/^OpenGL shading language version string://p" | awk '{ print $1 }')) -lt $(version "3.30") ]; then
+    error "User error: Celeste64 can only run on hardware with GLSL 3.30 or newer support. This corresponds to a Raspberry Pi 4 or 5."
+  fi
+  env_variables="DOTNET_EnableArm64AdvSimd=0 MESA_GL_VERSION_OVERRIDE=3.3"
+fi
+
 cd /tmp || error "Could not move to /tmp folder"
 
 version="1.1.1"
@@ -42,16 +52,8 @@ if ! command -v glxinfo >/dev/null ;then
   install_packages mesa-utils || exit 1
 fi
 
-# detect if script is running on a system with OpenGL lower than 3.3
-if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
-  warning "You are running a device that is not OpenGL 3.3 compliant or the OpenGL version could not be determined."
-  warning "Adding a MESA_GL_VERSION_OVERRIDE to 3.3"
-  echo '#!/bin/bash
-DOTNET_EnableArm64AdvSimd=0 MESA_GL_VERSION_OVERRIDE=3.3 /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
-else
-  echo '#!/bin/bash
-DOTNET_EnableArm64AdvSimd=0 /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
-fi
+echo '#!/bin/bash
+'"$env_variables"' /usr/local/share/Celeste64/Celeste64' | sudo tee /usr/local/bin/Celeste64 >/dev/null || error "Failed to create Celeste64 launch script"
 sudo chmod +x /usr/local/bin/Celeste64 || error "Failed to make launcher script executable!"
 
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/Celeste64.png || error "Failed to install Celeste64 icon!"
