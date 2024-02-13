@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=206_16
+
 #get java
 adoptium_installer || exit 1
 install_packages temurin-11-jdk libxt-dev build-essential || exit 1
@@ -13,7 +15,7 @@ sudo mkdir -p /usr/local/bin/ /usr/local/share/applications/ /usr/local/share/ic
 # remove previous installation files
 sudo rm -rf /tmp/jgrasp.zip /usr/local/bin/jgrasp /usr/local/share/jgrasp
 
-wget 'https://www.jgrasp.org/dl4g/jgrasp/jgrasp206_12.zip' -O /tmp/jgrasp.zip || error "Failed to download jgrasp.zip!"
+wget "https://www.jgrasp.org/dl4g/jgrasp/jgrasp${version}.zip" -O /tmp/jgrasp.zip || error "Failed to download jgrasp.zip!"
 sudo unzip /tmp/jgrasp.zip -d /usr/local/share/ || error "Failed to extract jgrasp.zip!"
 rm -f /tmp/jgrasp.zip
 
