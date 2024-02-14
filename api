@@ -2246,7 +2246,7 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT" <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host" <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
@@ -2479,6 +2479,12 @@ If this ends up fixing the problem, please notify the Pi-Apps developers. If you
   if grep -qF "ModuleNotFoundError: No module named 'lsb_release'" <<<"$errors";then
     error_caption+=("Your lsb_release command seems to be incompletely installed. Try running this command to fix it:
 sudo apt install --reinstall lsb_release")
+    error_type="system"
+  fi
+  
+  if grep -qF "c++: fatal error: Killed signal terminated program cc1plus" <<<"$errors";then
+    error_caption+=("Compiling $app failed because cc1plus was killedd due to insufficient RAM.
+Please install $app again, but this time keep all other programs closed to keep more free RAM available.")
     error_type="system"
   fi
   
