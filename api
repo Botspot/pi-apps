@@ -3099,15 +3099,18 @@ git_clone() { #silently clone a git repository but display the output if an erro
   # $1 is repo
   local IFS=' '
   local arg
+  local prevarg
   local repo_name=''
   for arg in "$@"; do
     if [[ "$arg" == *'://'* ]];then
       local url="$arg"
       repo_name=$(basename "$url" | sed s/.git//g)
-    elif [ ! -z "$repo_name" ] && [[ "$arg" != -* ]];then #repo_name already set, so this arg is after the url to specify the download folder name
+    elif [ ! -z "$repo_name" ] && [[ "$arg" != -* ]] && [[ "$prevarg" != -* ]];then #repo_name already set, so this arg is after the url to specify the download folder name
       repo_name="$arg"
     fi
+    prevarg="$arg"
   done
+  unset prevarg
   
   [ -z "$url" ] && error "git_clone(): no repository URL specified."
   
