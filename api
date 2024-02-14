@@ -2246,7 +2246,7 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host" <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host\|fatal: unable to access 'https://github.com.*': Failed to connect to github.com port 443 after .* ms: Couldn't connect to server" <<<"$errors" ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
@@ -2272,6 +2272,11 @@ Check your internet connection and try again.")
     error_caption+=("Download failed due to a weird GnuTLS recv error. This is a problem with your system, not Pi-Apps. 
 
 Try following the suggestions proposed on this website: https://stackoverflow.com/questions/38378914/how-to-fix-git-error-rpc-failed-curl-56-gnutls")
+    error_type="internet"
+  fi
+  
+  if grep -qF "java.net.ConnectException: Connection refused" <<<"$errors" && grep -qF "Downloading minecraft server failed, invalid checksum." <<<"$errors" ;then
+    error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
@@ -2450,16 +2455,7 @@ sudo chown -R $USER:$USER $HOME/.cache/pip")
     error_type="system"
   fi
 
-  if grep -q "mkdir: cannot create directory .*/home/$USER/pi-apps-.*: Permission denied" <<<"$errors";then
-    error_caption+=("Your HOME directory cannot be written to by the current user.
-Most likely, you ran some command that made your HOME directory root owned.
-
-To fix this, run this command:
-sudo chown -R $USER:$USER $HOME")
-    error_type="system"
-  fi
-
-  if grep -q "rm: cannot remove .*/home/$USER/.*: Permission denied" <<<"$errors";then
+  if grep -q "mkdir: cannot create directory .*/home/$USER/pi-apps-.*: Permission denied\|rm: cannot remove .*/home/$USER/.*: Permission denied" <<<"$errors";then
     error_caption+=("Your HOME directory cannot be written to by the current user.
 Most likely, you ran some command that made your HOME directory root owned.
 
