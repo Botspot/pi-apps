@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.10.8-jdkTest
+version=4.10.9
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
