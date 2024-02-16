@@ -78,7 +78,7 @@ echo
 #package found in: https://linux.wps.cn/
 version=11.1.0.11711
 # download wps office with custom command
-wget --header="Referer: https://linux.wps.cn/" "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -c -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
+wget --header="Referer: https://linux.wps.cn/" "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || error "In the 64-bit chroot, wget failed to download wps-office.deb!"
 sudo mv /tmp/wps-office.deb /opt/wps-office-chroot/wps-office.deb
 
 status "Installing wps package in the chroot..."
@@ -159,8 +159,3 @@ Icon=/opt/wps-office-chroot/usr/share/icons/hicolor/256x256/mimetypes/wps-office
 StartupNotify=true
 MimeType=application/mspowerpoint;application/msword;application/msword-template;application/pdf;application/powerpoint;application/rtf;application/vnd.ms-powerpoint;application/vnd.mspowerpoint;application/vnd.ms-word;application/vnd.ms-word.document.macroEnabled.12;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.slideshow;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/wps-office.doc;application/wps-office.docx;application/wps-office.dot;application/wps-office.dotx;application/wps-office.dps;application/wps-office.dpso;application/wps-office.dpss;application/wps-office.dpt;application/wps-office.pot;application/wps-office.potx;application/wps-office.ppt;application/wps-office.pptx;application/wps-office.uop;application/wps-office.uot;application/wps-office.wps;application/wps-office.wpso;application/wps-office.wpss;application/wps-office.wpt;application/x-mspowerpoint;application/x-msword;x-scheme-handler/ksoet;x-scheme-handler/ksoqing;x-scheme-handler/ksowebstartupet;x-scheme-handler/ksowebstartupwpp;x-scheme-handler/ksowebstartupwps;x-scheme-handler/ksowpp;x-scheme-handler/ksowps;x-scheme-handler/ksowpscloudsvr;
 " | sudo tee /usr/share/applications/wps-office-prometheus.desktop >/dev/null
-
-
-
-
-
