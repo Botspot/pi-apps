@@ -3129,6 +3129,7 @@ git_clone() { #silently clone a git repository but display the output if an erro
 wget() { #Intercept all wget commands. When possible, uses aria2c.
   local file=''
   local url=''
+  local passopts=()
   #determine the download manager to use
   local use=aria2c
   #determine if being run silently (if the '-q' flag was passed)
@@ -3143,6 +3144,8 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     if [[ "$opt" == '--'* ]];then
       if [ "$opt" == '--quiet' ];then
         quiet=1
+      elif [[ "$opt" == '--header='* ]];then
+        passopts+=("$opt")
       else #for any other arguments, fallback to wget
         use=wget
       fi
@@ -3228,7 +3231,7 @@ wget() { #Intercept all wget commands. When possible, uses aria2c.
     #use these flags for aria2c
     aria2_flags=(-x 16 -s 16 --max-tries=10 --retry-wait=30 --max-file-not-found=5 --http-no-cache=true --check-certificate=false \
       --allow-overwrite=true --auto-file-renaming=false --remove-control-file --auto-save-interval=0 \
-      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" -d "$(dirname "${file}")" -o "$(basename "${file}")")
+      --console-log-level=error --show-console-readout=false --summary-interval=1 "$url" -d "$(dirname "${file}")" -o "$(basename "${file}")" "${passopts[@]}")
     
     #suppress output if -q flag passed
     if [ "$quiet" == 1 ];then
