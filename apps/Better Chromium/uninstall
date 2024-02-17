@@ -72,7 +72,7 @@ for profile in $profiles ;do
   sed -i 's/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":true,"allowed_on_next_startup":true}/"signin":{"AccountReconcilor":{"kDiceMigrationOnStartup2":true},"allowed":false,"allowed_on_next_startup":false}/g' "$HOME/.config/chromium/$profile/Preferences"
 done
 
-if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+if pgrep chromium >/dev/null || pgrep -f chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
 fi
 true
