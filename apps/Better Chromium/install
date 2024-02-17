@@ -229,7 +229,7 @@ fi
 text="<b>Better Chromium</b> - by Botspot"
 
 #detect if chromium is running, and if so, remind the user to relaunch it when done
-if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+if pgrep chromium >/dev/null || pgrep -f chromium-browser >/dev/null ;then
   text+=$'\n'"Changes will take effect after you relaunch Chromium."
 fi
 
