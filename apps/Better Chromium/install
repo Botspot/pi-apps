@@ -300,6 +300,18 @@ cat << "EOF" | sudo tee "${folder}/zzzz_combine_values" >/dev/null
 #This script combines multiple invocations of --enable-features and --disable-features into one argument so that Chromium does not ignore any.
 #Written by Botspot for the Pi-Apps Better Chromium script.
 
+#Intercept chromium args and move them to CHROMIUM_FLAGS
+while [ $# -gt 0 ]; do
+  case "$1" in
+    #Avoid passing chromium-browser script args to chromium-browser binary
+    -h | --help | -help | --verbose | -g | --debug | --no-touch-pinch | --temp-profile | -- ) # Stop option prcessing
+      break ;;
+    * )
+      CHROMIUM_FLAGS="$CHROMIUM_FLAGS $1"
+      shift ;;
+  esac
+done
+
 IFS=' '
 enable=''
 disable=''
