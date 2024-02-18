@@ -1,0 +1,6 @@
+Based on Firefox, includes extra privacy features and customization.
+This approaches Vivaldi-level customization, but it's a fork of Firefox instead of Chromium. It has dynamic New Tab backgrounds like Brave does, with a right sidebar like Microsoft Edge. Includes support for multiple workspaces and includes anti-tracking by default.
+This version from Pi-Apps will add some extensions: uBlock Origin, h264ify, and UANaughtyList - the same extensions included with the PiOS Bullseye Firefox build.
+
+To run: Menu -> Internet -> Floorp
+To run in a terminal: floorp

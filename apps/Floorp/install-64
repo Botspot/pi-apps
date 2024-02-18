@@ -1,0 +1,90 @@
+#!/bin/bash
+
+#makes a floorp arm64 deb and installs it
+#adapted from: https://github.com/Floorp-Projects/Floorp/blob/ESR115/.github/workflows/linux-x64-deb.yml
+
+sudo rm -rf /tmp/floorp-deb /tmp/floorp
+wget -O /tmp/floorp-deb.zip https://github.com/Floorp-Projects/Floorp/raw/a3063cc9bb7b86c79845b8a0aaf860f4dc575b85/.github/debian-data.zip || exit 1
+unzip -q /tmp/floorp-deb.zip -d /tmp/floorp-deb || error "failed to extract /tmp/floorp-deb.zip"
+rm -f /tmp/floorp-deb.zip
+
+#no arm64 deb exists, so put arm64 files in deb structure
+version=11.10.0
+wget -O /tmp/floorp.tar.bz2 "https://github.com/Floorp-Projects/Floorp/releases/download/v${version}/floorp-${version}.linux-aarch64.tar.bz2"
+
+status 'Extracting: /tmp/floorp.tar.bz2'
+tar -xf /tmp/floorp.tar.bz2 -C /tmp/floorp-deb/usr/lib  || error "Failed to extract /tmp/floorp-${version}.linux-aarch64.tar.bz2!"
+rm -f /tmp/floorp.tar.bz2
+
+#add menu entry
+mkdir /tmp/floorp-deb/usr/share/applications
+wget -O /tmp/floorp-deb/usr/share/applications/floorp.desktop https://github.com/Floorp-Projects/Floorp/raw/a3063cc9bb7b86c79845b8a0aaf860f4dc575b85/.github/floorp-debian.desktop || exit 1
+
+mkdir -p /tmp/floorp-deb/usr/lib/floorp-addons/distribution/extensions || exit 1
+mkdir -p /tmp/floorp-deb/usr/lib/floorp/distribution/extensions || exit 1 #this dir added here is necessary, but not found in official deb-creation script
+mkdir -p /tmp/floorp-deb/usr/lib/floorp/addons/extensions || exit 1
+mkdir /tmp/floorp-deb/usr/lib/floorp/addons/plugins || exit 1
+
+#Add rpi-firefox-mods customizations
+if package_available rpi-firefox-mods ;then
+  cd /tmp
+  apt download rpi-firefox-mods || error "APT failed to download rpi-firefox-mods!"
+  cd
+else
+  wget -O /tmp/rpi-firefox-mods_20240110_all.deb https://archive.raspberrypi.com/debian/pool/main/r/rpi-firefox-mods/rpi-firefox-mods_20240110_all.deb || exit 1
+fi
+sudo dpkg-deb -x /tmp/rpi-firefox-mods*.deb /tmp/rpi-firefox-mods || error "Failed to extract rpi-firefox-mods deb to /tmp!"
+sudo chown -R $USER:$USER /tmp/rpi-firefox-mods || error "Failed to change ownership of /tmp/rpi-firefox-mods"
+
+mv /tmp/rpi-firefox-mods/usr/share/firefox/distribution/extensions/* /tmp/floorp-deb/usr/lib/floorp/distribution/extensions || error "Failed to move extensions"
+
+mkdir -p /tmp/floorp-deb/usr/lib/floorp/browser/defaults/preferences || error "Failed to make preferences folder"
+cp /tmp/rpi-firefox-mods/usr/lib/firefox/browser/defaults/preferences/raspberrypi.js /tmp/floorp-deb/usr/lib/floorp/browser/defaults/preferences || error "Failed to move preferences"
+
+mkdir -p /tmp/floorp-deb/usr/share/floorp/distribution
+mv /tmp/rpi-firefox-mods/usr/share/firefox/distribution/distribution.ini /tmp/floorp-deb/usr/share/floorp/distribution || error "Failed to move distribution.ini"
+sed -i 's/Mozilla Firefox/Ablaze Floorp/g' /tmp/floorp-deb/usr/share/floorp/distribution/distribution.ini || error "Failed to edit distribution.ini"
+
+rm -rf /tmp/rpi-firefox-mods /tmp/rpi-firefox-mods_20240110_all.deb
+
+#make floorp command
+mkdir /tmp/floorp-deb/usr/bin || error "Failed to make /tmp/floorp-deb/usr/bin folder"
+cd /tmp/floorp-deb/usr/bin
+ln -s ../lib/floorp/floorp.sh floorp || error "Failed to make floorp command symlink"
+cd
+
+#make the control file
+cat << EOF > /tmp/floorp-deb/DEBIAN/control || error "Failed to make control file"
+Package: floorp
+Version: $version
+Architecture: arm64
+Maintainer: Floorp project
+Installed-Size: $(du -ks /tmp/floorp-deb --exclude=/tmp/floorp-deb/DEBIAN | tr -cd '0123456789\n')
+Depends: curl, lsb-release, libasound2 (>= 1.0.16), libatk1.0-0 (>= 1.12.4), libc6 (>= 2.30), libcairo-gobject2 (>= 1.10.0), libcairo2 (>= 1.10.0), libdbus-1-3 (>= 1.9.14), libdbus-glib-1-2 (>= 0.78), libfontconfig1 (>= 2.12.6), libfreetype6 (>= 2.10.1), libgcc-s1 (>= 3.3), libgdk-pixbuf2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.42), libgtk-3-0 (>= 3.14), libharfbuzz0b (>= 0.6.0), libpango-1.0-0 (>= 1.14.0), libpangocairo-1.0-0 (>= 1.14.0), libstdc++6 (>= 9), libx11-6, libx11-xcb1 (>= 2:1.6.9), libxcb-shm0, libxcb1, libxcomposite1 (>= 1:0.4.5), libxcursor1 (>> 1.1.2), libxdamage1 (>= 1:1.1), libxext6, libxfixes3, libxi6, libxrandr2 (>= 2:1.4.0), libxrender1, libxtst6, fonts-noto-cjk
+Recommends: libcanberra0, libdbusmenu-glib4, libdbusmenu-gtk3-4
+Suggests: fonts-lyx, fonts-mplus
+Provides: gnome-www-browser, www-browser
+Section: web
+Priority: optional
+Description: Floorp is a new Firefox-based,
+ privacy-preserving browser developed by the Japanese student community.
+Xul-Appid: {ec8030f7-c20a-464f-9b0e-13a3a9e97384}
+EOF
+
+find /tmp/floorp-deb -type f -print0 | xargs -0 chmod 644 || error "Failed to chmod 644 files"
+find /tmp/floorp-deb -type d -print0 | xargs -0 chmod +x || error "Failed to chmod +X folders"
+cd /tmp/floorp-deb/DEBIAN
+command chmod +x postinst postrm preinst prerm || error "Failed to chmod +X control files"
+
+cd /tmp/floorp-deb/usr/lib/floorp
+command chmod +x floorp floorp-bin glxtest vaapitest floorp.sh lib*.so plugin-container gmp-clearkey/0.1/libclearkey.so || error "Failed to chmod +X floorp main files"
+cd
+
+sudo chown -R root:root /tmp/floorp-deb || error "Failed to set root ownership"
+
+#build the new deb
+sudo dpkg-deb -b /tmp/floorp-deb /tmp/floorp.deb || error "Failed to make new floorp.deb package!"
+sudo chown $USER:$USER /tmp/floorp.deb || error "Failed to set ownership to '$USER'"
+sudo rm -rf /tmp/floorp-deb /tmp/floorp
+
+install_packages /tmp/floorp.deb libcanberra0 libdbusmenu-glib4 libdbusmenu-gtk3-4 || exit 1
