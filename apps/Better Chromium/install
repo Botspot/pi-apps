@@ -161,6 +161,9 @@ eval "$(run-parts --list -- /etc/chromium.d | xargs cat)"
 EOF
 fi
 
+#remove deprecated tab previews customization file, not that it is the default on latest chromium
+sudo rm -f "${folder}/tab_previews"
+
 #detect if dark mode is currently enabled by this tool
 if [ -f "${folder}/dark_mode" ];then
   dark_mode=TRUE
@@ -180,6 +183,13 @@ if [ -f "${folder}/ui_scale" ];then
   ui_scale="$(cat "${folder}/ui_scale" | grep -o '\--force-device-scale-factor=.*' | tr -cd '0123456789.\n')"
 else
   ui_scale=1.00
+fi
+
+#detect if tab scrolling is enabled
+if [ -f "${folder}/tab_scrolling" ];then
+  tab_scrolling=TRUE
+else
+  tab_scrolling=FALSE
 fi
 
 #detect if google sync is currently enabled by this tool
@@ -242,6 +252,7 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --field="<a href="\""https://chrome.google.com/webstore/search/neon%20kingdom%20-tabs?_category=themes"\"">Click to see more themes</a>:LBL" '' \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
   --field="New UI 2023":CHK "$chromerefresh2023" \
+  --field="Tab Scrolling":CHK "$tab_scrolling" \
   --field="Enable Google Sync":CHK "$google_sync" \
   --field="Performance Improvements":CHK "$performance_improvements" \
   --field="Reduce SD card writes":CHK "$reduce_writes" \
@@ -263,13 +274,15 @@ ui_scale="$(sed -n 4p <<<"$output")"
 echo "ui_scale: $ui_scale"
 chromerefresh2023="$(sed -n 5p <<<"$output")"
 echo "chromerefresh2023: $chromerefresh2023"
-google_sync="$(sed -n 6p <<<"$output")"
+tab_scrolling="$(sed -n 6p <<<"$output")"
+echo "tab_scrolling: $tab_scrolling"
+google_sync="$(sed -n 7p <<<"$output")"
 echo "google_sync: $google_sync"
-performance_improvements="$(sed -n 7p <<<"$output")"
+performance_improvements="$(sed -n 8p <<<"$output")"
 echo "performance_improvements: $performance_improvements"
-reduce_writes="$(sed -n 8p <<<"$output")"
+reduce_writes="$(sed -n 9p <<<"$output")"
 echo "reduce_writes: $reduce_writes"
-widevine="$(sed -n 9p <<<"$output")"
+widevine="$(sed -n 10p <<<"$output")"
 echo "widevine: $widevine"
 echo
 
@@ -386,10 +399,10 @@ fi
 #New 2023 chrome UI
 if [ "$chromerefresh2023" == TRUE ];then
   #I found this flag after experimenting with chrome://flags and chrome://version
-  echo "Adding --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023 to ${folder}/chromerefresh2023"
+  echo "Adding --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,FluentScrollbar,FluentOverlayScrollbar,OverlayScrollbar --disable-features=ChromeLabs to ${folder}/chromerefresh2023"
   
   cat << EOF | sudo tee "${folder}/chromerefresh2023" >/dev/null
-export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023"
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,FluentScrollbar,FluentOverlayScrollbar,OverlayScrollbar --disable-features=ChromeLabs"
 EOF
 else
   #chromerefresh2023 set to false - so remove the file
@@ -399,7 +412,23 @@ else
   sudo rm -f "${folder}/chromerefresh2023"
 fi
 
-#google_sync
+#Tab scrolling
+if [ "$tab_scrolling" == TRUE ];then
+  #I found this flag after experimenting with chrome://flags and chrome://version
+  echo "Adding --enable-features=ScrollableTabStrip:minTabWidth/140,TabScrollingButtonPosition:buttonPosition/2,kScrollableTabStripOverflow:tabScrollOverflow/2,kScrollableTabStripWithDragging:tabScrollWithDragMode/2 to ${folder}/tab_scrolling"
+  
+  cat << EOF | sudo tee "${folder}/tab_scrolling" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ScrollableTabStrip:minTabWidth/140,TabScrollingButtonPosition:buttonPosition/2,kScrollableTabStripOverflow:tabScrollOverflow/2,kScrollableTabStripWithDragging:tabScrollWithDragMode/2"
+EOF
+else
+  #tab_scrolling set to false - so remove the file
+  if [ -f "${folder}/tab_scrolling" ];then
+    status "Removing ${folder}/tab_scrolling"
+  fi
+  sudo rm -f "${folder}/tab_scrolling"
+fi
+
+#Google sync
 if [ "$google_sync" == TRUE ];then
   #add a file from official Debian version of the chromium package
   echo "Adding GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID, and GOOGLE_DEFAULT_CLIENT_SECRET to ${folder}/apikeys"
@@ -452,7 +481,7 @@ if [ "$performance_improvements" == TRUE ];then
   #More flags added from https://www.ghacks.net/2017/02/13/how-to-speed-up-the-vivaldi-web-browser/
   #Some VA-API flags from https://ubuntuhandbook.org/index.php/2022/07/chromium-snap-package-to-finally-get-back-vaapi-hardware-decoding/
   
-  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder,VaapiVideoEncoder --disable-features=UseChromeOSDirectVideoDecoder --enable-accelerated-video-decode --enable-low-res-tiling --process-per-site"
+  flags="--ignore-gpu-blacklist --enable-checker-imaging --cc-scroll-animation-duration-in-seconds=0.6 --disable-quic --enable-tcp-fast-open --enable-experimental-canvas-features --enable-scroll-prediction --enable-simple-cache-backend --max-tiles-for-interest-area=512 --num-raster-threads=4 --default-tile-height=512 --enable-features=VaapiVideoDecoder,VaapiVideoEncoder,ParallelDownloading --disable-features=UseChromeOSDirectVideoDecoder --enable-accelerated-video-decode --enable-low-res-tiling --process-per-site"
   #The --process-per-site flag significantly decreases RAM usage and number of chromium processes, without any noticeable disadvantages.
   #Not using --enable-low-end-device-mode even though it helps, because scrolling image-heavy pages would crash with "background allocation failure" error.
   
@@ -529,7 +558,7 @@ elif [ "$widevine_possible" == TRUE ] && [ "$widevine" == FALSE ];then
   fi
 fi
 
-if pgrep chromium >/dev/null || pgrep chromium-browser >/dev/null ;then
+if pgrep chromium >/dev/null || pgrep -f chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
 fi
 true
