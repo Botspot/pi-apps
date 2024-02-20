@@ -10,9 +10,15 @@ else
   firejail_package="http://ports.ubuntu.com/pool/universe/f/firejail/firejail_0.9.62-3ubuntu0.1_arm64.deb"
 fi
 
+#custom url 'encryption' function added by wps to prevent abuse
+time="$(date +%s)"
+secrityKey="$(wget -qO- https://linux.wps.cn | grep 'secrityKey =' | sed 's/.* "//g ; s/";$//g')" #lol typo
+url="/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb"
+url="https://wps-linux-personal.wpscdn.cn$url?t=${time}&k=$(echo -n "$secrityKey$url$time" | md5sum | awk '{print $1}')"
+
 # download wps office with custom command
 rm -f /tmp/wps-office.deb
-wget --header="Referer: https://linux.wps.cn/" "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo $version | sed 's/.*\.//g')/wps-office_${version}_arm64.deb" -O /tmp/wps-office.deb || exit 1
+wget --header="User-Agent: This download is a result of the Pi-Apps store. Please stop blocking us. Please contact us if you have any questions. https://github.com/Botspot/pi-apps/issues/new/choose" "$url" -O /tmp/wps-office.deb || exit 1
 
 #install libwebp6 and libtiff5 to get PDF export working
 if package_available libwebp6 && package_available libtiff5 ;then
