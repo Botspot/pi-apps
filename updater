@@ -107,11 +107,11 @@ list_files() { #list all files on pi-apps with relative paths - both on main dir
   
   #list all files in update folder
   cd "${DIRECTORY}/update/pi-apps" || error "Failed to enter update directory!"
-  local updatefiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^data/')"
+  local updatefiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^apps/\|^data/')"
 
   #list all files in main folder
   cd "${DIRECTORY}"
-  local localfiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^\.github/\|^apps/\|^update/\|^data/\|^logs/\|^xlunch/')"
+  local localfiles="$(find . -type f | cut -c 3- | grep -v '^\.git/\|^apps/\|^update/\|^data/\|^logs/\|^xlunch/')"
 
   echo -e "${localfiles}\n${updatefiles}" | sort | uniq
   cd $HOME
@@ -126,7 +126,7 @@ get_updatable_files() { #sets the updatable_files variable
   else #speed was not set to 'fast', so compare each file to the one in the update folder
     #Use rsync for faster speed, if available
     if command -v rsync >/dev/null ;then
-      updatable_files=$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/.github/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")
+      updatable_files=$(rsync --exclude="/apps/" --exclude="/.git/" --exclude="/data/" -ric --dry-run --out-format="%n" "${DIRECTORY}/update/pi-apps/" "${DIRECTORY}/")
     fi
     if [ "$?" != "0" ] || ! command -v rsync >/dev/null ;then
       #get list of pi-apps files without absolute paths. Example line: 'etc/terminal-run'
