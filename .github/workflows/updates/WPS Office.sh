@@ -1,13 +1,20 @@
 #!/bin/bash
 
 webVer="$(wget -qO- --timeout=5 https://linux.wps.cn/ | grep -o 'wps\-office_.*_arm64\.deb' | sed 's/^wps\-office_//g' | sed 's/_arm64\.deb//g')"
-arm64_url="https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo "$webVer" | sed 's/.*\.//g')/wps-office_${webVer}_arm64.deb"
-armhf_url="https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/$(echo "$webVer" | sed 's/.*\.//g')/wps-office_${webVer}_arm64.deb"
+
+#custom url 'encryption' function added by wps to prevent abuse
+time="$(date +%s)"
+secrityKey="$(wget -qO- https://linux.wps.cn | grep 'secrityKey =' | sed 's/.* "//g ; s/";$//g')" #lol typo
+url="/wps/download/ep/Linux2019/$(echo $webVer | sed 's/.*\.//g')/wps-office_${webVer}_arm64.deb"
+url="https://wps-linux-personal.wpscdn.cn$url?t=${time}&k=$(echo -n "$secrityKey$url$time" | md5sum | awk '{print $1}')"
+
+arm64_url="$url"
+armhf_url="$url"
 
 # custom validate url function
 # this will not overwrite the validate_url function created by the main update_apps.yml file for other update scripts
 function validate_url(){
-    if command wget --header="Referer: https://linux.wps.cn/" --timeout=5 -q --spider "$1"; then
+    if command wget --header="User-Agent: This download is a result of the Pi-Apps store. Please stop blocking us. Please contact us if you have any questions. https://github.com/Botspot/pi-apps/issues/new/choose" --timeout=5 -q --spider "$1"; then
         return 0
     else
         return 1
