@@ -45,7 +45,7 @@ mkdir -p /tmp/floorp-deb/usr/share/floorp/distribution
 mv /tmp/rpi-firefox-mods/usr/share/firefox/distribution/distribution.ini /tmp/floorp-deb/usr/share/floorp/distribution || error "Failed to move distribution.ini"
 sed -i 's/Mozilla Firefox/Ablaze Floorp/g' /tmp/floorp-deb/usr/share/floorp/distribution/distribution.ini || error "Failed to edit distribution.ini"
 
-rm -rf /tmp/rpi-firefox-mods /tmp/rpi-firefox-mods_20240110_all.deb
+rm -rf /tmp/rpi-firefox-mods /tmp/rpi-firefox-mods*.deb
 
 #make floorp command
 mkdir /tmp/floorp-deb/usr/bin || error "Failed to make /tmp/floorp-deb/usr/bin folder"
