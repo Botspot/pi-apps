@@ -340,7 +340,7 @@ At this point, grayduck has said Pi-Apps will be added to TwisterOS.
 - **9/26/2021** Properly document Pi-Apps with the new DOCUMENTATION.md file
 - **10/7/2021** Replaced legacy minecraft launcher with Lunar Client and added 64-bit version of PPSSPP
 - **10/9/2021** Added the ability for users to choose between dark mode and light mode for YAD
-- **10/10/2021** Changed the "Sent Log" feature to be available only for errors relating to the script itself and not system
+- **10/10/2021** Changed the "Send Log" feature to be available only for errors relating to the script itself and not system
 - **10/24/2021** Added a "Import App" button to settings
 - **10/26/2021** Added individual icons for all categories
 - **5/16/2022** Major GUI updates and script modifications made. https://github.com/Botspot/pi-apps/pull/1580 https://github.com/Botspot/pi-apps/issues/1578
