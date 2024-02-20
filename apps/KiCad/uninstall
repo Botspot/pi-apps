@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+if [ "$(get_codename)" == bookworm ];then
+  remove_repofile_if_unused /etc/apt/sources.list.d/bookworm-backports.list
+elif [ "$(get_codename)" == bullseye ];then
+  eremove_repofile_if_unused /etc/apt/sources.list.d/bullseye-backports.list
+fi
