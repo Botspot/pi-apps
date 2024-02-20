@@ -139,6 +139,13 @@ package_dependencies() { #outputs the list of dependencies for the $1 package
   package_info "$package" | grep '^Depends: ' | sed 's/^Depends: //g'
 }
 
+package_installed_version() { #returns the installed version of the specified package-name.
+  local package="$1"
+  [ -z "$package" ] && error "package_installed_version(): no package specified!"
+  #find the package listed in /var/lib/dpkg/status
+  package_info "$package" | grep '^Version: ' | awk '{print $2}'
+}
+
 package_latest_version() { #returns the latest available versions of the specified package-name. Doesn't matter if it's installed or not.
   local package="$1"
   [ -z "$package" ] && error "package_latest_version(): no package specified!"
@@ -175,11 +182,11 @@ package_is_new_enough() { #check if the $1 package has an available version grea
 anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
   [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
   
-  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard
-  local url="$(echo "$1" | sed 's+.*://++g' | tr '/' '_')"
+  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard, with trailing _ to ensure full matches
+  local url="$(echo "$1" | sed 's+.*://++g' | tr '/' '_')_"
   
   #find all package-lists pertaining to the url
-  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep "$url")"
+  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep -F "$url")"
   
   #for every repo-file, check if any of them have an installed file
   local found=0
@@ -187,10 +194,14 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
   local repofile
   for repofile in $repofiles ;do
     #search the repo-file for installed packages
+    
     grep '^Package' "$repofile" | awk '{print $2}' | while read -r package ;do
       if package_installed "$package" ;then
-        echo "Package installed: $package"
-        exit 1
+        #this package is installed; check if the version available on this repo is the current version (prevents false positives from backports repos)
+        if [ "$(sed -n "/^Package: ${package}$/,/Version:/p" "$repofile" | grep '^Version: ' | awk '{print $2}')" == "$(package_installed_version "$package")" ];then
+          echo "Package installed: $package"
+          exit 1
+        fi
       fi
     done #if exit code is 1, search was successful. If exit code is 0, no packages from the repo were installed.
     
@@ -216,16 +227,17 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
   #return now if the list file does not exist
   [ -f "$file" ] || return 0
-
+  
   if [ "${file##*.}" == "list" ]; then
-    #determine what repo-urls are in the file
-    local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://')"
+    #determine what repo-urls are in the file: include dist information. Example value: deb.debian.org_debian_dists_bookworm
+    local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://' -A1  | tr '\n' ' ' | sed 's/ -- /\n/g ; s/ $/\n/g ; s/ /_dists_/g')"
   elif [ "${file##*.}" == "sources" ]; then
     #determine what repo-urls are in the file
     local urls="$(cat "$file" | grep -v '^#' | grep '^URIs: ' | sed 's/URIs: //g')"
   else
     error "$file was not of apt list or sources type"
   fi
+  
   #there could be multiple urls in one file. Check each url and set the in_use variable to 1 if any packages are found
   local IFS=$'\n'
   local in_use=0
@@ -237,8 +249,12 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
     fi
   done
   
-  if [ "$in_use" == 0 ] && [ "$testmode" == test ];then
+  if [ "$testmode" == test ] && [ "$in_use" == 0 ];then
     echo "The given repository is not in use and can be deleted:"$'\n'"$file" 1>&2
+  elif [ "$testmode" == test ];then
+    #explain what package is installed from this repo
+    echo "At least this package is preventing the repo from being removed (there may be more)"
+    anything_installed_from_repo "$url" #use value of $url from earlier
   elif [ "$in_use" == 0 ];then
     status "Removing the $(basename "$file" | sed 's/.list$//g' | sed 's/.sources$//g') repo as it is not being used"
     sudo rm -f "$file"
