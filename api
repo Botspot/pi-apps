@@ -387,11 +387,21 @@ app_to_pkgname() { #given an app-name, convert it to a unique, valid package-nam
 
 install_packages() { #Make some packages dependencies of the $app app. Package-names, regex, filenames, and urls are supported.
   
+  #array-variable to store custom apt options (for local repositories)
+  local apt_flags=()
+  
   #convert input array to newline-separated string
   local IFS=' '
-  for arg in "$@"; do
-    local packages+="$arg
+  while [ $# -gt 0 ]; do
+    if [ "$1" == '-t' ];then #pass through -t args to apt: for "-t bookworm-backports"
+      apt_flags+=('-t' "$2")
+      shift
+      shift
+    else
+      local packages+="$1
 "
+      shift
+    fi
   done
   packages="${packages::-1}" #remove final empty newline
   
@@ -399,9 +409,6 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   [ -z "$app" ] && error 'install_packages function can only be used by apps to install packages. (the $app variable was not set)'
   
   status "Will install these packages: $(tr '\n' ' ' <<<"$packages")"
-  
-  #array-variable to store custom apt options (for local repositories)
-  local apt_flags=()
   
   #variable to remember if the pi-apps-local-packages repository is being used
   local using_local_packages=0
