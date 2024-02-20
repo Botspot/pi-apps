@@ -1,10 +1,10 @@
 #!/bin/bash
 
-webVer="$(wget -qO- --timeout=5 https://linux.wps.cn/ | grep -o 'wps\-office_.*_arm64\.deb' | sed 's/^wps\-office_//g' | sed 's/_arm64\.deb//g')"
+webVer="$(wget -qO- --timeout=5 https://linux.wps.cn/ | grep -o 'wps\-office_.*_arm64\.deb' | sed 's/^wps\-office_//g' | sed 's/_arm64\.deb//g' | head -n1)"
 
 #custom url 'encryption' function added by wps to prevent abuse
 time="$(date +%s)"
-secrityKey="$(wget -qO- https://linux.wps.cn | grep 'secrityKey =' | sed 's/.* "//g ; s/";$//g')" #lol typo
+secrityKey="$(wget -qO- --timeout=5 https://linux.wps.cn | grep 'secrityKey =' | sed 's/.* "//g ; s/";$//g')" #lol typo
 url="/wps/download/ep/Linux2019/$(echo $webVer | sed 's/.*\.//g')/wps-office_${webVer}_arm64.deb"
 url="https://wps-linux-personal.wpscdn.cn$url?t=${time}&k=$(echo -n "$secrityKey$url$time" | md5sum | awk '{print $1}')"
 
