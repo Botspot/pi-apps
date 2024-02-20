@@ -4,7 +4,7 @@ This changelog mainly covers major events in Pi-Apps like new apps being added.
 
 If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
 
-Last updated: May 21, 2023 by [@Botspot](https://github.com/Botspot)
+Last updated: Feb 20, 2024 by [@Botspot](https://github.com/Botspot)
 
 ## New Apps changelog:
 
@@ -237,6 +237,9 @@ Last updated: May 21, 2023 by [@Botspot](https://github.com/Botspot)
 - **08/02/2023** Added RiiTag-RPC app
 - **09/21/2023** Added Gnumeric app
 - **10/21/2023** Added Open-Typer app
+- **2/9/2024** Added Celeste64 app
+- **2/18/2024** Added Floorp app
+- **2/20/2024** Added KiCad app
 
 ## Other notable changes:
 
