@@ -1,0 +1,5 @@
+#!/bin/bash
+
+version='1.9.3'
+
+install_packages "https://sourceforge.net/projects/projectlibre/files/ProjectLibre/${version}/projectlibre_${version}-1.deb/download" || exit 1
