@@ -460,7 +460,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #status "Handling url: $package"
       
-      local filename="/tmp/$(basename "$package")"
+      local filename="/tmp/$(basename "$(echo "$package" | sed 's+/download$++g')")"
       
       #add .deb extension if filename doesn't end with it.
       if [ "${filename: -4}" != ".deb" ]; then
