@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=6.18
-version2=0.08
+version2=0.08-2
 install_packages clamav https://github.com/dave-theunsub/clamtk/releases/download/v${version}/clamtk_${version}-1_all.deb || exit 1
 
 #if thunar file manager installed then also install clamtk thunar extension
