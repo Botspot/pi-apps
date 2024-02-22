@@ -17,13 +17,13 @@ if ! command -v glxinfo >/dev/null ;then
   install_packages mesa-utils || exit 1
 fi
 # detect if script is running on a system with OpenGL lower than 3.3
-env_variables="DOTNET_EnableArm64AdvSimd=0"
+env_variables=""
 if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ print $1 }')) -lt $(version "3.3.0") ]; then
   # detect if GLSL 3.30 or higher is available when overwriting to GL 3.3
   if [ $(version $(MESA_GL_VERSION_OVERRIDE=3.3 glxinfo -B | sed -n "s/^OpenGL shading language version string://p" | awk '{ print $1 }')) -lt $(version "3.30") ]; then
     error "User error: Celeste64 can only run on hardware with GLSL 3.30 or newer support. This corresponds to a Raspberry Pi 4 or 5."
   fi
-  env_variables="DOTNET_EnableArm64AdvSimd=0 MESA_GL_VERSION_OVERRIDE=3.3"
+  env_variables="MESA_GL_VERSION_OVERRIDE=3.3"
 fi
 
 cd /tmp || error "Could not move to /tmp folder"
@@ -34,7 +34,7 @@ version="1.1.1"
 if [ $arch == 32 ];then
   filename="https://github.com/ExOK/Celeste64/releases/download/v$version/Celeste64-v$version-Linux-arm.zip"
 elif [ $arch == 64 ];then
-  filename="https://github.com/ExOK/Celeste64/releases/download/v$version/Celeste64-v$version-Linux-arm64.zip"
+  filename="https://github.com/theofficialgman/Celeste64/releases/download/test4/Celeste64-test4-Linux-arm64.zip"
 fi
 
 status "Downloading the game"
