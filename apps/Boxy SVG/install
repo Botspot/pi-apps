@@ -47,10 +47,16 @@ cat << "EOF" | sudo tee /usr/local/bin/boxy-svg >/dev/null
 EOF
 sudo chmod +x /usr/local/bin/boxy-svg
 
-if [ -z "$(cat ~/.config/mimeapps.list | grep 'boxy-svg.desktop')" ];then
+#remove broken mime association
+if grep -qF 'image/svg+xml;application/illustrator=boxy-svg.desktop;' ~/.config/mimeapps.list ;then
+  echo "$(grep -vF 'image/svg+xml;application/illustrator=boxy-svg.desktop;' ~/.config/mimeapps.list)" > ~/.config/mimeapps.list
+fi
+
+if ! grep -qF 'boxy-svg.desktop' ~/.config/mimeapps.list ;then
   echo "Associating the SVG mimetype with Boxy SVG..."
   echo "[Added Associations]
-image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+image/svg+xml=boxy-svg.desktop;
+application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
   
 fi
 
