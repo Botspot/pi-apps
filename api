@@ -224,6 +224,54 @@ anything_installed_from_repo() { #Given an apt repository URL, determine if any 
   fi
 }
 
+anything_installed_from_uri_suite_component() { #Given an apt repository uri, suite, and component, determine if any packages from it are currently installed
+  [ -z "$1" ] && error "anything_installed_from_uri_suite_component: A repository uri must be specified."
+  [ -z "$2" ] && error "anything_installed_from_uri_suite_component: A repository suite must be specified."
+  
+  #component is an optional specification
+  if [ -z "$3" ]; then
+    local filepath="/var/lib/apt/lists/$(echo "$1" | sed 's+.*://++g' | sed "s,/$,," | tr '/' '_')_$(echo "$2" | sed "s,/$,," | tr '/' '_')_"
+  else
+    local filepath="/var/lib/apt/lists/$(echo "$1" | sed 's+.*://++g' | sed "s,/$,," | tr '/' '_')_dists_$(echo "$2" | sed "s,/$,," | tr '/' '_')_$(echo "$3" | sed "s,/$,," | tr '/' '_')_"
+  fi
+  debug $filepath
+  
+  #find all relevant package-lists
+  local repofiles="$(ls $filepath*Packages)"
+  debug "$repofiles"
+  
+  #for every repo-file, check if any of them have an installed file
+  local found=0
+  local IFS=$'\n'
+  local repofile
+  for repofile in $repofiles ;do
+    #search the repo-file for installed packages
+
+    local packages_in_repo="$(grep '^Package' "$repofile" | awk '{print $2}' | sort)"
+    local installed_packages="$(apt list --installed 2>/dev/null | tail -n +2 | awk -F/ '{print $1}')"
+    local apt_cache_policy_output="$(echo "$packages_in_repo" | list_intersect "$installed_packages" | tr '\n' ' ' | xargs -r apt-cache policy)"
+    
+    if [ -z "$3" ]; then
+      if echo "$apt_cache_policy_output" | grep -B1 "$(echo "$1" | sed 's+.*://++g' | sed "s,/$,,") $2" | awk '{print $1}' | grep -Fq '***' ;then
+        found=1
+        break
+      fi
+    else
+      if echo "$apt_cache_policy_output" | grep -B1 "$(echo "$1" | sed 's+.*://++g' | sed "s,/$,,") $2/$3" | awk '{print $1}' | grep -Fq '***' ;then
+        found=1
+        break
+      fi
+    fi
+  done
+  
+  #return an exit code
+  if [ $found == 1 ];then
+    return 0
+  else
+    return 1
+  fi
+}
+
 remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing from that repository is currently installed. Deletion skipped if $2 is 'test'
   local file="$1"
   local testmode="$2"
