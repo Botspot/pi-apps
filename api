@@ -2026,6 +2026,12 @@ You need to reinstall the following packages to restore the integrity of your ap
 
 $(grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1')")
       error_type="system"
+    else
+      #packages have file conflicts but none of them seem to be modified by the user
+      error_caption+=("Two packages which share the same files are having a problem with different file versions.
+Try running this command to fix it:
+sudo apt --fix-broken install -o Dpkg::Options::='--force-overwrite'")
+      error_type="system"
     fi
   fi
   
