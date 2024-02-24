@@ -468,7 +468,15 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
         local filename="${filename}.deb"
       fi
       
-      wget -O "$filename" "$package" || return 1
+      for i in {1..3}; do #download retry loop
+        wget -O "$filename" "$package" || rm -f "$filename"
+        
+        if [ -f "$filename" ];then
+          break
+        fi
+        warning "Package download failed. (Attempt $i of 3)"
+      done
+      [ -f "$filename" ] || error "install_packages(): Downloaded package does not exist! ($filename)"
       
       #determine the package name from the filename
       packagename="$(dpkg-deb -I "$filename" | grep "^ Package:" | awk '{print $2}')"
@@ -534,8 +542,8 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
     local depends="$(echo "$packages" | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
     
-    rm -rf ~/$package_name ~/$package_name.deb
-    mkdir -p ~/$package_name/DEBIAN
+    rm -rf /tmp/$package_name /tmp/$package_name.deb
+    mkdir -p /tmp/$package_name/DEBIAN
     echo "Maintainer: Pi-Apps team
 Name: $app
 Description: Dummy package created by pi-apps to install dependencies for the '$app' app
@@ -544,24 +552,24 @@ Architecture: all
 Priority: optional
 Section: custom
 Depends: $depends
-Package: $package_name" > ~/$package_name/DEBIAN/control
+Package: $package_name" > /tmp/$package_name/DEBIAN/control
     
     #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
     #The two zeros fix error report "dpkg-deb: error: control directory has bad permissions 2755 (must be >=0755 and <=0775)"
-    sudo chmod -R '00755' ~/$package_name
+    sudo chmod -R '00755' /tmp/$package_name
     
     #display the finished "Depends: " line to the user
-    grep --color=never "^Depends: " ~/$package_name/DEBIAN/control
+    grep --color=never "^Depends: " /tmp/$package_name/DEBIAN/control
   }
   
   #Skip installing the dummy deb if it is already installed and has an identical control file
-  if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat ~/$package_name/DEBIAN/control | sort)" ];then
+  if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat /tmp/$package_name/DEBIAN/control | sort)" ];then
     echo "$package_name is already installed and no changes would be made. Skipping..."
   else
     
     #Build .deb file for the dummy package
-    local output="$(dpkg-deb --build ~/$package_name 2>&1)"
-    if [ $? != 0 ] || [ ! -f ~/$package_name.deb ];then
+    local output="$(dpkg-deb --build /tmp/$package_name 2>&1)"
+    if [ $? != 0 ] || [ ! -f /tmp/$package_name.deb ];then
       echo ""
       echo "$output"
       error "install_packages(): failed to create dummy deb ${package_name}!"
@@ -581,7 +589,7 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
       status "Installing the $package_name package..."
       
       apt_lock_wait
-      local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" ~/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
       status "Apt finished."
       
       if [ "$using_local_packages" == 1 ] && [ ! -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages ] && [ $i != 5 ];then
@@ -614,8 +622,8 @@ Package: $package_name" > ~/$package_name/DEBIAN/control
     fi
   fi
   
-  rm -f ~/$package_name.deb
-  rm -rf ~/$package_name
+  rm -f /tmp/$package_name.deb
+  rm -rf /tmp/$package_name
   
   #delete the local repository if it was used
   if [ "$using_local_packages" == 1 ];then
@@ -1386,7 +1394,7 @@ app_status() { #Gets the $1 app's current status. installed, uninstalled, corrup
 app_type() { #there are 'standard' apps, and there are 'package' apps - an alias to install an apt package from the existing repositories.
   #$1 is input app-name
   local app="$1"
-  [ -z "$app" ] && error "app_type: no app specified!"
+  [ -z "$app" ] && error "app_type(): no app specified!"
   
   if [ -f "${DIRECTORY}/apps/${app}/packages" ];then
     echo package
@@ -1396,6 +1404,37 @@ app_type() { #there are 'standard' apps, and there are 'package' apps - an alias
     return 1
   fi
   #if neither conditional above evaluated to true, no output will be returned and the function exits with code 1
+}
+
+read_packages_file() { #Returns which packages are to be installed from a package-app - handle the '|' separater
+  local app="$1"
+  [ -z "$app" ] && error "read_packages_file(): no app specified!"
+  
+  if [ ! -f "${DIRECTORY}/apps/$app/packages" ];then
+    error "read_packages_file(): This app '$app' does not have a packages file!"
+  fi
+  
+  local IFS=' '
+  local word=''
+  local packages=''
+  #read each word - packages separated by '|' are 1 word
+  for word in $(cat "${DIRECTORY}/apps/$app/packages" | sed 's/ | /|/g') ;do
+    
+    if [[ "$word" == *'|'* ]];then
+      IFS='|'
+      local package
+      for package in $word ;do
+        if package_available "$package" ;then
+          packages+="$package "
+          break
+        fi
+      done
+    else
+      #no separator, so return it without change
+      packages+="$word "
+    fi
+  done
+  [ ! -z "$packages" ] && echo "${packages::-1}" #remove final space character
 }
 
 will_reinstall() { #return 0 if $1 app will be reinstalled during an update, otherwise return 1.
@@ -1418,6 +1457,13 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   elif [ "$local_scriptname" != packages ] && [ "$new_scriptname" == packages ];then
     #migration from script-app to package-app. Reinstall.
     return 0
+  elif [ "$new_scriptname" == packages ];then
+    #update to package-app: rather than check for file change, check if the installed package(s) would be different (avoid reinstall when adding an alternative package name with '|')
+    if [ "$(read_packages_file "$app")" != "$(DIRECTORY="${DIRECTORY}/update/pi-apps" read_packages_file "$app")" ];then
+      return 0
+    else
+      return 1
+    fi
   elif [ ! -z "$new_scriptname" ] && ! files_match "${DIRECTORY}/update/pi-apps/apps/${app}/${new_scriptname}" "${DIRECTORY}/apps/${app}/${local_scriptname}" ;then
     #if install script exists in update folder, and if install script was changed, and if installed already
     return 0
@@ -1638,7 +1684,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   [ -z "$app" ] && error "refresh_pkgapp_status(): no app specified!"
   
   #From the list of packages for the $app app, get the first one
-  local package="$(cat "${DIRECTORY}/apps/${app}/packages" | awk '{print $1}')"
+  local package="$(read_packages_file "$app" | awk '{print $1}')"
   [ -z "$package" ] && error "refresh_pkgapp_status(): The $app app does not have a valid packages file."
   
   #if that package is installed
@@ -1656,6 +1702,14 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       echo "Marking $app as uninstalled"
       rm -f "${DIRECTORY}/data/status/${app}"
       shlink_link "$app" uninstall &
+    fi
+    
+    #package is hidden but available. Show it.
+    if grep -qxF "${app}|hidden" "${DIRECTORY}/data/category-overrides" ;then
+      #move app to original category
+      #this should not cause a tug-of-war if a package-app is ever hidden with one of the OS-specific overrides files, because category detection is constrained to the category-overrides file.
+      echo "Unhiding $app as its packages are now available"
+      "${DIRECTORY}/etc/categoryedit" "$app" "$(grep "^${app}|" "${DIRECTORY}/etc/categories" | awk -F'|' '{print $2}')" >/dev/null
     fi
   else
     #this app is trying to install a package that's not on the repository. Hide the app.
