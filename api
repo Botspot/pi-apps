@@ -279,34 +279,94 @@ remove_repofile_if_unused() { #Given a sources.list.d file, delete it if nothing
   [ -z "$file" ] && error "remove_repo_if_unused: no sources.list.d file specified!"
   #return now if the list file does not exist
   [ -f "$file" ] || return 0
+
+  #set default to not in use
+  local in_use=0
   
   if [ "${file##*.}" == "list" ]; then
-    #determine what repo-urls are in the file: include dist information. Example value: deb.debian.org_debian_dists_bookworm
-    local urls="$(cat "$file" | grep -v '^#' | tr ' ' '\n' | grep '://' -A1  | tr '\n' ' ' | sed 's/ -- /\n/g ; s/ $/\n/g ; s/ /_dists_/g')"
+    # determine what uri, suite, and components are in a file
+    local lines="$(cat "$file" | grep "^deb " | sed 's/^deb // ; s/\[.*\]//')"
+    local IFS=$'\n'
+    for line in $lines ;do
+      local uri="$(echo "$line" | awk '{print $1}')"
+      local suite="$(echo "$line" | awk '{print $2}')"
+      local components="$(echo "$line" | awk '{$1=$2=""; print $0}')"
+      local IFS=' '
+      if [ -z "$components" ]; then
+        debug "$uri $suite"
+        if anything_installed_from_uri_suite_component "$uri" "$suite";then
+          in_use=1
+          break 1
+        fi
+      else
+        for component in $components ;do
+          debug "$uri $suite $component"
+          if anything_installed_from_uri_suite_component "$uri" "$suite" "$component";then
+            in_use=1
+            break 2
+          fi
+        done
+      fi
+      local IFS=$'\n'
+    done
   elif [ "${file##*.}" == "sources" ]; then
-    #determine what repo-urls are in the file
-    local urls="$(cat "$file" | grep -v '^#' | grep '^URIs: ' | sed 's/URIs: //g')"
+    #find empty lines (empty line, line with all spaces, or line with all tabs) in the file that separate stanzas. empty lines are not allowed between fields within a stanza
+    #https://manpages.ubuntu.com/manpages/jammy/en/man5/deb822.5.html
+    local empty_lines="$(grep -P -n '^$|^ +$|^\t+$' "$file" | awk '{print $1}' | sed 's/:*//g')"
+    #get number of lines in file
+    local num_lines=$(wc -l "$file" | awk '{print $1}')
+
+    #always add last line to empty lines
+    if [ -z "$empty_lines" ]; then
+      empty_lines="$num_lines"
+    else
+      empty_lines+=$'\n'"$num_lines"
+    fi
+    debug "$empty_lines"
+
+    #parse each stanza, starting at line 1
+    local IFS=$'\n'
+    local line_start=1
+    for line_end in $empty_lines ;do
+      # if Enabled: no, continue to next loop iteration
+      sed -n "$line_start","$line_end"p  "$file" | grep -q '^Enabled: no' && continue
+      # determine what uri, suite, and components are in a file
+      #each stanza can only have one matching section. if there are multiple matches the last one is used
+      #case should be ignored for fields
+      local uris="$(sed -n "$line_start","$line_end"p  "$file" | grep -v '^#' | grep -i '^URIs:' | sed 's/URIs://Ig' | awk '{$1=$1};1' | tail -1)"
+      local suites="$(sed -n "$line_start","$line_end"p "$file" | grep -v '^#' | grep -i '^Suites:' | sed 's/Suites://Ig' | awk '{$1=$1};1' | tail -1)"
+      local components="$(sed -n "$line_start","$line_end"p "$file" | grep -v '^#' | grep -i '^Components:' | sed 's/Components://Ig' | awk '{$1=$1};1' | tail -1)"
+      local IFS=' '
+      for uri in $uris ;do
+        for suite in $suites ;do
+          if [ -z "$components" ]; then
+            debug "$uri $suite"
+            if anything_installed_from_uri_suite_component "$uri" "$suite";then
+              in_use=1
+              break 3
+            fi
+          else
+            for component in $components ;do
+              debug "$uri $suite $component"
+              if anything_installed_from_uri_suite_component "$uri" "$suite" "$component";then
+                in_use=1
+                break 4
+              fi
+            done
+          fi
+        done
+      done
+      local IFS=$'\n'
+      line_start="$line_end"
+    done
   else
     error "$file was not of apt list or sources type"
   fi
   
-  #there could be multiple urls in one file. Check each url and set the in_use variable to 1 if any packages are found
-  local IFS=$'\n'
-  local in_use=0
-  local url
-  for url in $urls ;do
-    if anything_installed_from_repo "$url" >/dev/null;then
-      in_use=1
-      break
-    fi
-  done
-  
   if [ "$testmode" == test ] && [ "$in_use" == 0 ];then
     echo "The given repository is not in use and can be deleted:"$'\n'"$file" 1>&2
   elif [ "$testmode" == test ];then
-    #explain what package is installed from this repo
-    echo "At least this package is preventing the repo from being removed (there may be more)"
-    anything_installed_from_repo "$url" #use value of $url from earlier
+    echo "At least one package is preventing the repo from being removed"
   elif [ "$in_use" == 0 ];then
     status "Removing the $(basename "$file" | sed 's/.list$//g' | sed 's/.sources$//g') repo as it is not being used"
     sudo rm -f "$file"
