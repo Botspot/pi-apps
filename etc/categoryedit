@@ -115,7 +115,7 @@ $category
   done
   LIST="${LIST::-1}"
   
-  categories="$(echo -e "$LIST" | yad --center --title='Category editor' --height=400 \
+  categories="$(echo -e "$LIST" | yad --class Pi-Apps-Settings --name "Pi-Apps Settings" --center --title='Category editor' --height=400 \
     --list --text="Changes saved to: $(echo "${DIRECTORY}/data/category-overrides" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
     --separator='|' --window-icon="${DIRECTORY}/icons/settings.png" \
     --column=:IMG --column=Name --column=Category:TEXT \
