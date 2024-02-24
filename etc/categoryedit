@@ -22,7 +22,7 @@ if [ ! -z "$1" ];then
   # now only print the first column (the PIDs)
   # pgrep -af ${DIRECTORY}/etc/categoryedit | awk '{print $1, $3}' | awk '$2 != ""' | awk '{print $1}'
 
-  while [[ $(pgrep -af ${DIRECTORY}/etc/categoryedit | awk '{print $1, $3}' | awk '$2 != ""' | awk '{print $1}' | sort | head -n 1) != $$ ]]; do
+  while [[ $(pgrep -af "/bin/bash ${DIRECTORY}/etc/categoryedit" | awk '{print $1, $3}' | awk '$2 != ""' | awk '{print $1}' | sort | head -n 1) != $$ ]]; do
     # waiting for another instance of categoryedit to finish
     sleep 0.02
   done
