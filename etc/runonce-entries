@@ -258,14 +258,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#generate settings
-runonce <<"EOF"
-  if [ "$(ls "$DIRECTORY/data/settings" 2>/dev/null | wc -l)" -le 2 ];then
-    echo "Generating default settings..."
-  fi
-  "${DIRECTORY}/settings" refresh
-EOF
-
 #remove old mcpi repositories
 runonce <<"EOF"
   if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
@@ -374,7 +366,8 @@ runonce <<"EOF"
     
     #Add it back correctly
     echo "[Added Associations]
-image/svg+xml;application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
+image/svg+xml=boxy-svg.desktop;
+application/illustrator=boxy-svg.desktop;" >> ~/.config/mimeapps.list
   fi
 EOF
 
@@ -390,6 +383,11 @@ runonce <<"EOF"
   if ls ~/wget-log*; then
     sudo_popup rm -rf ~/wget-log*
   fi
+EOF
+
+#remove pi-apps dummy debs leftover from interrupted runs of package_install
+runonce <<"EOF"
+  find ~/ -maxdepth 1 | grep -xE "$HOME/pi-apps-[0-9a-z]{8}(.deb)?" | xargs rm -rf
 EOF
 
 true
