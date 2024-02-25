@@ -12,6 +12,9 @@ fi
 #remove all browser internals (except for user-data which we moved already)
 rm -rf ~/tor-browser
 
+#remove icon
+rm -f ~/.local/share/icons/tor-browser.png
+
 #move back the temporary folder containing user-data
 if [ -d ~/tor-browser.temp ];then
   mv ~/tor-browser.temp ~/tor-browser
