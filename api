@@ -1700,9 +1700,8 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       echo 'installed' > "${DIRECTORY}/data/status/${app}"
       shlink_link "$app" install &
     fi
-  #if that package is not installed, check if it even exists on the repositories
-  #this should always return true as read_packages_file guarantees it
-  elif package_available "$package" ;then
+  #if that package is not installed, then it only exists on the repositories, the read_packages_file function output guarantees it
+  else
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
     if [ "$(app_status "$app")" != 'uninstalled' ];then
       echo "Marking $app as uninstalled"
@@ -1717,10 +1716,6 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       echo "Unhiding $app as its packages are now available"
       "${DIRECTORY}/etc/categoryedit" "$app" "$(grep "^${app}|" "${DIRECTORY}/etc/categories" | awk -F'|' '{print $2}')" >/dev/null
     fi
-  else
-    #fallback case. Hide the app.
-    warning "Marking $app as hidden. This case should never be hit."
-    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   fi
 }
 
