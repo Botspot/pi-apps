@@ -29,6 +29,10 @@ status_green() { #announce the success of a major action
   echo -e "\e[92m$1\e[0m" 1>&2
 }
 
+debug() { #an echo command that only runs when debug mode is on
+  [ "$pi_apps_debug" = true ] && echo "$1"
+}
+
 generate_logo() { #display colorized Pi-Apps logo in terminal
   #ANSI color codes: https://misc.flogisoft.com/bash/tip_colors_and_formatting
   #Search for unicode characters: https://unicode-search.net - search for "block" and "quadrant"
