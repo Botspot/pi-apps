@@ -22,12 +22,55 @@ wget --header="User-Agent: This download is a result of the Pi-Apps store. Pleas
 
 #install libwebp6 and libtiff5 to get PDF export working
 if package_available libwebp6 && package_available libtiff5 ;then
-  install_packages "$firejail_package" /tmp/wps-office.deb libwebp6 libtiff5 ttf-mscorefonts-installer || exit 1
+  install_packages "$firejail_package" /tmp/wps-office.deb libwebp6 libtiff5 ttf-mscorefonts-installer x11-utils wmctrl || exit 1
 else
-  install_packages "$firejail_package" /tmp/wps-office.deb ttf-mscorefonts-installer "http://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "http://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
+  install_packages "$firejail_package" /tmp/wps-office.deb ttf-mscorefonts-installer x11-utils wmctrl "http://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "http://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
 fi
 rm -f /tmp/wps-office.deb
 
-#Prevent application from connecting to the internet
-sudo sed -i 's|^Exec=|Exec=firejail --net=none --noblacklist=~/.local/share/Kingsoft --noblacklist=~/.config/Kingsoft |g' /usr/share/applications/wps*.desktop
-rm -f ~/Desktop/wps-office-prometheus.desktop
+#make icon symlinks that correspond to WM_CLASS so correct icon is set on Wayland (for main wps window only)
+while read file ;do
+  sudo ln -sf "$file" "$(echo "$file" | sed 's+/mimetypes/+/apps/+g ; s+/wps-office2019-kprometheus.png$+/'"wpsoffice.png+g")"
+done < <(dpkg -L wps-office | grep -x '/usr/share/icons/hicolor/.*/mimetypes/wps-office2019-kprometheus.png$')
+
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#Prevent application from connecting to the internet - use runner scripts
+sudo rm -f /home/*/.local/share/applications/wps*.desktop /home/*/Desktop/wps*.desktop #remove wps-generated .desktop files
+sudo rm -f /opt/kingsoft/wps-office/office6/wpscloudsvr #remove cloud and sign-in features - prevent this unnecessary background process
+
+#remove firejail from .desktop files (backwards compatibility), use /usr/local/bin commands, and fix file opening argument for WPS Writer (it has %U but only %F works)
+sudo sed -i 's|firejail --net=none --noblacklist=~/.local/share/Kingsoft --noblacklist=~/.config/Kingsoft ||g ;
+s|^Exec=/usr/bin|Exec=/usr/local/bin|g ; s/%U/%F/g' /usr/share/applications/wps*.desktop
+
+#Make runner scripts in /usr/local/bin to use firejail and to fix window icon on wayland by changing WM_CLASS
+make_wps_script() {
+  command=$1
+  old_wm_class=$2
+  new_wm_class=$3
+  
+  cat <<EOF | sudo tee /usr/local/bin/$command >/dev/null
+#!/bin/bash
+
+rm -f ~/Desktop/wps*.desktop ~/.local/share/applications/wps*.desktop
+
+(for i in {0..20};do
+  sleep 0.5
+  while read id ;do
+    xprop -f WM_CLASS 8s -set WM_CLASS "$new_wm_class" -id "\$id" 2>/dev/null
+  done < <(wmctrl -lx | grep -F ' $old_wm_class ' | awk '{print \$1}')
+done) &
+
+firejail --noprofile --net=none --noblacklist=~/.local/share/Kingsoft --noblacklist=~/.config/Kingsoft /usr/bin/$command "\$@"
+
+rm -f ~/Desktop/wps*.desktop ~/.local/share/applications/wps*.desktop=
+EOF
+  sudo chmod +x /usr/local/bin/$command
+}
+
+make_wps_script wps wps.wps wps-office2019-wpsmain
+make_wps_script wpspdf wpspdf.wps wps-office2019-pdfmain
+make_wps_script wpp wpp.wpp wps-office2019-wppmain
+make_wps_script et et.et wps-office2019-etmain
+
