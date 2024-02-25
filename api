@@ -183,47 +183,6 @@ package_is_new_enough() { #check if the $1 package has an available version grea
   fi
 }
 
-anything_installed_from_repo() { #Given an apt repository URL, determine if any packages from it are currently installed
-  [ -z "$1" ] && error "anything_installed_from_repo: A repository URL must be specified."
-  
-  #user input repo-url. Remove 'https://', and translate '/' to '_' to conform to apt file-naming standard, with trailing _ to ensure full matches
-  local url="$(echo "$1" | sed 's+.*://++g' | tr '/' '_')_"
-  
-  #find all package-lists pertaining to the url
-  local repofiles="$(ls /var/lib/apt/lists/*_Packages | grep -F "$url")"
-  
-  #for every repo-file, check if any of them have an installed file
-  local found=0
-  local IFS=$'\n'
-  local repofile
-  for repofile in $repofiles ;do
-    #search the repo-file for installed packages
-    
-    grep '^Package' "$repofile" | awk '{print $2}' | while read -r package ;do
-      if package_installed "$package" ;then
-        #this package is installed; check if the version available on this repo is the current version (prevents false positives from backports repos)
-        if [ "$(sed -n "/^Package: ${package}$/,/Version:/p" "$repofile" | grep '^Version: ' | awk '{print $2}')" == "$(package_installed_version "$package")" ];then
-          echo "Package installed: $package"
-          exit 1
-        fi
-      fi
-    done #if exit code is 1, search was successful. If exit code is 0, no packages from the repo were installed.
-    
-    found=$?
-    
-    if [ $found == 1 ];then
-      break
-    fi
-  done
-  
-  #return an exit code
-  if [ $found == 1 ];then
-    return 0
-  else
-    return 1
-  fi
-}
-
 anything_installed_from_uri_suite_component() { #Given an apt repository uri, suite, and component, determine if any packages from it are currently installed
   local uri="$1"
   local suite="$2"
