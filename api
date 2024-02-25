@@ -1430,8 +1430,10 @@ read_packages_file() { #Returns which packages are to be installed from a packag
         fi
       done
     else
-      #no separator, so return it without change
-      packages+="$word "
+      if package_available "$word" ;then
+        #no separator, so return it without change
+        packages+="$word "
+      fi
     fi
   done
   [ ! -z "$packages" ] && echo "${packages::-1}" #remove final space character
@@ -1683,12 +1685,15 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   local app="$1"
   [ -z "$app" ] && error "refresh_pkgapp_status(): no app specified!"
   
-  #From the list of packages for the $app app, get the first one
+  #From the list of packages for the $app app, get the first one that is available in the repos
   local package="$(read_packages_file "$app" | awk '{print $1}')"
-  [ -z "$package" ] && error "refresh_pkgapp_status(): The $app app does not have a valid packages file."
-  
+
+  if [ -z "$package" ]; then
+    #this app is trying to install a package that's not on the repository. Hide the app.
+    echo "Marking $app as hidden"
+    "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   #if that package is installed
-  if package_installed "$package" ;then
+  elif package_installed "$package" ;then
     #mark this app as installed
     if [ "$(app_status "$app")" != 'installed' ];then
       echo "Marking $app as installed"
@@ -1696,6 +1701,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       shlink_link "$app" install &
     fi
   #if that package is not installed, check if it even exists on the repositories
+  #this should always return true as read_packages_file guarantees it
   elif package_available "$package" ;then
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
     if [ "$(app_status "$app")" != 'uninstalled' ];then
@@ -1712,8 +1718,8 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       "${DIRECTORY}/etc/categoryedit" "$app" "$(grep "^${app}|" "${DIRECTORY}/etc/categories" | awk -F'|' '{print $2}')" >/dev/null
     fi
   else
-    #this app is trying to install a package that's not on the repository. Hide the app.
-    echo "Marking $app as hidden"
+    #fallback case. Hide the app.
+    warning "Marking $app as hidden. This case should never be hit."
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
   fi
 }
