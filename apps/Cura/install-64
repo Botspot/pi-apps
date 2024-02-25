@@ -47,3 +47,4 @@ Categories=Graphics;Education;Development;Science;
 Keywords=3D;Printing;
 StartupNotify=true" | sudo tee /usr/share/applications/cura.desktop >/dev/null || error "Failed to create menu button!"
 
+
