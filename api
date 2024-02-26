@@ -114,7 +114,7 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   #package_info "$package"
   
   #directly search /var/lib/dpkg/status
-  grep "^Package: $package$" /var/lib/dpkg/status -A 1 | tail -n 1 | grep -q 'Status: install ok installed'
+  grep -x "Package: $package" /var/lib/dpkg/status -A 2 | grep -qxF 'Status: install ok installed'
 }
 
 package_available() { #determine if the specified package-name exists in a local repository for the current dpkg architecture
