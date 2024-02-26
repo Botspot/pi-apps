@@ -390,4 +390,17 @@ runonce <<"EOF"
   find ~/ -maxdepth 1 | grep -xE "$HOME/pi-apps-[0-9a-z]{8}(.deb)?" | xargs rm -rf
 EOF
 
+#Install rpi-chromium-mods back from accidental chromium update-reinstall that did not add it back
+runonce <<"EOF"
+  #if rpi-chromium-mods is available, not installed, and was uninstalled on the affected dates, and the Chromium app was uninstalled and installed, install rpi-chromium-mods back.
+  if package_available rpi-chromium-mods && ! package_installed rpi-chromium-mods && \
+    grep ' not-installed rpi-chromium-mods' /var/log/dpkg.log | tail -1 | grep -q '2024-02-\(22\|23\|24\|25\|26\)' && \
+    find "${DIRECTORY}"/logs | grep -qF 'uninstall-success-Chromium.log' && find "${DIRECTORY}"/logs | grep -qF 'install-success-Chromium.log';then
+    
+    #install rpi-chromium-mods back.
+    apt_lock_wait
+    sudo_popup apt install -y rpi-chromium-mods
+  fi
+EOF
+
 true
