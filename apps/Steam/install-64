@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version='1.0.0.79'
+
 # install box86
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
 # install box64
@@ -26,41 +28,42 @@ if package_installed steamlink ; then
   sudo apt purge -y steamlink
 fi
 
-#get steam deb and remove terminal dependencies from it, then package it back up
-wget -O /tmp/steam_latest.deb "https://repo.steampowered.com/steam/archive/stable/steam_latest.deb"
-dpkg-deb -x /tmp/steam_latest.deb /tmp/steam-deb
-dpkg-deb -e /tmp/steam_latest.deb /tmp/steam-deb/DEBIAN
-rm -f /tmp/steam_latest.deb
-sed -i 's/xterm | gnome-terminal | konsole, //g' /tmp/steam-deb/DEBIAN/control
-dpkg-deb -b /tmp/steam-deb /tmp/steam_latest.deb
-rm -rf /tmp/steam-deb
+#get steam deb and unpack it to make a few changes
+wget -O /tmp/steam.deb "https://repo.steampowered.com/steam/archive/stable/steam-launcher_${version}_all.deb"
+dpkg-deb -x /tmp/steam.deb /tmp/steam-deb
+dpkg-deb -e /tmp/steam.deb /tmp/steam-deb/DEBIAN
+rm -f /tmp/steam.deb
 
-install_packages /tmp/steam_latest.deb || exit 1
-rm -f /tmp/steam_latest.deb
+#fix terminal dependency to include all terminals
+sed -i 's/xterm | gnome-terminal | konsole/x-terminal-emulator/g' /tmp/steam-deb/DEBIAN/control
 
-sudo mkdir -p /usr/local/bin /usr/local/share/applications
-# if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
+#bump version to ensure a double reinstall will install this customized deb
+sed -i 's/\(Version:.*$\)/\1-pi-apps/' /tmp/steam-deb/DEBIAN/control
+
+#remove steam apt repository - prevent it from updating with apt upgrade
+rm -rf /tmp/steam-deb/usr/share/keyrings /tmp/steam-deb/etc #remove the folders as there is nothing else in there
+rm -f /tmp/steam-deb/DEBIAN/conffiles #this file only mentions the 2 repo files which we just deleted
+
+#remove steam command symlink and replace it with runner script
+rm -f /tmp/steam-deb/usr/bin/steam
+
 echo '#!/bin/bash
 export STEAMOS=1
 export STEAM_RUNTIME=1
 export DBUS_FATAL_WARNINGS=0
-BOX64_LOG=1 BOX86_LOG=1 BOX64_EMULATED_LIBS=libmpg123.so.0 /usr/lib/steam/bin_steam.sh -no-cef-sandbox steam://open/minigameslist "$@"
+[ -z "$BOX64_LOG" ] && export BOX64_LOG=1
+[ -z "$BOX86_LOG" ] && export BOX86_LOG=1 
+BOX64_EMULATED_LIBS=libmpg123.so.0 /usr/lib/steam/bin_steam.sh -no-cef-sandbox steam://open/minigameslist "$@"
+rm -f ~/Desktop/steam.desktop' > /tmp/steam-deb/usr/bin/steam
+chmod +x /tmp/steam-deb/usr/bin/steam
 
-rm -f /home/${USER}/Desktop/steam.desktop' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
+#package it back into a deb
+dpkg-deb -b /tmp/steam-deb /tmp/steam.deb || error "Failed to package the steam deb!"
+rm -rf /tmp/steam-deb
 
-# set execution bit
-sudo chmod +x /usr/local/bin/steam
+#install the customized steam-launcher deb
+install_packages /tmp/steam.deb || exit 1
 
-# copy official steam.desktop file to /usr/local and edit it
-# we can't edit the official steam.desktop file since this will get overwritten on a steam update
-# if a matching name .desktop file is found in /usr/local/share/applications it takes priority over /usr/share/applications
-sudo cp /usr/share/applications/steam.desktop /usr/local/share/applications/steam.desktop
-sudo sed -i 's:Exec=/usr/bin/steam:Exec=/usr/local/bin/steam:' /usr/local/share/applications/steam.desktop
-
-rm -f $HOME/Desktop/steam.desktop
-
-if ! echo "$XDG_DATA_DIRS" | grep -q "/usr/local/share" || ! echo "$PATH" | grep -q "/usr/local/bin" ; then
-  warning "YOU NEED TO REBOOT before starting steam. This is because Steam is the first application on your system to be installed into the /usr/local folder."
-else
-  warning "You should restart your system before trying to launch Steam otherwise errors may occur."
-fi
+rm -f /tmp/steam.deb $HOME/Desktop/steam.desktop
+sudo rm -f /usr/local/bin/steam /usr/local/share/applications/steam.desktop #remove old command wrapper and app-launcher wrappers
+sudo rm -f /etc/apt/sources.list.d/steam-stable.list /etc/apt/sources.list.d/steam-beta.list
