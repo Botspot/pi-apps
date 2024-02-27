@@ -26,17 +26,17 @@ if package_installed steamlink ; then
   sudo apt purge -y steamlink
 fi
 
-#prevent lxterm dependency from becoming default terminal
-default_terminal="$(readlink -f /usr/bin/x-terminal-emulator)"
+#get steam deb and remove terminal dependencies from it, then package it back up
+wget -O /tmp/steam_latest.deb "https://repo.steampowered.com/steam/archive/stable/steam_latest.deb"
+dpkg-deb -x /tmp/steam_latest.deb /tmp/steam-deb
+dpkg-deb -e /tmp/steam_latest.deb /tmp/steam-deb/DEBIAN
+rm -f /tmp/steam_latest.deb
+sed -i 's/xterm | gnome-terminal | konsole, //g' /tmp/steam-deb/DEBIAN/control
+dpkg-deb -b /tmp/steam-deb /tmp/steam_latest.deb
+rm -rf /tmp/steam-deb
 
-echo "Installing steam_latest.deb"
-install_packages https://repo.steampowered.com/steam/archive/stable/steam_latest.deb || exit 1
-
-#check if terminal choice was changed after steam was installed
-if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
-  #restore previous choice
-  sudo update-alternatives --set x-terminal-emulator "$default_terminal"
-fi
+install_packages /tmp/steam_latest.deb || exit 1
+rm -f /tmp/steam_latest.deb
 
 sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # if a matching name binary is found in /usr/local/bin it takes priority over /usr/bin
