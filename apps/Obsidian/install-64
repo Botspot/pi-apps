@@ -1,0 +1,38 @@
+#!/bin/bash
+
+version=1.5.8
+
+install_packages libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libuuid1 libsecret-1-0 libappindicator3-1
+
+wget -O "/tmp/obsidian-${version}-arm64.tar.gz" "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}-arm64.tar.gz" || exit 1
+tar -xf "/tmp/obsidian-${version}-arm64.tar.gz" -C /tmp || error "Failed to extract!"
+
+sudo rm -rf /opt/Obsidian
+sudo mv -f "/tmp/obsidian-${version}-arm64" /opt/Obsidian || error "Failed to move obsidian to the /opt/Obsidian folder!"
+
+#get icons
+wget "https://github.com/Pi-Apps-Coders/files/raw/main/obsidian-hicolor.tar.gz" -O /tmp/obsidian-hicolor.tar.gz || exit 1
+sudo tar -xf /tmp/obsidian-hicolor.tar.gz -C /usr/share/icons || error "Failed to extract icons!"
+
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+cat <<EOF | sudo tee /usr/share/applications/obsidian.desktop >/dev/null
+[Desktop Entry]
+Name=Obsidian
+Exec=/opt/Obsidian/obsidian %U
+Terminal=false
+Type=Application
+Icon=obsidian
+StartupWMClass=obsidian
+Comment=Obsidian
+MimeType=x-scheme-handler/obsidian;
+Categories=Office;
+EOF
+
+#stuff pulled from postinst from amd64 deb
+# Link to the binary
+sudo ln -sf '/opt/Obsidian/obsidian' '/usr/bin/obsidian'
+# SUID chrome-sandbox for Electron 5+
+sudo chmod 4755 '/opt/Obsidian/chrome-sandbox'
+
