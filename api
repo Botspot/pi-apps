@@ -1771,6 +1771,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
     #this app is trying to install a package that's not on the repository. Hide the app.
     echo "Marking $app as hidden"
     "${DIRECTORY}/etc/categoryedit" "$app" 'hidden' >/dev/null
+    return
   #if that package is installed
   elif package_installed "$package" ;then
     #mark this app as installed
@@ -1787,14 +1788,14 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       rm -f "${DIRECTORY}/data/status/${app}"
       shlink_link "$app" uninstall &
     fi
-    
-    #package is hidden but available. Show it.
-    if grep -qxF "${app}|hidden" "${DIRECTORY}/data/category-overrides" ;then
-      #move app to original category
-      #this should not cause a tug-of-war if a package-app is ever hidden with one of the OS-specific overrides files, because category detection is constrained to the category-overrides file.
-      echo "Unhiding $app as its packages are now available"
-      "${DIRECTORY}/etc/categoryedit" "$app" "$(grep "^${app}|" "${DIRECTORY}/etc/categories" | awk -F'|' '{print $2}')" >/dev/null
-    fi
+  fi
+
+  #package is hidden but available. Show it.
+  if grep -qxF "${app}|hidden" "${DIRECTORY}/data/category-overrides" ;then
+    #move app to original category
+    #this should not cause a tug-of-war if a package-app is ever hidden with one of the OS-specific overrides files, because category detection is constrained to the category-overrides file.
+    echo "Unhiding $app as its packages are now available"
+    "${DIRECTORY}/etc/categoryedit" "$app" "$(grep "^${app}|" "${DIRECTORY}/etc/categories" | awk -F'|' '{print $2}')" >/dev/null
   fi
 }
 
