@@ -1761,10 +1761,10 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
 
   # optional: directly pass package as second input argument (can be null for when you want to mark an app as hidden)
   if [ -z ${2+x} ]; then
-    #From the list of packages for the $app app, get the first one that is available in the repos
+    #From the list of necessary packages for the $app app, get the first one that is available in the repos
     local package="$(read_packages_file "$app" | awk '{print $1}')"
   else
-    local package="$2"
+    local package="$(echo "$2" | awk '{print $1}')"
   fi
 
   if [ -z "$package" ]; then
@@ -1816,8 +1816,10 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
   for app in $(list_apps package) ;do
     local IFS=' '
     local word=''
+    local needed_packages=''
     #read each word - packages separated by '|' are 1 word
     for word in $(cat "${DIRECTORY}/apps/$app/packages" | sed 's/ | /|/g') ;do
+      local available="no"
       if [[ "$word" == *'|'* ]];then
         IFS='|'
         local package
@@ -1833,28 +1835,38 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
             continue
           else
             # package is available
-            refresh_pkgapp_status "$app" "$package"
+            available="yes"
+            needed_packages+="$package "
             break
           fi
         done
-        # if last package variable is empty, then no packages are available for the app and it should be hidden
-        if [ -z "$package" ]; then
-          refresh_pkgapp_status "$app" ""
+        if [ "$available" == "no" ]; then
+          #no package in the OR is available
+          break
         fi
       else
         local package_output="$(echo "$apt_cache_output" | grep "^$word:" -A2 | grep "Candidate:")"
         if [ -z "$package_output" ]; then
           # package is not available
-          refresh_pkgapp_status "$app" ""
+          break
         elif echo "$package_output" | grep -q "Candidate: (none)"; then
           # package is not available
-          refresh_pkgapp_status "$app" ""
+          break
         else
           # package is available
-          refresh_pkgapp_status "$app" "$word"
+          available="yes"
+          needed_packages+="$word "
         fi
       fi
     done
+    if [ "$available" == "no" ]; then
+      #at least one required package is not available so set package as hidden
+      refresh_pkgapp_status "$app" ""
+    else
+      needed_packages="${needed_packages::-1}"
+      debug "$app: $needed_packages"
+      refresh_pkgapp_status "$app" "$needed_packages"
+    fi
   done
 }
 
