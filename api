@@ -1746,9 +1746,14 @@ generate_app_icons() { #This converts the given $1 image into icon-24.png and ic
 refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's installed, then mark it as installed.
   local app="$1"
   [ -z "$app" ] && error "refresh_pkgapp_status(): no app specified!"
-  
-  #From the list of packages for the $app app, get the first one that is available in the repos
-  local package="$(read_packages_file "$app" | awk '{print $1}')"
+
+  # optional: directly pass package as second input argument (can be null for when you want to mark an app as hidden)
+  if [ -z ${2+x} ]; then
+    #From the list of packages for the $app app, get the first one that is available in the repos
+    local package="$(read_packages_file "$app" | awk '{print $1}')"
+  else
+    local package="$2"
+  fi
 
   if [ -z "$package" ]; then
     #this app is trying to install a package that's not on the repository. Hide the app.
@@ -1784,12 +1789,61 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
 refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's installed, then mark it as installed.
   #repeat for every package-type app
   local IFS=$'\n'
-  local PIDS=()
+  local arch="$(dpkg --print-architecture)"
+  # get list of all packages needed by package apps
+  # this variable needs to be global to be accessible from the subshells
+  local packages="$(sed '' -- "${DIRECTORY}"/apps/*/packages | sed 's/ | /\n/g' | sed 's/ /\n/g' | awk NF | sed 's/$/:'"$arch"'/' | tr '\n' ' ')"
+  packages="${packages::-1}" #remove final space character
+
+  # get policy info for all packages needed by package apps
+  # this variable needs to be global to be accessible from the subshells
+  local apt_cache_output="$(echo "$packages" | xargs -r apt-cache policy)"
+
+  # parse apt_cache_output for each package app
+  # generate list of all packages needed by package apps
   for app in $(list_apps package) ;do
-    refresh_pkgapp_status "$app" &
-    PIDS+=("$!")
+    local IFS=' '
+    local word=''
+    #read each word - packages separated by '|' are 1 word
+    for word in $(cat "${DIRECTORY}/apps/$app/packages" | sed 's/ | /|/g') ;do
+      if [[ "$word" == *'|'* ]];then
+        IFS='|'
+        local package
+        for package in $word ;do
+          local package_output="$(echo "$apt_cache_output" | grep "^$package:" -A2 | grep "Candidate:")"
+          if [ -z "$package_output" ]; then
+            # package is not available
+            package=''
+            continue
+          elif echo "$package_output" | grep -q "Candidate: (none)"; then
+            # package is not available
+            package=''
+            continue
+          else
+            # package is available
+            refresh_pkgapp_status "$app" "$package"
+            break
+          fi
+        done
+        # if last package variable is empty, then no packages are available for the app and it should be hidden
+        if [ -z "$package" ]; then
+          refresh_pkgapp_status "$app" ""
+        fi
+      else
+        local package_output="$(echo "$apt_cache_output" | grep "^$word:" -A2 | grep "Candidate:")"
+        if [ -z "$package_output" ]; then
+          # package is not available
+          refresh_pkgapp_status "$app" ""
+        elif echo "$package_output" | grep -q "Candidate: (none)"; then
+          # package is not available
+          refresh_pkgapp_status "$app" ""
+        else
+          # package is available
+          refresh_pkgapp_status "$app" "$word"
+        fi
+      fi
+    done
   done
-  wait "${PIDS[@]}" #wait for all subprocesses to complete
 }
 
 refresh_app_list() { #Force-regenerate the app list
