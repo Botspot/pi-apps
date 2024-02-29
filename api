@@ -1469,6 +1469,7 @@ app_type() { #there are 'standard' apps, and there are 'package' apps - an alias
 }
 
 read_packages_file() { #Returns which packages are to be installed from a package-app - handle the '|' separater
+  #if all packages are not available that are needed to be installed, returns no output
   local app="$1"
   [ -z "$app" ] && error "read_packages_file(): no app specified!"
   
@@ -1485,16 +1486,27 @@ read_packages_file() { #Returns which packages are to be installed from a packag
     if [[ "$word" == *'|'* ]];then
       IFS='|'
       local package
+      local available="no"
       for package in $word ;do
         if package_available "$package" ;then
           packages+="$package "
+          available="yes"
           break
         fi
       done
+      if [ "$available" == "no" ]; then
+        #no package in the OR is available so set the output as empty
+        packages=''
+        break
+      fi
     else
       if package_available "$word" ;then
         #no separator, so return it without change
         packages+="$word "
+      else
+        #one package in the AND is not available so set the output as empty
+        packages=''
+        break
       fi
     fi
   done
