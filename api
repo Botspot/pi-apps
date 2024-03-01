@@ -123,9 +123,9 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
 
 package_available() { #determine if the specified package-name exists in a local repository for the current dpkg architecture
   local package="$1"
-  local arch="$(dpkg --print-architecture)"
+  local dpkg_arch="$(dpkg --print-architecture)"
   [ -z "$package" ] && error "package_available(): no package name specified!"
-  local output="$(apt-cache policy -qq "$package":"$arch" | grep "Candidate:")"
+  local output="$(apt-cache policy "$package":"$dpkg_arch" | grep "Candidate:")"
   if [ -z "$output" ]; then
     return 1
   elif echo "$output" | grep -q "Candidate: (none)"; then
@@ -1468,13 +1468,13 @@ app_type() { #there are 'standard' apps, and there are 'package' apps - an alias
   #if neither conditional above evaluated to true, no output will be returned and the function exits with code 1
 }
 
-read_packages_file() { #Returns which packages are to be installed from a package-app - handle the '|' separater
-  #if all packages are not available that are needed to be installed, returns no output
+pkgapp_packages_required() { #Returns which packages are required during installation of a package-app - handle the '|' separater
+  #returns no output if not all required packages are available
   local app="$1"
-  [ -z "$app" ] && error "read_packages_file(): no app specified!"
+  [ -z "$app" ] && error "pkgapp_packages_required(): no app specified!"
   
   if [ ! -f "${DIRECTORY}/apps/$app/packages" ];then
-    error "read_packages_file(): This app '$app' does not have a packages file!"
+    error "pkgapp_packages_required(): This app '$app' does not have a packages file!"
   fi
   
   local IFS=' '
@@ -1486,20 +1486,34 @@ read_packages_file() { #Returns which packages are to be installed from a packag
     if [[ "$word" == *'|'* ]];then
       IFS='|'
       local package
-      local available="no"
+      local found="no"
+      #first check for any already installed packages
+      #if a package is already installed, it should be used even if it is not the first option in the OR
       for package in $word ;do
-        if package_available "$package" ;then
+        if package_installed "$package" ;then
           packages+="$package "
-          available="yes"
+          found="yes"
           break
         fi
       done
-      if [ "$available" == "no" ]; then
+      if [ "$found" == "yes" ]; then
+        #a package in the OR is already installed
+        continue
+      fi
+      #then check for available packages
+      for package in $word ;do
+        if package_available "$package" ;then
+          packages+="$package "
+          found="yes"
+          break
+        fi
+      done
+      if [ "$found" == "no" ]; then
         #no package in the OR is available so set the output as empty
         packages=''
         break
       fi
-    else
+    else #non-OR package - no parsing '|' separators
       if package_available "$word" ;then
         #no separator, so return it without change
         packages+="$word "
@@ -1535,7 +1549,7 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
     return 0
   elif [ "$new_scriptname" == packages ];then
     #update to package-app: rather than check for file change, check if the installed package(s) would be different (avoid reinstall when adding an alternative package name with '|')
-    if [ "$(read_packages_file "$app")" != "$(DIRECTORY="${DIRECTORY}/update/pi-apps" read_packages_file "$app")" ];then
+    if [ "$(pkgapp_packages_required "$app")" != "$(DIRECTORY="${DIRECTORY}/update/pi-apps" pkgapp_packages_required "$app")" ];then
       return 0
     else
       return 1
@@ -1762,7 +1776,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
   # optional: directly pass package as second input argument (can be null for when you want to mark an app as hidden)
   if [ -z ${2+x} ]; then
     #From the list of necessary packages for the $app app, get the first one that is available in the repos
-    local package="$(read_packages_file "$app" | awk '{print $1}')"
+    local package="$(pkgapp_packages_required "$app" | awk '{print $1}')"
   else
     local package="$(echo "$2" | awk '{print $1}')"
   fi
@@ -1780,7 +1794,7 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
       echo 'installed' > "${DIRECTORY}/data/status/${app}"
       shlink_link "$app" install &
     fi
-  #if that package is not installed, then it only exists on the repositories, the read_packages_file function output guarantees it
+  #if that package is not installed, then it only exists on the repositories, the pkgapp_packages_required function output guarantees it
   else
     #the package for the $app app is not installed but it is available, so mark this app as uninstalled
     if [ "$(app_status "$app")" != 'uninstalled' ];then
@@ -1802,73 +1816,40 @@ refresh_pkgapp_status() { #for the specified package-app, if dpkg thinks it's in
 refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's installed, then mark it as installed.
   #repeat for every package-type app
   local IFS=$'\n'
-  local arch="$(dpkg --print-architecture)"
+  local dpkg_arch="$(dpkg --print-architecture)"
   # get list of all packages needed by package apps
   # this variable needs to be global to be accessible from the subshells
-  local packages="$(sed '' -- "${DIRECTORY}"/apps/*/packages | sed 's/ | /\n/g' | sed 's/ /\n/g' | awk NF | sed 's/$/:'"$arch"'/' | tr '\n' ' ')"
+  local packages="$(sed '' -- "${DIRECTORY}"/apps/*/packages | sed 's/ | /\n/g' | sed 's/ /\n/g' | awk NF | sed 's/$/:'"$dpkg_arch"'/' | tr '\n' ' ')"
   packages="${packages::-1}" #remove final space character
 
   # get policy info for all packages needed by package apps
   # this variable needs to be global to be accessible from the subshells
   local apt_cache_output="$(echo "$packages" | xargs -r apt-cache policy)"
 
+  #redefine package_installed to only read /var/lib/dpkg/status once
+  local dpkg_status="$(grep -x "Package: \($(echo "$packages" | sed 's/:'"$arch"'//g ; s/ /\\|/g')\)" -A 2 /var/lib/dpkg/status)"
+
+  #redefine package_available() to use apt_cache_output and avoid running apt-cache multiple times
+  (package_available() { #this will only be used in this function's subprocesses.
+    echo "$apt_cache_output" | grep -x "${1}:" -A2 | grep -vxF "  Candidate: (none)" | grep -q "^  Candidate:"
+  }
+  
+  #this one only takes off 0.1s on my pi5, so if it causes issues it could be removed
+  package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
+    local package="$1"
+    [ -z "$package" ] && error "package_installed(): no package specified!"
+    #find the package listed in /var/lib/dpkg/status
+    #package_info "$package"
+
+    #directly search /var/lib/dpkg/status
+    echo "$dpkg_status" | grep -x "Package: $package" -A 2 -m1 | grep -qxF 'Status: install ok installed'
+  }
+
   # parse apt_cache_output for each package app
   # generate list of all packages needed by package apps
   for app in $(list_apps package) ;do
-    local IFS=' '
-    local word=''
-    local needed_packages=''
-    #read each word - packages separated by '|' are 1 word
-    for word in $(cat "${DIRECTORY}/apps/$app/packages" | sed 's/ | /|/g') ;do
-      local available="no"
-      if [[ "$word" == *'|'* ]];then
-        IFS='|'
-        local package
-        for package in $word ;do
-          local package_output="$(echo "$apt_cache_output" | grep "^$package:" -A2 | grep "Candidate:")"
-          if [ -z "$package_output" ]; then
-            # package is not available
-            package=''
-            continue
-          elif echo "$package_output" | grep -q "Candidate: (none)"; then
-            # package is not available
-            package=''
-            continue
-          else
-            # package is available
-            available="yes"
-            needed_packages+="$package "
-            break
-          fi
-        done
-        if [ "$available" == "no" ]; then
-          #no package in the OR is available
-          break
-        fi
-      else
-        local package_output="$(echo "$apt_cache_output" | grep "^$word:" -A2 | grep "Candidate:")"
-        if [ -z "$package_output" ]; then
-          # package is not available
-          break
-        elif echo "$package_output" | grep -q "Candidate: (none)"; then
-          # package is not available
-          break
-        else
-          # package is available
-          available="yes"
-          needed_packages+="$word "
-        fi
-      fi
-    done
-    if [ "$available" == "no" ]; then
-      #at least one required package is not available so set package as hidden
-      refresh_pkgapp_status "$app" ""
-    else
-      needed_packages="${needed_packages::-1}"
-      debug "$app: $needed_packages"
-      refresh_pkgapp_status "$app" "$needed_packages"
-    fi
-  done
+    refresh_pkgapp_status "$app" #with redefined package_available and package_installed this is fast
+  done)
 }
 
 refresh_app_list() { #Force-regenerate the app list

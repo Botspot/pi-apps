@@ -324,7 +324,15 @@ details_window() { #input: prefix/app
   
   #If package-app, show what packages it installs
   if [ -f "${DIRECTORY}/apps/${app}/packages" ];then
-    local packages="$(read_packages_file "$app")"
+    local packages="$(pkgapp_packages_required "$app")"
+    if [ -z "$packages" ]; then
+      #returned required package list is empty. application cannot be installed
+      #this case cannot be hit if the application is already hidden which it should be
+      yad "${yadflags[@]}" --title=Results --width=310 \
+        --text=""\""<b>$(list_apps | grep -i -m1 "^$query")</b>"\"" is not compatible with your ${__os_desc} ${arch}-bit OS." \
+        --button=OK:0
+      return
+    fi
     if [ "$(wc -w <<<"$packages")" == 1 ];then
       #if package-app uses only 1 package, use singular case
       abovetext+=$'\n'"- This app installs the <b>${packages}</b> package."
