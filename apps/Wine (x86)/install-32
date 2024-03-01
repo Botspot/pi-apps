@@ -141,7 +141,7 @@ fi
 #Past this point, the pi is running a Wine-compatible kernel.
 
 #note to maintainer, if you change the below version make sure to update it in the uninstall script as well
-version=9.0
+version=9.3
 
 #install box86
 "${DIRECTORY}/manage" install-if-not-installed Box86 || error "Box86 failed to install somehow!"
@@ -179,13 +179,13 @@ sudo mv /tmp/winetricks /opt/wine-${version}/bin/winetricks || error "Failed to 
 sudo chmod +x /opt/wine-${version}/bin/winetricks
 
 #download Mono to universal location (to be installed automatically in all wine prefixes)
-#according to https://wiki.winehq.org/Mono#Versions, use Mono 8.1.0 for Wine 8.11
+#according to https://wiki.winehq.org/Mono#Versions, use Mono 9.0.0 for Wine 9.2
 sudo mkdir -p /opt/wine-${version}/share/wine/mono
-wget -O "/tmp/wine-mono-8.1.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/8.1.0/wine-mono-8.1.0-x86.tar.xz' || exit 1
-sudo tar -xvf "/tmp/wine-mono-8.1.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" || exit 1
+wget -O "/tmp/wine-mono-9.0.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.0.0/wine-mono-9.0.0-x86.tar.xz' || exit 1
+sudo tar -xvf "/tmp/wine-mono-9.0.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" || exit 1
 
 #download Gecko to universal location (to be installed automatically in all wine prefixes)
-#according to https://wiki.winehq.org/Gecko, use Gecko 2.47.4 for Wine 8.11
+#according to https://wiki.winehq.org/Gecko, use Gecko 2.47.4 for Wine 8.6
 sudo mkdir -p /opt/wine-${version}/share/wine/gecko
 wget -O "/tmp/wine-gecko-2.47.4-x86.tar.xz" 'https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.tar.xz' || exit 1
 sudo tar -xvf "/tmp/wine-gecko-2.47.4-x86.tar.xz"  -C "/opt/wine-${version}/share/wine/gecko" || exit 1
