@@ -10,7 +10,6 @@ install_packages libnss3:armhf libnm0:armhf libdbus-glib-1-2:armhf libnspr4:armh
 
 # perform an apt upgrade to make sure the latest version of box64 and box86 are installed
 echo "Upgrading Box86 and Box64 if necessary:"
-apt_update
 apt_lock_wait
 sudo apt install --only-upgrade box86-* box64-* -y
 
