@@ -5,3 +5,6 @@ sudo mkdir -p /usr/local/share/fonts || error "Failed to create /usr/local/share
 sudo mv /tmp/NotoColorEmoji.ttf /usr/local/share/fonts
 
 fc-cache -f || error "Failed to run fc-cache!"
+
+#get large support for other symbols like the ones used in pi-apps terminal logo
+install_packages fonts-noto-core || exit 1
