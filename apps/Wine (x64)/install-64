@@ -31,14 +31,16 @@ Would you like to automatically switch to a 4K PageSize Linux Kernel?"
   fi
 fi
 
+# Get dependencies
+install_packages cabextract p7zip-full || exit 1
+
 #install box64
 "${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
 if ! command -v box64 >/dev/null ;then
   error "User error: Pi-Apps thinks Box64 is installed, however no command named 'box64' exists. Please install Box64 manually."
 fi
-#upgrade box86
+#upgrade box64
 echo "Upgrading Box64 if necessary:"
-apt_update
 apt_lock_wait
 sudo apt install --only-upgrade box64-* -y
 echo "Installed Box64 version:"
@@ -50,13 +52,22 @@ command -v wineserver >/dev/null && wineserver -k
 command -v wine >/dev/null && sudo apt purge -y wine &>/dev/null &
 sudo rm -rf /usr/local/bin/wine /usr/local/bin/wineboot /usr/local/bin/wineserver /usr/local/bin/winecfg /usr/local/bin/winetricks /opt/wine-${version} ~/.cache/winetricks ~/.cache/wine 2>/dev/null
 
-# Get dependencies
-install_packages cabextract p7zip-full || exit 1
+less_tar() { #format tar verbose output to refresh same line with the next extracted file
+  # Read from standard input line by line
+  while IFS='' read -r line; do
+    # Refresh the same line in the terminal with the latest extracted file
+    echo -ne "$line"'\033[0K\r'
+  done
+  echo #add newline before exiting
+}
 
 # Download wine to /opt
 wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wine-${version}.tar.gz -O /tmp/wine-${version}.tar.gz || error 'Failed to download wine!'
-sudo tar -xvf /tmp/wine-${version}.tar.gz -C /opt || error 'Failed to extract wine!'
+status "Extracting: /tmp/wine-${version}.tar.gz"
+sudo tar -xvf /tmp/wine-${version}.tar.gz -C /opt | less_tar
+[ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine!'
 rm -f /tmp/wine-${version}.tar.gz
+status_green Done
 
 #edit wine.inf to disable mime-associations. Nobody wants to double-click a text file, wonder why nothing is happening, then watch 15 Wine notepad windows pop up. Ask me how I know.
 sudo sed -i 's/winemenubuilder.exe -a -r/winemenubuilder.exe -r/' /opt/wine-${version}/share/wine/wine.inf #See: https://askubuntu.com/a/400430
@@ -71,15 +82,21 @@ sudo chmod +x /opt/wine-${version}/bin/winetricks
 #wine mono pacakge is called -x86 but contains both x86 and x86_64 binaries
 sudo mkdir -p /opt/wine-${version}/share/wine/mono
 wget -O "/tmp/wine-mono-9.0.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.0.0/wine-mono-9.0.0-x86.tar.xz' || exit 1
-sudo tar -xvf "/tmp/wine-mono-9.0.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" || exit 1
+status "Extracting: /tmp/wine-mono-9.0.0-x86.tar.xz"
+sudo tar -xvf "/tmp/wine-mono-9.0.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" | less_tar
+[ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine-mono!'
 rm -f "/tmp/wine-mono-9.0.0-x86.tar.xz"
+status_green Done
 
 #download Gecko to universal location (to be installed automatically in all wine prefixes)
 #according to https://wiki.winehq.org/Gecko, use Gecko 2.47.4 for Wine 8.6
 sudo mkdir -p /opt/wine-${version}/share/wine/gecko
 wget -O "/tmp/wine-gecko-2.47.4-x86_64.tar.xz" 'https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.tar.xz' || exit 1
-sudo tar -xvf "/tmp/wine-gecko-2.47.4-x86_64.tar.xz"  -C "/opt/wine-${version}/share/wine/gecko" || exit 1
+status "Extracting: /tmp/wine-gecko-2.47.4-x86_64.tar.xz"
+sudo tar -xvf "/tmp/wine-gecko-2.47.4-x86_64.tar.xz" -C "/opt/wine-${version}/share/wine/gecko" | less_tar
+[ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine-gecko!'
 rm -f "/tmp/wine-gecko-2.47.4-x86_64.tar.xz"
+status_green Done
 
 status "Creating terminal commands:"
 echo "  - winecfg"
@@ -97,7 +114,7 @@ BOX64_NOBANNER=1 /opt/wine-${version}/bin/winetricks"' "$@"' | sudo tee /usr/loc
 
 #make them all executable
 status -n "Making executable... "
-sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/wine /usr/local/bin/winetricks || error "\nFailed to mark all commands as executable. Most likely one failed to be generated or copied. These files are:\n/usr/local/bin/winecfg\n/usr/local/bin/wineserver\n/usr/local/bin/wineboot\n/usr/local/bin/wine"
+sudo chmod +x /usr/local/bin/winecfg /usr/local/bin/wineserver /usr/local/bin/wineboot /usr/local/bin/wine /usr/local/bin/winetricks || error "\nFailed to mark all commands as executable. Most likely one failed to be generated or copied. These files are:\n/usr/local/bin/winecfg\n/usr/local/bin/wineserver\n/usr/local/bin/wineboot\n/usr/local/bin/wine\n/usr/local/bin/winetricks"
 status_green "Done"
 
 #get icons from wine-stuff repo
@@ -106,8 +123,9 @@ rm -rf wine-stuff
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv wine-stuff/icons /opt/wine-${version}
 sudo mv wine-stuff/Windows_10.msstyles /opt/wine-${version}
-sudo chown -R root:root  /opt/wine-${version}/icons /opt/wine-${version}/Windows_10.msstyles
+sudo chown -R root:root /opt/wine-${version}
 rm -rf wine-stuff
+cd
 
 #create menu launchers
 status -n "Creating Menu launchers... "
@@ -127,7 +145,7 @@ Name=Wine Configuration
 Exec=wine winecfg
 Icon=/opt/wine-${version}/icons/winecfg.png
 Categories=System;
-Comment=Configure wine" | sudo tee /usr/share/applications/wine-config.desktop
+Comment=Configure wine" | sudo tee /usr/share/applications/wine-config.desktop >/dev/null
 
 echo "[Desktop Entry]
 Name=Winetricks
@@ -136,7 +154,7 @@ Exec=bash -c 'BOX64_NOBANNER=1 box64 winetricks --gui'
 Terminal=false
 Icon=/opt/wine-${version}/icons/winetricks.png
 Type=Application
-Categories=System;" | sudo tee /usr/share/applications/wine-tricks.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-tricks.desktop >/dev/null
 
 echo "[Desktop Entry]
 Version=1.0
@@ -146,7 +164,7 @@ Comment=Wine graphical desktop environment to mimic a Windows OS
 Icon=/opt/wine-${version}/icons/wine-desktop.png
 Exec=wine explorer /desktop=shell,1280x720
 Terminal=false
-Categories=System;" | sudo tee /usr/share/applications/wine-explorer.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-explorer.desktop >/dev/null
 
 echo "[Desktop Entry]
 Version=1.0
@@ -156,7 +174,7 @@ Comment=Install/Remove Windows programs
 Icon=/opt/wine-${version}/icons/wine-program-manager.png
 Exec=wine uninstaller
 Terminal=false
-Categories=System;" | sudo tee /usr/share/applications/wine-uninstaller.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-uninstaller.desktop >/dev/null
 
 echo "[Desktop Entry]
 Version=1.0
@@ -166,7 +184,7 @@ Comment=View running processes within Wine
 Icon=/opt/wine-${version}/icons/winetask.png
 Exec=wine taskmgr
 Terminal=false
-Categories=System;" | sudo tee /usr/share/applications/wine-taskmgr.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-taskmgr.desktop >/dev/null
 
 echo "[Desktop Entry]
 StartupNotify=false
@@ -177,7 +195,7 @@ Comment=Terminate any running Wine processes
 Icon=/opt/wine-${version}/icons/winestop.png
 Exec=wineserver -k
 Terminal=false
-Categories=System;" | sudo tee /usr/share/applications/wine-killer.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-killer.desktop >/dev/null
 
 echo "[Desktop Entry]
 Version=1.0
@@ -187,7 +205,7 @@ Comment=Clean out the default Wine prefix and start over
 Icon=/opt/wine-${version}/icons/wine-regenerate.png
 Exec=bash -c "\""yad --window-icon=/opt/wine-${version}/icons/wine-regenerate.png --title='Wine Reset' --text='Are you sure you want to DELETE all data and applications in your Wine prefix and start over?' --center --button=Cancel:1 --button=Yes:0 --on-top && ${DIRECTORY}/etc/terminal-run 'echo y | winetricks annihilate -q ; generate-wine-prefix' 'Generating Wine prefix...'"\""
 Terminal=false
-Categories=System;" | sudo tee /usr/share/applications/wine-regenerate.desktop
+Categories=System;" | sudo tee /usr/share/applications/wine-regenerate.desktop >/dev/null
 status_green "Done"
 
 cat << EOF | sudo tee /usr/local/bin/generate-wine-prefix >/dev/null
@@ -197,6 +215,7 @@ echo
 #set up functions
 $(declare -f error)
 $(declare -f status)
+$(declare -f status_green)
 $(declare -f warning)
 $(declare -f userinput_func)
 
@@ -210,24 +229,34 @@ fi
 export WINEPREFIX
 export BOX64_NOBANNER=1 #hide box64 output (for cosmetics)
 
-if [ -e "\$HOME/.wine" ];then
+if [ -f "\$WINEPREFIX/system.reg" ];then
+  registry_exists=true
+else
+  registry_exists=false
+fi
+
+export WINEDEBUG=-virtual #hide harmless memory errors
+
+if [ -e "\$WINEPREFIX" ];then
   status "Checking Wine prefix at \$WINEPREFIX..."
   echo "To choose another prefix, set the WINEPREFIX variable."
-  echo "Waiting 5 seconds..."
+  echo -n "Waiting 5 seconds... "
   sleep 5
+  echo
   # check for existance of incompatible prefix (see server_init_process https://github.com/wine-mirror/wine/blob/884cff821481b4819f9bdba455217bd5a3f97744/dlls/ntdll/unix/server.c#L1544-L1670)
   # Boot wine and check for errors (make fresh wineprefix)
   output="\$(set -o pipefail; wine wineboot 2>&1 | tee /dev/stderr; )" #this won't display any dialog boxes that require a button to be clicked
   if [ "\$?" != 0 ]; then
     text="Your previously existing Wine prefix failed with an error (see terminal log).
 
-Would you like to remove and regeneral your Wine prefix? Doing so will delete everything you may have installed into your Wine prefix."
+Would you like to remove and regenerate your Wine prefix? Doing so will delete anything you may have installed into your Wine prefix."
     userinput_func "\$text" "No, keep broken Wine prefix and Exit" "Yes, delete and regenerate Wine prefix"
     if [ "\$output" == "No, keep broken Wine prefix and Exit" ]; then
       error "User error: Your current Wine prefix caused Wine to error on launch and you chose to keep it. Manually correct your Wine prefix before installing or updating Wine (x64)."
     fi
     warning "Your previously existing Wine prefix failed with an error (see above). You chose to remove it and so it will be re-generated."
-    rm -rf "\$HOME/.wine"
+    rm -rf "\$WINEPREFIX"
+    registry_exists=false
     wine wineboot #this won't display any dialog boxes that require a button to be clicked
   fi
   #wait until above process exits
@@ -249,6 +278,7 @@ else
   done
 fi
 
+if [ "\$registry_exists" == false ];then
 status "Making registry changes..."
 TMPFILE="\$(mktemp)" || exit 1
 echo 'REGEDIT4' > \$TMPFILE
@@ -425,13 +455,21 @@ echo '
 wine regedit \$TMPFILE
 
 rm -f \$TMPFILE
+fi #end of if statement that only runs if this script was started when there was no wine registry
 
 #install some packages with winetricks for a better out-of-the-box experience
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
+
+installed="\$(WINETRICKS_SUPER_QUIET=1 winetricks -q list-installed 2>/dev/null)"
 for i in mfc42 vcrun6 vcrun2003 fontfix corefonts gdiplus msxml3 vcrun2005sp1 vcrun2008 ;do
   echo
-  status "Installing \$i with winetricks..."
-  winetricks \$i
+  status -n "Installing \$i with winetricks..."
+  if echo "\$installed" | grep -qFx "\$i" ;then
+    status_green " Already installed"
+  else
+    echo
+    winetricks \$i
+  fi
 done
 status "Winetricks finished"
 
