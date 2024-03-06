@@ -108,7 +108,7 @@ echo
 echo ready
 
 yad --center --title='Log file viewer' --width=500 --height=400 --on-top \
-  --text="Review the errors from installing or uninstalling apps."$'\n'"Week-old log files will be deleted." \
+  --text="Review the errors from installing or uninstalling apps."$'\n'"Click a line to open its log. Week-old log files will be deleted." \
   --list --separator='\n' --window-icon="${DIRECTORY}/icons/settings.png" \
   --column=Day --column=I:IMG --column=A:IMG --column=R:IMG --column=Description --column=tooltip:HD \
   --print-column=6 --tooltip-column=6 --select-action="$(dirname "$0")/viewlog" --dclick-action='true' \
