@@ -239,7 +239,7 @@ echo
 
 #get mesa and icons from wine-stuff repo
 cd /tmp
-rm -rf "$PWD/wine-stuff"
+rm -rf wine-stuff
 git clone https://github.com/Botspot/wine-stuff || error "Failed to clone wine-stuff repository!"
 sudo mv "$PWD/wine-stuff/icons" /opt/wine-${version}
 sudo mv "$PWD/wine-stuff/Windows_10.msstyles" /opt/wine-${version}
@@ -247,7 +247,8 @@ if [ $(ldd --version | head -n1 | awk '{print $NF}' | sed 's/\..*//g') -ge 2 ] &
   #only install mesa if glibc is 2.30 or greater and apt mesa version is less than 22.1.0 (which is the version of the binary builds)
   sudo mv "$PWD/wine-stuff/mesa" /opt/wine-${version}
 fi
-rm -rf "$PWD/wine-stuff"
+sudo chown -R root:root /opt/wine-${version}
+rm -rf wine-stuff
 cd
 
 #create menu launchers
