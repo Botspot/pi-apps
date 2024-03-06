@@ -1,0 +1,8 @@
+CoBang app - simple lightweight QR code and barcode scanner, uses the webcam.
+Not sure if this is compatible with the Raspberry Pi Cameras, but it should work with those if you set one up as a normal video output device.
+It also supports importing a picture of a QR code.
+
+To run: Menu -> Graphics -> CoBang
+To run in a terminal: flatpak run vn.hoabinh.quan.CoBang
+
+Quick tip: In testing, it seems that the scanned URL is displayed below the bottom edge of the window. It is still there, but you cannot see it. And the scrollbar is one of those auto-hiding ones. To see the URL, you just need to scroll down, or increase the height of the program window.
