@@ -24,18 +24,19 @@ if package_installed libraspberrypi0 ; then
   rpi_arm_userspace="libraspberrypi0:armhf"
 fi
 
-install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles-dev:armhf libegl-dev:armhf libpolkit-gobject-1-0:armhf $rpi_arm_userspace || exit 1
+install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles-dev:armhf libegl-dev:armhf libpolkit-gobject-1-0:armhf $rpi_arm_userspace patchelf || exit 1
 
-#As libraspberrypi-dev:armhf cannot be installed with multiarch, symlink the required libs from libraspberrypi0:armhf
-if [ -e /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0 ] && [ -e /usr/lib/arm-linux-gnueabihf/libvcos.so.0 ] && [ -e /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0 ];then
-  sudo ln -s /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0 /usr/lib/arm-linux-gnueabihf/libbcm_host.so
-  sudo ln -s /usr/lib/arm-linux-gnueabihf/libvcos.so.0 /usr/lib/arm-linux-gnueabihf/libvcos.so
-  sudo ln -s /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0 /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so
-else
-  error "Could not locate needed libs to symlink! Please ask pi-apps developers for help about this."
-fi
-# Solve error on Bullseye: "anydesk: error while loading shared libraries: libbrcmGLESv2.so: cannot open shared object file: No such file or directory"
+#make anydesk search armhf libs first
+sudo patchelf --set-rpath /usr/lib/arm-linux-gnueabihf /usr/bin/anydesk
 
-[ ! -e /usr/lib/libbrcmGLESv2.so ] && sudo ln -s /usr/lib/arm-linux-gnueabihf/libGLESv2.so /usr/lib/arm-linux-gnueabihf/libbrcmGLESv2.so
-[ ! -e /usr/lib/libbrcmEGL.so ] && sudo ln -s /usr/lib/arm-linux-gnueabihf/libEGL.so /usr/lib/arm-linux-gnueabihf/libbrcmEGL.so
-exit 0
+#libraspberrypi0:armhf provides libs with so.0, but it is not multiarch compatible
+#so patch anydesk to use equivalent .so libs from libraspberrypi-dev:armhf
+
+sudo patchelf --replace-needed libbcm_host.so libbcm_host.so.0 /usr/bin/anydesk
+sudo patchelf --replace-needed libvcos.so libvcos.so.0 /usr/bin/anydesk
+sudo patchelf --replace-needed libvchiq_arm.so libvchiq_arm.so.0 /usr/bin/anydesk
+
+# Solve error: "anydesk: error while loading shared libraries: libbrcmGLESv2.so: cannot open shared object file: No such file or directory"
+
+sudo patchelf --replace-needed libbrcmGLESv2.so libGLESv2.so /usr/bin/anydesk
+sudo patchelf --replace-needed libbrcmEGL.so libEGL.so /usr/bin/anydesk
