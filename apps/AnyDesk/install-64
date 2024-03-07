@@ -9,7 +9,7 @@ function check-armhf() {
 #add armhf architecture (multiarch)
 check-armhf
 if [[ "$ARMHF" == *"armhf"* ]]; then
-  echo "armhf arcitecture already added..."
+  echo "armhf architecture already added..."
 else
   sudo dpkg --add-architecture armhf
   check-armhf
@@ -19,12 +19,12 @@ else
 fi
 
 unset rpi_arm_userspace
-# only install the libraspberrypi0 arm32 package if the user already has the libraspberrypi0 arm64 package installed
-if package_installed libraspberrypi0 ; then
-  rpi_arm_userspace="libraspberrypi0:armhf"
+
+if ! package_available libraspberrypi0:armhf ; then
+  error "AnyDesk needs some system libraries specific to the Raspberry Pi, but on your system the libraspberrypi0:armhf package does not seem to be available."
 fi
 
-install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles-dev:armhf libegl-dev:armhf libpolkit-gobject-1-0:armhf $rpi_arm_userspace patchelf || exit 1
+install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb libgles2:armhf libegl1:armhf libpolkit-gobject-1-0:armhf libraspberrypi0:armh patchelf || exit 1
 
 #make anydesk search armhf libs first
 sudo patchelf --set-rpath /usr/lib/arm-linux-gnueabihf /usr/bin/anydesk
@@ -36,7 +36,10 @@ sudo patchelf --replace-needed libbcm_host.so libbcm_host.so.0 /usr/bin/anydesk
 sudo patchelf --replace-needed libvcos.so libvcos.so.0 /usr/bin/anydesk
 sudo patchelf --replace-needed libvchiq_arm.so libvchiq_arm.so.0 /usr/bin/anydesk
 
-# Solve error: "anydesk: error while loading shared libraries: libbrcmGLESv2.so: cannot open shared object file: No such file or directory"
+#use gl libraries from lib deps to avoid needing to install -dev variants
+sudo patchelf --replace-needed libGLESv2.so libGLESv2.so.2 /usr/bin/anydesk
+sudo patchelf --replace-needed libEGL.so libEGL.so.1 /usr/bin/anydesk
 
+# Solve error: "anydesk: error while loading shared libraries: libbrcmGLESv2.so: cannot open shared object file: No such file or directory"
 sudo patchelf --replace-needed libbrcmGLESv2.so libGLESv2.so /usr/bin/anydesk
 sudo patchelf --replace-needed libbrcmEGL.so libEGL.so /usr/bin/anydesk
