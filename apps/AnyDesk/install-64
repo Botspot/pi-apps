@@ -29,8 +29,8 @@ install_packages https://download.anydesk.com/rpi/anydesk_${version}_armhf.deb l
 #make anydesk search armhf libs first
 sudo patchelf --set-rpath /usr/lib/arm-linux-gnueabihf /usr/bin/anydesk
 
-#libraspberrypi0:armhf provides libs with so.0, but it is not multiarch compatible
-#so patch anydesk to use equivalent .so libs from libraspberrypi-dev:armhf
+#libraspberrypi0:armhf provides libs with so.0, but anydesk wants libs that end in .so
+#fix it
 
 sudo patchelf --replace-needed libbcm_host.so libbcm_host.so.0 /usr/bin/anydesk
 sudo patchelf --replace-needed libvcos.so libvcos.so.0 /usr/bin/anydesk
