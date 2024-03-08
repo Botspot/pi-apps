@@ -2,3 +2,6 @@
 
 purge_packages || exit 1
 sudo rm -f /opt/PrusaSlicer.AppImage /usr/local/share/applications/PrusaSlicer.desktop /usr/share/applications/PrusaSlicer.desktop ~/PrusaSlicer.AppImage ~/.local/share/applications/PrusaSlicer.desktop
+
+#remove mime association
+sed -i '/model\/stl=PrusaSlicer\.desktop;/d' ~/.config/mimeapps.list
