@@ -123,8 +123,9 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
 }
 
 package_available() { #determine if the specified package-name exists in a local repository for the current dpkg architecture
-  local package="$1"
-  local dpkg_arch="$(dpkg --print-architecture)"
+  local package="$(awk -F: '{print $1}' <<<"$1")"
+  local dpkg_arch="$(awk -F: '{print $2}' <<<"$2")"
+  [ -z "$dpkg_arch" ] && dpkg_arch="$(dpkg --print-architecture)"
   [ -z "$package" ] && error "package_available(): no package name specified!"
   local output="$(apt-cache policy "$package":"$dpkg_arch" | grep "Candidate:")"
   if [ -z "$output" ]; then
@@ -505,11 +506,20 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       [ -f "$package" ] || error "install_packages(): Local package does not exist! ($package)"
       
-      #determine the package name from the filename
-      packagename="$(dpkg-deb -I "$package" | grep "^ Package:" | awk '{print $2}')"
-      packageversion="$(dpkg-deb -I "$package" | grep "^ Version:" | awk '{print $2}')"
-      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$package'"
-      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$package'"
+      #determine the package name, package version, and architecture from the file
+      local dpkg_deb_output="$(dpkg-deb -I "$filename")"
+      local packagename="$(echo "$dpkg_deb_output" | grep "^ Package:" | awk '{print $2}')"
+      local packageversion="$(echo "$dpkg_deb_output" | grep "^ Version:" | awk '{print $2}')"
+      local packagearch="$(echo "$dpkg_deb_output" | grep "^ Architecture:" | awk '{print $2}')"
+      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
+      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$filename'"
+      [ -z "$packagearch" ] && error "install_packages(): failed to determine a package-architecture for the file '$filename'"
+      unset dpkg_deb_output
+      
+      #foreign arch: add :armhf or :arm64 to the packagename if this local package is of a foreign architecture
+      if [ "$packagearch" != "$(dpkg --print-architecture)" ];then
+        packagename+=":$packagearch"
+      fi
       
       #add this local package to the pi-apps-local-packages repository
       repo_add "$package" || return 1
@@ -541,11 +551,20 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       done
       [ -f "$filename" ] || error "install_packages(): Downloaded package does not exist! ($filename)"
       
-      #determine the package name from the filename
-      packagename="$(dpkg-deb -I "$filename" | grep "^ Package:" | awk '{print $2}')"
-      packageversion="$(dpkg-deb -I "$filename" | grep "^ Version:" | awk '{print $2}')"
+      #determine the package name, package version, and architecture from the file
+      local dpkg_deb_output="$(dpkg-deb -I "$filename")"
+      local packagename="$(echo "$dpkg_deb_output" | grep "^ Package:" | awk '{print $2}')"
+      local packageversion="$(echo "$dpkg_deb_output" | grep "^ Version:" | awk '{print $2}')"
+      local packagearch="$(echo "$dpkg_deb_output" | grep "^ Architecture:" | awk '{print $2}')"
       [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
       [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$filename'"
+      [ -z "$packagearch" ] && error "install_packages(): failed to determine a package-architecture for the file '$filename'"
+      unset dpkg_deb_output
+      
+      #foreign arch: add :armhf or :arm64 to the packagename if this local package is of a foreign architecture
+      if [ "$packagearch" != "$(dpkg --print-architecture)" ];then
+        packagename+=":$packagearch"
+      fi
       
       #add this local package to the pi-apps-local-packages repository
       repo_add "$filename" || return 1
