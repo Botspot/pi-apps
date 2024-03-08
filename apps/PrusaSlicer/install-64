@@ -12,16 +12,22 @@ sudo chown root:root /opt/PrusaSlicer.AppImage || error "Failed to set appimage 
 
 enable_module fuse || exit 1
 
-sudo mkdir -p /usr/local/share/applications
+if ! grep -qF 'PrusaSlicer.desktop' ~/.config/mimeapps.list ;then
+  echo "Associating the STL mimetype for PrusaSlicer..."
+  echo "[Added Associations]
+model/stl=PrusaSlicer.desktop;" >> ~/.config/mimeapps.list
+fi
+
+sudo rm -f /usr/local/share/applications/PrusaSlicer.desktop
 echo "[Desktop Entry]
 Name=PrusaSlicer
 GenericName=3D Printing Software
 Comment=PrusaSlicer converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
-Exec=/opt/PrusaSlicer.AppImage
+Exec=env MESA_GL_VERSION_OVERRIDE=3.3 /opt/PrusaSlicer.AppImage %F
 Icon=$(dirname $0)/icon-64.png
 Terminal=false
 Type=Application
-MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;
+MimeType=application/sla;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;image/bmp;image/gif;image/jpeg;image/png;model/x3d+xml;model/stl;
 Categories=Graphics;Education;Development;Science;
 Keywords=3D;Printing;
-StartupNotify=true" | sudo tee /usr/local/share/applications/PrusaSlicer.desktop >/dev/null || error "Failed to create menu button!"
+StartupNotify=true" | sudo tee /usr/share/applications/PrusaSlicer.desktop >/dev/null || error "Failed to create menu button!"
