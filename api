@@ -2933,7 +2933,7 @@ files_match() { #$1 and $2 are paths to files
 
 is_supported_system() { #return 0 if system is supported, otherwise return 1
   local PRETTY_NAME="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"' | awk -F= '{print $2}')"
-  local AVAILABLE_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(TARGET_OF)' | sort -u | awk '{if ($3=="deb") print $1" "$2 }')"
+  local AVAILABLE_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF)' | sort -u | awk '{if ($4=="deb") print $1" "$2" "$3 }' | grep -v '$(COMPONENT)$')"
   local DEFAULT_REPOS="$(echo "$AVAILABLE_REPOS" | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|\
 debian.org/debian\|security.debian.org/\|\
@@ -2999,12 +2999,12 @@ All apt based application installs will fail. Unless you have a backup of your /
   elif ([ -z "$__os_original_id" ] && ! ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ] || [ "$__os_id" == "Ubuntu" ]));then
     echo "Pi-Apps is not supported on $__os_desc, Pi-Apps is only officially supported on the latest two LTS releases of Raspberry Pi OS, Raspbian, Debian, and Ubuntu."
     return 1
-  elif [ "$__os_id" == "Ubuntu" ] && ! ( echo "$DEFAULT_REPOS" | grep -q $__os_codename && \
-    echo "$DEFAULT_REPOS" | grep -q $__os_codename-updates && \
-    echo "$DEFAULT_REPOS" | grep -q $__os_codename-security ); then
+  elif [ "$__os_id" == "Ubuntu" ] && ! ( echo "$DEFAULT_REPOS" | grep "$__os_codename " | awk '{if ($3=="main" || $3=="universe") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main universe" && \
+    echo "$DEFAULT_REPOS" | grep "$__os_codename-updates " | awk '{if ($3=="main" || $3=="universe") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main universe" && \
+    echo "$DEFAULT_REPOS" | grep "$__os_codename-security " | awk '{if ($3=="main" || $3=="universe") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main universe" ); then
     echo "MISSING Default Ubuntu Repositories!
-Pi-Apps does NOT support systems without ALL of $__os_codename, $__os_codename-updates, and $__os_codename-security dists present in the sources.list
-Please refer to the default sources.list for Ubuntu and restore all required dists."
+Pi-Apps does NOT support systems without ALL of $__os_codename, $__os_codename-updates, and $__os_codename-security dists and main and universe components present in the sources.list
+Please refer to the default sources.list for Ubuntu and restore all required dists and components."
     return 1
   elif ! apt-get --dry-run check &>/dev/null ; then
     echo "Congratulations, Linux tinkerer, you broke your system. There are packages on your system that are in a broken state.
