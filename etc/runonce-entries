@@ -403,4 +403,11 @@ runonce <<"EOF"
   fi
 EOF
 
+#include DEBIAN_FRONTEND variable in sudo default environment if set
+runonce <<"EOF"
+  sudo_popup sh -c "cat > /etc/sudoers.d/debian_frontend << _EOF_
+Defaults      env_keep += DEBIAN_FRONTEND
+_EOF_"
+EOF
+
 true
