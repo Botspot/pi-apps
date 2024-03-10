@@ -507,13 +507,13 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       [ -f "$package" ] || error "install_packages(): Local package does not exist! ($package)"
       
       #determine the package name, package version, and architecture from the file
-      local dpkg_deb_output="$(dpkg-deb -I "$filename")"
+      local dpkg_deb_output="$(dpkg-deb -I "$package")"
       local packagename="$(echo "$dpkg_deb_output" | grep "^ Package:" | awk '{print $2}')"
       local packageversion="$(echo "$dpkg_deb_output" | grep "^ Version:" | awk '{print $2}')"
       local packagearch="$(echo "$dpkg_deb_output" | grep "^ Architecture:" | awk '{print $2}')"
-      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$filename'"
-      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$filename'"
-      [ -z "$packagearch" ] && error "install_packages(): failed to determine a package-architecture for the file '$filename'"
+      [ -z "$packagename" ] && error "install_packages(): failed to determine a package-name for the file '$package'"
+      [ -z "$packageversion" ] && error "install_packages(): failed to determine a package-version for the file '$package'"
+      [ -z "$packagearch" ] && error "install_packages(): failed to determine a package-architecture for the file '$package'"
       unset dpkg_deb_output
       
       #foreign arch: add :armhf or :arm64 to the packagename if this local package is of a foreign architecture
