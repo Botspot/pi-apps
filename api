@@ -1847,7 +1847,7 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
   local apt_cache_output="$(echo "$packages" | xargs -r apt-cache policy)"
 
   #redefine package_installed to only read /var/lib/dpkg/status once
-  local dpkg_status="$(grep -x "Package: \($(echo "$packages" | sed 's/:'"$arch"'//g ; s/ /\\|/g')\)" -A 2 /var/lib/dpkg/status)"
+  local dpkg_status="$(grep -x "Package: \($(echo "$packages" | sed 's/:'"$dpkg_arch"'//g ; s/ /\\|/g')\)" -A 2 /var/lib/dpkg/status)"
 
   #redefine package_available() to use apt_cache_output and avoid running apt-cache multiple times
   (package_available() { #this will only be used in this function's subprocesses.
