@@ -8,7 +8,7 @@ function error {
 }
 
 #remove week-old logfiles
-find "$DIRECTORY/logs" -type f -mtime +6 -exec rm -f {} \;
+find "$DIRECTORY/logs" -type f -daystart -mtime +6 -exec rm -f {} \;
 
 #list of all files within "$DIRECTORY/logs", newest first
 logfiles="$(ls "$DIRECTORY/logs"/* -t)"
