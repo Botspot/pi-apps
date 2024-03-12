@@ -2,4 +2,9 @@
 
 purge_packages || exit 1
 
+#if the user uninstalls brave through pi-apps they expect it to actually be removed
+#without the following line this will never be the case since brave-browser provides www-browser and man-db suggests www-browser and distros depend on man-db
+#apt autoremove will not remove packages that are suggested or recommended and are currently installed
+package_installed brave-browser && sudo apt purge -y --autoremove brave-browser | less_apt
+
 remove_repofile_if_unused /etc/apt/sources.list.d/brave-browser-release.list "" /usr/share/keyrings/brave-browser-archive-keyring.gpg
