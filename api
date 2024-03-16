@@ -3006,6 +3006,18 @@ All apt based application installs will fail. Unless you have a backup of your /
 Pi-Apps does NOT support systems without ALL of $__os_codename, $__os_codename-updates, and $__os_codename-security dists and main and universe components present in the sources.list
 Please refer to the default sources.list for Ubuntu and restore all required dists and components."
     return 1
+  elif [ "$__os_id" == "Debian" ] && ! ( echo "$DEFAULT_REPOS" | grep "debian.org/debian" | grep "$__os_codename " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" && \
+    echo "$DEFAULT_REPOS" | grep "debian.org/debian" | grep "$__os_codename-updates " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" && \
+    echo "$DEFAULT_REPOS" | grep "debian.org/debian" | grep "$__os_codename-security " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" ); then
+    echo "MISSING Default Debian Repositories!
+Pi-Apps does NOT support systems without ALL of $__os_codename, $__os_codename-updates, and $__os_codename-security dists and main component present in the sources.list
+Please refer to the default sources.list for Debian and restore all required dists and components."
+    return 1
+  elif [ "$__os_id" == "Raspbian" ] && ! ( echo "$DEFAULT_REPOS" | grep "/raspbian" | grep "$__os_codename " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" ); then
+    echo "MISSING Default Raspbian Repositories!
+Pi-Apps does NOT support systems without $__os_codename dist and main component present in the sources.list
+Please refer to the default sources.list for Raspbian and restore all required dists and components."
+    return 1
   elif ! apt-get --dry-run check &>/dev/null ; then
     echo "Congratulations, Linux tinkerer, you broke your system. There are packages on your system that are in a broken state.
 Refer to the output below for any potential solutions.
