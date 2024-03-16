@@ -14,10 +14,10 @@ body:
   - type: textarea
     id: host
     attributes:
-      label: (Optional) Where is the app hosted?
-      placeholder: Ex - Github link, Gitlab link, Sourceforge link
+      label: Where is the app hosted?
+      placeholder: Ex - Github link, Gitlab link, Sourceforge link, Website
     validations:
-      required: false
+      required: true
   
   - type: textarea
     id: about
