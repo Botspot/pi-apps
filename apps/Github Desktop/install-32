@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version=3.3.8-linux2
+version=3.3.10-linux1
 install_packages https://github.com/shiftkey/desktop/releases/download/release-${version}/GitHubDesktop-linux-armhf-${version}.deb || exit 1
