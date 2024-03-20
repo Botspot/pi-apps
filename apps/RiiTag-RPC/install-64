@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v1.3.5
+version=v1.3.6
 
 "${DIRECTORY}/manage" install-if-not-installed ArmCord || error "Failed to install dependency: ArmCord"
 
