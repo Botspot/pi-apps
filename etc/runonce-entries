@@ -258,6 +258,13 @@ runonce <<"EOF"
   fi
 EOF
 
+#Fix PiKiss vulkan breaking apt install/uninstalls/upgrades
+runonce <<"EOF"
+  if [ -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook ]; then
+    sudo_popup rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook
+  fi
+EOF
+
 #remove old mcpi repositories
 runonce <<"EOF"
   if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
