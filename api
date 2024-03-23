@@ -2714,7 +2714,8 @@ sudo apt install --reinstall lsb_release")
   
   if grep -qF "c++: fatal error: Killed signal terminated program cc1plus" <<<"$errors";then
     error_caption+=("Compiling $app failed because cc1plus was killedd due to insufficient RAM.
-Please install $app again, but this time keep all other programs closed to keep more free RAM available.")
+Please install $app again, but this time keep all other programs closed to keep more free RAM available.
+If this error keeps happening, try installing the More RAM app from Pi-Apps. Find it in the Tools category.")
     error_type="system"
   fi
   
