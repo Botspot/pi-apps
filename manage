@@ -674,7 +674,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     #fix edge case: new will_reinstall function avoids a reinstall if packages to install do not change.
     #unfortunately updater script does not source the new api so chromium is being reinstalled after we added "| chromium" to the packages file.
     #fix it here because new manage script sources the new api
-    if [ "$3" == "update" ] && ! will_reinstall "$app" ;then
+    if [ "$action" == uninstall ] && [ "$3" == "update" ] && ! will_reinstall "$app" ;then
       #manage was told to reinstall app, but it does not actually need to. Do nothing
       appscript=(bash -c -o pipefail "status 'Not reinstalling $app as no changes would be made.\nYou should only see this message once. Exiting.'")
     fi
