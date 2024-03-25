@@ -1055,7 +1055,7 @@ terminal_manage_multi() { #function to install/uninstall/update/refresh multiple
       refresh_list() { #Refresh the current list of apps in the event of a change
         if [ ! -z "'"$pipe"'" ] && [ -p "'"$pipe"'" ];then
           echo -e "\f" > "'"$pipe"'"
-          "${DIRECTORY}/preload" yad "'"$prefix"'" > "'"$pipe"'" 2>/dev/null
+          "${DIRECTORY}/preload" "$(cat "${DIRECTORY}/data/settings/App List Style")" "'"$prefix"'" > "'"$pipe"'" 2>/dev/null
         fi
       }
       
