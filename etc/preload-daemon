@@ -2,11 +2,6 @@
 
 #runs in the background and refreshes all the list files
 
-#Only one instance of this script should run at a time. If this is removed, preload will form a fairly good fork bomb.
-if [ "$(pgrep preload-daemon | wc -l)" -gt 2 ];then
-  exit 0
-fi
-
 DIRECTORY="$(dirname "$(readlink -f "$(dirname "$0")")")"
 
 function error {
@@ -74,7 +69,7 @@ if [ "$timestamps" != "$(cat "${DIRECTORY}/data/preload/timestamps-preload-daemo
   
   echo "Preload-daemon running..." 1>&2
   for folder in $folders ; do
-    "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null
+    RUNNING_FROM_DAEMON=1 "${DIRECTORY}/preload" "$guimode" "$folder" &>/dev/null
   done
   echo done 1>&2
   

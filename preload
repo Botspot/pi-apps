@@ -334,4 +334,6 @@ else
 fi
 
 #preload all categories in background
-"${DIRECTORY}/etc/preload-daemon" "$format" &>/dev/null &
+if [ "$RUNNING_FROM_DAEMON" != 1 ];then
+  "${DIRECTORY}/etc/preload-daemon" "$format" >/dev/null &
+fi
