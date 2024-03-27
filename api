@@ -3384,11 +3384,12 @@ git_clone() { #silently clone a git repository but display the output if an erro
 }
 
 wget() { #Intercept all wget commands. When possible, uses aria2c.
+  # FIXME: use wget always until upstream bug is resolved https://github.com/aria2/aria2/issues/2197
   local file=''
   local url=''
   local passopts=()
   #determine the download manager to use
-  local use=aria2c
+  local use=wget
   #determine if being run silently (if the '-q' flag was passed)
   local quiet=0
   
