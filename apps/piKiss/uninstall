@@ -1,5 +1,0 @@
-#!/bin/bash
-sudo rm -rf ~/piKiss
-sudo rm -f ~/.local/share/applications/pikiss.desktop
-
-purge_packages || exit 1
