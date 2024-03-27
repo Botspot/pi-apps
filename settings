@@ -80,7 +80,7 @@ while [ -z $exitloop ];do
     for th in "$td"/*; do
       [[ -d "$th" ]] || continue
       thname=${th##*/}
-      [ $(ls "$th/gtk-3."* 2>/dev/null | wc -l ) -gt 0 ] && gtk3_themes+=("$thname")
+      [ "$thname" != Default ] && [ $(ls "$th/gtk-3."* 2>/dev/null | wc -l ) -gt 0 ] && gtk3_themes+=("$thname")
     done
   done
   gtk3_themes=( "${gtk3_themes[@]/#/yad-}" )
