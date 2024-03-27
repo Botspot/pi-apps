@@ -2238,6 +2238,16 @@ Try removing it with this command:
 sudo rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook")
     error_type="package"
   fi
+
+  if grep -qF "Reinstalling Vulkan driver" <<<"$errors" ;then
+    if grep -qF "sh: 1: Syntax error: Unterminated quoted string" <<<"$errors" ;then
+      error_caption+=("PiKiss has installed a broken custom vulkan reinstallation apt hook. As a result, dpkg and APT won't work properly.
+
+Try removing it with this command:
+sudo rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook")
+      error_type="package"
+    fi
+  fi
   
   if grep -qF "error processing package dphys-swapfile" <<<"$errors" ;then
     error_caption+=("Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
