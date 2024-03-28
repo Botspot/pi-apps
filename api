@@ -515,7 +515,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       unset dpkg_deb_output
       
       #foreign arch: add :armhf or :arm64 to the packagename if this local package is of a foreign architecture
-      if [ "$packagearch" != "$(dpkg --print-architecture)" ];then
+      if [ "$packagearch" != "$(dpkg --print-architecture)" ] && [ "$packagearch" != "all" ];then
         packagename+=":$packagearch"
       fi
       
@@ -560,7 +560,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       unset dpkg_deb_output
       
       #foreign arch: add :armhf or :arm64 to the packagename if this local package is of a foreign architecture
-      if [ "$packagearch" != "$(dpkg --print-architecture)" ];then
+      if [ "$packagearch" != "$(dpkg --print-architecture)" ] && [ "$packagearch" != "all" ];then
         packagename+=":$packagearch"
       fi
       
