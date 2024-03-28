@@ -123,7 +123,7 @@ jobs:
       - name: Test installing app on bookworm armhf
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2023-12-06/2023-12-05-raspios-bookworm-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2024-03-15/2024-03-15-raspios-bookworm-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -186,7 +186,7 @@ jobs:
       - name: Test installing app on bookworm arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-12-06/2023-12-05-raspios-bookworm-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -262,7 +262,7 @@ jobs:
       - name: Test installing app on jammy arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.3-preinstalled-desktop-arm64+raspi.img.xz
+          base_image: https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.4-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -283,7 +283,7 @@ jobs:
       - name: Test installing app on L4T jammy arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2023-09-18.7z
+          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2024-02-01.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
