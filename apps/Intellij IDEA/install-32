@@ -34,7 +34,7 @@ install_packages build-essential || exit 1
 
 sudo rm -rf /opt/ideaIC /opt/ideaIC.tar.gz
 sudo mkdir /opt/ideaIC || error "Failed to make idea_ic folder!"
-wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz /tmp/ideaIC.tar.gz || error "Failed to download!"
+wget https://download.jetbrains.com/idea/ideaIC-${version}.tar.gz -O /tmp/ideaIC.tar.gz || error "Failed to download!"
 
 cd /opt/ideaIC
 sudo tar xf /tmp/ideaIC.tar.gz --strip-components=1 || error "Failed to extract ideaIC.tar.gz!"
