@@ -441,11 +441,9 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
   echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
   cat /etc/apt/sources.list >> /tmp/pi-apps-local-packages/source.list
   
-  # add priority to all pi-apps-local-packages so that they always have higher priority than repo versions - see PR #1986
-  # this has no affect when there the pi-apps-local-packages repo does not exist
-  echo 'Package: *
-Pin: Release o=pi-apps-local-packages
-Pin-Priority: 990' | sudo tee /etc/apt/preferences.d/pi-apps-local-packages >/dev/null
+  # remove pi-apps-local-packages priority if it exists
+  [ -f /etc/apt/preferences.d/pi-apps-local-packages ] && sudo rm -f /etc/apt/preferences.d/pi-apps-local-packages
+  true
 }
 
 repo_rm() { #remove the local apt repository
