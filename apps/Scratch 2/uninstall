@@ -1,4 +1,2 @@
 #!/bin/bash
-echo "Allowing scratch2 package to be uninstallable..."
-echo "scratch2 install" | sudo dpkg --set-selections
 purge_packages || exit 1
