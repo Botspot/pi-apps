@@ -634,7 +634,7 @@ update_now_background() { #input: updatable_apps and updatable_files variables
   background_updatable_apps="$(echo "$background_updatable_apps" | grep .)"
   
   if [ ! -z "$updatable_files" ] || [ ! -z "$background_updatable_apps" ];then
-    no_status=true update_now_cli
+    no_status=true updatable_apps="$background_updatable_apps" update_now_cli
   fi
 }
 
