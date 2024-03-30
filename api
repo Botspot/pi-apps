@@ -2469,6 +2469,25 @@ sudo apt purge --autoremove linux-image-*-arm64")
       error_type="package"
     fi
   fi
+
+  if grep -qF "E: Unable to correct problems, you have held broken packages." <<<"$errors" && grep -q "The following packages have unmet dependencies:" <<<"$errors" && ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) ;then
+    if apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF)' | sort -u | awk '{if ($4=="deb") print $1" "$2" "$3 }' | grep -v '$(COMPONENT)$' | grep "debian.org/debian" | grep "$__os_codename-backports " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" ; then
+      local backports_conflicts="$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      backports_conflicts+=$'\n'"$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      backports_conflicts+=$'\n'"$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      backports_conflicts="$(echo "$backports_conflicts" | sort -u | grep .)"
+      if [ ! -z "$backports_conflicts" ] ;then
+        error_caption+=("The debian $__os_codename-backports repo is enabled on your system and packages installed from it are causing conflicts.
+You will need to revert to the stable version of the packages or manually upgrade all dependent packages to the $__os_codename-backports version.
+
+The packages that should be reverted to the stable versions that are causing conflicts are:
+$backports_conflicts
+
+For more information refer to the debian documentation: https://backports.debian.org/Instructions/")
+        error_type="package"
+      fi
+    fi
+  fi
   
   #NON-APT ERRORS BELOW
   if grep -q "Could not resolve host: github\.com\|Failed to connect to github\.com port 443: Connection timed out" <<<"$errors" ;then
