@@ -691,11 +691,13 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
       if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
         echo "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
-      elif [ "$using_local_packages" == 1 ] && ( echo "$output" | grep -q 'but it is not installable' || echo "$output" | grep -q 'but it is not going to be installed' ) ;then
+      elif [ "$using_local_packages" == 1 ] && ( echo "$output" | grep -q 'but it is not installable' || echo "$output" | grep -q 'but it is not going to be installed' || echo "$output" | grep -q "but .* is to be installed" ) ;then
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
         cat /tmp/pi-apps-local-packages/Packages
         echo -e "Attempting apt --dry-run installation of the problematic package(s) for debugging purposes:\n"
-        grep "but it is not installable" <<<"$output" | awk '{print $4}' | uniq | xargs sudo -E apt install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
+        ( echo "$output" | grep 'but it is not installable' || echo "$output" | grep 'but it is not going to be installed' || echo "$output" | grep "but .* is to be installed" ) | awk '{print $4}' | uniq | xargs sudo -E apt install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
+        echo -e "Printing apt-cache policy output for debugging purposes:\n"
+        apt-cache policy
       fi
       
       exit 1
