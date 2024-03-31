@@ -83,7 +83,7 @@ cd
 sudo chown -R root:root /tmp/floorp-deb || error "Failed to set root ownership"
 
 #build the new deb
-sudo dpkg-deb -b /tmp/floorp-deb /tmp/floorp.deb || error "Failed to make new floorp.deb package!"
+sudo dpkg-deb -Znone -b /tmp/floorp-deb /tmp/floorp.deb || error "Failed to make new floorp.deb package!"
 sudo chown $USER:$USER /tmp/floorp.deb || error "Failed to set ownership to '$USER'"
 sudo rm -rf /tmp/floorp-deb /tmp/floorp
 
