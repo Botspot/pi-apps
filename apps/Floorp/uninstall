@@ -1,3 +1,9 @@
 #!/bin/bash
 
 purge_packages || exit 1
+
+#if the user uninstalls floorp through pi-apps they expect it to actually be removed
+#without the following line this will never be the case since floorp provides www-browser and man-db suggests www-browser and distros depend on man-db
+#apt autoremove will not remove packages that are suggested or recommended and are currently installed
+package_installed floorp && sudo apt purge -y --autoremove floorp | less_apt
+true
