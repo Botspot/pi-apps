@@ -5,4 +5,9 @@ purge_packages || exit 1
 #remove deprecated files
 sudo rm -f /etc/apt/sources.list.d/home:stevenpusser.list /etc/apt/trusted.gpg.d/home_stevenpusser.gpg
 
+#if the user uninstalls palemoon through pi-apps they expect it to actually be removed
+#without the following line this will never be the case since palemoon provides www-browser and man-db suggests www-browser and distros depend on man-db
+#apt autoremove will not remove packages that are suggested or recommended and are currently installed
+package_installed palemoon && sudo apt purge -y --autoremove palemoon | less_apt
+
 rm_external_repo "stevenpusser"
