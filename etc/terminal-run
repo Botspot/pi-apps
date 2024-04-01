@@ -90,11 +90,8 @@ elif [ "$choice" == konsole ];then
 elif [ "$choice" == terminator ];then
   terminator -x bash -c "$commands" &
   
-elif [ "$choice" == gnome-terminal ];then
-  gnome-terminal -x bash -c "$commands" &
-  
-elif [ "$choice" == gnome-terminal.wrapper ];then
-  gnome-terminal -x bash -c "$commands" &
+elif [ "$choice" == gnome-terminal ] || [ "$choice" == gnome-terminal.wrapper ];then
+  gnome-terminal -- bash -c "$commands" &
   
 elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
