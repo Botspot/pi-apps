@@ -103,12 +103,18 @@ fi
 #A terminal should now be launching and in a few seconds the pid file should appear
 if [ ! -z "$temp_pid_file" ];then
   #echo "Waiting for terminal to close..."
-  #wait until pid file exists and give up in 5 seconds
+  #wait until pid file exists and give up in 10 seconds
   attempts=0
   while [ ! -f "$temp_pid_file" ];do
     
     if [ "$attempts" -gt 10 ];then
-      error "terminal-run: No terminal detected as it never created the pid file within 5 seconds."
+      if [ ! -d /tmp ];then
+        error "terminal-run: Terminal failed to launch because your /tmp directory is missing. Please create the directory and set the permissions to 1777."
+      elif ! touch "$temp_pid_file" ;then
+        error "terminal-run: Terminal failed to launch due to bad permissions in your /tmp directory. Please ensure that the folder's permissions are set to 1777. (Current permission value is $(stat -c %a /tmp))"
+      else
+        error "terminal-run: No terminal detected as it never created the pid file within 10 seconds."
+      fi
     fi
     sleep 1
     attempts=$((attempts + 1))
