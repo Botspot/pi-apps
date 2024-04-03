@@ -13,15 +13,23 @@ if [ $(version $(glxinfo -B | sed -n "s/^OpenGL version string://p" | awk '{ pri
   sudo sed -i "s:^Exec=prismlauncher:Exec=env MESA_GL_VERSION_OVERRIDE=3.3 prismlauncher:g" /usr/share/applications/org.prismlauncher.PrismLauncher.desktop
 fi
 
-status "Installing Java 8 and 17"
+status "Installing Java 8, 17, and 21 (if available)"
 case "$__os_id" in
 # Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
 Raspbian | Debian | Kali)
   adoptium_installer || exit 1
-  install_packages temurin-8-jre temurin-17-jre || exit 1
+  if package_available temurin-21-jre ;then
+    install_packages temurin-8-jre temurin-17-jre temurin-21-jre || exit 1
+  else
+    install_packages temurin-8-jre temurin-17-jre || exit 1
+  fi
   ;;
 Ubuntu)
-  install_packages openjdk-8-jre openjdk-17-jre || exit 1
+  if package_available openjdk-21-jre ;then
+    install_packages openjdk-8-jre openjdk-17-jre openjdk-21-jre || exit 1
+  else
+    install_packages openjdk-8-jre openjdk-17-jre || exit 1
+  fi
   ;;
 *)
   error "$__os_id appears to be an unsupported OS"
