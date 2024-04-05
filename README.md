@@ -33,7 +33,7 @@
     <a href="https://github.com/Botspot/pi-apps/blob/master/COPYING"><img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license"></a>
     <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
-<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
+<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong>, <strong><a href="https://github.com/theofficialgman">theofficialgman</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
 
 <p align="center">
     Check out our website: <a href="https://pi-apps.io">pi-apps.io</a>
