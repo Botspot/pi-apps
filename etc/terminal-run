@@ -108,9 +108,6 @@ elif [ "$choice" == alacritty ];then
 elif [ "$choice" == kitty ];then
   kitty bash -c "$commands" &
   
-elif [ "$choice" == qterminal ];then
-  qterminal -e bash <(echo "$commands") &
-  
 elif [ "$choice" == kgx ];then
   #kgs stays open after command execution, so add command to kill it - see https://gitlab.gnome.org/GNOME/console/-/issues/135
   commands+=$'\n''kill $(ps -p $$ -o ppid=)'
