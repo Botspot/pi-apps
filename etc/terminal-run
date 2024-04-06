@@ -38,7 +38,9 @@ gnome-terminal
 gnome-terminal.wrapper
 tilix
 tilix.wrapper
-qterminal'
+qterminal
+alacritty
+kitty'
 
 #Try to honor the preference of update-alternatives x-terminal-emulator
 terminal="$(basename "$(readlink -f "$(command -v x-terminal-emulator)")")"
@@ -103,7 +105,13 @@ elif [ "$choice" == tilix ] || [ "$choice" == tilix.wrapper ];then
   
 elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
-    
+  
+elif [ "$choice" == alacritty ];then
+  alacritty --command bash -c "$commands" &
+  
+elif [ "$choice" == kitty ];then
+  kitty bash -c "$commands" &
+  
 else
   error 'Failed to locate any terminal emulators!!!'"
 
