@@ -19,18 +19,9 @@ mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
 description="What type of Minecraft server\ndo you want to run?"
-table=("Vanilla" "Fabric" "Forge")
-serverjars=( $(curl -s https://serverjars.com/api/fetchTypes | jq -r '.response.servers[]' | sed 's/.*/\u&/') )
-table+=( ${serverjars[@]} )
+table=("Vanilla" "Fabric" "Forge" "Paper" "Purpur")
 userinput_func "$description" "${table[@]}"
 server_category="$output"
-
-# store previous extglob state
-extglob_was_enabled=0
-shopt -q extglob && extglob_was_enabled=1
-# enable extglob
-shopt -s extglob
-serverjars_extglob="@($(IFS="|";echo "${serverjars[*]}"))"
 
 case "$server_category" in
   "Fabric")
@@ -63,15 +54,27 @@ case "$server_category" in
     server_jar="forge-$installer_version-installer.jar"
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
-  $serverjars_extglob)
-    available_versions=$(curl -s https://serverjars.com/api/fetchAll/Servers/$server_category/0 | jq -r '.response[] | .version')
+  "Paper")
+    available_versions=$(curl -s https://api.papermc.io/v2/projects/paper/ | jq -r '.versions.[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    server_jar="${server_category,,}-$server_version.jar"
-    wget -O "$server_jar" "https://serverjars.com/api/fetchJar/Servers/$server_category/$server_version" || exit 1
+    version_info=$(curl -s https://api.papermc.io/v2/projects/paper/versions/$server_version/builds | jq -r '.builds | [last]')
+    server_jar="$(echo "$version_info" | jq -r '.[].downloads.application.name')"
+    wget -O "$server_jar" "https://api.papermc.io/v2/projects/paper/versions/$server_version/builds/$(echo "$version_info" | jq -r '.[].build')/downloads/$server_jar" || exit 1
+    ;;
+  "Purpur")
+    available_versions=$(curl -s https://api.purpurmc.org/v2/purpur/ | jq -r '.versions.[]')
+    description="What version of $server_category do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    status "Selected $server_category version $server_version"
+    build_version=$(curl -s https://api.purpurmc.org/v2/purpur/$server_version/ | jq -r '.builds.latest')
+    server_jar="purpur-$server_version-$build_version.jar"
+    wget -O "$server_jar" "https://api.purpurmc.org/v2/purpur/$server_version/$build_version/download" || exit 1
     ;;
   "Vanilla")
     available_versions=$(curl -s https://serverjars.com/api/fetchAll/Vanilla/$server_category/0 | jq -r '.response[] | .version')
@@ -88,10 +91,6 @@ case "$server_category" in
     ;;
 esac
 
-if [[ "$extglob_was_enabled" == "0" ]]; then
-  shopt -u extglob
-fi
-
 while [[ ! -a $(echo ${server_jar}) ]]; do
   description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
   \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
@@ -104,13 +103,14 @@ done
 server_jar=$(echo ${server_jar})
 
 if [ -z "$server_version" ]; then
-  # tell user to choose java 8 or 17
+  # tell user to choose java 8, 17, or 21
   description="In order to run Minecraft, the game requires a specific version of Java.\
   \nPlease choose below which version of java the server of your choice should run with.\
-  \nJava versions can be 8 or 17.\
+  \nJava versions can be 8, 17, or 21.\
   \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-  \nMinecraft 1.17+ should use java 17."
-  table=("Java 17" "Java 8")
+  \nMinecraft 1.17-1.20 should use java 17.\
+  \nMinecraft 1.21+ should use java 21."
+  table=("Java 21" "Java 17" "Java 8")
   userinput_func "$description" "${table[@]}"
   java_selection="$output"
 else
@@ -122,6 +122,9 @@ else
   if [ $(version $server_version) -le $(version "1.16.5") ]; then
     echo "Using Java 8 by default"
     java_selection="Java 8"
+  elif [ $(version $server_version) -ge $(version "1.21") ]; then
+    echo "Using Java 17 by default"
+    java_selection="Java 17"
   elif [ $(version $server_version) -ge $(version "1.17") ]; then
     echo "Using Java 17 by default"
     java_selection="Java 17"
@@ -129,10 +132,11 @@ else
     description="WARNING: We don't know how you got here... your version $server_version does not seem to be a normal minecraft format.\
     \n\nIn order to run Minecraft, the game requires a specific version of Java.\
     \nPlease choose below which version of java the server of your choice should run with.\
-    \nJava versions can be 8 or 17.\
+    \nJava versions can be 8, 17, or 21.\
     \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
-    \nMinecraft 1.17+ should use java 17."
-    table=("Java 17" "Java 8")
+    \nMinecraft 1.17-1.20 should use java 17.\
+    \nMinecraft 1.21+ should use java 21."
+    table=("Java 21" "Java 17" "Java 8")
     userinput_func "$description" "${table[@]}"
     java_selection="$output"
   fi
@@ -141,7 +145,7 @@ fi
 install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
-  "Java 8"|"Java 17")
+  "Java 8"|"Java 17"|"Java 21")
     adoptium_installer || exit 1
     ;;
   *)
@@ -169,6 +173,14 @@ case "$java_selection" in
   "Java 17")
     install_packages temurin-17-jre || exit 1
     java_location="/usr/lib/jvm/temurin-17-jre-$dpkg_arch/bin/java"
+    ;;
+  "Java 21")
+    if package_available temurin-21-jre ;then
+      install_packages temurin-21-jre || exit 1
+    else
+      error "Java 21 is not available for your platform from Adoptium. Exiting the script."
+    fi
+    java_location="/usr/lib/jvm/temurin-21-jre-$dpkg_arch/bin/java"
     ;;
 esac
 
