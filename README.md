@@ -33,7 +33,7 @@
     <a href="https://github.com/Botspot/pi-apps/blob/master/COPYING"><img src="https://img.shields.io/github/license/Botspot/pi-apps" alt="license"></a>
     <a href="https://discord.gg/RXSTvaUvuu"><img src="https://img.shields.io/discord/770629697909424159.svg?color=7289da&label=Discord%20server&logo=discord" alt="Join the Discord server"></a>
 
-<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong>, <strong><a href="https://github.com/theofficialgman">theofficialgman</a></strong> and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
+<p align="center"><strong>Made with &#10084; by <a href="https://github.com/Botspot">Botspot</a></strong>, <strong><a href="https://github.com/theofficialgman">theofficialgman</a></strong>, and <a href="https://github.com/Botspot/pi-apps/graphs/contributors">contributors</a>
 
 <p align="center">
     Check out our website: <a href="https://pi-apps.io">pi-apps.io</a>
@@ -55,16 +55,27 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
 
 ### Supported systems:
-#### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14">:
+#### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2/3/Zero 2 W/4/5)
 - <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Bullseye/Bookworm): <span style="color:var(--success-dark);">fully supported</span>
-- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Raspberry Pi Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/22.04 LTS) (GNOME, Mate, KDE, Budgie, etc): <span style="color:var(--success-dark);">fully supported</span>
-- <img src="https://pi-apps.io/img/other-icons/pop-os.svg" height="14"> [**Raspberry Pi Pop_OS!**](https://pop.system76.com/): <span style="color:var(--warn-dark);">you may encounter errors installing or running some apps</span>
-#### Nintendo Switch <img src=https://pi-apps.io/img/other-icons/switch-icon.svg height="14"> and Nvidia Jetson <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14">:
-- <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Jammy (22.04)**](https://wiki.switchroot.org/en/Linux/Ubuntu-Jammy-Install-Guide): <span style="color:var(--success-dark);">fully supported (incompatible apps are hidden)</span>
-- <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 5 and 6**](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/): <span style="color:var(--success-dark);">fully supported (incompatible apps are hidden)</span>
-#### Other ARM Hardware:
-- [**Pine64**](https://www.pine64.org/), [**Orange Pi**](http://www.orangepi.org/), [**Radxa**](https://rockpi.org/), [**Bananna Pi**](https://banana-pi.org/), [**Khadas**](https://www.khadas.com/), [**Inovato**](https://www.inovato.com/), [**Libre Computer**](https://libre.computer/), and other **ARM Debian/Ubuntu** Based Devices: <span style="color:var(--warn-dark);">not actively tested, most apps should work (pi-specific apps are hidden). Only official Debian/Ubuntu ports should be used on these devices for the best compatibility</span>
-- **Android**, **ChromeOS**, **Kali Linux**, **non-ARM**, **other Debian** and **non-Debian** operating systems: <span style="color:var(--danger-dark);">Not supported. Your mileage may vary. Expect the majority of apps to be broken</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/22.04 LTS) (GNOME, Mate, KDE, Budgie, etc): <span style="color:var(--success-dark);">fully supported</span>
+#### Nintendo Switch <img src=https://pi-apps.io/img/other-icons/switch-icon.svg height="14">
+- <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Jammy (22.04)**](https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-jammy-installation-guide): <span style="color:var(--success-dark);">fully supported</span>
+#### Nvidia Jetson <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14">
+- <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 5**](https://developer.nvidia.com/embedded/jetpack-sdk-513) (Ubuntu Focal): <span style="color:var(--success-dark);">fully supported</span>
+- <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 6**](https://developer.nvidia.com/embedded/jetpack-sdk-60dp) (Ubuntu Jammy): <span style="color:var(--success-dark);">fully supported</span>
+#### Apple Silicon Macs
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu Asahi**](https://ubuntuasahi.org/): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
+#### [**Pine64**](https://www.pine64.org/), [**Orange Pi**](http://www.orangepi.org/), [**Radxa**](https://rockpi.org/), [**Bananna Pi**](https://banana-pi.org/), [**Khadas**](https://www.khadas.com/), [**Inovato**](https://www.inovato.com/), [**Libre Computer**](https://libre.computer/), and other **ARMv7/ARMv8/ARMv9** Devices
+- <img src="https://pi-apps.io/img/other-icons/debian-icon.svg" height="14"> [Debian Bullseye/Bookworm](https://www.debian.org/distrib/) (Official Releases from Debian **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [Ubuntu Focal 20.04/Jammy 22.04](https://ubuntu.com/download/desktop) (Official Releases from Canonical **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
+
+### Unsupported systems:
+- All **UNOFFICIAL** Debian and Ubuntu based releases (unless mentioned above): <span style="color:var(--danger-dark);">Expect may apps to have issues.</span>
+  - Examples: **Orange Pi OS**, <img src="https://pi-apps.io/img/other-icons/pop-os.svg" height="14"> [**Pop_OS!**](https://pop.system76.com/), **Kali Linux**, and **ChromeOS Crostini** Debian Container
+- Anything Non-Debian and Non-Ubuntu: <span style="color:var(--danger-dark);">Expect the majority of apps and the appstore to be broken.</span>
+  - Examples: **Slackware**, **RHEL**, **Fedora**, **SUSE**, **Arch Linux**, **Gentoo**, **Void Linux**, **NixOS**
+- Anything not already mentioned: <span style="color:var(--danger-dark);">Expect nothing to work.</span>
+  - Examples: **Microsoft Windows**, **MacOS**, **Android**, and **ChromeOS**
 
 <details>
 <summary><b>To install Pi-Apps manually</b> if you prefer to see what happens under the hood</summary>
