@@ -62,7 +62,10 @@ else
 fi
 
 if [ -z "$choice" ];then
-  error "Failed to locate any terminal emulators!!!"
+  error 'Failed to locate any terminal emulators!!!'"
+
+Please install one of the supported terminal emulators from this list:
+$terminals"
 elif [ "$choice" == lxterminal ];then
   lxterminal -e bash -c "$commands" &
   
@@ -97,7 +100,10 @@ elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
     
 else
-  error "Failed to locate any terminal emulators!!!"
+  error 'Failed to locate any terminal emulators!!!'"
+
+Please install one of the supported terminal emulators from this list:
+$terminals"
 fi
 
 #A terminal should now be launching and in a few seconds the pid file should appear
