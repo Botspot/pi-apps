@@ -95,6 +95,18 @@ elif [ "$choice" == terminator ];then
   
 elif [ "$choice" == gnome-terminal ] || [ "$choice" == gnome-terminal.wrapper ];then
   gnome-terminal -- bash -c "$commands" &
+
+elif [ "$choice" == tilix ] || [ "$choice" == tilix.wrapper ];then
+  tilix -e bash -c "$commands" &
+  
+elif [ "$choice" == qterminal ];then
+  qterminal -e bash <(echo "$commands") &
+  
+elif [ "$choice" == alacritty ];then
+  alacritty --command bash -c "$commands" &
+  
+elif [ "$choice" == kitty ];then
+  kitty bash -c "$commands" &
   
 elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
@@ -103,6 +115,7 @@ elif [ "$choice" == kgx ];then
   #kgs stays open after command execution, so add command to kill it - see https://gitlab.gnome.org/GNOME/console/-/issues/135
   commands+=$'\n''kill $(ps -p $$ -o ppid=)'
   kgx -- bash -c "$commands" &
+  
 else
   error "Failed to locate any terminal emulators!!!
 Please install one of the supported terminal emulators from this list:
