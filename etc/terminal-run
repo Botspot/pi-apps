@@ -111,7 +111,7 @@ elif [ "$choice" == kitty ];then
 elif [ "$choice" == kgx ];then
   #kgs stays open after command execution, so add command to kill it - see https://gitlab.gnome.org/GNOME/console/-/issues/135
   commands+=$'\n''kill $(ps -p $$ -o ppid=)'
-  kgx -- bash -c "$commands" &
+  DBUS_SESSION_BUS_ADDRESS='' kgx -- bash -c "$commands" &
   
 else
   error "Failed to locate any terminal emulators!!!
