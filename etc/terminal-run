@@ -36,6 +36,7 @@ konsole
 terminator
 gnome-terminal
 gnome-terminal.wrapper
+tilix
 qterminal'
 
 #Try to honor the preference of update-alternatives x-terminal-emulator
@@ -95,6 +96,9 @@ elif [ "$choice" == terminator ];then
   
 elif [ "$choice" == gnome-terminal ] || [ "$choice" == gnome-terminal.wrapper ];then
   gnome-terminal -- bash -c "$commands" &
+
+elif [ "$choice" == tilix ];then
+  tilix -e bash -c "$commands" &
   
 elif [ "$choice" == qterminal ];then
   qterminal -e bash <(echo "$commands") &
