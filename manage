@@ -394,6 +394,9 @@ $app"
       exit 0
     fi
   fi #past this point, this instance is acting as the daemon.
+  
+  #write my own PID to the pid file
+  echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
 
   #check if hardware and OS is supported
   if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
@@ -407,9 +410,6 @@ $app"
       export unsupported_message="$(is_supported_system)"
     fi
   fi
-  
-  #write my own PID to the pid file
-  echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
   
   #Display a list of actions and their current status.
   #This list is updated with new information as time progresses.
