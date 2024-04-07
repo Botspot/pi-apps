@@ -397,6 +397,12 @@ $app"
   
   #write my own PID to the pid file
   echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
+  
+  #Display a list of actions and their current status.
+  #This list is updated with new information as time progresses.
+  #Another named pipe is created to refresh the yad list later.
+  rm -f "${DIRECTORY}/data/manage-daemon/yadlist"
+  mkfifo "${DIRECTORY}/data/manage-daemon/yadlist" #make a named pipe
 
   #check if hardware and OS is supported
   if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
@@ -410,12 +416,6 @@ $app"
       export unsupported_message="$(is_supported_system)"
     fi
   fi
-  
-  #Display a list of actions and their current status.
-  #This list is updated with new information as time progresses.
-  #Another named pipe is created to refresh the yad list later.
-  rm -f "${DIRECTORY}/data/manage-daemon/yadlist"
-  mkfifo "${DIRECTORY}/data/manage-daemon/yadlist" #make a named pipe
   
   [ -z "$geometry2" ] && geometry2='--center'
   
