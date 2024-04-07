@@ -1721,6 +1721,11 @@ userinput_func() { # userinput function to display yad/cli prompts to the user
   # the users theme, default text size, and window scaling all affect it
   # the idea is the height should be a function of the number of lines of input text and the number of list options
   local height_list=$(echo $(( text_lines * 17 + $(( ${#@} - 1 )) * 29 + 65 )))
+  if [ ! -z "$screen_height" ] && (( $height_list > "$screen_height" )); then
+    height_list="$screen_height"
+  elif [ -z "$screen_height" ] && (( $height_list > "720" )); then
+    height_list="720"
+  fi
   local commonflags=(--fixed --no-escape --undecorated --center --borders=20)
   if [ "${#@}" == "2" ];then
     yad "${yadflags[@]}" "${commonflags[@]}" \
