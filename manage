@@ -197,15 +197,17 @@ mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTO
 find "${DIRECTORY}/logs" -type f -mtime +6 -exec rm -f {} \; &>/dev/null &
 
 #check if hardware and OS is supported
-if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
-  true
-else
-  if is_supported_system >/dev/null;then
-    export supported=yes
-    export unsupported_message=''
+if [ "$1" != 'daemon' ]; then
+  if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
+    true
   else
-    export supported=no
-    export unsupported_message="$(is_supported_system)"
+    if is_supported_system >/dev/null;then
+      export supported=yes
+      export unsupported_message=''
+    else
+      export supported=no
+      export unsupported_message="$(is_supported_system)"
+    fi
   fi
 fi
 
@@ -392,6 +394,19 @@ $app"
       exit 0
     fi
   fi #past this point, this instance is acting as the daemon.
+
+  #check if hardware and OS is supported
+  if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
+    true
+  else
+    if is_supported_system >/dev/null;then
+      export supported=yes
+      export unsupported_message=''
+    else
+      export supported=no
+      export unsupported_message="$(is_supported_system)"
+    fi
+  fi
   
   #write my own PID to the pid file
   echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
