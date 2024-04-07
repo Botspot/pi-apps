@@ -55,7 +55,7 @@ case "$server_category" in
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
   "Paper")
-    available_versions=$(curl -s https://api.papermc.io/v2/projects/paper/ | jq -r '.versions.[]')
+    available_versions=$(curl -s https://api.papermc.io/v2/projects/paper/ | jq -r '.versions | .[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
@@ -66,7 +66,7 @@ case "$server_category" in
     wget -O "$server_jar" "https://api.papermc.io/v2/projects/paper/versions/$server_version/builds/$(echo "$version_info" | jq -r '.[].build')/downloads/$server_jar" || exit 1
     ;;
   "Purpur")
-    available_versions=$(curl -s https://api.purpurmc.org/v2/purpur/ | jq -r '.versions.[]')
+    available_versions=$(curl -s https://api.purpurmc.org/v2/purpur/ | jq -r '.versions | .[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
@@ -77,13 +77,13 @@ case "$server_category" in
     wget -O "$server_jar" "https://api.purpurmc.org/v2/purpur/$server_version/$build_version/download" || exit 1
     ;;
   "Vanilla")
-    available_versions=$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions.[] | select ( .type == "release" ) | .id')
+    available_versions=$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .type == "release" ) | .id')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_json="$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions.[] | select ( .id == "'$server_version'" ) | .url')"
+    version_json="$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .id == "'$server_version'" ) | .url')"
     server_jar="minecraft_server.$server_version.jar"
     wget -O "$server_jar" "$(curl -s "$version_json" | jq -r '.downloads.server.url')" || exit 1
     ;;
