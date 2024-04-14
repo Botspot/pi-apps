@@ -283,7 +283,7 @@ jobs:
       - name: Test installing app on L4T jammy arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2024-02-01.7z
+          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2024-03-29.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
