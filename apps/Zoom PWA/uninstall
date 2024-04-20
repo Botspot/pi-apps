@@ -1,8 +1,4 @@
 #!/bin/bash
-echo -n "Removing files... "
 
-rm -f ~/.local/share/applications/*gbmplfifepjenigdepeahbecfkcalfhg*
-rm -rf ./zoom-pwa
-rm -rf ~/.config/Zoom-PWA
-
-echo Done
+sudo rm -f /usr/local/share/applications/zoom-pwa.desktop /usr/local/share/icons/hicolor/64x64/apps/zoom-pwa.png /usr/local/share/icons/hicolor/24x24/apps/zoom-pwa.png /usr/local/bin/zoom-pwa
+purge_packages || exit 1

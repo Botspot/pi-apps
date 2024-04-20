@@ -1,9 +1,27 @@
 #!/bin/bash
-echo "Downloading zoom-pwa repository"
-rm -rf ~/zoom-pwa
-git_clone https://github.com/Botspot/zoom-pwa
 
-echo "Running the built-in installation script"
-~/zoom-pwa/install.sh || error "The zoom-pwa/install.sh indicated a failure. Please review errors above this point."
-echo "Cleaning up"
-rm -rf ~/zoom-pwa
+"${DIRECTORY}/manage" install-if-not-installed 'Chromium' || error "Chromium is required but it failed to install!"
+
+sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icons/hicolor/64x64/apps/ /usr/local/share/icons/hicolor/24x24/apps/ || error "Could not create required directories!"
+echo "Creating launcher and menu button..."
+echo '#!/bin/bash
+
+chromium-browser --user-data-dir="$HOME/.config/webapps/zoom" --app=https://pwa.zoom.us/wc --class=zoom-pwa' | sudo tee /usr/local/bin/zoom-pwa >/dev/null || error "Failed to create zoom-pwa launcher!"
+
+sudo chmod +x /usr/local/bin/zoom-pwa || error "Failed to set zoom-pwa launcher permissions!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/zoom-pwa.png || error "Failed to install zoom-pwa icon!"
+sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/zoom-pwa.png || error "Failed to install zoom-pwa icon!"
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons/hicolor
+
+echo "[Desktop Entry]
+Name=Zoom PWA
+Comment=Launch the Zoom Progressive Web App with Chromium browser.
+Exec=/usr/local/bin/zoom-pwa
+Icon=zoom-pwa
+Terminal=false
+StartupNotify=true
+StartupWMClass=zoom-pwa
+Type=Application
+Categories=Network;WebBrowser;" | sudo tee /usr/local/share/applications/zoom-pwa.desktop >/dev/null || error "Failed to create menu shortcut!"
