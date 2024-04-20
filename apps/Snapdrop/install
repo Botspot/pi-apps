@@ -6,7 +6,7 @@ sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icon
 echo "Creating launcher and menu button..."
 echo '#!/bin/bash
 
-chromium-browser --user-data-dir="$HOME/.config/webapps/snapdrop" --app=https://snapdrop.net/' | sudo tee /usr/local/bin/snapdrop >/dev/null || error "Failed to create snapdrop launcher!"
+chromium-browser --user-data-dir="$HOME/.config/webapps/snapdrop" --app=https://snapdrop.net/ --class=snapdrop' | sudo tee /usr/local/bin/snapdrop >/dev/null || error "Failed to create snapdrop launcher!"
 
 sudo chmod +x /usr/local/bin/snapdrop || error "Failed to set snapdrop launcher permissions!"
 
@@ -23,5 +23,6 @@ Exec=/usr/local/bin/snapdrop
 Icon=snapdrop
 Terminal=false
 StartupNotify=true
+StartupWMClass=snapdrop
 Type=Application
 Categories=Utility" | sudo tee /usr/local/share/applications/snapdrop.desktop >/dev/null || error "Failed to create menu shortcut!"

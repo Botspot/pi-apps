@@ -6,7 +6,7 @@ sudo mkdir -p /usr/local/bin /usr/local/share/applications /usr/local/share/icon
 echo "Creating launcher and menu button..."
 echo '#!/bin/bash
 
-chromium-browser --user-data-dir="$HOME/.config/webapps/stackedit" --app=https://stackedit.io/app#' | sudo tee /usr/local/bin/stackedit >/dev/null || error "Failed to create stackedit launcher!"
+chromium-browser --user-data-dir="$HOME/.config/webapps/stackedit" --app=https://stackedit.io/app# --class=stackedit' | sudo tee /usr/local/bin/stackedit >/dev/null || error "Failed to create stackedit launcher!"
 
 sudo chmod +x /usr/local/bin/stackedit || error "Failed to set stackedit launcher permissions!"
 
@@ -23,5 +23,6 @@ Exec=/usr/local/bin/stackedit
 Icon=stackedit
 Terminal=false
 StartupNotify=true
+StartupWMClass=stackedit
 Type=Application
 Categories=Development;IDE;" | sudo tee /usr/local/share/applications/stackedit.desktop >/dev/null || error "Failed to create menu shortcut!"
