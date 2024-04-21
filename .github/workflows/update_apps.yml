@@ -369,7 +369,7 @@ jobs:
           ALL_UPDATED_APPS="${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bullseye_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_arm64}}"
           ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | sort -u | awk NF)"
           [ ! -z "$ALL_UPDATED_APPS" ] && ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | list_subtract "$ALL_FAILED_APPS")"
-          [ ! -z "$ALL_UPDATED_APPS" ] && COMMIT_TITLE="$(echo "$ALL_UPDATED_APPS" | awk -F '-' '{print $2}' | tr '\n' ', ' | sed -n 's/,$/: Update App Versions/p' | sed -n 's/^ //p')"
+          [ ! -z "$ALL_UPDATED_APPS" ] && COMMIT_TITLE="$(echo "$ALL_UPDATED_APPS" | awk -F '^- |-all:|-armhf:|-arm64:' '{print $2}' | sort -u | tr '\n' ', ' | sed -n 's/,$/: Update App Versions/p')"
           echo "ALL_UPDATED_APPS<<EOF" >> $GITHUB_ENV
           echo "$ALL_UPDATED_APPS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
