@@ -48,12 +48,12 @@ if [ "$__os_codename" == "bullseye" ]; then
   install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-29.1.3-1-armhf-bullseye.deb || exit 1
 elif [ "$__os_codename" == "bookworm" ]; then
   # install bookworm version
-  install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-30.0.0-1-armhf-bookworm.deb || exit 1
+  install_packages qt6-qpa-plugins https://github.com/Pi-Apps-Coders/files/releases/download/large-files/obs-studio-30.1.2-1-armhf-bookworm.deb || exit 1
 else
   # note: bump this version to whatever the version of OBS-Studio we have precompiled debs for
   # if the distro version is equal or newer, prefer it to our debs
   # perform the package_is_new_enough check after purging obs-studio to prevent accidentally checking our own precompiled deb if it happens to still be installed 
-  if package_is_new_enough obs-studio 30.0.0 ;then
+  if package_is_new_enough obs-studio 30.1.2 ;then
     install_packages obs-studio || exit 1
   else
     error "User error: You are not using a supported Pi-Apps distribution and OBS Studio from your distribution was too old or not available."
