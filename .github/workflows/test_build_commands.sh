@@ -86,16 +86,20 @@ if [[ "$GITHUB_JOB" == "bionic-64bit" ]]; then
   sudo sed -i "s/<SOC>/t210/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 fi
 
-if [[ "$GITHUB_JOB" == "bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-64bit" ]]; then
+if [[ "$GITHUB_JOB" == "bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-noble-64bit" ]]; then
   # add ld conf files (normally handled by service on first launch)
   echo "/usr/lib/aarch64-linux-gnu/tegra-egl" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_EGL.conf
   echo "/usr/lib/aarch64-linux-gnu/tegra" | sudo tee /etc/ld.so.conf.d/aarch64-linux-gnu_GL.conf
-  # skip joycond postinst
-  sudo rm /var/lib/dpkg/info/joycond.postinst -f
-  sudo dpkg --configure joycond
   # note that we are in a chroot to skip bootfile configuration
   sudo mkdir -p /opt/switchroot
   sudo touch /opt/switchroot/image_prep
+fi
+
+if [[ "$GITHUB_JOB" == "bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-64bit" ]]; then
+  # skip joycond postinst
+  # fixed in newer releases
+  sudo rm /var/lib/dpkg/info/joycond.postinst -f
+  sudo dpkg --configure joycond
 fi
 
 if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
