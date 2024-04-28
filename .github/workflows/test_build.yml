@@ -25,23 +25,23 @@ on:
         type: choice
         description: 'For Buster/Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
         options:
-        - 32bit
-        - 64bit
         - Both
-      bionic_64:
-        description: 'Build on Switchroot Ubuntu 5.1.1 Bionic 64bit'
+        - 64bit
+        - 32bit
+      l4t_bionic_64:
+        description: 'Build on Switchroot Ubuntu Bionic 64bit'
         required: true
         type: boolean
-      focal_64:
+      l4t_focal_64:
         description: 'Build on Nvidia Jetpack 35.3.1 Focal 64bit'
         required: true
         type: boolean
       l4t_jammy_64:
-        description: 'Build on L4T Ubuntu Jammy 64bit'
+        description: 'Build on Switchroot Ubuntu Jammy 64bit'
         required: true
         type: boolean
       l4t_noble_64:
-        description: 'Build on L4T Ubuntu Noble 64bit'
+        description: 'Build on Switchroot Ubuntu Noble 64bit'
         required: true
         type: boolean
 
@@ -195,12 +195,12 @@ jobs:
             export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
-  bionic-64bit:
+  l4t-bionic-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.bionic_64 }}
+    if: ${{ inputs.l4t_bionic_64 }}
     steps:
       - uses: actions/checkout@v3
-      - name: Test installing app on bionic arm64
+      - name: Test installing app on L4T bionic arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://download.switchroot.org/ubuntu/switchroot-ubuntu-5.1.1-2023-06-12.7z
@@ -219,9 +219,9 @@ jobs:
             export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
-  focal-64bit:
+  l4t-focal-64bit:
     runs-on: ubuntu-latest
-    if: ${{ inputs.focal_64 }}
+    if: ${{ inputs.l4t_focal_64 }}
     steps:
       - uses: actions/checkout@v3
       - name: Clear up some disk space
@@ -232,7 +232,7 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - name: Test installing app on focal arm64
+      - name: Test installing app on L4T focal arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
           base_image: https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v3.1/sd_card_b49/jp511-xnx-sd-card-image.zip
