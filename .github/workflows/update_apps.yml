@@ -387,6 +387,9 @@ jobs:
             ${{ env.ALL_UPDATED_APPS }}
 
       - name: Create or Update issue
+        # don't error if this step fails
+        # an upstream bug with no fix causes this to sometimes fail https://github.com/JasonEtco/create-an-issue/issues/142
+        continue-on-error: true
         if: ${{ needs.get-latest-app-versions.outputs.FAILED_APPS != '' || env.ALL_FAILED_APPS_ERROR_STRING != '' }}
         uses: JasonEtco/create-an-issue@v2
         env:
