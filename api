@@ -3002,7 +3002,7 @@ apt.armbian.com")"
     echo "Pi-Apps is not supported on your outdated ${__os_id^} ${__os_codename^} operating system. Expect many apps to fail. Consider installing a newer operating system."
     return 1
   elif [ "$__os_id" == "Ubuntu" ] && [ "$__os_release" == "18.04" ] && [ -f /etc/switchroot_version.conf ]; then
-    echo "Pi-Apps is no longer supported on your outdated Switchroot ${__os_id^} ${__os_codename^} operating system. Consider installing Switchroot Ubuntu Jammy. https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-jammy-installation-guide"
+    echo "Pi-Apps is no longer supported on your outdated Switchroot ${__os_id^} ${__os_codename^} operating system. Consider installing Switchroot Ubuntu Noble. https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-noble-installation-guide"
     return 1
   elif [ "$__os_id" == "Ubuntu" ] && ! printf '%s\n' "20.04" "$__os_release" | sort -CV ; then
     echo "Pi-Apps is not supported on your outdated ${__os_id^} ${__os_codename^} operating system. Expect many apps to fail. Consider installing a newer operating system."
