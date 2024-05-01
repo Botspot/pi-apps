@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.5.0_1
+version=4.5.1_1
 
 #only use bookworm deb if glibc is 2.36 or greater
 if package_is_new_enough libc6 2.36 ;then
