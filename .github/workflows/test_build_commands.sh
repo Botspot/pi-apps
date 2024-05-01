@@ -102,7 +102,7 @@ if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-6
   sudo dpkg --configure joycond
 fi
 
-if [[ "$GITHUB_JOB" == "focal-64bit" ]]; then
+if [[ "$GITHUB_JOB" == "l4t-focal-64bit" ]]; then
   # fix nvidia jank
   # update sources list for t194
   sudo sed -i "s/<SOC>/t194/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
