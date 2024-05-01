@@ -44,6 +44,10 @@ on:
         description: 'Build on Switchroot Ubuntu Noble 64bit'
         required: true
         type: boolean
+      noble_64:
+        description: 'Build on RPi Ubuntu Noble 64bit'
+        required: true
+        type: boolean
 
 run-name: Testing ${{ inputs.name }}
 
@@ -290,6 +294,27 @@ jobs:
           image_additional_mb: 5000
           # use TX1 ARM CPU cores
           cpu: cortex-a7:cortex-a57
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
+  noble-64bit:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.noble_64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test installing app on noble arm64
+        uses: theofficialgman/arm-runner-action@v12
+        with:
+          base_image: https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04-preinstalled-desktop-arm64+raspi.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu: cortex-a7:cortex-a72
+          cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
