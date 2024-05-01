@@ -708,7 +708,11 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   #dialog and readline are not functional due to the logfile pipe
   #noninteractive cannot be used as many debian scripts set their default as option as no (when the user needs to click yet) or do not allow for noninteractive use
   #this will fallback to another option if the gnome dialog cannot be launched
-  export DEBIAN_FRONTEND=gnome
+  if [ "$GITHUB_ACTIONS" == "true" ]; then
+    export DEBIAN_FRONTEND=noninteractive
+  else
+    export DEBIAN_FRONTEND=gnome
+  fi
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
   
