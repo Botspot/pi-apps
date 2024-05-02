@@ -2182,6 +2182,13 @@ sudo apt --fix-broken install -o Dpkg::Options::='--force-overwrite'")
       error_type="system"
     fi
   fi
+
+  # Downgrade errors with no actual packages listed as to be downgraded. Assume users (custom) distro is to blame.
+  if grep -q "E: Packages were downgraded and -y was used without --allow-downgrades." <<<"$errors" && ! grep -q "The following packages will be DOWNGRADED:" <<<"$errors" ;then
+      error_caption+=("Apt is reporting conflicting information that packages would be downgraded as a result of this standard apt install yet no packages are listed as to be downgraded.
+This is likely an issue with your linux distribution. Please contact the appropriate maintainer for assistance.")
+      error_type="system"
+  fi
   
   #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
   if [ -f /etc/rpi-issue ] && ( [ ! -f /etc/apt/sources.list.d/raspi.list ] || ! grep -q "^deb http://archive.raspberrypi.org/debian\|^deb https://archive.raspberrypi.org/debian\|^deb http://archive.raspberrypi.com/debian\|^deb https://archive.raspberrypi.com/debian" /etc/apt/sources.list.d/raspi.list ) ;then
