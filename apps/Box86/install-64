@@ -116,7 +116,7 @@ else
   box86_depends+=('libssl1.1:armhf')
 fi
 
-install_packages ${box86_depends[@]} libc6:armhf libstdc++6:armhf \
+install_packages "${box86_depends[@]}" libc6:armhf libstdc++6:armhf \
   libx11-6:armhf \
   libgdk-pixbuf2.0-0:armhf \
   libjpeg62:armhf \
