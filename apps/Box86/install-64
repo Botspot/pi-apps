@@ -72,19 +72,59 @@ fi
 
 # libsdl2-mixer-2.0-0:armhf NOT included since it depends on libopusfile0 on newer distros (buster+ and focal+) which is NOT multiarch compatible
 
-install_packages libc6:armhf libstdc++6:armhf \
+box86_depends=()
+if package_available libcal3d12t64:armhf; then
+  box86_depends+=('libcal3d12t64:armhf')
+else
+  box86_depends+=('libcal3d12v5:armhf')
+fi
+if package_available libcups2t64:armhf; then
+  box86_depends+=('libcups2t64:armhf')
+else
+  box86_depends+=('libcups2:armhf')
+fi
+if package_available libcurl4t64:armhf; then
+  box86_depends+=('libcurl4t64:armhf')
+else
+  box86_depends+=('libcurl4:armhf')
+fi
+if package_available libgtk2.0-0t64:armhf; then
+  box86_depends+=('libgtk2.0-0t64:armhf')
+else
+  box86_depends+=('libgtk2.0-0:armhf')
+fi
+if package_available libgtk-3-0t64:armhf; then
+  box86_depends+=('libgtk-3-0t64:armhf')
+else
+  box86_depends+=('libgtk-3-0:armhf')
+fi
+if package_available libpng16-16t64:armhf; then
+  box86_depends+=('libpng16-16t64:armhf')
+else
+  box86_depends+=('libpng16-16:armhf')
+fi
+if package_available libsmpeg0t64:armhf; then
+  box86_depends+=('libsmpeg0t64:armhf')
+else
+  box86_depends+=('libsmpeg0:armhf')
+fi
+if package_available libssl3t64:armhf; then
+  box86_depends+=('libssl3t64:armhf')
+elif package_available libssl3:armhf; then
+  box86_depends+=('libssl3:armhf')
+else
+  box86_depends+=('libssl1.1:armhf')
+fi
+
+install_packages ${box86_depends[@]} libc6:armhf libstdc++6:armhf \
   libx11-6:armhf \
-  libgtk-3-0:armhf \
-  libgtk2.0-0:armhf libgdk-pixbuf2.0-0:armhf \
-  libpng16-16:armhf libjpeg62:armhf \
+  libgdk-pixbuf2.0-0:armhf \
+  libjpeg62:armhf \
   libopenal1:armhf osspd:armhf libvorbisfile3:armhf \
-  libcurl4:armhf \
   libudev1:armhf \
   libsdl2-2.0-0:armhf libsdl2-image-2.0-0:armhf libsdl2-net-2.0-0:armhf libsdl2-ttf-2.0-0:armhf \
-  libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf libsmpeg0:armhf \
-  libcal3d12v5:armhf \
-  libssl1.1:armhf '|' libssl3:armhf libssh-gcrypt-4:armhf \
-  libcups2:armhf \
+  libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf \
+  libssh-gcrypt-4:armhf \
   libgssapi-krb5-2:armhf libkrb5-3:armhf \
   $rpi_arm_userspace $mesa_va_drivers libegl1:armhf libglx-mesa0:armhf libgl1:armhf libgles2:armhf
 
