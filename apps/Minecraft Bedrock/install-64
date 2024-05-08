@@ -5,7 +5,13 @@
 get_model &>/dev/null
 if [[ -z "$jetson_model" ]] && [ ! -z "$__cpu_op_mode_32" ]; then
   sudo dpkg --add-architecture armhf
-  install_packages libx11-6:armhf libxext6:armhf libegl1:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libasound2:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf || exit 1
+  bedrock_depends=()
+  if package_available libasound2t64:armhf; then
+    bedrock_depends+=('libasound2t64:armhf')
+  else
+    bedrock_depends+=('libasound2:armhf')
+  fi
+  install_packages ${bedrock_depends[@]} libx11-6:armhf libxext6:armhf libegl1:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf || exit 1
 else
   warning "Your system is only capable of running the ARM64 versions of Minecraft Bedrock. You will be unable to run older ARM32 versions of Minecraft Bedrock that you may find in this launcher."
 fi
@@ -13,9 +19,9 @@ fi
 #Download file
 mkdir -p ~/.local/bin || error "Could not make directory"
 if package_is_new_enough libc6 2.36 ;then
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.12.1-763/Minecraft_Bedrock_Launcher-bookworm-arm64-v0.12.1.763.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.14.2-792/Minecraft_Bedrock_Launcher-bookworm-arm64-v0.14.2.792.AppImage' || error "failed to download Minecraft Bedrock Launcher"
 else
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.12.1-763/Minecraft_Bedrock_Launcher-arm64-v0.12.1.763.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.14.2-792/Minecraft_Bedrock_Launcher-arm64-v0.14.2.792.AppImage' || error "failed to download Minecraft Bedrock Launcher"
 fi
 chmod +x ~/.local/bin/MCBedrock.AppImage
 
