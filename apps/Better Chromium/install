@@ -97,7 +97,7 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/de
     fi
     # add apparmor profile if needed
     if sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
-      echo "# This profile allows everything and only exists to give the
+      echo '# This profile allows everything and only exists to give the
 # application a name instead of having the label "unconfined"
 
 abi <abi/4.0>,
@@ -109,7 +109,7 @@ profile chromium-browser /usr/lib/chromium-browser/chromium-browser flags=(uncon
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/chromium-browser>
 }
-" | sudo tee /etc/apparmor.d/chromium-browser >/dev/null
+' | sudo tee /etc/apparmor.d/chromium-browser >/dev/null
       sudo systemctl restart apparmor.service
     fi
   fi
