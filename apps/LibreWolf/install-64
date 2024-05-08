@@ -3,7 +3,13 @@
 version=125.0.3-1
 
 #install all dependencies found in the librewolf amd64 deb
-install_packages lsb-release libasound2 libatk1.0-0 libc6 libcairo-gobject2 libcairo2 libdbus-1-3 libdbus-glib-1-2 libfontconfig1 libfreetype6 libgcc-s1 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libharfbuzz0b libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb-shm0 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxtst6 || exit 1
+depends=()
+if package_available libasound2t64; then
+  depends+=('libasound2t64')
+else
+  depends+=('libasound2')
+fi
+install_packages "${depends[@]}" lsb-release libatk1.0-0 libc6 libcairo-gobject2 libcairo2 libdbus-1-3 libdbus-glib-1-2 libfontconfig1 libfreetype6 libgcc-s1 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libharfbuzz0b libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb-shm0 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxtst6 || exit 1
 
 sudo rm -rf /tmp/librewolf /opt/librewolf
 wget -O /tmp/librewolf.tar.bz2 "https://gitlab.com/api/v4/projects/44042130/packages/generic/librewolf/${version}/librewolf-${version}-linux-arm64-package.tar.bz2" || exit 1
