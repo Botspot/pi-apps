@@ -113,6 +113,11 @@ if [[ "$GITHUB_JOB" == "jammy-64bit" ]] || [[ "$GITHUB_JOB" == "lunar-64bit" ]];
   sudo apt remove -y linux-image-*-raspi linux-modules-*-raspi linux-image-raspi linux-raspi linux-headers-raspi
 fi
 
+if [[ "$GITHUB_JOB" == "noble-64bit" ]]; then
+  # workaround upstream bug in default image https://bugs.launchpad.net/ubuntu-cdimage/+bug/2065213
+  sudo wget -O /etc/apt/sources.list.d/ubuntu.sources https://raw.githubusercontent.com/theofficialgman/l4t-image-buildscripts/master/files/overwrite-files/noble/gnome/ubuntu.sources
+fi
+
 # install pi-apps dependencies
 sudo apt update
 if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]]; then
