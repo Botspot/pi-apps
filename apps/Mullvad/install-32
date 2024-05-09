@@ -1,0 +1,39 @@
+#!/bin/bash
+
+version=13.0.9
+
+#if ~/mullvad-browser_en-US folder exists, prepare to import its user-data
+if [ -d ~/mullvad-browser_en-US/Browser/MullvadBrowser/Data/Browser ];then
+  mv -f ~/mullvad-browser_en-US ~/mullvad-browser.temp
+fi
+
+#if ~/mullvad-browser folder exists, prepare to import its user-data
+if [ -d ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser ];then
+  mv -f ~/mullvad-browser ~/mullvad-browser.temp
+fi
+
+rm -f ~/mullvad.tar.xz
+wget -O ~/mullvad.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/mullvad-${version}/mullvad-browser-linux-armhf-${version}.tar.xz/download || error "Failed to download!"
+tar -xf ~/mullvad.tar.xz || error "Failed to extract!"
+rm -f ~/mullvad.tar.xz
+
+#if ~/mullvad-browser.temp folder exists, import its user-data
+if [ -d ~/mullvad-browser.temp ];then
+  rm -rf ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser
+  mv -f ~/mullvad-browser.temp/Browser/MullvadBrowser/Data/Browser ~/mullvad-browser/Browser/MullvadBrowser/Data && rm -rf ~/mullvad-browser.temp
+fi
+
+#copy icon for wayfire
+mkdir -p ~/.local/share/icons
+cp -f $HOME/mullvad-browser/Browser/browser/chrome/icons/default/default128.png ~/.local/share/icons/mullvad-browser.png
+
+echo "[Desktop Entry]
+Type=Application
+Name=Mullvad Browser
+GenericName=Web Browser
+Comment=Mullvad Browser is +1 for privacy and −1 for mass surveillance
+Categories=Network;WebBrowser;Security;
+Exec=$HOME/mullvad-browser/Browser/start-mullvad-browser --class 'mullvad-browser' --name 'mullvad-browser'
+X-MullvadBrowser-ExecShell=./Browser/start-mullvad-browser --detach
+Icon=mullvad-browser
+StartupWMClass=mullvad-browser" > ~/.local/share/applications/mullvad.desktop
