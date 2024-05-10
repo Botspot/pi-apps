@@ -1,22 +1,52 @@
 #!/bin/bash
-install_packages lsb-release software-properties-common || error "Failed to install dependencies"
 
 case "$(get_codename)" in
-buster)
-  sudo add-apt-repository "deb http://deb.debian.org/debian buster-backports main" -y
-  # add pin priority for youtube-dl so it will download from the backports repo
-  # this is not necessary for bullseye
+bullseye)
+  remove_deb_compression() {
+    local filename="$1"
+    local tempdir="$(mktemp -d)"
+    ar x "${filename}" --output "${tempdir}" || return 1
+    rm -f "${filename}"
+    # do NOT change this varible name to PWD as other functions/binaries set that and do not clean up
+    local CURRDIR="$(pwd)"
+    cd "${tempdir}" || return 1
+    mkdir DEBIAN || return 1
+    package_installed zstd || install_packages zstd || exit 1
+    tar -xf control.tar.zst -C ./DEBIAN || return 1
+    tar -xf data.tar.zst || return 1
+    rm -f control.tar.zst data.tar.zst debian-binary
+    dpkg-deb --root-owner-group --build -Znone "${tempdir}" "${filename}" || return 1
+    cd "${CURRDIR}" || return 1
+    rm -Rf "${tempdir}" || return 1
+  }
+  echo 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free' | sudo tee /etc/apt/sources.list.d/bullseye-backports.list >/dev/null
+  # add pin priority for yt-dlp so it will download from the backports repo
   # this will not interfere if the user has pinned the backports repo themselves
-  sudo sh -c "cat > /etc/apt/preferences.d/youtube-dl-backports << _EOF_
-Package: youtube-dl
-Pin: release a=buster-backports
+  sudo sh -c "cat > /etc/apt/preferences.d/yt-dlp-backports << _EOF_
+Package: yt-dlp
+Pin: release a=bullseye-backports
 Pin-Priority: 500
 _EOF_"
-  sudo apt update
+  apt_update
+  wget -qO /tmp/persepolis.deb https://github.com/persepolisdm/persepolis/releases/download/4.1.0/persepolis_4.1.0.2_all.deb || error "Could not download persepolis"
+  remove_deb_compression /tmp/persepolis.deb || error "Failed to extract persepolis deb"
+  install_packages /tmp/persepolis.deb || exit 1
+  ;;
+bookworm)
+  echo "deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware" | sudo tee /etc/apt/sources.list.d/bookworm-backports.list >/dev/null
+  # add pin priority for yt-dlp so it will download from the backports repo
+  # this will not interfere if the user has pinned the backports repo themselves
+  sudo sh -c "cat > /etc/apt/preferences.d/yt-dlp-backports << _EOF_
+Package: yt-dlp
+Pin: release a=bookworm-backports
+Pin-Priority: 500
+_EOF_"
+  apt_update
+  install_packages "https://github.com/persepolisdm/persepolis/releases/download/4.1.0/persepolis_4.1.0.2_all.deb" || error "Failed to install persepolis"
+  ;;
+*)
+  install_packages "https://github.com/persepolisdm/persepolis/releases/download/4.1.0/persepolis_4.1.0.2_all.deb" || error "Failed to install persepolis"
   ;;
 esac
-# install some dependencies (these could be skipped as the .deb requires them, but it is good to check if they will install first)
-install_packages adwaita-qt python3-setproctitle python3 youtube-dl || error "Failed to install dependencies"
-install_packages "https://github.com/persepolisdm/persepolis/releases/download/3.2.0/persepolis_3.2.0.2_all.deb" || error "Failed to install persepolis"
 
 echo -e "\nYou may want to install Persepolis Download Manager Integration on your browser. For more info, see here: \e[4mhttps://github.com/persepolisdm/persepolis/wiki/Home-en#extensions\e[0m"
