@@ -36,5 +36,5 @@ fi
 make -j$(nproc) || error "Could not build ppsspp"
 sudo make install || error "Could not install ppsspp"
 # update timestamp of top level icon directory to signal icon cache to be refreshed
-sudo touch /usr/local/share/icons/hicolor
+sudo touch /usr/local/share/icons
 rm -rf /tmp/ppsspp

@@ -58,7 +58,7 @@ sudo chmod +x /usr/local/bin/Celeste64 || error "Failed to make launcher script 
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/Celeste64.png || error "Failed to install Celeste64 icon!"
 sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/Celeste64.png || error "Failed to install Celeste64 icon!"
 # update timestamp of top level icon directory to signal icon cache to be refreshed
-sudo touch /usr/local/share/icons/hicolor
+sudo touch /usr/local/share/icons
 
 status "Adding to applications menu"
 

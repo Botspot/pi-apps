@@ -13,7 +13,7 @@ sudo chmod +x /usr/local/bin/stackedit || error "Failed to set stackedit launche
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/stackedit.png || error "Failed to install stackedit icon!"
 sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/stackedit.png || error "Failed to install stackedit icon!"
 # update timestamp of top level icon directory to signal icon cache to be refreshed
-sudo touch /usr/local/share/icons/hicolor
+sudo touch /usr/local/share/icons
 
 echo "[Desktop Entry]
 Name=StackEdit

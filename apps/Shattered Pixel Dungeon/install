@@ -28,7 +28,7 @@ sudo chmod 755 /usr/local/bin/shattered-pixel-dungeon || error "Failed to set sc
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/shattered-pixel-dungeon.png || error "Failed to install shattered-pixel-dungeon icon!"
 sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/shattered-pixel-dungeon.png || error "Failed to install shattered-pixel-dungeon icon!"
 # update timestamp of top level icon directory to signal icon cache to be refreshed
-sudo touch /usr/local/share/icons/hicolor
+sudo touch /usr/local/share/icons
 
 echo "[Desktop Entry]
 Encoding=UTF-8

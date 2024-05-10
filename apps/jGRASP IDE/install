@@ -30,7 +30,7 @@ sudo ln -s ../share/jgrasp/bin/jgrasp jgrasp || error "Could not create jgrasp b
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/jgrasp.png || error "Failed to install jgrasp icon!"
 sudo cp "$(dirname "$0")/icon-24.png" /usr/local/share/icons/hicolor/24x24/apps/jgrasp.png || error "Failed to install jgrasp icon!"
 # update timestamp of top level icon directory to signal icon cache to be refreshed
-sudo touch /usr/local/share/icons/hicolor
+sudo touch /usr/local/share/icons
 
 status "Creating menu button..."
 echo "[Desktop Entry]
