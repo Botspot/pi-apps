@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pi-apps repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: hash all files
         run: |
           cd $GITHUB_WORKSPACE
