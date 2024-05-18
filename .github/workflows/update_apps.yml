@@ -113,7 +113,7 @@ jobs:
           tar -C $GITHUB_WORKSPACE -cvf GITHUB_WORKSPACE.tar .
 
       - name: Upload GITHUB_WORKSPACE Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: GITHUB_WORKSPACE
           path: ${{ runner.temp }}/GITHUB_WORKSPACE.tar
