@@ -250,26 +250,23 @@ if [ "$1" == 'daemon' ];then
       local icon="${DIRECTORY}/icons/none-24.png"
     fi
     
-    local content="$(
-      printf '(icon)\n(action)\n%s\n%s\n' "$icon" "$app" \
-        | case "$status" in
-          # This action has not occured yet.
-          '')          sed -e "1c $DIRECTORY/icons/wait.png"    -e "2c Will $action" ;;
-          # This action completed successfully.
-          0)           sed -e "1c $DIRECTORY/icons/success.png" -e "2c ${action^}ed" -e 's/Updateed/Updated/g' ;;
-          # This action is currently being executed.
-          in-progress) sed -e "1c $DIRECTORY/icons/prompt.png"  -e "2c ${action^}ing..." -e 's/Updateing/Updating/g' ;;
-          # If status is 1, then action completed unsuccessfully.
-          *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
-          esac
-    )"
-
     # If the output is anything other than "stdout", it goes to the yadlist pipe.
     test "$output" = stdout \
       && output=/dev/stdout \
       || output="$DIRECTORY"/data/manage-daemon/yadlist
 
-    printf '%s\n' "$content" >"$output"
+    printf '(icon)\n(action)\n%s\n%s\n' "$icon" "$app" \
+      | case "$status" in
+        # This action has not occured yet.
+        '')          sed -e "1c $DIRECTORY/icons/wait.png"    -e "2c Will $action" ;;
+        # This action completed successfully.
+        0)           sed -e "1c $DIRECTORY/icons/success.png" -e "2c ${action^}ed" -e 's/Updateed/Updated/g' ;;
+        # This action is currently being executed.
+        in-progress) sed -e "1c $DIRECTORY/icons/prompt.png"  -e "2c ${action^}ing..." -e 's/Updateing/Updating/g' ;;
+        # If status is 1, then action completed unsuccessfully.
+        *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
+        esac \
+      >"$output"
   }
   
   clear_list() { #clear the queue-viewer window
