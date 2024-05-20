@@ -255,7 +255,7 @@ if [ "$1" == 'daemon' ];then
       && output=/dev/stdout \
       || output="$DIRECTORY"/data/manage-daemon/yadlist
 
-    printf '(icon)\n(action)\n%s\n%s\n' "$icon" "$app" \
+    printf '(icon)\n(action)\n(icon)\n(app)\n' \
       | case "$status" in
         # This action has not occured yet.
         '')          sed -e "1c $DIRECTORY/icons/wait.png"    -e "2c Will $action" ;;
@@ -266,6 +266,8 @@ if [ "$1" == 'daemon' ];then
         # If status is 1, then action completed unsuccessfully.
         *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
         esac \
+      | sed -e "3c $icon" \
+      | sed -e "4c $app" \
       >"$output"
   }
   
