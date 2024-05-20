@@ -32,14 +32,10 @@ if [ "$1" == 'refresh' ];then
 elif [ "$1" == 'revert' ];then #If $1 equals 'revert', then overwrite all settings with the defaults and then the script will exit.
   
   #overwrite all settings with the defaults
-  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-  PREIFS="$IFS"
-  IFS='|'
-  for name in $settings
+  for setting in "$DIRECTORY"/etc/setting/params/*
   do
-    cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    <"$setting" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$(basename "$setting")"
   done
-  IFS="$PREIFS"
   exit 0
 fi
 
