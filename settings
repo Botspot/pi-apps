@@ -182,10 +182,10 @@ echo "Output: ${output}EOO"
 settingnumber=1
 for setting in "$DIRECTORY"/etc/setting-params/*
 do
-  curval="$(printf '%s\n' "$output" | sed -n "${settingnumber}p")"
+  printf '%s\n' "$output" \
+    | sed -n "${settingnumber}p" \
+    | tee "$DIRECTORY/data/settings/$name" \
+    | xargs printf 'Set "%s" to "%s\n"' "$setting"
 
-  printf 'Setting "%s" to "%s"' "$setting" "$curval"
-  printf "$curval\n" >"$DIRECTORY/data/settings/$name"
-  
   settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
