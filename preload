@@ -148,7 +148,7 @@ if [ $reloadlist == 1 ];then
   if ! command -v app_prefix_category >/dev/null ;then
     source "${DIRECTORY}/api"
   fi
-  
+
   vfiles="$(
     app_prefix_category "$prefix" \
       | grep . \
@@ -159,23 +159,35 @@ if [ $reloadlist == 1 ];then
           sed "s+$prefix/++g" #generate a virtual file system with apps in folders represented as subdirectories
         else
           grep -v ^hidden/
+        fi \
+      | sed 's+/.*+/+g' \
+      | uniq # ^ show this layer only
+  )"
+
+  
+  #get list of apps - excluding folders and apps that are incompatible with CPU architecture
+  APPS="$(
+    printf '%s\n' "$vfiles" \
+      | grep -v '/' \
+      | list_intersect "$(list_apps cpu_installable)"
+      | if <"$DIRECTORY"/data/settings/"Shuffle App list" xargs test Yes = ;then
+          shuf
+        else
+          cat
         fi
   )"
   
-  #remove apps within categories - show this layer of stuff only.
-  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | uniq)"
-  
-  #get list of apps - excluding folders and apps that are incompatible with CPU architecture
-  APPS="$(grep -v '/' <<<"$vfiles" | list_intersect "$(list_apps cpu_installable)")"
-  
   #get list of folders - excluding apps.
-  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/')"
-  
-  #shuffle the list if enabled
-  if [ "$(< "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
-    APPS="$(echo "$APPS" | shuf)"
-    DIRS="$(echo "$DIRS" | shuf)"
-  fi
+  DIRS="$(
+    printf '%s\n' "$vfiles" \
+      | grep '/' \
+      | tr -d '/' \
+      | if <"$DIRECTORY"/data/settings/"Shuffle App list" xargs test Yes = ;then
+          shuf
+        else
+          cat
+        fi
+  )"
   
   if [ "$format" == yad ];then
     IFS=$'\n'
