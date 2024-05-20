@@ -250,36 +250,20 @@ if [ "$1" == 'daemon' ];then
       local icon="${DIRECTORY}/icons/none-24.png"
     fi
     
-    if [ -z "$status" ];then
-      #if there is no status number, then this action has not occured yet.
-      local content="${DIRECTORY}/icons/wait.png
-${DIRECTORY}/icons/$action.png
-Will $action
-$icon
-$app"
-    elif [ "$status" == 0 ];then
-      #if status is 0, then action completed successfully.
-      local content="${DIRECTORY}/icons/success.png
-${DIRECTORY}/icons/$action.png
-$(echo "${action^}ed" | sed 's/Updateed/Updated/g')
-$icon
-$app"
-    elif [ "$status" == 'in-progress' ];then
-      #if status is "in-progress", then action is currently being executed.
-      local content="${DIRECTORY}/icons/prompt.png
-${DIRECTORY}/icons/$action.png
-$(echo "${action^}ing..." | sed 's/Updateing/Updating/g')
-$icon
-$app"
-    else
-      #if status is 1, then action completed unsuccessfully.
-      local content="${DIRECTORY}/icons/failure.png
-${DIRECTORY}/icons/$action.png
-${action^} failed
-$icon
-$app"
-    fi
-    
+    local content="$(
+      printf '(icon)\n(action)\n%s\n%s\n' "$icon" "$app" \
+        | case "$status" in
+          # This action has not occured yet.
+          '')          sed -e "1c $DIRECTORY/icons/wait.png"    -e "2c Will $action" ;;
+          # This action completed successfully.
+          0)           sed -e "1c $DIRECTORY/icons/success.png" -e "2c ${action^}ed" -e 's/Updateed/Updated/g' ;;
+          # This action is currently being executed.
+          in-progress) sed -e "1c $DIRECTORY/icons/prompt.png"  -e "2c ${action^}ing..." -e 's/Updateing/Updating/g' ;;
+          # If status is 1, then action completed unsuccessfully.
+          *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
+          esac
+    )"
+
     # If the output is anything other than "stdout", it goes to the yadlist pipe.
     test "$output" = stdout \
       && output=/dev/stdout \
