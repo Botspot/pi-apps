@@ -37,18 +37,14 @@ function error {
   exit 1
 }
 
-#yad or xlunch format
+case "$1" in
+source)  return 0 ;;
+'')      format=yad ;;
+xlunch*) format=xlunch ;;
+yad*)    format=yad ;;
+*)       error "$0: $1: unknown list format!" ;;
+esac
 guimode="$1"
-
-if [ -z "$guimode" ];then
-  format=yad
-elif [[ "$guimode" = xlunch* ]];then
-  format=xlunch
-elif [[ "$guimode" = yad* ]];then
-  format=yad
-elif [ "$guimode" != 'yad' ] && [ "$guimode" != 'xlunch' ];then
-  error "Unknown list format '$format'!"
-fi
 
 #specifies a category to preload (can be left empty to load main page)
 prefix="$2"
