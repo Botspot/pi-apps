@@ -18,6 +18,8 @@ fi
 
 # $1 is usually left blank, but there are some dedicated utility subcommands
 case "$1" in
+'') # GUI.
+  ;;
 refresh) # Set default settings, if they don't exist.
   for setting in "$DIRECTORY"/etc/setting-params/*
   do
