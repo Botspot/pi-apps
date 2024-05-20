@@ -220,35 +220,16 @@ if [ "$1" == 'daemon' ];then
   
   #a list of pending steps is displayed with yad. This function adds an item to the list
   add_to_list() { # $1 is action, $2 is app, $3 is exit code status ('0' = success), $4 is output location (usually blank, but can be 'stdout')
-    local action="$1"
+    # $action is used for status messages, so trim off the -file if it's there.
+    test "$1" = update-file \
+      && action=update \
+      || action="$1"
     local app="$2"
     local status="$3"
     
     # $4 specifies where the output should go.
     # If this is anything other than "stdout", output goes to the yadlist pipe.
     local output="$4"
-    
-    #choose an icon for this app or file being updated/installed
-    if [ -f "${DIRECTORY}/apps/$app/icon-24.png" ];then
-      local icon="${DIRECTORY}/apps/$app/icon-24.png"
-    elif [ "$action" == update-file ];then
-      #determine mimetype of file to display an informative icon in the list
-      if [ "$(file -b --mime-type "${DIRECTORY}/${app}")" == 'text/x-shellscript' ];then
-        #if updatable file in question is a main pi-apps shell script, then display shellscript icon.
-        local icon="${DIRECTORY}/icons/shellscript.png"
-        app+=' (script)'
-      elif [[ "${DIRECTORY}/${app}" == *.png ]] || [[ "${DIRECTORY}/${app}" == *.svg ]];then
-        local icon="${DIRECTORY}/icons/image.png"
-        app+=' (image)'
-      else
-        #otherwise display txt icon.
-        local icon="${DIRECTORY}/icons/txt.png"
-        app+=' (file)'
-      fi
-      action=update
-    else
-      local icon="${DIRECTORY}/icons/none-24.png"
-    fi
     
     # If the output is anything other than "stdout", it goes to the yadlist pipe.
     test "$output" = stdout \
@@ -266,8 +247,27 @@ if [ "$1" == 'daemon' ];then
         # If status is 1, then action completed unsuccessfully.
         *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
         esac \
-      | sed -e "3c $icon" \
       | sed -e "4c $app" \
+      | if test -f "$DIRECTORY"/apps/"$app"/icon-24.png ;then
+          sed -e "3c $DIRECTORY/apps/$app/icon-24.png"
+        elif test "$1" = update-file ;then
+          # Display icon relevant to file type.
+          case "$DIRECTORY"/"$app" in
+          *.png) sed -e "3c $DIRECTORY/icons/image.png" -e '4s/$/ (image)/' ;;
+          *.svg) sed -e "3c $DIRECTORY/icons/image.png" -e '4s/$/ (image)/' ;;
+          *)
+            if file -b --mime-type "$DIRECTORY/$app" | xargs test text/x-shellscript = ;then
+              # pi-apps shell script
+              sed -e "3c $DIRECTORY/icons/shellscript.png" -e '4s/$/ (script)/'
+            else
+              # unknown file
+              sed -e "3c $DIRECTORY/icons/txt.png" -e '4s/$/ (file)/'
+            fi
+            ;;
+          esac
+        else
+          sed -e "3c $DIRECTORY/icons/none-24.png"
+        fi \
       >"$output"
   }
   
