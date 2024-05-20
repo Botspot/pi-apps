@@ -16,9 +16,9 @@ if [ ! -d "${DIRECTORY}/data/settings" ];then
   echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
 fi
 
-#$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
-if [ "$1" == 'refresh' ];then
-  #set default settings, if they don't exist
+# $1 is usually left blank, but there are some dedicated utility subcommands
+case "$1" in
+refresh) # Set default settings, if they don't exist.
   for setting in "$DIRECTORY"/etc/setting-params/*
   do
     if ! test -f "$DIRECTORY"/data/settings/"$(basename "$setting")" \
@@ -28,16 +28,15 @@ if [ "$1" == 'refresh' ];then
     fi
   done
   exit 0
-  
-elif [ "$1" == 'revert' ];then #If $1 equals 'revert', then overwrite all settings with the defaults and then the script will exit.
-  
-  #overwrite all settings with the defaults
+  ;;
+revert) # Overwrite all settings with the defaults.
   for setting in "$DIRECTORY"/etc/setting/params/*
   do
     <"$setting" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$(basename "$setting")"
   done
   exit 0
-fi
+  ;;
+esac
 
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button"
