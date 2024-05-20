@@ -260,21 +260,15 @@ $prefix/$app
 "\("$status"\)" $line"$'\n'
       fi
       
-      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
-      if [ -z "$status" ];then
-        add+="$text_color"
-      elif [ "$status" == installed ];then
-        add+="#00AA00"
-      elif [ "$status" == uninstalled ];then
-        add+="#CC3333"
-      elif [ "$status" == corrupted ];then
-        add+="#888800"
-      elif [ "$status" == disabled ];then
-        add+="#FF0000"
-      else
-        # fallback incase unexpected status
-        add+="$text_color"
-      fi
+      # Determine status text color for app name.
+      case "$status" in
+      installed)   add+="#00AA00" ;; # green
+      uninstalled) add+="#CC3333" ;; # light red
+      corrupted)   add+="#888800" ;; # yellow
+      disabled)    add+="#FF0000" ;; # deep red
+      *)           add+="$text_color" ;;
+      esac
+
       #output finished app lines
       add="${add//[&]/&amp;}"
       echo "$add"
