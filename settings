@@ -188,7 +188,7 @@ do
   printf '%s\n' "$output" \
     | sed -n "${settingnumber}p" \
     | tee "$DIRECTORY/data/settings/$(basename "$setting")" \
-    | xargs printf 'Set "%s" to "%s\n"' "$(basename "$setting")"
+    | xargs printf 'Set "%s" to "%s"\n' "$(basename "$setting")"
 
   settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
