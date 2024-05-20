@@ -69,17 +69,13 @@ if [ -z "${text_color+x}" ] && [ "$format" == yad ];then
     #to avoid setting the text to the wrong color, check it again now right
     #set the system GTK theme for yad windows
     guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
-    if [ "$guimode" == yad-default ];then
-      export GTK_THEME=''
-    elif [[ "$guimode" = yad* ]];then
-      export GTK_THEME=${guimode//yad-/}
-    elif [ "$guimode" == xlunch-light-3d ];then
-      export GTK_THEME=''
-    elif [ "$guimode" == xlunch-dark-3d ];then
-      export GTK_THEME=Adwaita-dark
-    elif [ "$guimode" == xlunch-dark ];then
-      export GTK_THEME=Adwaita-dark
-    fi
+    case "$guimode" in
+    yad-default)     export GTK_THEME= ;;
+    yad*)            export GTK_THEME=${guimode//yad-/} ;;
+    xlunch-light-3d) export GTK_THEME= ;;
+    xlunch-dark)     export GTK_THEME=Adwaita-dark ;;
+    xlunch-dark-3d)  export GTK_THEME=Adwaita-dark ;;
+    esac
     export text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
