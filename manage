@@ -261,7 +261,7 @@ if [ "$1" == 'daemon' ];then
         else
           sed -e "3c $DIRECTORY/icons/none-24.png"
         fi \
-      | if test "$4" = output ;then
+      | if test "$4" = stdout ;then
         # $4 specifies where the output should go.
         # If the output is anything other than "stdout", it goes to the yadlist
         # pipe.
