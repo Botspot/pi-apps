@@ -218,26 +218,19 @@ if [ "$1" == 'daemon' ];then
   #this folder will contain the runtime files necessary to make the daemon work.
   mkdir -p "${DIRECTORY}/data/manage-daemon"
   
-  #a list of pending steps is displayed with yad. This function adds an item to the list
-  add_to_list() { # $1 is action, $2 is app, $3 is exit code status ('0' = success), $4 is output location (usually blank, but can be 'stdout')
+  # This function adds an item to the list of pending actions displayed by yad.
+  #   $1 - action
+  #   $2 - app
+  #   $3 - exit status ('0' is success)
+  #   $4 - output location ('stdout' if standard output, otherwise the list)
+  add_to_list() {
     # $action is used for status messages, so trim off the -file if it's there.
     test "$1" = update-file \
       && action=update \
       || action="$1"
-    local app="$2"
-    local status="$3"
     
-    # $4 specifies where the output should go.
-    # If this is anything other than "stdout", output goes to the yadlist pipe.
-    local output="$4"
-    
-    # If the output is anything other than "stdout", it goes to the yadlist pipe.
-    test "$output" = stdout \
-      && output=/dev/stdout \
-      || output="$DIRECTORY"/data/manage-daemon/yadlist
-
     printf '(icon)\n(action)\n(icon)\n(app)\n' \
-      | case "$status" in
+      | case "$3" in
         # This action has not occured yet.
         '')          sed -e "1c $DIRECTORY/icons/wait.png"    -e "2c Will $action" ;;
         # This action completed successfully.
@@ -247,16 +240,16 @@ if [ "$1" == 'daemon' ];then
         # If status is 1, then action completed unsuccessfully.
         *)           sed -e "1c $DIRECTORY/icons/failure.png" -e "2c ${action^} failed" ;;
         esac \
-      | sed -e "4c $app" \
-      | if test -f "$DIRECTORY"/apps/"$app"/icon-24.png ;then
-          sed -e "3c $DIRECTORY/apps/$app/icon-24.png"
+      | sed -e "4c $2" \
+      | if test -f "$DIRECTORY"/apps/"$2"/icon-24.png ;then
+          sed -e "3c $DIRECTORY/apps/$2/icon-24.png"
         elif test "$1" = update-file ;then
           # Display icon relevant to file type.
-          case "$DIRECTORY"/"$app" in
+          case "$DIRECTORY"/"$2" in
           *.png) sed -e "3c $DIRECTORY/icons/image.png" -e '4s/$/ (image)/' ;;
           *.svg) sed -e "3c $DIRECTORY/icons/image.png" -e '4s/$/ (image)/' ;;
           *)
-            if file -b --mime-type "$DIRECTORY/$app" | xargs test text/x-shellscript = ;then
+            if file -b --mime-type "$DIRECTORY/$2" | xargs test text/x-shellscript = ;then
               # pi-apps shell script
               sed -e "3c $DIRECTORY/icons/shellscript.png" -e '4s/$/ (script)/'
             else
@@ -268,7 +261,14 @@ if [ "$1" == 'daemon' ];then
         else
           sed -e "3c $DIRECTORY/icons/none-24.png"
         fi \
-      >"$output"
+      | if test "$4" = output ;then
+        # $4 specifies where the output should go.
+        # If the output is anything other than "stdout", it goes to the yadlist
+        # pipe.
+          cat
+        else
+          cat >"$DIRECTORY"/data/manage-daemon/yadlist
+        fi
   }
   
   clear_list() { #clear the queue-viewer window
