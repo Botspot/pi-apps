@@ -224,7 +224,8 @@ if [ "$1" == 'daemon' ];then
     local app="$2"
     local status="$3"
     
-    # $4 specifies where the output should go. Default is to send the output to the yadlist pipe, but if value is 'stdout', output to stdout.
+    # $4 specifies where the output should go.
+    # If this is anything other than "stdout", output goes to the yadlist pipe.
     local output="$4"
     
     #choose an icon for this app or file being updated/installed
@@ -279,12 +280,12 @@ $icon
 $app"
     fi
     
-    #write the output to yadlist or stdout
-    if [ "$output" == stdout ];then
-      echo "$content"
-    else
-      echo "$content" > "${DIRECTORY}/data/manage-daemon/yadlist"
-    fi
+    # If the output is anything other than "stdout", it goes to the yadlist pipe.
+    test "$output" = stdout \
+      && output=/dev/stdout \
+      || output="$DIRECTORY"/data/manage-daemon/yadlist
+
+    printf '%s\n' "$content" >"$output"
   }
   
   clear_list() { #clear the queue-viewer window
