@@ -36,6 +36,14 @@ revert) # Overwrite all settings with the defaults.
   done
   exit 0
   ;;
+*)
+  printf "\
+Usage: %s (subcommand)
+\t%s - Start the settings GUI.
+\t%s refresh - Set default settings, if they don't exist.
+\t%s revert  - Overwrite all settings with the defaults.
+" "$0" "$0" "$0" "$0" >&2
+  exit 64 # EX_USAGE
 esac
 
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
