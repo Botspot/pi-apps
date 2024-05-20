@@ -21,8 +21,10 @@ if [ "$1" == 'refresh' ];then
   #set default settings, if they don't exist
   for setting in "$DIRECTORY"/etc/setting-params/*
   do
-    if ! test -f "$DIRECTORY"/data/settings/"$name" || wc -c <"$DIRECTORY"/data/settings/"$name" | xargs test 0 =;then
-      <"$DIRECTORY"/etc/setting-params/"$name" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$name"
+    if ! test -f "$DIRECTORY"/data/settings/"$(basename "$setting")" \
+        || wc -c <"$DIRECTORY"/data/settings/"$(basename "$setting")" \
+          | xargs test 0 =;then
+      <"$setting" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$(basename "$setting")"
     fi
   done
   exit 0
@@ -180,8 +182,8 @@ for setting in "$DIRECTORY"/etc/setting-params/*
 do
   printf '%s\n' "$output" \
     | sed -n "${settingnumber}p" \
-    | tee "$DIRECTORY/data/settings/$name" \
-    | xargs printf 'Set "%s" to "%s\n"' "$setting"
+    | tee "$DIRECTORY/data/settings/$(basename "$setting")" \
+    | xargs printf 'Set "%s" to "%s\n"' "$(basename "$setting")"
 
   settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
