@@ -19,16 +19,12 @@ fi
 #$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
 if [ "$1" == 'refresh' ];then
   #set default settings, if they don't exist
-  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-  PREIFS="$IFS"
-  IFS='|'
-  for name in $settings
+  for setting in "$DIRECTORY"/etc/setting-params/*
   do
-    if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
-      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    if ! test -f "$DIRECTORY"/data/settings/"$name" || wc -c <"$DIRECTORY"/data/settings/"$name" | xargs test 0 =;then
+      <"$DIRECTORY"/etc/setting-params/"$name" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$name"
     fi
   done
-  IFS="$PREIFS"
   exit 0
   
 elif [ "$1" == 'revert' ];then #If $1 equals 'revert', then overwrite all settings with the defaults and then the script will exit.
