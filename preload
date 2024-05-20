@@ -153,12 +153,18 @@ if [ $reloadlist == 1 ];then
     source "${DIRECTORY}/api"
   fi
   
-  if [ ! -z "$prefix" ];then
-    echo "Showing apps within $prefix/" 1>&2
-    vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
-  else
-    vfiles="$(app_prefix_category "" | grep . | sort -f | uniq | grep -v '^hidden/')"
-  fi
+  vfiles="$(
+    app_prefix_category "$prefix" \
+      | grep . \
+      | sort -f \
+      | uniq \
+      | if test -n "$prefix" ;then
+          printf '%s: Showing apps within %s/\n' "$0" "$prefix" >&2
+          sed "s+$prefix/++g" #generate a virtual file system with apps in folders represented as subdirectories
+        else
+          grep -v ^hidden/
+        fi
+  )"
   
   #remove apps within categories - show this layer of stuff only.
   vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | uniq)"
