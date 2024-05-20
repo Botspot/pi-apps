@@ -46,12 +46,9 @@ yad*)    format=yad ;;
 esac
 guimode="$1"
 
-#specifies a category to preload (can be left empty to load main page)
-prefix="$2"
-
-if [ "$prefix" == '/' ];then
-  prefix=
-fi
+# The prefix is a category to preload. By default (if '/' or empty) the main
+# page is preloaded.
+test "$2" = / || prefix="$2"
 
 # if the timestamp in the settings folder has changed, we need to unset the text_color variable since the GTK_THEME may have changed and we need to re-generate it
 timestamp_settings="$( cat ${DIRECTORY}/data/preload/timestamps- | grep "^${DIRECTORY}/data/settings" )"
