@@ -187,12 +187,12 @@ PREIFS="$IFS"
 IFS='|'
 for name in $settings
 do
-  curval="$(echo "$output" | sed -n "${settingnumber}p")"
+  curval="$(printf '%s\n' "$output" | sed -n "${settingnumber}p")"
+
+  printf 'Setting "%s" to "%s"' "$name" "$curval"
+  printf "$curval\n" >"$DIRECTORY/data/settings/$name"
   
-  echo "Setting '$name' to '$curval'"
-  echo "$curval" > "${DIRECTORY}/data/settings/${name}"
-  
-  settingnumber=$((settingnumber + 1))
+  settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
 IFS="$PREIFS"
 
