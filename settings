@@ -179,21 +179,13 @@ output="$(printf '%s\n' "$output" | sed '/^$/d')"
 
 echo "Output: ${output}EOO"
 
-settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-
 settingnumber=1
-
-PREIFS="$IFS"
-IFS='|'
-for name in $settings
+for setting in "$DIRECTORY"/etc/setting-params/*
 do
   curval="$(printf '%s\n' "$output" | sed -n "${settingnumber}p")"
 
-  printf 'Setting "%s" to "%s"' "$name" "$curval"
+  printf 'Setting "%s" to "%s"' "$setting" "$curval"
   printf "$curval\n" >"$DIRECTORY/data/settings/$name"
   
   settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
-IFS="$PREIFS"
-
-
