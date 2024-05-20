@@ -175,7 +175,7 @@ $(echo "$params" | grep -vx "$curval")"
 done
 
 #remove empty lines from $output
-output="$(echo "$output" | grep .)"
+output="$(printf '%s\n' "$output" | sed '/^$/d')"
 
 echo "Output: ${output}EOO"
 
