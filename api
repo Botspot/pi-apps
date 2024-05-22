@@ -58,9 +58,11 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   #this is available in Ubuntu 20.04+ and Debian 11+
   #use simpler logo when not supported to fix issue https://github.com/Botspot/pi-apps/issues/1441
   if [ -f /usr/lib/aarch64-linux-gnu/libicudata.so ]; then
-    local version="$(file /usr/lib/aarch64-linux-gnu/libicudata.so | sed -n 's/.*libicudata.so.//p')"
+    local version="$(readlink -f /usr/lib/aarch64-linux-gnu/libicudata.so | sed -n 's/.*libicudata.so.//p')"
   elif [ -f /usr/lib/arm-linux-gnueabihf/libicudata.so ]; then
-    local version="$(file /usr/lib/arm-linux-gnueabihf/libicudata.so | sed -n 's/.*libicudata.so.//p')"
+    local version="$(readlink -f /usr/lib/arm-linux-gnueabihf/libicudata.so | sed -n 's/.*libicudata.so.//p')"
+  elif [ -f /usr/lib/arm-linux-gnueabihf/libicudata.so.67.1 ] || [ -f /usr/lib/aarch64-linux-gnu/libicudata.so.67.1 ];then
+    local version=67.1
   else
     local version="65"
   fi
