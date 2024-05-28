@@ -1,12 +1,12 @@
 #!/bin/bash
 
-version=3_4_3
+version=3_4_4
 
 cd /tmp
 wget -O renoise-arm64.tar.gz "https://files.renoise.com/demo/Renoise_${version}_Demo_Linux_arm64.tar.gz" || exit 1
 status "Extracting Renoise..."
 tar -xf renoise-arm64.tar.gz || error "Failed to extract Renoise!"
-cd Renoise_${version}_Demo_Linux_arm64 || error "Failed to cd into 'Renoise_${version}_Demo_Linux_arm64'!"
+cd Renoise_${version//_/.}_Demo_Linux_arm64 || error "Failed to cd into 'Renoise_${version//_/.}_Demo_Linux_arm64'!"
 status_green "Done!"
 status "Installing Renoise..."
 chmod +x install.sh || error "Failed to set 'install.sh' as execuable!"

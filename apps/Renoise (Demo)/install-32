@@ -1,12 +1,12 @@
 #!/bin/bash
 
-version=3_4_3
+version=3_4_4
 
 cd /tmp
 wget -O renoise-armhf.tar.gz "https://files.renoise.com/demo/Renoise_${version}_Demo_Linux_armhf.tar.gz" || exit 1
 status "Extracting Renoise..."
 tar -xf renoise-armhf.tar.gz || error "Failed to extract Renoise!"
-cd Renoise_${version}_Demo_Linux_armhf || error "Failed to cd into 'Renoise_${version}_Demo_Linux_armhf'!"
+cd Renoise_${version//_/.}_Demo_Linux_armhf || error "Failed to cd into 'Renoise_${version//_/.}_Demo_Linux_armhf'!"
 status_green "Done!"
 status "Installing Renoise..."
 chmod +x install.sh || error "Failed to set 'install.sh' as execuable!"
