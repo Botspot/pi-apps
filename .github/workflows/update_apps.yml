@@ -318,7 +318,7 @@ jobs:
           tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE --exclude=".git"
           cd $GITHUB_WORKSPACE
       - name: Delete artifact
-        uses: geekyeggo/delete-artifact@v2
+        uses: geekyeggo/delete-artifact@v5
         with:
           name: GITHUB_WORKSPACE
           failOnError: false
