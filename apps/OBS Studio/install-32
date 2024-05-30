@@ -21,6 +21,13 @@ if package_installed libobs0 ;then
   sudo apt purge -y --autoremove libobs0
 fi
 
+#remove libobs0 package first
+if package_installed libobs0t64 ;then
+  echo "Removing libobs0t64 package first..."
+  apt_lock_wait
+  sudo apt purge -y --autoremove libobs0t64
+fi
+
 #remove libobs-dev package first
 if package_installed libobs-dev ;then
   echo "Removing libobs-dev package first..."
