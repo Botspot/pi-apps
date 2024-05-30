@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.3.0.241231432
+version=4.3.1.241490902
 
 if [ $arch == 32 ];then
   url_arch=armv7l
