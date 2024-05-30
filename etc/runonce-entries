@@ -92,6 +92,7 @@ All users are encouraged to install Prism Launcher from Pi-Apps (a MultiMC fork 
   remove_deprecated_app "Chromium Widevine" "" "Use the Better Chromium app to handle enabling/disabling of Widevine in Chromium."
   remove_deprecated_app "PiKISS GUI" "" "Due to upstream changes at piKiss this GUI is no longer relevant."
   remove_deprecated_app "piKiss" "" "This application developer is unwilling to fix and remove scripts that break users installs. It is unsafe to install piKiss scripts."
+  remove_deprecated_app "Pale Moon" "" "The Pale Moon Debian/Ubuntu packager (Steve Pusser) has stopped building and removed all builds of Pale Moon as of May 2024. We have no choice but to remove this application from Pi-Apps."
 EOF
   ;;
 esac
