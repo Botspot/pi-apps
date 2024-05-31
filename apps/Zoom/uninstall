@@ -1,6 +1,8 @@
 #!/bin/bash
 rm -rf ~/zoom
 rm -f ~/.local/share/applications/zoom.desktop
+sudo rm -f /usr/share/icons/hicolor/64x64/apps/zoom.png /usr/share/applications/zoom.desktop
+sudo rm -rf /opt/zoom/
 purge_packages || exit 1
 
 if [ -d ~/.zoom ] || [ -f ~/.config/zoomus.conf ];then

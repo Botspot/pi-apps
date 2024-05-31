@@ -14,30 +14,30 @@ install_packages libxcb-xtest0 libxcb-xfixes0 libturbojpeg0 '|' libturbojpeg pul
 #refresh list of libraries
 sudo ldconfig
 
-#For testing, set to false if zoom folder is already there
-if true;then
-  echo "Downloading Zoom..."
-  rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz* ~/zoom_x64_libs.zip* ~/zoom_x64_libs
-  wget "https://zoom.us/client/${version}/zoom_x86_64.tar.xz" || wget 'https://zoom.com/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
-  
-  echo "Extracting..."
-  tar -xf ~/zoom_x86_64.tar.xz || error 'Failed to extract Zoom x86_64!'
-  rm -f ~/zoom_x86_64.tar.xz #who cares if this fails
-fi
+echo "Downloading Zoom..."
+rm -rf "${HOME}/zoom" ~/zoom_x86_64.tar.xz* ~/zoom_x64_libs.zip* ~/zoom_x64_libs /tmp/zoom_x86_64.tar.xz ~/.local/share/applications/zoom.desktop
+
+wget -O /tmp/zoom_x86_64.tar.xz "https://zoom.us/client/${version}/zoom_x86_64.tar.xz" || wget -O /tmp/zoom_x86_64.tar.xz 'https://zoom.com/client/latest/zoom_x86_64.tar.xz' || error 'Failed to download Zoom x86_64!'
+
+echo "Extracting..."
+sudo tar -xf /tmp/zoom_x86_64.tar.xz -C /opt || error 'Failed to extract Zoom x86_64!'
+rm -f /tmp/zoom_x86_64.tar.xz
+
+#copy icon to icons dir
+sudo cp "$(dirname "$0")/icon-64.png" /usr/share/icons/hicolor/64x64/apps/zoom.png
+sudo update-icon-caches /usr/share/icons/*
 
 echo "Creating a Zoom button in the Main Menu..."
 echo "[Desktop Entry]
 Name=Zoom
-Exec=box64 ${HOME}/zoom/ZoomLauncher %u
-Icon=$(dirname "$0")/icon-64.png
-Path=${HOME}/zoom/
+Exec=box64 /opt/zoom/ZoomLauncher %u
+Icon=zoom
+Path=/opt/zoom/
 Type=Application
-Comment=x86_64 version of software platform used for teleconferencing using Box64
+Comment=x86_64 version of teleconferencing software, emulated with Box64
 Categories=Network;
-StartupNotify=true" > ~/.local/share/applications/zoom.desktop
+StartupNotify=true" | sudo tee /usr/share/applications/zoom.desktop >/dev/null
 
 #Associate with mimeapp
 echo "Associating Zoom mimetypes..."
 xdg-mime default zoom.desktop x-scheme-handler/zoomus x-scheme-handler/zoommtg
-
-echo "Installation complete!"
