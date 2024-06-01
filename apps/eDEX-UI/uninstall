@@ -1,4 +1,0 @@
-#!/bin/bash
-rm -rf $HOME/eDEX-UI.AppImage ~/.local/share/applications/appimagekit-edex-ui.desktop ~/.local/share/applications/appimagekit-edex-ui-3.desktop ~/.local/share/applications/edex-ui.desktop
-
-purge_packages || exit 1
