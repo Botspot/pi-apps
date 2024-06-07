@@ -3650,17 +3650,21 @@ nproc() { #Reduce the number of compile threads on low-RAM systems
   #Estimation of how much memory is available for starting new applications, without swapping.
   local available="$(free | grep 'Mem:' | awk '{print $7}')"
   
-  if [ "$available" -gt $((1000*1024)) ] || [ "$GITHUB_ACTIONS" == "true" ];then
-    #available memory > 1000MB, use normal number of threads
+  if [ "$available" -gt $((2000*1024)) ] || [ "$GITHUB_ACTIONS" == "true" ];then
+    #available memory > 2000MB, use normal number of threads
     command nproc
-  elif [ "$available" -gt $((500*1024)) ];then
-    #500MB < available memory <= 1000MB, use 2 threads
+  elif [ "$available" -gt $((1500*1024)) ];then
+    #1500MB < available memory <= 2000MB, use 3 threads
+    echo 3
+    warning "Your system has less than 2000MB of available RAM, so this will compile with only 3 threads."
+  elif [ "$available" -gt $((1000*1024)) ];then
+    #1000MB < available memory <= 1500MB, use 2 threads
     echo 2
-    warning "Your system has less than 1000MB of available RAM, so this will compile with only 2 threads."
+    warning "Your system has less than 1500MB of available RAM, so this will compile with only 2 threads."
   else
-    #available memory <= 500MB, use 1 thread
+    #available memory <= 1000MB, use 1 thread
     echo 1
-    warning "Your system has less than 500MB of available RAM, so this will compile with only 1 thread."
+    warning "Your system has less than 1000MB of available RAM, so this will compile with only 1 thread."
   fi
 }
 #end of command interceptors
