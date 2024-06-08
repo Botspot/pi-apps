@@ -2,12 +2,12 @@
 
 if [ "$(get_codename)" == bookworm ];then
   echo "deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware" | sudo tee /etc/apt/sources.list.d/bookworm-backports.list >/dev/null
-  install_packages -t bookworm-backports kicad || exit 1
+  install_packages -t bookworm-backports kicad kicad-libraries || exit 1
 elif [ "$(get_codename)" == bullseye ];then
   echo 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free' | sudo tee /etc/apt/sources.list.d/bullseye-backports.list >/dev/null
-  install_packages -t bullseye-backports kicad || exit 1
+  install_packages -t bullseye-backports kicad kicad-libraries || exit 1
 else
   #unknown OS version, so just install kicad from main repo
-  install_packages kicad || exit 1
+  install_packages kicad kicad-libraries || exit 1
 fi
 
