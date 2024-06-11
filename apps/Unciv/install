@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.11.18-patch1
+version=4.11.19
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"

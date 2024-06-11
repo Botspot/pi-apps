@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2024.1.2
+version=2024.1.3
 
 install_packages python3-pip python3-dev || exit 1
 
