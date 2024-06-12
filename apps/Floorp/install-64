@@ -9,7 +9,7 @@ unzip -q /tmp/floorp-deb.zip -d /tmp/floorp-deb || error "failed to extract /tmp
 rm -f /tmp/floorp-deb.zip
 
 #no arm64 deb exists, so put arm64 files in deb structure
-version=11.13.3
+version=11.14.0
 wget -O /tmp/floorp.tar.bz2 "https://github.com/Floorp-Projects/Floorp/releases/download/v${version}/floorp-${version}.linux-aarch64.tar.bz2"
 
 status 'Extracting: /tmp/floorp.tar.bz2'
