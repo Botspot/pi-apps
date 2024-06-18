@@ -1,0 +1,66 @@
+#!/bin/bash
+
+#version=4.8.7 #version changes often
+APPDIR=${HOME}/.local/share/applications
+
+#Installing wine
+if [ $arch == 32 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x86)' || error 'Failed to install wine'
+elif [ $arch == 64 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x64)' || error 'Failed to install wine'
+fi
+
+#Configuring wineprefix for VARA programs
+BOX86_DYNAREC=0 BOX64_DYNAREC=0 BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
+
+#Downloading VARA HF
+VARAHFDIR=/tmp/VARAHF
+mkdir "${VARAHFDIR}" 2>/dev/null
+wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || echo "failed to download"
+
+#Extracting VARA HF installer archives
+unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
+
+#Running VARA HF setup with autohotkey so we can auto-close its OK button
+# note: Instead of installing, we could just extract VARA's program files, copy them into wine, and manually install OCX files, but we would have to know which wineprefix the user is running.
+# downloading AutoHotKey
+echo -e "Downloading AutoHotKey..."
+AHKDIR=/tmp/AHK
+mkdir "${AHKDIR}" 2>/dev/null
+wget -q "https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.1.36.02/AutoHotkey_1.1.36.02_setup.exe" -P ${AHKDIR} || error 'Failed to download AutoHotKey from Github.' # autohokey v2+ uses different ahk script syntax. winetricks uses autohotkey v1.
+# creating varahf_install.ahk (autohotkey script)
+echo '; AHK script to make VARA installer run completely silent'                                               > ${VARAHFDIR}/varahf_install.ahk
+echo 'SetTitleMatchMode, 2'                                                                                    >> ${VARAHFDIR}/varahf_install.ahk
+echo 'SetTitleMatchMode, slow'                                                                                 >> ${VARAHFDIR}/varahf_install.ahk
+echo '        Run, VARA setup (Run as Administrator).exe /SILENT /c:"VARA setup (Run as Administrator).exe"'   >> ${VARAHFDIR}/varahf_install.ahk
+echo '        WinWait, VARA Setup ; Wait for the "VARA installed successfully" window'                         >> ${VARAHFDIR}/varahf_install.ahk
+echo '        ControlClick, Button1, VARA Setup ; Click the OK button'                                         >> ${VARAHFDIR}/varahf_install.ahk
+echo '        WinWaitClose'                                                                                    >> ${VARAHFDIR}/varahf_install.ahk
+# running varahf_install.ahk
+sudo apt-get install -y p7zip-full || error 'Failed to install p7zip-full.'
+7z e -y -bsp0 -bso0 ${AHKDIR}/AutoHotkey_1.1.36.02_setup.exe AutoHotkeyU32.exe -o"${VARAHFDIR}" || error 'Failed to extract AutoHotKey archive.'
+echo -e "\nInstalling VARA HF . . ."
+BOX86_DYNAREC=0 BOX86_NOBANNER=1 BOX86_DYNAREC_BIGBLOCK=0 WINEDEBUG=-all wine ${VARAHFDIR}/AutoHotkeyU32.exe ${VARAHFDIR}/varahf_install.ahk || error 'AutoHotKey failed to launch.'
+
+#Removing tmp files
+rm -rf ${AHKDIR} ${VARAHFDIR}
+
+#Adding the user to the USB dialout group so that they can access radio USB CAT control later.
+sudo usermod -a -G dialout $USER
+
+#Creating Desktop Entry
+mkdir -p $APPDIR/VARA
+echo "[Desktop Entry]
+Name=VARA HF
+GenericName=VARA HF
+Comment=VARA HF is a shareware ham radio OFDM software modem for RMS Express and other messaging clients.
+Exec=env WINEDEBUG=-all wine \"C:\\VARA\\VARA.exe\"
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=false
+Type=Application
+StartupWMClass=vara.exe
+Categories=Utility;" > $APPDIR/VARA/varahf.desktop || error 'Failed to create menu button!'
+sudo rm -rf ${APPDIR}/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
+
+exit
