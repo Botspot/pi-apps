@@ -16,7 +16,7 @@ BOX86_DYNAREC=0 BOX64_DYNAREC=0 BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q 
 #Downloading VARA HF
 VARAHFDIR=/tmp/VARAHF
 mkdir "${VARAHFDIR}" 2>/dev/null
-wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || echo "failed to download"
+wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || error 'Failed to download VARA HF Installer from winlink.org'
 
 #Extracting VARA HF installer archives
 unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
