@@ -2134,6 +2134,12 @@ In any case, Pi-Apps cannot work until you solve this issue. Check around in the
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a >> "$logfile"
     grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt install -fy --no-install-recommends --allow-downgrades --dry-run >> "$logfile"
+
+    # we also want to see the users apt sources (.list and .sources)
+    apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF) $(ARCHITECTURE)' | sort -u >> "$logfile"
+
+    # we also want to know what architectures the user has enabled on their system globally
+    echo "foreign architectures: $(dpkg --print-foreign-architectures)" >> "$logfile"
   fi
 
   if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
