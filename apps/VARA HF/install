@@ -37,7 +37,7 @@ echo '        WinWait, VARA Setup ; Wait for the "VARA installed successfully" w
 echo '        ControlClick, Button1, VARA Setup ; Click the OK button'                                         >> ${VARAHFDIR}/varahf_install.ahk
 echo '        WinWaitClose'                                                                                    >> ${VARAHFDIR}/varahf_install.ahk
 # running varahf_install.ahk
-sudo apt-get install -y p7zip-full || error 'Failed to install p7zip-full.'
+install_packages p7zip-full || error 'Failed to install p7zip-full.'
 7z e -y -bsp0 -bso0 ${AHKDIR}/AutoHotkey_1.1.36.02_setup.exe AutoHotkeyU32.exe -o"${VARAHFDIR}" || error 'Failed to extract AutoHotKey archive.'
 echo -e "\nInstalling VARA HF . . ."
 BOX86_DYNAREC=0 BOX86_NOBANNER=1 BOX86_DYNAREC_BIGBLOCK=0 WINEDEBUG=-all wine ${VARAHFDIR}/AutoHotkeyU32.exe ${VARAHFDIR}/varahf_install.ahk || error 'AutoHotKey failed to launch.'
