@@ -20,26 +20,22 @@ wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA 
 #Extracting VARA HF installer archives
 unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
 
-#Running VARA HF setup with autohotkey so we can auto-close its OK button
-# note: Instead of installing, we could just extract VARA's program files, copy them into wine, and manually install OCX files, but we would have to know which wineprefix the user is running.
-# downloading AutoHotKey
-echo -e "Downloading AutoHotKey..."
-AHKDIR=/tmp/AHK
-mkdir "${AHKDIR}" 2>/dev/null
-wget -q "https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.1.36.02/AutoHotkey_1.1.36.02_setup.exe" -P ${AHKDIR} || error 'Failed to download AutoHotKey from Github.' # autohokey v2+ uses different ahk script syntax. winetricks uses autohotkey v1.
-# creating varahf_install.ahk (autohotkey script)
-echo '; AHK script to make VARA installer run completely silent'                                               > ${VARAHFDIR}/varahf_install.ahk
-echo 'SetTitleMatchMode, 2'                                                                                    >> ${VARAHFDIR}/varahf_install.ahk
-echo 'SetTitleMatchMode, slow'                                                                                 >> ${VARAHFDIR}/varahf_install.ahk
-echo '        Run, VARA setup (Run as Administrator).exe /SILENT /c:"VARA setup (Run as Administrator).exe"'   >> ${VARAHFDIR}/varahf_install.ahk
-echo '        WinWait, VARA Setup ; Wait for the "VARA installed successfully" window'                         >> ${VARAHFDIR}/varahf_install.ahk
-echo '        ControlClick, Button1, VARA Setup ; Click the OK button'                                         >> ${VARAHFDIR}/varahf_install.ahk
-echo '        WinWaitClose'                                                                                    >> ${VARAHFDIR}/varahf_install.ahk
-# running varahf_install.ahk
-install_packages p7zip-full || error 'Failed to install p7zip-full.'
-7z e -y -bsp0 -bso0 ${AHKDIR}/AutoHotkey_1.1.36.02_setup.exe AutoHotkeyU32.exe -o"${VARAHFDIR}" || error 'Failed to extract AutoHotKey archive.'
-echo -e "\nInstalling VARA HF . . ."
-BOX86_DYNAREC=0 BOX86_NOBANNER=1 BOX86_DYNAREC_BIGBLOCK=0 WINEDEBUG=-all wine ${VARAHFDIR}/AutoHotkeyU32.exe ${VARAHFDIR}/varahf_install.ahk || error 'AutoHotKey failed to launch.'
+#Manually installing VARA HF program files
+# extracting program files from VARA HF installer
+install_packages innoextract
+innoextract -d "${VARAHFDIR}" "${VARAINSTALLEREXE}" || error 'Failed to extract program files from VARA HF installer'
+# finding your default wineprefix directory
+if [ -z "${WINEPREFIX}" ]; then
+    PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
+else
+    PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
+fi
+# moving VARA HF program files to user's default wineprefix
+mkdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #VARA folder with old settings might already exist
+cp -r "${VARAHFDIR}"/app/* "${PREFIXDIR}"/drive_c/VARA/ || error 'Could not copy VARA program files to your wineprefix' #will not overwrite old settings
+# registering VB6 OCX and DLL files with your wineprefix
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /s || error 'Could not register VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
+cp -n "${PREFIXDIR}"/drive_c/VARA/OCX/psapi.dll "${PREFIXDIR}"/drive_c/windows/system32/psapi.dll # copy dll if not already in system32 (VARA HF installer does not copy this by default)
 
 #Removing tmp files
 rm -rf ${AHKDIR} ${VARAHFDIR}
@@ -53,7 +49,7 @@ echo "[Desktop Entry]
 Name=VARA HF
 GenericName=VARA HF
 Comment=VARA HF is a shareware ham radio OFDM software modem for RMS Express and other messaging clients.
-Exec=env WINEDEBUG=-all wine \"C:\\VARA\\VARA.exe\"
+Exec=env WINEDEBUG=-all wine "${PREFIXDIR}"/drive_c/VARA/VARA.exe
 Icon=$(dirname "$0")/icon-64.png
 Terminal=false
 StartupNotify=false
