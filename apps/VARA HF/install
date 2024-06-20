@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APPDIR=${HOME}/.local/share/applications
+APPDIR="${HOME}"/.local/share/applications
 
 #Installing wine
 if [ $arch == 32 ]; then
@@ -16,10 +16,10 @@ BOX86_DYNAREC=0 BOX64_DYNAREC=0 BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q 
 VARAHFDIR=/tmp/VARAHF
 mkdir "${VARAHFDIR}" 2>/dev/null
 wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || error 'Failed to download VARA HF Installer from winlink.org'
-VARAINSTALLEREXE=$(find "${VARAHFDIR}" -type f -iname "*setup*.exe")
 
 #Extracting VARA HF installer archives
 unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
+VARAINSTALLEREXE=$(find "${VARAHFDIR}" -type f -iname "*setup*.exe")
 
 #Manually installing VARA HF program files
 # extracting program files from VARA HF installer
@@ -39,13 +39,13 @@ BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/dr
 cp -n "${PREFIXDIR}"/drive_c/VARA/OCX/psapi.dll "${PREFIXDIR}"/drive_c/windows/system32/psapi.dll # copy dll if not already in system32 (VARA HF installer does not copy this by default)
 
 #Removing tmp files
-rm -rf ${AHKDIR} ${VARAHFDIR}
+rm -rf "${VARAHFDIR}"
 
-#Adding the user to the USB dialout group so that they can access radio USB CAT control later.
+#Adding the user to the USB dialout group so that they can access radio USB CAT control later if needed
 sudo usermod -a -G dialout $USER
 
 #Creating Desktop Entry
-mkdir -p $APPDIR/VARA
+mkdir -p "${APPDIR}"/VARA
 echo "[Desktop Entry]
 Name=VARA HF
 GenericName=VARA HF
@@ -57,6 +57,6 @@ StartupNotify=false
 Type=Application
 StartupWMClass=vara.exe
 Categories=Utility;" > $APPDIR/VARA/varahf.desktop || error 'Failed to create menu button!'
-sudo rm -rf ${APPDIR}/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
+sudo rm -rf "${APPDIR}"/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
 
 exit
