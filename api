@@ -61,10 +61,10 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
     local version="$(readlink -f /usr/lib/aarch64-linux-gnu/libicudata.so | sed -n 's/.*libicudata.so.//p')"
   elif [ -f /usr/lib/arm-linux-gnueabihf/libicudata.so ]; then
     local version="$(readlink -f /usr/lib/arm-linux-gnueabihf/libicudata.so | sed -n 's/.*libicudata.so.//p')"
-  elif find /usr/lib/aarch64-linux-gnu/libicudata.so* | grep .; then
-    local version="$(find /usr/lib/aarch64-linux-gnu/libicudata.so.* | sed -n 's/\/usr\/lib\/aarch64-linux-gnu\/libicudata.so.//p' | head -1)"
-  elif find /usr/lib/arm-linux-gnueabihf/libicudata.so* | grep .; then
-    local version="$(find /usr/lib/arm-linux-gnueabihf/libicudata.so.* | sed -n 's/\/usr\/lib\/arm-linux-gnueabihf\/libicudata.so.//p' | head -1)"
+  elif find /usr/lib/aarch64-linux-gnu/libicudata.so* &>/dev/null; then
+    local version="$(find /usr/lib/aarch64-linux-gnu/libicudata.so.* | head -1 | sed -n 's/\/usr\/lib\/aarch64-linux-gnu\/libicudata.so.//p')"
+  elif find /usr/lib/arm-linux-gnueabihf/libicudata.so* &>/dev/null; then
+    local version="$(find /usr/lib/arm-linux-gnueabihf/libicudata.so.* | head -1 | sed -n 's/\/usr\/lib\/arm-linux-gnueabihf\/libicudata.so.//p')"
   else
     local version="65"
   fi
