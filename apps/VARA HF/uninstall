@@ -1,16 +1,27 @@
 #!/bin/bash
 
-APPDIR=${HOME}/.local/share/applications
-WINEDIR=${HOME}/.wine
+APPDIR="${HOME}"/.local/share/applications
+
+#Finding the wineprefix where VARA HF is installed
+if [ -f "${APPDIR}"/VARA/varahf.desktop ]; #if VARA HF shortcut found ...
+then
+    PREFIXDIR=$(grep -P -o '(?<=wine )(.*)(?=/drive_c/)' "${APPDIR}"/VARA/varahf.desktop) #get wineprefix directory from VARA HF shortcut
+else #if no VARA HF shortcut found then guess ...
+    if [ -z "${WINEPREFIX}" ]; then
+        PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
+    else
+        PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
+    fi
+fi
 
 #Unregistering OCX/DLL files from your wineprefix
-BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 ${WINEDIR}/drive_c/VARA/OCX/* /u /s #note: some DLL's don't have built-in register/unregister functions and will error
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /u /s || error 'Could not unregister VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
 
 #Removing program files (keeping any VARA.ini settings files)
-mv -f ${WINEDIR}/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
-rm -rf ${WINEDIR}/drive_c/VARA/* 2>/dev/null || error 'Could not remove VARA program files.'
-mv /tmp/VARA.ini ${WINEDIR}/drive_c/VARA/VARA.ini 2>/dev/null
-rmdir "${WINEDIR}/drive_c/VARA" 2>/dev/null #delete directory if empty
+mv -f ${PREFIXDIR}/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
+rm -rf ${PREFIXDIR}/drive_c/VARA/* 2>/dev/null || error 'Could not remove VARA program files.'
+mv /tmp/VARA.ini ${PREFIXDIR}/drive_c/VARA/VARA.ini 2>/dev/null
+rmdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #delete directory if empty
 
 #Removing Desktop Entry
 rm ${APPDIR}/VARA/varahf.desktop 2>/dev/null || echo "Could not remove menu button."
