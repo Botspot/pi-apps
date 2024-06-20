@@ -2,16 +2,11 @@
 
 APPDIR="${HOME}"/.local/share/applications
 
-#Finding the wineprefix where VARA HF is installed
-if [ -f "${APPDIR}"/VARA/varahf.desktop ]; #if VARA HF shortcut found ...
-then
-    PREFIXDIR=$(grep -P -o '(?<=wine )(.*)(?=/drive_c/)' "${APPDIR}"/VARA/varahf.desktop) #get wineprefix directory from VARA HF shortcut
-else #if no VARA HF shortcut found then guess ...
-    if [ -z "${WINEPREFIX}" ]; then
-        PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
-    else
-        PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
-    fi
+#Finding your default wineprefix directory
+if [ -z "${WINEPREFIX}" ]; then
+    PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
+else
+    PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
 fi
 
 #Unregistering OCX/DLL files from your wineprefix
