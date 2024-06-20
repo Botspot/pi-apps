@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo rm -f /etc/apt/sources.list.d/vscodium.list /etc/apt/trusted.gpg.d/vscodium.gpg
 
-version=1.90.1.24165
+version=1.90.2.24171
 
 install_packages "https://github.com/VSCodium/vscodium/releases/download/${version}/codium_${version}_armhf.deb" || exit 1
 
