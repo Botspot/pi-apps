@@ -3,17 +3,17 @@
 APPDIR="${HOME}"/.local/share/applications
 
 #Finding the wineprefix where VARA.exe is installed
-PREFIXDIR=$(find ${HOME} -name "VARA.exe" | grep -P -o "(.*)(?=/drive_c/)")
+PREFIXDIR=$(find "${HOME}" -name "VARA.exe" | grep -P -o "(.*)(?=/drive_c/)" | head -1)
 
 #Unregistering OCX/DLL files from your wineprefix
 BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /u /s || error 'Could not unregister VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
 
 #Removing program files (keeping any VARA.ini settings files)
-mv -f ${PREFIXDIR}/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
-rm -rf ${PREFIXDIR}/drive_c/VARA/* 2>/dev/null || error 'Could not remove VARA program files.'
-mv /tmp/VARA.ini ${PREFIXDIR}/drive_c/VARA/VARA.ini 2>/dev/null
+mv -f "${PREFIXDIR}"/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
+rm -rf "${PREFIXDIR}"/drive_c/VARA/* 2>/dev/null || error 'Could not remove VARA program files.'
+mv /tmp/VARA.ini "${PREFIXDIR}"/drive_c/VARA/VARA.ini 2>/dev/null
 rmdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #delete directory if empty
 
 #Removing Desktop Entry
-rm ${APPDIR}/VARA/varahf.desktop 2>/dev/null || echo "Could not remove menu button."
+rm "${APPDIR}"/VARA/varahf.desktop 2>/dev/null || echo "Could not remove menu button."
 rmdir "${APPDIR}/VARA" 2>/dev/null #delete directory if empty
