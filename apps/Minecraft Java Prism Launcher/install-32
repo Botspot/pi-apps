@@ -1,5 +1,5 @@
 #!/bin/bash
-version=8.3-1
+version=8.4-1
 
 install_packages mesa-utils https://github.com/Pi-Apps-Coders/files/releases/download/large-files/prismlauncher_${version}_armhf.deb || exit 1
 
