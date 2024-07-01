@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.7.4
+version=2.8.0
 
 install_packages git mesa-utils libcurl4 libgtk-3-0 zlib1g libdbus-1-3 libxcb1 libxi6 libxfixes3 libatk-bridge2.0-0 libepoxy0 libxinerama1 libxrandr2 libxcursor1 libxcomposite1 libxdamage1 libxkbcommon0 libxcb-shm0 libxcb-render0 libpcre3 libxau6 libxdmcp6 libatspi2.0-0 libexpat1 liblzma5 libbsd0 libgpg-error0 || exit 1
 # note, libffi.so.6 is linked by the binary and not provided in the appimage (appimage contains libffi.so.7). this appimage probably never worked on bullseye
