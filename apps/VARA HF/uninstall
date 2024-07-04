@@ -25,5 +25,5 @@ mv /tmp/VARA.ini "${PREFIXDIR}"/drive_c/VARA/VARA.ini 2>/dev/null
 rmdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null || true #delete directory if empty, prevent error code
 
 #Removing Desktop Entry
-rm "${APPDIR}"/VARA/varahf.desktop 2>/dev/null || warning 'Could not remove menu button.'
+rm "${APPDIR}"/VARA/varahf.desktop 2>/dev/null || warning 'Could not remove menu button. You might need to do this manually if you removed it.'
 rmdir "${APPDIR}/VARA" 2>/dev/null || true #delete directory if empty, prevent error code
