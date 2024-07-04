@@ -2,21 +2,61 @@
 
 APPDIR="${HOME}"/.local/share/applications
 
-#Finding your default wineprefix directory
+#Installing wine
+if [ $arch == 32 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x86)' || error 'Failed to install wine'
+elif [ $arch == 64 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x64)' || error 'Failed to install wine'
+fi
+
+#Configuring wineprefix for VARA programs
+BOX86_DYNAREC=0 BOX64_DYNAREC=0 BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
+
+#Downloading VARA HF
+VARAHFDIR=/tmp/VARAHF
+mkdir "${VARAHFDIR}" 2>/dev/null
+wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || error 'Failed to download VARA HF Installer from winlink.org'
+
+#Extracting VARA HF installer archives
+unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
+VARAINSTALLEREXE=$(find "${VARAHFDIR}" -type f -iname "*setup*.exe")
+
+#Manually installing VARA HF program files
+# extracting program files from VARA HF installer
+install_packages innoextract
+innoextract -d "${VARAHFDIR}" "${VARAINSTALLEREXE}" || error 'Failed to extract program files from VARA HF installer'
+# finding your default wineprefix directory
 if [ -z "${WINEPREFIX}" ]; then
     PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
 else
     PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
 fi
+# moving VARA HF program files to user's default wineprefix
+mkdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #VARA folder with old settings might already exist
+cp -r "${VARAHFDIR}"/app/* "${PREFIXDIR}"/drive_c/VARA/ || error 'Could not copy VARA program files to your wineprefix' #will not overwrite old settings
+# registering VB6 OCX and DLL files with your wineprefix
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /s || error 'Could not register VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
+cp -n "${PREFIXDIR}"/drive_c/VARA/OCX/psapi.dll "${PREFIXDIR}"/drive_c/windows/system32/psapi.dll # copy dll if not already in system32 (VARA HF installer does not copy this by default)
 
-#Unregistering OCX/DLL files from your wineprefix
-BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /u /s || error 'Could not unregister VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
+#Removing tmp files
+rm -rf "${VARAHFDIR}"
 
-#Removing program files (keeping any VARA.ini settings files)
-mv -f "${PREFIXDIR}"/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
-rm -rf "${PREFIXDIR}"/drive_c/VARA/* 2>/dev/null || error 'Could not remove VARA program files.'
-mv /tmp/VARA.ini "${PREFIXDIR}"/drive_c/VARA/VARA.ini 2>/dev/null
-rmdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #delete directory if empty
+#Adding the user to the USB dialout group so that they can access radio USB CAT control later if needed
+sudo usermod -a -G dialout $USER
 
-#Removing Desktop Entry
-rm "${APPDIR}"/varahf.desktop 2>/dev/null || echo "Could not remove menu button."
+#Creating Desktop Entry
+mkdir -p "${APPDIR}"
+echo "[Desktop Entry]
+Name=VARA HF
+GenericName=VARA HF
+Comment=VARA HF is a shareware ham radio OFDM software modem for RMS Express and other messaging clients.
+Exec=env WINEPREFIX="${PREFIXDIR}" WINEDEBUG=-all wine "${PREFIXDIR}"/drive_c/VARA/VARA.exe
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=false
+Type=Application
+StartupWMClass=vara.exe
+Categories=Utility;" > "${APPDIR}"/varahf.desktop || error 'Failed to create menu button!'
+sudo rm -rf "${APPDIR}"/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
+
+exit
