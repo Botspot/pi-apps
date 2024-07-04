@@ -45,7 +45,7 @@ rm -rf "${VARAHFDIR}"
 sudo usermod -a -G dialout $USER
 
 #Creating Desktop Entry
-mkdir -p "${APPDIR}"
+mkdir -p "${APPDIR}"/VARA
 echo "[Desktop Entry]
 Name=VARA HF
 GenericName=VARA HF
@@ -56,7 +56,7 @@ Terminal=false
 StartupNotify=false
 Type=Application
 StartupWMClass=vara.exe
-Categories=Utility;" > "${APPDIR}"/varahf.desktop || error 'Failed to create menu button!'
+Categories=Utility;" > "${APPDIR}"/VARA/varahf.desktop || error 'Failed to create menu button!'
 sudo rm -rf "${APPDIR}"/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
 
 exit
