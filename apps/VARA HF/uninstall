@@ -9,8 +9,14 @@ else
     PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
 fi
 
-#Unregistering OCX/DLL files from your wineprefix
-BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /u /s || warning 'Could not unregister VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
+#Unregistering OCX/DLL files from your wineprefix if they exist
+OCXDIR="${PREFIXDIR}"/drive_c/VARA/OCX
+for ACTIVEXFILE in "${OCXDIR}/COMDLG32.OCX" "${OCXDIR}/MSCHRT20.OCX" "${OCXDIR}/MSCOMCTL.OCX" "${OCXDIR}/MSCOMM32.OCX" "${OCXDIR}/MSSTDFMT.DLL" "${OCXDIR}/MSWINSCK.OCX"; do
+    if [ -f "${ACTIVEXFILE}" ]; then
+        BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /u /s || warning 'Could not unregister VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
+        break
+    fi
+done
 
 #Removing program files (keeping any VARA.ini settings files)
 mv -f "${PREFIXDIR}"/drive_c/VARA/VARA.ini /tmp/VARA.ini 2>/dev/null
