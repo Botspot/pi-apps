@@ -10,7 +10,7 @@ elif [ $arch == 64 ]; then
 fi
 
 #Configuring wineprefix for VARA programs
-BOX86_DYNAREC=0 BOX64_DYNAREC=0 BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
 
 #Downloading VARA HF
 VARAHFDIR=/tmp/VARAHF
