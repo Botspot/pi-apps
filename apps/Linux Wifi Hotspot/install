@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v4.7.1
+version=v4.7.2
 
 # Install dependencies
 install_packages bash util-linux procps hostapd iproute2 iw haveged dnsmasq '|' network-manager iptables make gcc g++ build-essential pkg-config libgtk-3-0 libgtk-3-dev libqrencode-dev libpng-dev || exit 1
