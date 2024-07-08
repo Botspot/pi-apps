@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v22.4.0
+version=v20.15.1
 version2=v0.39.7
 
 #Checking if using armv6
@@ -43,5 +43,5 @@ echo ". ~/.node_bashrc" >> ~/.bashrc
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# Install latest nodejs
-nvm install node || error "Failed to install node.js with nvm!"
+# Install LTS nodejs
+nvm install --lts || error "Failed to install node.js with nvm!"
