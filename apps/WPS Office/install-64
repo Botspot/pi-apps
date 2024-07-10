@@ -2,7 +2,7 @@
 
 #package found in: https://linux.wps.cn/
 
-version=11.1.0.11719
+version=11.1.0.11720
 
 if package_is_new_enough firejail 0.9.58 ;then
   firejail_package="firejail"

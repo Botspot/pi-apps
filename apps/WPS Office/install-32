@@ -76,7 +76,7 @@ preserve-environment=true" | sudo tee /etc/schroot/chroot.d/wps-office-chroot >/
 
 echo
 #package found in: https://linux.wps.cn/
-version=11.1.0.11719
+version=11.1.0.11720
 # download wps office with custom command
 time="$(date +%s)"
 secrityKey="$(wget -qO- https://linux.wps.cn | grep 'secrityKey =' | sed 's/.* "//g ; s/";$//g')" #lol typo
