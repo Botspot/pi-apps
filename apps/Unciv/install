@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.12.8
+version=4.12.9-google-play
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
