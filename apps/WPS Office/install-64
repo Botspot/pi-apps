@@ -24,7 +24,7 @@ wget --header="User-Agent: This download is a result of the Pi-Apps store. Pleas
 if package_available libwebp6 && package_available libtiff5 ;then
   install_packages "$firejail_package" /tmp/wps-office.deb libwebp6 libtiff5 ttf-mscorefonts-installer x11-utils wmctrl || exit 1
 else
-  install_packages "$firejail_package" /tmp/wps-office.deb ttf-mscorefonts-installer x11-utils wmctrl "http://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "http://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
+  install_packages "$firejail_package" /tmp/wps-office.deb ttf-mscorefonts-installer x11-utils wmctrl "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-2_arm64.deb" "http://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "http://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
 fi
 rm -f /tmp/wps-office.deb
 
