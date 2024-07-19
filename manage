@@ -700,9 +700,9 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   echo
   cd $HOME
   if [ "$3" == "update" ]; then
-    script_input="update"
+    export script_input="update"
   else
-    script_input=""
+    export script_input=""
   fi
   #always overwrite DEBIAN_FRONTEND with gnome
   #dialog and readline are not functional due to the logfile pipe
