@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.14.0.zip
+version=4.35.0.zip
 
 install_packages libfontconfig-dev || exit 0
 
@@ -10,7 +10,7 @@ install_packages libfontconfig-dev || exit 0
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-wget -O /tmp/boxy-svg.zip "https://firebasestorage.googleapis.com/v0/b/boxy-svg.appspot.com/o/linux%2Fapp-${version}?alt=media" || exit 1
+wget -O /tmp/boxy-svg.zip "https://storage.boxy-svg.com/linux/app-${version}" || exit 1
 
 rm -rf /tmp/app
 cd /tmp
