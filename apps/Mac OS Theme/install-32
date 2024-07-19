@@ -1,9 +1,0 @@
-#!/bin/bash
-# Get dependencies
-install_packages compton plank xfwm4 xfce4-settings nautilus yad xfce4-panel xfce4-appmenu-plugin xfce4-statusnotifier-plugin xfce4-pulseaudio-plugin blueman figlet lolcat python3-pil python3-pil.imagetk network-manager network-manager-gnome || exit 1
-rm -rf ~/MacOSBigSurThemeConverter || error "Failed to first remove ~/MacOSBigSurThemeConverter folder"
-git_clone https://github.com/techcoder20/MacOSBigSurThemeConverter.git || error "failed to download github repository!"
-#Making install script executable
-sudo chmod +x ~/MacOSBigSurThemeConverter/install.sh || error "Failed to make install script executable"
-#Running Install script
-~/MacOSBigSurThemeConverter/install.sh || error "Failed to run install script"
