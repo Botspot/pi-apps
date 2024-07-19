@@ -1,27 +1,27 @@
 #!/bin/bash
 
 #remove the menu launcher
-rm -f ~/.local/share/applications/tor.desktop
+rm -f ~/.local/share/applications/mullvad.desktop
 
-#before removing the tor-browser_en-US folder, move the browser configuration like bookmarks, etc
-if [ -d ~/tor-browser ];then
-  mkdir -p ~/tor-browser.temp/Browser/TorBrowser/Data
-  mv -n ~/tor-browser/Browser/TorBrowser/Data/Browser ~/tor-browser.temp/Browser/TorBrowser/Data
+#before removing the mullvad-browser folder, move the browser configuration like bookmarks, etc
+if [ -d ~/mullvad-browser ];then
+  mkdir -p ~/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  mv -n ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser ~/mullvad-browser.temp/Browser/MullvadBrowser/Data
 fi
 
 #remove all browser internals (except for user-data which we moved already)
-rm -rf ~/tor-browser
+rm -rf ~/mullvad-browser
 
 #remove icon
-rm -f ~/.local/share/icons/tor-browser.png
+rm -f ~/.local/share/icons/mullvad-browser.png
 
 #move back the temporary folder containing user-data
-if [ -d ~/tor-browser.temp ];then
-  mv ~/tor-browser.temp ~/tor-browser
+if [ -d ~/mullvad-browser.temp ];then
+  mv ~/mullvad-browser.temp ~/mullvad-browser
 
   #let the user know where configuration is
-  echo "Tor Browser has been uninstalled, but user-data like settings and bookmarks remain intact.
+  echo "Mullvad Browser has been uninstalled, but user-data like settings and bookmarks remain intact.
 To remove these files, run this command:
-rm -rf ~/tor-browser"
+rm -rf ~/mullvad-browser"
   
 fi
