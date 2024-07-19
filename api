@@ -734,7 +734,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     
     status "Purging the $package_name package..."
 
-    if [[ "$script_input" == "update" ]]; then
+    if [ "$script_input" == "update" ]; then
       # skip --autoremove for faster updates. this prevents dummy deb dependencies from needing to be uninstalled and reinstalled on updates
       apt_lock_wait
       local output="$(sudo -E apt purge -y "$package_name" 2>&1 | less_apt | tee /dev/stderr)"
