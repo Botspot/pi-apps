@@ -35,8 +35,7 @@ fi
 mkdir "${PREFIXDIR}/drive_c/VARA" 2>/dev/null #VARA folder with old settings might already exist
 cp -r "${VARAHFDIR}"/app/* "${PREFIXDIR}"/drive_c/VARA/ || error 'Could not copy VARA program files to your wineprefix' #will not overwrite old settings
 # registering VB6 OCX and DLL files with your wineprefix
-BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /s || error 'Could not register VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions
-cp -n "${PREFIXDIR}"/drive_c/VARA/OCX/psapi.dll "${PREFIXDIR}"/drive_c/windows/system32/psapi.dll # copy dll if not already in system32 (VARA HF installer does not copy this by default)
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARA/OCX/*.*[A-Z] /s || error 'Could not register VARA HF VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions. Wine also already has an emulated psapi.dll that works fine.
 
 #Removing tmp files
 rm -rf "${VARAHFDIR}"
