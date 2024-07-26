@@ -16,34 +16,37 @@ if [ ! -d "${DIRECTORY}/data/settings" ];then
   echo '' > "${DIRECTORY}/data/settings/reinstall-after-update"
 fi
 
-#$1 is usually left blank. If it equals 'refresh', then empty settings will be created and then the script will exit.
-if [ "$1" == 'refresh' ];then
-  #set default settings, if they don't exist
-  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-  PREIFS="$IFS"
-  IFS='|'
-  for name in $settings
+# $1 is usually left blank, but there are some dedicated utility subcommands
+case "$1" in
+'') # GUI.
+  ;;
+refresh) # Set default settings, if they don't exist.
+  for setting in "$DIRECTORY"/etc/setting-params/*
   do
-    if [ ! -f "${DIRECTORY}/data/settings/${name}" ] || [ -z "$(cat "${DIRECTORY}/data/settings/${name}")" ];then
-      cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    if ! test -f "$DIRECTORY"/data/settings/"$(basename "$setting")" \
+        || wc -c <"$DIRECTORY"/data/settings/"$(basename "$setting")" \
+          | xargs test 0 =;then
+      <"$setting" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$(basename "$setting")"
     fi
   done
-  IFS="$PREIFS"
   exit 0
-  
-elif [ "$1" == 'revert' ];then #If $1 equals 'revert', then overwrite all settings with the defaults and then the script will exit.
-  
-  #overwrite all settings with the defaults
-  settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-  PREIFS="$IFS"
-  IFS='|'
-  for name in $settings
+  ;;
+revert) # Overwrite all settings with the defaults.
+  for setting in "$DIRECTORY"/etc/setting/params/*
   do
-    cat "${DIRECTORY}/etc/setting-params/${name}" | grep -v '#' | head -n1 > "${DIRECTORY}/data/settings/${name}"
+    <"$setting" grep -v '#' | head -n 1 >"$DIRECTORY"/data/settings/"$(basename "$setting")"
   done
-  IFS="$PREIFS"
   exit 0
-fi
+  ;;
+*)
+  printf "\
+Usage: %s (subcommand)
+\t%s - Start the settings GUI.
+\t%s refresh - Set default settings, if they don't exist.
+\t%s revert  - Overwrite all settings with the defaults.
+" "$0" "$0" "$0" "$0" >&2
+  exit 64 # EX_USAGE
+esac
 
 if [ ! -f ~/.local/share/applications/pi-apps-settings.desktop ];then
   echo "Creating Settings menu button"
@@ -175,25 +178,17 @@ $(echo "$params" | grep -vx "$curval")"
 done
 
 #remove empty lines from $output
-output="$(echo "$output" | grep .)"
+output="$(printf '%s\n' "$output" | sed '/^$/d')"
 
 echo "Output: ${output}EOO"
 
-settings="$(ls "${DIRECTORY}/etc/setting-params" | tr '\n' '|')"
-
 settingnumber=1
-
-PREIFS="$IFS"
-IFS='|'
-for name in $settings
+for setting in "$DIRECTORY"/etc/setting-params/*
 do
-  curval="$(echo "$output" | sed -n "${settingnumber}p")"
-  
-  echo "Setting '$name' to '$curval'"
-  echo "$curval" > "${DIRECTORY}/data/settings/${name}"
-  
-  settingnumber=$((settingnumber + 1))
+  printf '%s\n' "$output" \
+    | sed -n "${settingnumber}p" \
+    | tee "$DIRECTORY/data/settings/$(basename "$setting")" \
+    | xargs printf 'Set "%s" to "%s"\n' "$(basename "$setting")"
+
+  settingnumber=$(printf '1 + %s\n' "$settingnumber" | bc)
 done
-IFS="$PREIFS"
-
-
