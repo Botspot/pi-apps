@@ -147,7 +147,17 @@ fi
 install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
-  "Java 8"|"Java 17"|"Java 21")
+  "Java 21")
+    case "$arch" in
+      "32")
+        error "User error: Java 21 is not available for your platform from Adoptium. All 32-bit based architectures are being deprecated and removed by Java. Please use a 64-bit OS. Exiting the script."
+        ;;
+      *)
+        adoptium_installer || exit 1
+        ;;
+    esac
+    ;;
+  "Java 8"|"Java 17")
     adoptium_installer || exit 1
     ;;
   *)
