@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.12.14
+version=4.12.14-show-github-json-parse-error-text
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
