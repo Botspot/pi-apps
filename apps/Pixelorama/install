@@ -1,16 +1,21 @@
 #!/bin/bash
 
-version=v0.11.4
+version=v1.0
 
 case "$arch" in
-"64") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm64.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
-"32") wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/Pixelorama_${version}_arm32.zip -O /tmp/pixelorama.zip || error "Could not download Pixelorama archive" ;;
+"64") wget https://github.com/Orama-Interactive/Pixelorama/releases/download/${version}/Pixelorama-Linux-ARM64.tar.gz -O /tmp/pixelorama.tar.gz || error "Could not download Pixelorama archive" ;;
+"32") wget https://github.com/Orama-Interactive/Pixelorama/releases/download/${version}/Pixelorama-Linux-ARM32.tar.gz -O /tmp/pixelorama.tar.gz || error "Could not download Pixelorama archive" ;;
 *) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
 esac
 
 sudo rm -rf /usr/share/Pixelorama /usr/share/applications/com.orama_interactive.Pixelorama.desktop /usr/bin/pixelorama
-sudo unzip /tmp/pixelorama.zip -d /usr/share/Pixelorama
-rm -f /tmp/pixelorama.zip
+sudo tar -xvf /tmp/pixelorama.tar.gz -C /tmp/
+case "$arch" in
+"64") sudo mv /tmp/Pixelorama-Linux-ARM64/ /usr/share/Pixelorama/ || error "Could not install Pixelorama" ;;
+"32") sudo mv /tmp/Pixelorama-Linux-ARM32/ /usr/share/Pixelorama/ || error "Could not install Pixelorama" ;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+rm -f /tmp/pixelorama.tar.gz
 
 case "$arch" in
 "64") sudo ln -s /usr/share/Pixelorama/Pixelorama.arm64 /usr/bin/pixelorama || error "Could not create symbolic link" ;;
