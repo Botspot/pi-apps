@@ -102,7 +102,7 @@ jobs:
       - name: Test installing app on bullseye armhf
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2024-03-12/2024-03-12-raspios-bullseye-armhf.img.xz
+          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2024-07-04/2024-07-04-raspios-bullseye-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -123,7 +123,7 @@ jobs:
       - name: Test installing app on bookworm armhf
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2024-03-15/2024-03-15-raspios-bookworm-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2024-07-04/2024-07-04-raspios-bookworm-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -165,7 +165,7 @@ jobs:
       - name: Test installing app on bullseye arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2024-03-12/2024-03-12-raspios-bullseye-arm64.img.xz
+          base_image: https://downloads.raspberrypi.org/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2024-07-04/2024-07-04-raspios-bullseye-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
@@ -186,7 +186,7 @@ jobs:
       - name: Test installing app on bookworm arm64
         uses: theofficialgman/arm-runner-action@v12
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu: cortex-a7:cortex-a72
