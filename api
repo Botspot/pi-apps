@@ -2128,6 +2128,13 @@ In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3
 In any case, Pi-Apps cannot work until you solve this issue. Check around in the /etc/apt/sources.list file and the /etc/apt/sources.list.d folder for duplicate mentions of the word 'stable'.")
     error_type="system"
   fi
+
+  if grep -q "dpkg: error processing package .*-dkms" <<<"$errors" ;then
+    error_caption+=("A DKMS (Dynamic Kernel Module Support) package failed to install and has prevented apt from working correctly. This is likely an issue with your distribution and you should report it wherever applicable.
+
+Pi-Apps cannot work until you solve this issue. If you do not need the problematic package, you can remove it with apt to solve the issue.")
+    error_type="system"
+  fi
   
   if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
     # we want these errors to come to pi-apps logs if the user sends them, so don't add an error type
