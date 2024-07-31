@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.12.14-msi-test-7
+version=4.12.15
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
