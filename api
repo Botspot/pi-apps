@@ -1648,7 +1648,7 @@ app_search_gui() { #graphical interface to search for apps
     --form --field='' "$last_search" \
     --field='Search description':CHK 'TRUE' \
     --field='Search website':CHK 'TRUE' \
-    --field='Search credits':CHK 'TRUE' \
+    --field='Search credits':CHK 'FALSE' \
     --field='Search scripts':CHK 'FALSE')" || return 0
   local query="$(echo "$output" | sed -n 1p)"
   
