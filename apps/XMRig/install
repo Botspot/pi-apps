@@ -160,6 +160,9 @@ if true;then
     error "Failed to detect OS CPU architecture! Something is very wrong."
   fi
   
+  #remove xmrig built-in march cmake setting which is not as specific as mcpu=native
+  sed -i '/^    if (ARM_TARGET EQUAL 8)$/,/^    endif()$/d' /home/pi/xmrig/cmake/cpu.cmake
+  
   #Cmake flags:
   # -O3: enables many performance optimizations at the expense of compilation time. From: https://www.youtube.com/watch?v=4e0fRKHG7Hk
   # -mcpu=native: tunes the program for current system's detected CPU. From: https://community.arm.com/arm-community-blogs/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
@@ -167,7 +170,7 @@ if true;then
   # -funsafe-loop-optimizations: Assume no overflowing loops
   # -DARM_TARGET: selects ARM processor major architecture - either 7 or 8
   
-  cmake .. -DCMAKE_CXX_FLAGS="-O3 -mcpu=native -ffast-math -funsafe-loop-optimizations" -DCMAKE_C_FLAGS="-O3 -mcpu=native -ffast-math -funsafe-loop-optimizations" -DARM_TARGET="$DARM_TARGET" || error 'Failed to generate build files!'
+  cmake .. -DCMAKE_CXX_FLAGS="-O3 -mcpu=native -funsafe-loop-optimizations" -DCMAKE_C_FLAGS="-O3 -mcpu=native -funsafe-loop-optimizations" -DARM_TARGET="$DARM_TARGET" || error 'Failed to generate build files!'
   #More cmake flags that are specific to xmrig can be found at: https://xmrig.com/docs/miner/cmake-options
   
   #compile
