@@ -1,0 +1,6 @@
+Optimized 3D slicing software for BambuLab and other printers
+This is based on PrusaSlicer, but brings project-based workflows, more features, and better default presets.
+This will not render the 3D models as smoothly as Cura will, as it is a flatpak running under xwayland.
+
+To run: Menu -> Graphics -> BambuStudio
+To run in a terminal: flatpak run  --command=entrypoint --file-forwarding com.bambulab.BambuStudio
