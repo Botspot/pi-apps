@@ -370,6 +370,8 @@ apt_update() { #run an apt update with error-checking and minimal output
   apt_lock_wait
   
   status "Running \e[7msudo apt update\e[27m..."
+  local output
+  set -o pipefail
   output="$(sudo -E apt update --allow-releaseinfo-change "$@" 2>&1 | less_apt | tee /dev/stderr)"
   exitcode=$?
   status "apt update complete."
@@ -673,7 +675,10 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       status "Installing the $package_name package..."
       
       apt_lock_wait
-      local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local output
+      set -o pipefail
+      output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local exitcode=$?
       status "Apt finished."
       
       if [ "$using_local_packages" == 1 ] && [ ! -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages ] && [ $i != 5 ];then
@@ -687,7 +692,7 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
     done
     
     errors="$(echo "$output" | grep '^[(E)|(Err]:')"
-    if [ ! -z "$errors" ];then
+    if [ ! -z "$errors" ] || [ "$exitcode" != 0 ];then
       echo -e "\e[91mFailed to install the packages!\e[39m"
       echo -e "APT reported these errors:\n\e[91m$errors\e[39m"
       echo "$output"
