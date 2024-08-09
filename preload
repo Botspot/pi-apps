@@ -37,25 +37,18 @@ function error {
   exit 1
 }
 
-#yad or xlunch format
+case "$1" in
+source)  return 0 ;;
+'')      format=yad ;;
+xlunch*) format=xlunch ;;
+yad*)    format=yad ;;
+*)       error "$0: $1: unknown list format!" ;;
+esac
 guimode="$1"
 
-if [ -z "$guimode" ];then
-  format=yad
-elif [[ "$guimode" = xlunch* ]];then
-  format=xlunch
-elif [[ "$guimode" = yad* ]];then
-  format=yad
-elif [ "$guimode" != 'yad' ] && [ "$guimode" != 'xlunch' ];then
-  error "Unknown list format '$format'!"
-fi
-
-#specifies a category to preload (can be left empty to load main page)
-prefix="$2"
-
-if [ "$prefix" == '/' ];then
-  prefix=
-fi
+# The prefix is a category to preload. By default (if '/' or empty) the main
+# page is preloaded.
+test "$2" = / || prefix="$2"
 
 # if the timestamp in the settings folder has changed, we need to unset the text_color variable since the GTK_THEME may have changed and we need to re-generate it
 timestamp_settings="$( cat ${DIRECTORY}/data/preload/timestamps- | grep "^${DIRECTORY}/data/settings" )"
@@ -76,17 +69,13 @@ if [ -z "${text_color+x}" ] && [ "$format" == yad ];then
     #to avoid setting the text to the wrong color, check it again now right
     #set the system GTK theme for yad windows
     guimode="$(cat "${DIRECTORY}/data/settings/App List Style" 2>/dev/null || echo yad-default)"
-    if [ "$guimode" == yad-default ];then
-      export GTK_THEME=''
-    elif [[ "$guimode" = yad* ]];then
-      export GTK_THEME=${guimode//yad-/}
-    elif [ "$guimode" == xlunch-light-3d ];then
-      export GTK_THEME=''
-    elif [ "$guimode" == xlunch-dark-3d ];then
-      export GTK_THEME=Adwaita-dark
-    elif [ "$guimode" == xlunch-dark ];then
-      export GTK_THEME=Adwaita-dark
-    fi
+    case "$guimode" in
+    yad-default)     export GTK_THEME= ;;
+    yad*)            export GTK_THEME=${guimode//yad-/} ;;
+    xlunch-light-3d) export GTK_THEME= ;;
+    xlunch-dark)     export GTK_THEME=Adwaita-dark ;;
+    xlunch-dark-3d)  export GTK_THEME=Adwaita-dark ;;
+    esac
     export text_color=$(echo "import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -159,28 +148,46 @@ if [ $reloadlist == 1 ];then
   if ! command -v app_prefix_category >/dev/null ;then
     source "${DIRECTORY}/api"
   fi
-  
-  if [ ! -z "$prefix" ];then
-    echo "Showing apps within $prefix/" 1>&2
-    vfiles="$(app_prefix_category "$prefix" | grep . | sort -f | uniq | sed "s+$prefix/++g")" #generate a virtual file system with apps in folders represented as subdirectories
-  else
-    vfiles="$(app_prefix_category "" | grep . | sort -f | uniq | grep -v '^hidden/')"
-  fi
-  
-  #remove apps within categories - show this layer of stuff only.
-  vfiles="$(sed 's+/.*+/+g' <<<"$vfiles" | uniq)"
+
+  vfiles="$(
+    app_prefix_category "$prefix" \
+      | grep . \
+      | sort -f \
+      | uniq \
+      | if test -n "$prefix" ;then
+          printf '%s: Showing apps within %s/\n' "$0" "$prefix" >&2
+          sed "s+$prefix/++g" #generate a virtual file system with apps in folders represented as subdirectories
+        else
+          grep -v ^hidden/
+        fi \
+      | sed 's+/.*+/+g' \
+      | uniq # ^ show this layer only
+  )"
+
   
   #get list of apps - excluding folders and apps that are incompatible with CPU architecture
-  APPS="$(grep -v '/' <<<"$vfiles" | list_intersect "$(list_apps cpu_installable)")"
+  APPS="$(
+    printf '%s\n' "$vfiles" \
+      | grep -v '/' \
+      | list_intersect "$(list_apps cpu_installable)"
+      | if <"$DIRECTORY"/data/settings/"Shuffle App list" xargs test Yes = ;then
+          shuf
+        else
+          cat
+        fi
+  )"
   
   #get list of folders - excluding apps.
-  DIRS="$(grep '/' <<<"$vfiles" | tr -d '/')"
-  
-  #shuffle the list if enabled
-  if [ "$(< "${DIRECTORY}/data/settings/Shuffle App list")" == 'Yes' ];then
-    APPS="$(echo "$APPS" | shuf)"
-    DIRS="$(echo "$DIRS" | shuf)"
-  fi
+  DIRS="$(
+    printf '%s\n' "$vfiles" \
+      | grep '/' \
+      | tr -d '/' \
+      | if <"$DIRECTORY"/data/settings/"Shuffle App list" xargs test Yes = ;then
+          shuf
+        else
+          cat
+        fi
+  )"
   
   if [ "$format" == yad ];then
     IFS=$'\n'
@@ -253,21 +260,15 @@ $prefix/$app
 "\("$status"\)" $line"$'\n'
       fi
       
-      #determine status text-color for app name (green for installed, red for uninstalled, yellow for corrupted)
-      if [ -z "$status" ];then
-        add+="$text_color"
-      elif [ "$status" == installed ];then
-        add+="#00AA00"
-      elif [ "$status" == uninstalled ];then
-        add+="#CC3333"
-      elif [ "$status" == corrupted ];then
-        add+="#888800"
-      elif [ "$status" == disabled ];then
-        add+="#FF0000"
-      else
-        # fallback incase unexpected status
-        add+="$text_color"
-      fi
+      # Determine status text color for app name.
+      case "$status" in
+      installed)   add+="#00AA00" ;; # green
+      uninstalled) add+="#CC3333" ;; # light red
+      corrupted)   add+="#888800" ;; # yellow
+      disabled)    add+="#FF0000" ;; # deep red
+      *)           add+="$text_color" ;;
+      esac
+
       #output finished app lines
       add="${add//[&]/&amp;}"
       echo "$add"
