@@ -354,7 +354,8 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   done
   
   #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
-  while sudo -E apt-get install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+  #NOTE: after apt 3.0 this output may change. Refer to git blame for this line for more info.
+  while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
   
