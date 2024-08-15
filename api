@@ -2762,7 +2762,7 @@ If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/34
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device" <<<"$errors";then
+  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation" <<<"$errors";then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
