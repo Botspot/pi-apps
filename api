@@ -2576,7 +2576,7 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
 
-  if grep -q "curl: (.*) HTTP/2 stream .* was not closed cleanly: INTERNAL_ERROR (err .*)"
+  if grep -q "curl: (.*) HTTP/2 stream .* was not closed cleanly: INTERNAL_ERROR (err .*)" <<<"$errors" ;then
     error_caption+=("Download failed due to an internal curl error. This could be an internet issue or hardware problem.
 If you are overclocking, try reverting to stock clocks. Additionally, check your internet connection and firewall, then try again.")
     error_type="internet"
