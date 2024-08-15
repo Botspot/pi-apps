@@ -2158,7 +2158,9 @@ Pi-Apps cannot work until you solve this issue. If you do not need the problemat
     echo "foreign architectures: $(dpkg --print-foreign-architectures)" >> "$logfile"
   fi
 
+  # from above developer output, the following system error cases have been developed
   if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
+    # manually held packages preventing installation
     if grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
       error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
 
@@ -2184,6 +2186,29 @@ You will need to unmark the packages with the following command before installat
 sudo apt-mark unhold $(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')")
       error_type="system"
     fi
+    # missing multiarch (armhf) compatible package for installed (or to be installed) arm64 package
+    # this does not occur on Debian/Ubuntu but can occur on BAD distros (or PPAs and other 3rd party repos) that do not provide both armhf and arm64 packages for any custom packages of higher priority than the upstream distro packages
+    for test_package in $(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u) ; do
+      if apt install -fy --no-install-recommends --allow-downgrades --dry-run "$test_package" | grep -q "$test_package : Breaks: $test_package:armhf" ; then
+        error_caption+=("Packages failed to install because $test_package does not have a multiarch (armhf) compatible version.
+This issue does not occur on Ubuntu/Debian (where every package is multiarch compatible). Contact your distro maintainer or the packager of $test_package to have this issue resolved.")
+        error_type="system"
+      fi
+    done
+    for test_package in $(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u) ; do
+      if apt install -fy --no-install-recommends --allow-downgrades --dry-run "$test_package" | grep -q "$test_package : Breaks: $test_package:armhf" ; then
+        error_caption+=("Packages failed to install because $test_package does not have a multiarch (armhf) compatible version.
+This issue does not occur on Ubuntu/Debian (where every package is multiarch compatible). Contact your distro maintainer or the packager of $test_package to have this issue resolved.")
+        error_type="system"
+      fi
+    done
+    for test_package in $(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u) ; do
+      if apt install -fy --no-install-recommends --allow-downgrades --dry-run "$test_package" | grep -q "$test_package : Breaks: $test_package:armhf" ; then
+        error_caption+=("Packages failed to install because $test_package does not have a multiarch (armhf) compatible version.
+This issue does not occur on Ubuntu/Debian (where every package is multiarch compatible). Contact your distro maintainer or the packager of $test_package to have this issue resolved.")
+        error_type="system"
+      fi
+    done
   fi
 
   if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
