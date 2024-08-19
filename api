@@ -867,7 +867,8 @@ add_external_repo() { # add an external apt repo and its gpg key.
   fi
 
   # check if links are valid
-  wget -q --spider "$pubkeyurl" || error "add_external_repo: pubkeyurl isn't a valid link"
+  status "add_external_repo: checking 3rd party pubkeyurl validity"
+  wget --spider "$pubkeyurl" || error "add_external_repo: pubkeyurl isn't a valid link"
 
   # make apt keyring directory if it doesn't exist
   if [ ! -d /usr/share/keyrings ]; then
