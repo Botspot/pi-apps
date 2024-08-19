@@ -2571,6 +2571,13 @@ Check your internet connection and try again.")
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
+
+  if grep -qF "fatal: did not receive expected object" <<<"$errors" ;then
+    error_caption+=("The git command encountered this error: "\""fatal: did not receive expected object"\"" Check the stability of your Internet connection and try again.
+
+If this keeps happening, see: https://stackoverflow.com/questions/66366582")
+    error_type="internet"
+  fi
   
   if grep -qF "fatal: the remote end hung up unexpectedly" <<<"$errors" ;then
     error_caption+=("The git command encountered this error: "\""fatal: the remote end hung up unexpectedly"\"" Check the stability of your Internet connection and try again.")
