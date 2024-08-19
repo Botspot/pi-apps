@@ -57,20 +57,21 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 ### Supported systems:
 #### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2/3/Zero 2 W/4/5)
 - <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Bullseye/Bookworm): <span style="color:var(--success-dark);">fully supported</span>
-- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/22.04 LTS and Noble/24.04 LTS): <span style="color:var(--success-dark);">fully supported</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/Noble): <span style="color:var(--success-dark);">fully supported</span>
 #### Nintendo Switch <img src=https://pi-apps.io/img/other-icons/switch-icon.svg height="14">
-- <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Jammy (22.04)**](https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-jammy-installation-guide): <span style="color:var(--success-dark);">fully supported</span>
 - <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Noble (24.04)**](https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-noble-installation-guide): <span style="color:var(--success-dark);">fully supported</span>
+- <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Jammy (22.04)**](https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-jammy-installation-guide): <span style="color:var(--success-dark);">fully supported</span>
 #### Nvidia Jetson <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14">
-- <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 5**](https://developer.nvidia.com/embedded/jetpack-sdk-513) (Ubuntu Focal): <span style="color:var(--success-dark);">fully supported</span>
 - <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 6**](https://developer.nvidia.com/embedded/jetpack-sdk-60dp) (Ubuntu Jammy): <span style="color:var(--success-dark);">fully supported</span>
+- <img src=https://pi-apps.io/img/other-icons/nvidia-icon.svg height="14"> [**Nvidia Jetpack 5**](https://developer.nvidia.com/embedded/jetpack-sdk-513) (Ubuntu Focal): <span style="color:var(--success-dark);">fully supported</span>
 #### Apple Silicon Macs
-- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu Asahi**](https://ubuntuasahi.org/): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu Asahi**](https://ubuntuasahi.org/) (Ubuntu Noble): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
 #### [**Pine64**](https://www.pine64.org/), [**Orange Pi**](http://www.orangepi.org/), [**Radxa**](https://rockpi.org/), [**Banana Pi**](https://banana-pi.org/), [**Khadas**](https://www.khadas.com/), [**Inovato**](https://www.inovato.com/), [**Libre Computer**](https://libre.computer/), and other **ARMv7/ARMv8/ARMv9** Devices
 - <img src="https://pi-apps.io/img/other-icons/debian-icon.svg" height="14"> [Debian Bullseye/Bookworm](https://www.debian.org/distrib/) (Official Releases from Debian **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
-- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [Ubuntu Focal 20.04/Jammy 22.04/Noble 24.04](https://ubuntu.com/download/desktop) (Official Releases from Canonical **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
+- <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [Ubuntu Focal/Jammy/Noble](https://ubuntu.com/download/desktop) (Official Releases from Canonical **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
 
 ### Unsupported systems:
+- Raspberry Pi Pico: <span style="color:var(--danger-dark);">These devices are microcontrollers and cannot run linux.
 - All **UNOFFICIAL** Debian and Ubuntu based releases (unless mentioned above): <span style="color:var(--danger-dark);">Expect many apps to have issues.</span>
   - Examples: **Orange Pi OS**, <img src="https://pi-apps.io/img/other-icons/pop-os.svg" height="14"> [**Pop_OS!**](https://pop.system76.com/), **Kali Linux**, and **ChromeOS Crostini** Debian Container
 - Anything Non-Debian and Non-Ubuntu: <span style="color:var(--danger-dark);">Expect the majority of apps and the appstore to be broken.</span>
