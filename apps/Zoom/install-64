@@ -5,7 +5,7 @@ version=6.1.10.1400
 #install box64
 "${DIRECTORY}/manage" install-if-not-installed 'Box64' || error "Box64 installation failed!"
 if ! command -v box64 >/dev/null;then
-  error "Box64 failed to install somehow!\n/usr/local/bin/box64 does not exist"
+  error "User error: Box64 failed to install somehow!\n/usr/local/bin/box64 does not exist. Please go to Pi-Apps and UNINSTALL the Box64 app, then install Zoom again."
 fi
 
 # Get dependencies
