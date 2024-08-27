@@ -1413,7 +1413,7 @@ shlink_link() { #Runs whenever an app is installed/uninstalled to tally the numb
   #if the 'Enable Analytics' setting is enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
     #determine the name of the link to "click"
-    shlinklink="https://pi-apps-analytics.linkpc.net/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+    shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
     #click it
     curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
   fi
