@@ -64,7 +64,7 @@ elif [ ! -d "$DIRECTORY" ];then
     error "Pi-Apps download failed!\ngit clone output was: $output"
   fi
   #click new installation analytics link
-  curl -s -X 'GET' "https://pi-apps-analytics.linkpc.net/pi-apps-install-script/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+  curl -s -X 'GET' "https://analytics.pi-apps.io/pi-apps-install-script/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
 fi
 
 #Past this point, DIRECTORY variable populated with valid pi-apps directory
