@@ -2,8 +2,13 @@
 
 version=1.26.7
 version2=1.26.14
+version3=1.26.14
 
 case $(get_codename) in
+focal|jammy|noble)
+  ubuntu_ppa_installer "unit193/encryption"
+  install_packages veracrypt || exit 1
+  ;;
 buster)
   install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version}/veracrypt-${version}-Debian-10-armhf.deb || exit 1
   ;;
@@ -11,6 +16,9 @@ bullseye)
   install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version2}/veracrypt-${version2}-Debian-11-armhf.deb || exit 1
   ;;
 bookworm)
-  install_packages https://github.com/Pi-Apps-Coders/files/releases/download/large-files/veracrypt-1.26.7-Debian-12-armhf.deb || exit 1
+  install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version3}/veracrypt-${version3}-Debian-12-armhf.deb || exit 1
+  ;;
+*)
+  error "User error: VeraCrypt is not available for your operating system release"
   ;;
 esac
