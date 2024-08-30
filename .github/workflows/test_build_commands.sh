@@ -254,6 +254,15 @@ sudo mkdir -p /usr/local/bin /usr/local/share/applications
 # clean out any app status files
 rm -rf ./data/status
 
+# create pi-apps install directories
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/preload" "${DIRECTORY}/data/settings" \
+  "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" \
+  "${DIRECTORY}/data/categories"
+
+#Force disable analytics. This needs to be done before before running the runonce-entries to avoid sending clicks for already installed package apps
+echo "No" > "${DIRECTORY}/data/settings/Enable analytics"
+
 # runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
 #for the will_reinstall() and list_intersect() functions
 set -a #make all functions in the api available to subprocesses
