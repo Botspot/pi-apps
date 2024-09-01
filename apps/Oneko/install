@@ -1,0 +1,36 @@
+#!/bin/bash
+
+install_packages oneko || error "Failed to install oneko!"
+
+echo "[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Oneko
+Comment=Catch the mouse
+Comment[de]=Fang die Maus
+Icon=$(dirname "$0")/icon-64.png
+Exec=oneko
+Encoding=UTF-8
+Terminal=false
+Categories=Utility;" | sudo tee /usr/share/applications/oneko.desktop
+
+# Autostart shortcut
+response=$(yad --title "oneko installer" --text "Do you want to create an autostart shortcut for oneko? If not you will have to launch it from the start menu." --button="Yes":0 --button="No":1)
+
+if [ $? -eq 0 ]; then
+    echo "Adding autostart shortcut to ~/.config/autostart/oneko.desktop..."
+    echo "[Desktop Entry]
+    Type=Application
+    Version=1.0
+    Name=Oneko
+    Comment=Catch the mouse
+    Comment[de]=Fang die Maus
+    Icon=$(dirname "$0")/icon-64.png
+    Exec=oneko
+    Encoding=UTF-8
+    Terminal=false
+    Categories=Utility;Game;" | tee ~/.config/autostart/oneko.desktop
+    echo "Oneko will be started the next time you reboot your Raspberry Pi."
+else
+    echo "Adding no autostart shortcut."
+fi

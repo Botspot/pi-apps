@@ -1,0 +1,7 @@
+#!/bin/bash
+purge_packages || error "Failed to uninstall oneko!"
+
+sudo rm -rf /usr/share/applications/oneko.desktop || error "Failed to remove shortcuts!"
+rm -rf ~/.config/autostart/oneko.desktop || echo "Failed to remove autostart entry, probably because it wasn't added."
+
+exit 0
