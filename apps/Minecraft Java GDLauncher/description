@@ -1,12 +1,18 @@
 GDLauncher is simple, yet powerful Minecraft launcher with a strong focus on the user experience. This is a CUSTOM BUILD of GDLauncher for ARM32/ARM64 support.
 
+The Open Source version of GDLauncher has been discontinued by upstream GorillaDevs as of January 2023. As such, this launcher will receieve no further updates.
+
+Although GDLauncher is currently functional, all users are encouraged to use Minecraft Java Prism Launcher (https://pi-apps.io/install-app/install-minecraft-java-prism-launcher-on-raspberry-pi/).
+GDLauncher is heavy (high RAM and CPU usage) due to being built on the Electron (Chromium) framework.
+By comparison, Prism Launmcher is very lightweight and has all the missing features and more from below.
+
 Features of the launcher:
 - Microsoft, Mojang, and PC GamePass Account support
 - Curseforge and FTB Mod and Modpack browser and updater
 - Automatic Java 8/17 installation
 - Fabric and Forge mod loading
 
-Features NOT in this launcher (but available in others):
+Features NOT in this launcher (but available in Prism Launcher):
 - Modrinth ATLauncher and Technic Mod and Modpack browser and updater
 - Quilt mod loading
 - Old Snapshots
