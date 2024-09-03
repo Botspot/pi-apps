@@ -112,7 +112,7 @@ trap "kill $! &>/dev/null" EXIT #kill the above subprocess on exit
 #Click pi-apps usage link every time the GUI is run only if the 'Enable Analytics' setting is enabled
 if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
   #click it
-  curl -s -X 'GET' "https://pi-apps-analytics.linkpc.net/pi-apps-active-usage/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+  curl -s -X 'GET' "https://analytics.pi-apps.io/pi-apps-active-usage/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
 fi
 }
 
