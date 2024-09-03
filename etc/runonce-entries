@@ -52,16 +52,6 @@ runonce <<"EOF"
   fi
 EOF
 
-#regenerate package-app status for one-time migration
-runonce <<"EOF"
-  IFS=$'\n'
-  for app in $(list_apps package) ;do
-    rm -f "${DIRECTORY}/data/status/${app}" || exit 1
-  done
-  
-  refresh_all_pkgapp_status
-EOF
-
 # remove deprecated apps (only when running in a visible terminal)
 case $(ps -o stat= -p $$) in
   *+*) # Running in foreground

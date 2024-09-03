@@ -55,7 +55,7 @@ fi
 if [ "$(stat -c %Y /var/lib/dpkg/status 2>/dev/null)" != "$(cat "${DIRECTORY}/data/preload/timestamps-dpkg-status" 2>/dev/null)" ];then
   echo "Refreshing pkgapp_status..." 1>&2
   stat -c %Y /var/lib/dpkg/status 2>/dev/null > "${DIRECTORY}/data/preload/timestamps-dpkg-status"
-  refresh_all_pkgapp_status &
+  refresh_all_pkgapp_status
 fi
 
 #get modified timestamps for files/directories in the pi-apps folder
