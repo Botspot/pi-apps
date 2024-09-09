@@ -24,17 +24,14 @@ jobs:
           SHLINK_KEY: ${{ secrets.SHLINK_KEY }}
         run: |
           # get all available URLs
-          page_number="$(curl -s -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
-            'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=10' \
+          curl -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
+            'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
             -H 'accept: application/json' \
-            -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .pagination | .pagesCount )')"
-          for ((i = 1 ; i <= $page_number ; i++ )); do
-            echo "Obtaining page #$i"
-            online_shortcodes+="$(curl -s -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
-              "https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=10&page=$i" \
-              -H 'accept: application/json' \
-              -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
-          done
+            -H "X-Api-Key: $SHLINK_KEY"
+          online_shortcodes="$(curl -s -X 'GET' --resolve pi-apps-analytics.linkpc.net:443:132.145.164.141 \
+            'https://pi-apps-analytics.linkpc.net/rest/v2/short-urls?itemsPerPage=0' \
+            -H 'accept: application/json' \
+            -H "X-Api-Key: $SHLINK_KEY" | jq -r '( .shortUrls | .data | .[] | .shortCode )')"
           echo "Online shortcodes: $online_shortcodes"
           #create links
           applist="$(ls $GITHUB_WORKSPACE/apps | grep .)"
