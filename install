@@ -178,6 +178,7 @@ fi
 
 if [ $downloaded == 1 ];then
   echo "Installation complete. Pi-Apps can be launched from the start menu or by running the command 'pi-apps'."
+  echo "Further explanation for how to use Pi-Apps can be found on our getting started webpage: https://pi-apps.io/wiki/getting-started/running-pi-apps/"
 else
   echo -e "Please note that Pi-Apps has NOT been freshly downloaded, because $DIRECTORY already exists."
 fi
