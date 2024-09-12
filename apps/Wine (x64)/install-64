@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #note to maintainer, if you change the below version make sure to update it in the uninstall script as well
-version=9.13
+version=9.17
 
 # https://github.com/raspberrypi/bookworm-feedback/issues/107
 PAGE_SIZE="$(getconf PAGE_SIZE)"
@@ -78,14 +78,14 @@ sudo mv /tmp/winetricks /opt/wine-${version}/bin/winetricks || error "Failed to 
 sudo chmod +x /opt/wine-${version}/bin/winetricks
 
 #download Mono to universal location (to be installed automatically in all wine prefixes)
-#according to https://wiki.winehq.org/Mono#Versions, use Mono 9.2.0 for Wine 9.12
+#according to https://wiki.winehq.org/Mono#Versions, use Mono 9.3.0 for Wine 9.17
 #wine mono pacakge is called -x86 but contains both x86 and x86_64 binaries
 sudo mkdir -p /opt/wine-${version}/share/wine/mono
-wget -O "/tmp/wine-mono-9.2.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.2.0/wine-mono-9.2.0-x86.tar.xz' || exit 1
-status "Extracting: /tmp/wine-mono-9.2.0-x86.tar.xz"
-sudo tar -xvf "/tmp/wine-mono-9.2.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" | less_tar
+wget -O "/tmp/wine-mono-9.3.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.3.0/wine-mono-9.3.0-x86.tar.xz' || exit 1
+status "Extracting: /tmp/wine-mono-9.3.0-x86.tar.xz"
+sudo tar -xvf "/tmp/wine-mono-9.3.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" | less_tar
 [ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine-mono!'
-rm -f "/tmp/wine-mono-9.2.0-x86.tar.xz"
+rm -f "/tmp/wine-mono-9.3.0-x86.tar.xz"
 status_green Done
 
 #download Gecko to universal location (to be installed automatically in all wine prefixes)

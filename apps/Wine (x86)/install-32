@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #note to maintainer, if you change the below version make sure to update it in the uninstall script as well
-version=9.13
+version=9.17
 
 if grep -q ARMv6 /proc/cpuinfo ;then
   error "Wine is not compatible with the Raspberry Pi Zero or other ARMv6 boards."
@@ -68,6 +68,13 @@ Wine will not work on such systems. What would you like to do?
     sleep infinity
   elif [ "$output" == "Compile 3G/1G kernel" ];then
     #compile 3g/1g kernel
+    if [ -f /boot/firmware/config.txt ]; then
+      bootfiles_location="/boot/firmware"
+    elif [ -f /boot/config.txt ]; then
+      bootfiles_location="/boot"
+    else
+      error 'User error: The /boot/config.txt and /boot/firmware/config.txt files are missing! You must be on an unsupported system.'
+    fi
     
     #backup ~/linux if it exists
     rm -rf ~/linux.bak
@@ -82,22 +89,22 @@ Wine will not work on such systems. What would you like to do?
     #build for pi3
     cd ~/linux || error "Failed to enter the ~/linux folder!"
     KERNEL=kernel7
-    make -j8 bcm2709_defconfig || error "The make command exited with failure. Full command: 'make -j8 bcm2709_defconfig'"
+    make -j6 bcm2709_defconfig || error "The make command exited with failure. Full command: 'make -j6 bcm2709_defconfig'"
     
     #change memory split config
     echo "Setting memory split to 3G/1G"
     sed -i 's/CONFIG_VMSPLIT_2G=y/# CONFIG_VMSPLIT_2G is not set/g' ~/linux/.config || error "sed failed to edit $HOME/linux/.config file!"
-    sed -i 's/# CONFIG_VMSPLIT_3G is not set/CONFIG_VMSPLIT_3G=1/g' ~/linux/.config
+    sed -i 's/# CONFIG_VMSPLIT_3G is not set/CONFIG_VMSPLIT_3G=y/g' ~/linux/.config
     
-    echo '' | make -j8 zImage modules dtbs || error "Failed to make bcm2709_defconfig zImage modules dtbs!"
+    echo '' | make -j6 zImage modules dtbs || error "Failed to make bcm2709_defconfig zImage modules dtbs!"
     
     #install
-    echo "Copying new files to /boot/..."
+    echo "Copying new files to $bootfiles_location/..."
     sudo make modules_install || error "sudo make modules_install failed!"
-    sudo cp arch/arm/boot/dts/broadcom/*.dtb /boot/ || error "Failed to copy dtb files to /boot!"
-    sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/ || error "Failed to copy overlays to /boot/overlays!"
-    sudo cp arch/arm/boot/dts/overlays/README /boot/overlays/
-    sudo cp arch/arm/boot/zImage /boot/$KERNEL.img || error "Failed to copy kernel to /boot/$KERNEL.img!"
+    sudo cp arch/arm/boot/dts/broadcom/*.dtb $bootfiles_location/ || error "Failed to copy dtb files to $bootfiles_location!"
+    sudo cp arch/arm/boot/dts/overlays/*.dtb* $bootfiles_location/overlays/ || error "Failed to copy overlays to $bootfiles_location/overlays!"
+    sudo cp arch/arm/boot/dts/overlays/README $bootfiles_location/overlays/
+    sudo cp arch/arm/boot/zImage $bootfiles_location/$KERNEL.img || error "Failed to copy kernel to $bootfiles_location/$KERNEL.img!"
     cd
     rm -rf ~/linux
     
@@ -162,14 +169,14 @@ sudo mv /tmp/winetricks /opt/wine-${version}/bin/winetricks || error "Failed to 
 sudo chmod +x /opt/wine-${version}/bin/winetricks
 
 #download Mono to universal location (to be installed automatically in all wine prefixes)
-#according to https://wiki.winehq.org/Mono#Versions, use Mono 9.2.0 for Wine 9.12
+#according to https://wiki.winehq.org/Mono#Versions, use Mono 9.3.0 for Wine 9.17
 #wine mono pacakge is called -x86 but contains both x86 and x86_64 binaries
 sudo mkdir -p /opt/wine-${version}/share/wine/mono
-wget -O "/tmp/wine-mono-9.2.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.2.0/wine-mono-9.2.0-x86.tar.xz' || exit 1
-status "Extracting: /tmp/wine-mono-9.2.0-x86.tar.xz"
-sudo tar -xvf "/tmp/wine-mono-9.2.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" | less_tar
+wget -O "/tmp/wine-mono-9.3.0-x86.tar.xz" 'https://dl.winehq.org/wine/wine-mono/9.3.0/wine-mono-9.3.0-x86.tar.xz' || exit 1
+status "Extracting: /tmp/wine-mono-9.3.0-x86.tar.xz"
+sudo tar -xvf "/tmp/wine-mono-9.3.0-x86.tar.xz" -C "/opt/wine-${version}/share/wine/mono" | less_tar
 [ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine-mono!'
-rm -f "/tmp/wine-mono-9.2.0-x86.tar.xz"
+rm -f "/tmp/wine-mono-9.3.0-x86.tar.xz"
 status_green Done
 
 #download Gecko to universal location (to be installed automatically in all wine prefixes)
