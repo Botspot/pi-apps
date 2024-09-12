@@ -44,7 +44,7 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
     else
       # remove old ppa if present
       sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
-      debian_ppa_installer "mozillateam/ppa" "jammy" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
+      debian_ppa_installer "mozillateam/ppa" "jammy" "738BEB9321D1AAEC13EA9391AEBDF4819BE21867" || exit 1
       echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
       install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Jammy (used for Debian Bookworm). Please contact Mozilla Team via email for any issues ubuntu-mozillateam-bugs@lists.ubuntu.com"
     fi
@@ -52,12 +52,12 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   bullseye)
     # remove old ppa if present
     sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
-    debian_ppa_installer "mozillateam/ppa" "focal" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
+    debian_ppa_installer "mozillateam/ppa" "focal" "738BEB9321D1AAEC13EA9391AEBDF4819BE21867" || exit 1
     echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:focal";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null    
     install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Focal (used for Debian Bullseye). Please contact Mozilla Team via email for any issues ubuntu-mozillateam-bugs@lists.ubuntu.com"
     ;;
   *)
-    debian_ppa_installer "mozillateam/ppa" "bionic" "0AB215679C571D1C8325275B9BDB3D89CE49EC21" || exit 1
+    debian_ppa_installer "mozillateam/ppa" "bionic" "738BEB9321D1AAEC13EA9391AEBDF4819BE21867" || exit 1
     echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:bionic";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
     install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Bionic. Please contact Mozilla Team via email for any issues ubuntu-mozillateam-bugs@lists.ubuntu.com"
     ;;
