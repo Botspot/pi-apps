@@ -9,7 +9,7 @@ unzip -q /tmp/floorp-deb.zip -d /tmp/floorp-deb || error "failed to extract /tmp
 rm -f /tmp/floorp-deb.zip
 
 #no arm64 deb exists, so put arm64 files in deb structure
-version=11.16.0
+version=11.18.1
 wget -O /tmp/floorp.tar.bz2 "https://github.com/Floorp-Projects/Floorp/releases/download/v${version}/floorp-${version}.linux-aarch64.tar.bz2"
 
 status 'Extracting: /tmp/floorp.tar.bz2'
@@ -77,7 +77,7 @@ cd /tmp/floorp-deb/DEBIAN
 command chmod +x postinst postrm preinst prerm || error "Failed to chmod +X control files"
 
 cd /tmp/floorp-deb/usr/lib/floorp
-command chmod +x floorp floorp-bin glxtest vaapitest floorp.sh lib*.so plugin-container gmp-clearkey/0.1/libclearkey.so || error "Failed to chmod +X floorp main files"
+command chmod +x floorp floorp-bin glxtest vaapitest floorp.sh lib*.so gmp-clearkey/0.1/libclearkey.so || error "Failed to chmod +x floorp main files"
 cd
 
 sudo chown -R root:root /tmp/floorp-deb || error "Failed to set root ownership"
