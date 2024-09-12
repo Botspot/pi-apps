@@ -6,7 +6,7 @@ if ! package_is_new_enough rustc 1.60.0 ;then
   # Add repository source to apt sources.list
   # remove deprecated repofilename
   sudo rm -f /etc/apt/sources.list.d/rust-ubuntu.list
-  debian_ppa_installer "ubuntu-mozilla-security/rust-next" "bionic" "AF316E81A155146718A6FBD7A6DCF7707EBC211F" || exit 1
+  debian_ppa_installer "ubuntu-mozilla-security/rust-next" "bionic" "0A00254B78D436D90078350E119903C81FE2CAC2" || exit 1
 fi
 
 #Dependencies
