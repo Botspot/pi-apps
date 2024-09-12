@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #makes a floorp arm64 deb and installs it
-#adapted from: https://github.com/Floorp-Projects/Floorp/blob/ESR115/.github/workflows/linux-x64-deb.yml
+#adapted from: https://github.com/Floorp-Projects/Floorp/blob/ESR128/.github/workflows/linux-x64-deb.yml
 
 sudo rm -rf /tmp/floorp-deb /tmp/floorp
 wget -O /tmp/floorp-deb.zip https://github.com/Floorp-Projects/Floorp/raw/a3063cc9bb7b86c79845b8a0aaf860f4dc575b85/.github/debian-data.zip || exit 1
