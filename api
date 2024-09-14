@@ -3080,6 +3080,18 @@ apt.armbian.com")"
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
     echo "Pi-Apps is not supported on WSL."
     return 1
+  elif [ "$(date --help 2>&1 | head -n1 | awk '{print $1}')" == BusyBox ] || [ "$(ps --help 2>&1 | head -n1 | awk '{print $1}')" == BusyBox ];then
+    datecommand="$(command -v date)"
+    pscommand="$(command -v ps)"
+    if [ "$datecommand" != /usr/bin/date ] || [ "$pscommand" != /usr/bin/ps ];then
+      echo "Your system has BusyBox commands overriding your main distro's commands. The BusyBox versions of ps, grep, date, and many other commands are missing options that Pi-Apps relies on.
+You must fix this issue. Take a look at the directory the commands are stored in, and either remove it or rename it: $(echo "$(dirname "$datecommand" ; dirname "$pscommand")" | sort -u)"
+      return 1
+    else
+      echo "Your system has BusyBox commands in place of the expected linux commands. ps, grep, date, and many other commands are missing options that Pi-Apps relies on.
+You must fix this problem before Pi-Apps can function correctly."
+      return 1
+    fi
   elif ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) && [ -f /etc/rpi-issue ] && [ "$__os_release" == 10 ]; then
     echo "Pi-Apps is no longer supported on your Pi OS ${__os_codename^} operating system. Consider installing Pi OS Bookworm. https://www.raspberrypi.com/news/bookworm-the-new-version-of-raspberry-pi-os/"
     return 1
