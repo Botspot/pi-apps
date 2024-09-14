@@ -162,6 +162,9 @@ ${DIRECTORY}/gui"' "$@"' | sudo tee /usr/local/bin/pi-apps >/dev/null
   sudo chmod +x /usr/local/bin/pi-apps
 fi
 
+#check if system is broken
+errors="$("${DIRECTORY}/api" is_supported_system)" || error "$errors"
+
 #preload app list
 if [ ! -f "$DIRECTORY/data/preload/LIST-" ];then
   echo "Preloading app list..."
