@@ -8,9 +8,7 @@ function error {
 DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 #click new uninstallation analytics link
-if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
-  curl -s -X 'GET' "https://analytics.pi-apps.io/pi-apps-uninstall-script/track" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
-fi
+"${DIRECTORY}/api" shlink_link script uninstall
 
 if [ -z "$(dpkg-query -W --showformat='${Status}\n' yad 2>/dev/null | grep "install ok installed")" ];then
   zenity --title='Pi-Apps' --window-icon="${DIRECTORY}/icons/logo.png" \
