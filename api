@@ -1395,16 +1395,22 @@ shlink_link() { #Runs whenever an app is installed/uninstalled to tally the numb
   
   #if the 'Enable Analytics' setting is enabled
   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics" 2>/dev/null)" != 'No' ]; then
-    #obtain model name
+    #obtain model and SOC_ID
     get_model &>/dev/null
     local model="$(echo $model | tr -d '"'\; | head -1)"
+    # obtain (hashed) machine_id (only if file exists and has contents)
+    [ -s /etc/machine-id ] && machine_id="$(cat /etc/machine-id | sha1sum | awk '{print $1}' | head -1)"
+    # obtain (hashed) serial_number (only if file exists and has contents)
+    [ -s /sys/firmware/devicetree/base/serial-number ] && serial_number="$(cat /sys/firmware/devicetree/base/serial-number | sha1sum | awk '{print $1}' | head -1)"
     #obtain operating system name
-    local os_name="$(cat /etc/os-release | grep PRETTY_NAME | tr -d '"'\; | awk -F= '{print $2}' | head -1)"
+    #not using PRETTY_NAME to only get the ID and OS major version (eg: Ubuntu 24.04 instead of Ubuntu 24.04.1 LTS)
+    local os_name="$(cat /etc/os-release | grep ^ID= | tr -d '"'\; | awk -F= '{print $2}' | head -1) $(cat /etc/os-release | grep ^VERSION_ID= | tr -d '"'\; | awk -F= '{print $2}' | head -1)"
 
     #determine the name of the link to "click"
     local shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
     #click it
-    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store; $model; $os_name" >/dev/null
+    #NOTE: any future changes to the user agent should only APPEND
+    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store; $model; $SOC_ID; $machine_id; $serial_number; ${os_name^}" >/dev/null
   fi
   } &
 }
