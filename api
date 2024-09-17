@@ -1379,44 +1379,40 @@ app_prefix_category() { #lists all apps in a category with format "category/app"
   fi
 }
 
-# bitly_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
-#   #This cannot possibly be used to identify you, or any information about you.
-#   #It simply "clicks" a bitly link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
-#   app="$1"
-#   trigger="$2"
-#
-#   [ -z "$app" ] && error "bitly_link(): requires an app argument"
-#   [ -z "$trigger" ] && error "bitly_link(): requires a trigger argument"
-#
-#   #if the 'Enable Analytics' setting is enabled
-#   if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
-#     #determine the name of the link to "click"
-#     bitlylink="https://bit.ly/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')"
-#     #click it
-#     curl -L --user-agent "Pi-Apps Raspberry Pi app store" "$bitlylink" &>/dev/null &
-#   fi
-# }
-
 bitly_link() { #compatibility function pointing to shlink_link (incase old manage script is running with new api)
   shlink_link "$@"
 }
 
 shlink_link() { #Runs whenever an app is installed/uninstalled to tally the number of users for each app
+  {
   #This cannot possibly be used to identify you, or any information about you.
   #It simply "clicks" a shlink link - a shortened URL - so that the total number of clicks can be tallied to determine how popular a certain app is.
-  app="$1"
-  trigger="$2"
+  local app="$1"
+  local trigger="$2"
   
   [ -z "$app" ] && error "shlink_link(): requires an app argument"
   [ -z "$trigger" ] && error "shlink_link(): requires a trigger argument"
   
   #if the 'Enable Analytics' setting is enabled
-  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics")" == 'Yes' ];then
+  if [ "$(cat "${DIRECTORY}/data/settings/Enable analytics" 2>/dev/null)" != 'No' ]; then
+    #obtain model and SOC_ID
+    get_model &>/dev/null
+    local model="$(echo $model | tr -d '"'\; | head -1)"
+    # obtain (hashed) machine_id (only if file exists and has contents)
+    [ -s /etc/machine-id ] && machine_id="$(cat /etc/machine-id | sha1sum | awk '{print $1}' | head -1)"
+    # obtain (hashed) serial_number (only if file exists and has contents)
+    [ -s /sys/firmware/devicetree/base/serial-number ] && serial_number="$(cat /sys/firmware/devicetree/base/serial-number | sha1sum | awk '{print $1}' | head -1)"
+    #obtain operating system name
+    #not using PRETTY_NAME to only get the ID and OS major version (eg: Ubuntu 24.04 instead of Ubuntu 24.04.1 LTS)
+    local os_name="$(cat /etc/os-release | grep ^ID= | tr -d '"'\; | awk -F= '{print $2}' | head -1) $(cat /etc/os-release | grep ^VERSION_ID= | tr -d '"'\; | awk -F= '{print $2}' | head -1)"
+
     #determine the name of the link to "click"
-    shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
+    local shlinklink="https://analytics.pi-apps.io/pi-apps-$trigger-$(echo "$app" | tr -d ' ' | sed 's/[^a-zA-Z0-9]//g')/track"
     #click it
-    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store" >/dev/null &
+    #NOTE: any future changes to the user agent should only APPEND
+    curl -s -X 'GET' "$shlinklink" -H 'accept: image/gif' -A "Pi-Apps Raspberry Pi app store; $model; $SOC_ID; $machine_id; $serial_number; ${os_name^}" >/dev/null
   fi
+  } &
 }
 
 usercount() { #Return number of users for specified app. $1 is app name. If empty, all are shown.
