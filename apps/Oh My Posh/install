@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v23.13.3
+version=v23.13.4
 
 #determine filename of download
 if [ $arch == 32 ];then
