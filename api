@@ -3070,7 +3070,7 @@ apt.armbian.com")"
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
-  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux; then
+  elif grep -q '^/data/media .*Android' /proc/mounts || cat /proc/version | grep -qi Android || cat /proc/version | grep -qi termux || [[ -d /system/app/ && -d /system/priv-app ]]; then
     echo "Pi-Apps is not supported on Android. Some apps will work, but others won't."
     return 1
   elif cat /proc/version | grep -qi Microsoft || cat /proc/sys/kernel/osrelease | grep -qi WSL || [[ -f "/run/WSL" ]] || [[ -f "/etc/wsl.conf" ]] || [ -n "$WSL_DISTRO_NAME" ]; then
@@ -3176,10 +3176,14 @@ get_device_info() { #returns information about current install and hardware
   [ ! -z "$DIRECTORY" ] && echo "Last updated Pi-Apps on: $(cd "$DIRECTORY"; git show -s --format="%ad" --date=short | xargs date +%x -d)"
   [ -s "$DIRECTORY/etc/git_url" ] && echo "Latest Pi-Apps version: $(wget -T 3 https://api.github.com/repos/Botspot/pi-apps/commits/master -qO- 2>&1 | grep '"date":' | tail -n 1 | sed 's/"date"://g' | xargs date +%x -d)"
   echo "Kernel: $(uname -m) $(uname -r)"
-  # obtain model name
+  #obtain model and SOC_ID
   get_model
   echo "Device model: $model"
   [[ ! -z "$SOC_ID" ]] && echo "SOC identifier: $SOC_ID"
+  # obtain (hashed) machine_id (only if file exists and has contents)
+  [ -s /etc/machine-id ] && echo "Machine-id (hashed): $(cat /etc/machine-id | sha1sum | awk '{print $1}' | head -1)"
+  # obtain (hashed) serial_number (only if file exists and has contents)
+  [ -s /sys/firmware/devicetree/base/serial-number ] && echo "Serial-number (hashed): $(cat /sys/firmware/devicetree/base/serial-number | sha1sum | awk '{print $1}' | head -1)"
   echo "Cpu name: $( lscpu | awk '/Model name:/ {print $3}' )"
   echo "Ram size: $(echo "scale=2 ; $( awk '/MemTotal/ {print $2}' /proc/meminfo ) / 1024000 " | bc ) GB"
   
@@ -3198,19 +3202,55 @@ get_device_info() { #returns information about current install and hardware
 get_model() { # populates the model and jetson_model variables with information about the current hardware
   # obtain model name
   unset model
-  if [[ -d /system/app/ && -d /system/priv-app ]]; then
-    model="$(getprop ro.product.brand) $(getprop ro.product.model)"
-  fi
-  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ||
-          -f /sys/devices/virtual/dmi/id/product_version ]]; then
-    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
-    model+=" $(tr -d '\0' < /sys/devices/virtual/dmi/id/product_version)"
-  fi
+  # typical linux arm model name location
   if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/model ]]; then
     model="$(tr -d '\0' < /sys/firmware/devicetree/base/model)"
   fi
+  # linux model name location for some oracle machines
+  if [[ -z "$model" ]] && [[ -f /sys/firmware/devicetree/base/banner-name ]]; then
+    model="$(tr -d '\0' < /sys/firmware/devicetree/base/banner-name)"
+  fi
+  # linux model name location for some embedded systems
   if [[ -z "$model" ]] && [[ -f /tmp/sysinfo/model ]]; then
-      model="$(tr -d '\0' < /tmp/sysinfo/model)"
+    model="$(tr -d '\0' < /tmp/sysinfo/model)"
+  fi
+  # typical linux x86 model name locations
+  if [[ -z "$model" ]] && [[ -f /sys/devices/virtual/dmi/id/product_name ]]; then
+    model="$(tr -d '\0' < /sys/devices/virtual/dmi/id/product_name)"
+  fi
+  if [[ -z "$model" ]] && [[ -f /sys/class/dmi/id/product_name ]]; then
+    model="$(tr -d '\0' < /sys/class/dmi/id/product_name)"
+  fi
+  # typical android container model name location
+  if [[ -z "$model" ]] && [[ -d /system/app/ && -d /system/priv-app ]]; then
+    model="$(getprop ro.product.marketname)"
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.vendor.product.display)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.config.devicename)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.config.marketing_name)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.product.vendor.model)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.product.oppo_model)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.oppo.market.name)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.product.model)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.product.product.model)"
+    fi
+    if [[ -z "$model" ]]; then
+      model="$(getprop ro.product.odm.model)"
+    fi
   fi
   unset jetson_model
   unset SOC_ID
