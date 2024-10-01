@@ -15,7 +15,11 @@ git_clone --recursive https://github.com/monero-project/monero-gui || exit 1
 
 #compile
 cd /tmp/monero-gui
-make release -j$(nproc) || error "Compiling monero-gui failed. Check errors above."
+if [ "$arch" == 32 ]; then
+  LDFLAGS=-latomic make release -j$(nproc) || error "Compiling monero-gui failed. Check errors above."
+else
+  make release -j$(nproc) || error "Compiling monero-gui failed. Check errors above."
+fi
 cd
 
 IFS=$'\n'
