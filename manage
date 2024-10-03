@@ -420,6 +420,7 @@ $app"
   [ -z "$geometry2" ] && geometry2='--center'
   
   tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+    --text="We are always looking for fresh ideas and new contributors to join our team: <a href="\""https://pi-apps.io/#get-involved"\"">https://pi-apps.io/#get-involved</a>" \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \
