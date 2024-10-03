@@ -537,7 +537,7 @@ ${DIRECTORY}/icons/none-1.png
   (sleep 5; kill $yadpid 2>/dev/null) &
   
   #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
-  failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
+  failed_apps="$(echo "$queue" | grep ';[0-9]\+$' | grep -v ';0$' | awk -F';' '{print $2}')"
   diagnose_apps "$failed_apps"
 
   # if update refresh or update-file actions were run then update the .git folder
