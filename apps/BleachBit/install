@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.6.0-0
+version=4.6.2-0
 
 if ! package_is_new_enough bleachbit 4.4.2-0 ;then
   install_packages https://download.bleachbit.org/bleachbit_${version}_all_debian11.deb || exit 1
