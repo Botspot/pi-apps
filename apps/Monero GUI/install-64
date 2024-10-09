@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=v0.18.3.4
+
 install_packages build-essential cmake miniupnpc libunbound-dev graphviz doxygen \
 libunwind8-dev pkg-config libssl-dev libzmq3-dev libsodium-dev libhidapi-dev libnorm-dev \
 libusb-1.0-0-dev libpgm-dev libprotobuf-dev protobuf-compiler libgcrypt20-dev libboost-chrono-dev \
@@ -11,7 +13,7 @@ qml-module-qt-labs-settings qml-module-qt-labs-platform qml-module-qt-labs-folde
 qttools5-dev-tools qml-module-qtquick-templates2 libqt5svg5-dev || exit 1
 
 cd /tmp
-git_clone --recursive https://github.com/monero-project/monero-gui || exit 1
+git_clone -b ${version} --recursive https://github.com/monero-project/monero-gui || exit 1
 
 #compile
 cd /tmp/monero-gui
