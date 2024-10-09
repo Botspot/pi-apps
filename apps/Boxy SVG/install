@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.41.2.zip
+version=4.41.6.zip
 
 install_packages libfontconfig-dev || exit 0
 
