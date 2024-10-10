@@ -19,6 +19,11 @@ install_packages libfontconfig-dev automake libtool libfreeimage-dev \
 cd /tmp
 git_clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
 cd dhewm3/neo || exit
+
+# REMOVE ME: fix 32bit builds
+# this can be removed once https://github.com/dhewm/dhewm3/issues/622 is resolved upstream and a new release is cut (likely 1.5.5)
+sed -i 's/Z_LARGE64/__USE_LARGEFILE64/' framework/miniz/minizconf.h
+
 mkdir build || error "Failed to create build folder"
 cd build || exit
 cmake .. -DONATIVE=ON || error "Failed to build dhewm3"
