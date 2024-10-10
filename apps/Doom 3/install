@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=1.5.4
+
 while true; do
   read -p  "Do you have the doom3 game files? The demo mode will be installed if you answer No. [Y/n]" yn
   case $yn in
@@ -17,7 +19,7 @@ install_packages libfontconfig-dev automake libtool libfreeimage-dev \
   libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
 
 cd /tmp
-git_clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
+git_clone -b ${version} https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
 cd dhewm3/neo || exit
 
 # REMOVE ME: fix 32bit builds
