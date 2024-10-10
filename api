@@ -1952,7 +1952,7 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
 #repo issues below
 #------------------------------------------
   #check for 'E: The repository'
-  if grep -qF 'E: The repository' <<<"$errors" || grep -qF 'sources.list entry misspelt' <<<"$errors" || grep -qF 'component misspelt in' <<<"$errors" ;then
+  if grep -qF 'E: The repository' <(echo "$errors") || grep -qF 'sources.list entry misspelt' <(echo "$errors") || grep -qF 'component misspelt in' <(echo "$errors") ;then
     error_caption+=("APT reported a faulty repository, and you must fix it before Pi-Apps will work.
 
 To delete the repository:
@@ -1964,7 +1964,7 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   fi
   
   #check for 'NO_PUBKEY' or ' is no longer signed.'
-  if grep -qF 'NO_PUBKEY' <<<"$errors" || grep -qF ' is no longer signed.' <<<"$errors" ;then
+  if grep -qF 'NO_PUBKEY' <(echo "$errors") || grep -qF ' is no longer signed.' <(echo "$errors") ;then
     error_caption+=('APT reported an unsigned repository. This has to be solved before APT or Pi-Apps, will work.
 
 If you'\''re not sure what to do, you can try to fix the problem by running this command in a terminal:
@@ -1973,7 +1973,7 @@ sudo apt update 2>&1 | sed -ne '\''s/.*NO_PUBKEY //p'\'' | while read key; do if
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Internal Server Error\|404 .*Not Found' <<<"$errors" ;then
+  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Internal Server Error\|404 .*Not Found' <(echo "$errors") ;then
     error_caption+=("APT reported an unresolvable repository.
 
 Check your Internet connection and try again.")
@@ -1981,7 +1981,7 @@ Check your Internet connection and try again.")
   fi
   
   #check for 'is configured multiple times in'
-  if grep -qF 'is configured multiple times in' <<<"$errors" ;then
+  if grep -qF 'is configured multiple times in' <(echo "$errors") ;then
     error_caption+=("APT reported a double-configured repository, and you must fix it to fix Pi-Apps.
 
 To delete the repository:
@@ -1993,7 +1993,7 @@ sources.list requires root permissions to edit: sudo mousepad /path/to/file")
   fi
   
   #check for "W: Conflicting distribution: "
-  if grep -qF "W: Conflicting distribution: " <<<"$errors" ;then
+  if grep -qF "W: Conflicting distribution: " <(echo "$errors") ;then
     error_caption+=("APT reported a conflicting repository.
 
 Read the installation errors, then look through /etc/apt/sources.list and /etc/apt/sources.list.d, making changes as necessary.
@@ -2003,7 +2003,7 @@ Perhaps doing a Google search for the exact error you received would help.")
   fi
   
   #check for "Release file for <repo-url> is not valid yet"
-  if grep -q "Release file for .* is not valid yet" <<<"$errors" ;then
+  if grep -q "Release file for .* is not valid yet" <(echo "$errors") ;then
     error_caption+=("APT reported a repository whose release file becomes valid in the future.
 
 Review the errors to see how long you need to wait.")
@@ -2011,7 +2011,7 @@ Review the errors to see how long you need to wait.")
   fi
   
   #check for "Release file for <repo-url> is expired"
-  if grep -q "Release file for .* is expired" <<<"$errors" ;then
+  if grep -q "Release file for .* is expired" <(echo "$errors") ;then
     error_caption+=("APT reported a repository whose release file was invalidated in the past.
 Please check that your system clock is set correctly, and if it is, check if the repository is kept updated or if its developers abandoned it.
 
@@ -2022,7 +2022,7 @@ sudo apt update")
   fi
   
   #check for typo in sources.list and list.d
-  if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <<<"$errors";then
+  if grep -q "The list of sources could not be read\.\|Did not understand pin type\|E: Malformed entry .* in list file" <(echo "$errors");then
     error_caption+=("APT reported a typo in the sources.list file.
 
 You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fix the typo.")
@@ -2030,7 +2030,7 @@ You must look around in /etc/apt/sources.list and /etc/apt/sources.list.d and fi
   fi
   
   #check for "E: The package cache file is corrupted"
-  if grep -q "E: The package cache file is corrupted\|The package lists or status file could not be parsed or opened."  <<<"$errors" ;then
+  if grep -q "E: The package cache file is corrupted\|The package lists or status file could not be parsed or opened."  <(echo "$errors") ;then
     error_caption+=("APT found something wrong with a package list file.
 
 Perhaps this link would help: https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error")
@@ -2038,7 +2038,7 @@ Perhaps this link would help: https://askubuntu.com/questions/939345/the-package
   fi
   
   #check for broken pi-apps-local-packages symlink
-  if grep -q "E: Could not open file /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages" <<<"$errors" ;then
+  if grep -q "E: Could not open file /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages" <(echo "$errors") ;then
     error_caption+=("APT reported the pi-apps-local-packages list as missing.
 
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?")
@@ -2050,35 +2050,35 @@ The Pi-Apps developers have been receiving a few of these errors recently, but w
 #------------------------------------------
   
   #check for "--fix-broken"
-  if grep -qF "\-\-fix\-broken" <<<"$errors" || grep -qF "needs to be reinstalled" <<<"$errors" ;then
+  if grep -qF "\-\-fix\-broken" <(echo "$errors") || grep -qF "needs to be reinstalled" <(echo "$errors") ;then
     error_caption+=("APT reported a broken package.
 
 Please run this command: sudo apt --fix-broken install")
     error_type="package"
   fi
   
-  if grep -qF "dpkg --configure -a" <<<"$errors" ;then
+  if grep -qF "dpkg --configure -a" <(echo "$errors") ;then
     error_caption+=("Before dpkg, apt, or Pi-Apps will work, dpkg needs to repair your system.
 
 Please run this command: sudo dpkg --configure -a")
     error_type="system"
   fi
   
-  if grep -qF "package is in a very bad inconsistent state;" <<<"$errors" ;then
+  if grep -qF "package is in a very bad inconsistent state;" <(echo "$errors") ;then
     error_caption+=("Something is wrong with another package on your system.
 
 Refer to this information while troubleshooting: https://askubuntu.com/questions/148715")
     error_type="system"
   fi
   
-  if grep -qF "dpkg: error: fgets gave an empty string from" <<<"$errors" ;then
+  if grep -qF "dpkg: error: fgets gave an empty string from" <(echo "$errors") ;then
     error_caption+=("Something strange is going on with your system and dpkg won't work.
 
 Perhaps this link will help: https://askubuntu.com/questions/1293709/weird-error-when-trying-to-install-packages-with-apt")
     error_type="system"
   fi
   
-  if grep -qF "Command line option --allow-releaseinfo-change is not understood" <<<"$errors" ;then
+  if grep -qF "Command line option --allow-releaseinfo-change is not understood" <(echo "$errors") ;then
     error_caption+=("The Debian Project recently upgraded from Buster to version Bullseye. As a result, all Raspberry Pi OS Buster users will receive APT errors saying the repositories changed from 'stable' to 'oldstable'.
 
 This error broke pi-apps. To fix it, the Pi-Apps developers added something to the 'sudo apt update' command: --allow-releaseinfo-change.
@@ -2090,19 +2090,19 @@ Please flash your SD card with the latest release of Raspberry Pi OS: https://ww
     error_type="system"
   fi
   
-  if grep -qF "lzma error: compressed data is corrupt" <<<"$errors" ;then
+  if grep -qF "lzma error: compressed data is corrupt" <(echo "$errors") ;then
     error_caption+=("A package failed to install because it appears corrupted. (buggy download?)
 
 Try installing the same app again and if the problem persists please reach out to the Pi-Apps developers.")
     error_type="internet"
   fi
   
-  if grep -qF "E: Could not get lock" <<<"$errors" ;then
+  if grep -qF "E: Could not get lock" <(echo "$errors") ;then
     error_caption+=("Some other apt-get/dpkg process is running. Wait for that one to finish, then try again.")
     error_type="system"
   fi
   
-  if grep -qF "dpkg: error: cannot scan updates directory '/var/lib/dpkg/updates/': No such file or directory" <<<"$errors" ;then
+  if grep -qF "dpkg: error: cannot scan updates directory '/var/lib/dpkg/updates/': No such file or directory" <(echo "$errors") ;then
     error_caption+=("What did you do to your system? The "\""/var/lib/dpkg/updates"\"" folder is missing.
 
 You can try creating the folder with this command:
@@ -2110,7 +2110,7 @@ sudo mkdir -p /var/lib/dpkg/updates")
     error_type="system"
   fi
   
-  if grep -q "E: Repository .* changed its 'Suite' value" <<<"$errors" ;then
+  if grep -q "E: Repository .* changed its 'Suite' value" <(echo "$errors") ;then
     error_caption+=("One or more APT repositories on your system have changed Suite values. Usually this occurs when a new version of Debian is released every two years.
 
 Pi-Apps should work around this error, but somehow it did not.
@@ -2118,49 +2118,49 @@ Please run this command in a terminal: sudo apt update --allow-releaseinfo-chang
     error_type="system"
   fi
   
-  if grep -q "E: Failed to fetch .* File has unexpected size .* Mirror sync in progress\?" <<<"$errors" ;then
+  if grep -q "E: Failed to fetch .* File has unexpected size .* Mirror sync in progress\?" <(echo "$errors") ;then
     error_caption+=("APT encountered a repository with a file that is of incorrect size. This can be caused by a periodic mirror sync, or maybe the repository is faulty.
 
 In any case, Pi-Apps cannot work until you solve this issue. Try disabling any 3rd-party APT repos first, and if that doesn't work then ask for help.")
     error_type="system"
   fi
   
-  if grep -qF "E: The value 'stable' is invalid for APT::Default-Release as such a release is not available in the sources" <<<"$errors" ;then
+  if grep -qF "E: The value 'stable' is invalid for APT::Default-Release as such a release is not available in the sources" <(echo "$errors") ;then
     error_caption+=("APT encountered an issue reading a source file for a repository. Most likely, you were trying to change your sources and did not format the file correctly.
 
 In any case, Pi-Apps cannot work until you solve this issue. Check around in the /etc/apt/sources.list file and the /etc/apt/sources.list.d folder for duplicate mentions of the word 'stable'.")
     error_type="system"
   fi
 
-  if grep -q "dpkg: error processing package .*-dkms" <<<"$errors" ;then
+  if grep -q "dpkg: error processing package .*-dkms" <(echo "$errors") ;then
     error_caption+=("A DKMS (Dynamic Kernel Module Support) package failed to install and has prevented apt from working correctly. This is likely an issue with your distribution and you should report it wherever applicable.
 
 Pi-Apps cannot work until you solve this issue. If you do not need the problematic package, you can remove it with apt to solve the issue.")
     error_type="system"
   fi
   
-  if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
+  if grep -q "The following packages have unmet dependencies:" <(echo "$errors") ;then
     # we want these errors to come to pi-apps logs if the user sends them, so don't add an error type
     # add additional output for the packages that have unmet dependencies
 
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
-    grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
-    local packages_case1="$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
+    grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
+    local packages_case1="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
     echo "$packages_case1" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case1="$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case1="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case1" >> "$logfile"
-    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
-    grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
-    local packages_case2="$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
+    grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
+    local packages_case2="$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
     echo "$packages_case2" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case2="$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case2="$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case2" >> "$logfile"
-    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
-    grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache policy >> "$logfile"
-    local packages_case3="$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u)"
+    grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
+    grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache policy >> "$logfile"
+    local packages_case3="$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u)"
     echo "$packages_case3" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case3="$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case3="$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case3" >> "$logfile"
 
     # we also want to see the users apt sources (.list and .sources)
@@ -2171,31 +2171,31 @@ Pi-Apps cannot work until you solve this issue. If you do not need the problemat
   fi
 
   # from above developer output, the following system error cases have been developed
-  if grep -q "The following packages have unmet dependencies:" <<<"$errors" ;then
+  if grep -q "The following packages have unmet dependencies:" <(echo "$errors") ;then
     # manually held packages preventing installation
-    if grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+    if grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
       error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
 
-$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u)
+$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u)
 
 You will need to unmark the packages with the following command before installation can proceed:
-sudo apt-mark unhold $(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sort -u | tr "\n" " ")")
+sudo apt-mark unhold $(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u | tr "\n" " ")")
       error_type="system"
-    elif grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+    elif grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
       error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
 
-$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u)
+$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u)
 
 You will need to unmark the packages with the following command before installation can proceed:
-sudo apt-mark unhold $(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sort -u)")
+sudo apt-mark unhold $(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u)")
       error_type="system"
-    elif grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
+    elif grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show | grep -q "Status: hold ok installed" ; then
       error_caption+=("Packages failed to install because you manually marked at least one of the following packages as held:
 
-$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')
+$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')
 
 You will need to unmark the packages with the following command before installation can proceed:
-sudo apt-mark unhold $(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')")
+sudo apt-mark unhold $(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g')")
       error_type="system"
     fi
     # missing multiarch (armhf) compatible package for installed (or to be installed) arm64 package
@@ -2223,17 +2223,17 @@ This issue does not occur on Ubuntu/Debian (where every package is multiarch com
     done
   fi
 
-  if grep -q "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" ;then
+  if grep -q "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") ;then
     echo -e "Additional log diagnosis for developers below:\n" >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
-    grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") | awk '{print $NF}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a >> "$logfile"
+    grep "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null >> "$logfile"
 
-    if grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null | awk '{print $2}' | grep -q FAILED; then
+    if grep "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r debsums 2>/dev/null | awk '{print $2}' | grep -q FAILED; then
       error_caption+=("You have overwritten system files which prevent packages that share files from being able to install.
 You need to reinstall the following packages to restore the integrity of your apt managed system packages:
 
-$(grep "trying to overwrite shared .*, which is different from other instances of package" <<<"$errors" | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1')")
+$(grep "trying to overwrite shared .*, which is different from other instances of package" <(echo "$errors") | awk '{print $NF}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1')")
       error_type="system"
     else
       #packages have file conflicts but none of them seem to be modified by the user
@@ -2245,7 +2245,7 @@ sudo apt --fix-broken install -o Dpkg::Options::='--force-overwrite'")
   fi
 
   # Downgrade errors with no actual packages listed as to be downgraded. Assume users (custom) distro is to blame.
-  if grep -q "E: Packages were downgraded and -y was used without --allow-downgrades." <<<"$errors" && ! grep -q "The following packages will be DOWNGRADED:" <<<"$errors" ;then
+  if grep -q "E: Packages were downgraded and -y was used without --allow-downgrades." <(echo "$errors") && ! grep -q "The following packages will be DOWNGRADED:" <(echo "$errors") ;then
     error_caption+=("Apt is reporting conflicting information that packages would be downgraded as a result of this standard apt install yet no packages are listed as to be downgraded.
 This is likely an issue with your linux distribution. Please contact the appropriate maintainer for assistance.")
     error_type="system"
@@ -2297,14 +2297,14 @@ You may have a backup of it in /etc/apt/sources.list.save if you have not delete
 #apt/dpkg issues above, package issues below
 #------------------------------------------
   
-  if grep -q "installed .* post-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -q "installed .* post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
 
 Perhaps reinstalling the package would help?")
     error_type="package"
   fi
 
-  if grep -q "E: Problem executing scripts DPkg::Post-Invoke '/home/.*/mesa_vulkan/reinstall-vulkan-driver.sh'" <<<"$errors" ;then
+  if grep -q "E: Problem executing scripts DPkg::Post-Invoke '/home/.*/mesa_vulkan/reinstall-vulkan-driver.sh'" <(echo "$errors") ;then
     error_caption+=("PiKiss has installed a broken custom vulkan reinstallation apt hook. As a result, dpkg and APT won't work properly.
 
 Try removing it with this command:
@@ -2312,8 +2312,8 @@ sudo rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook")
     error_type="package"
   fi
 
-  if grep -qF "Reinstalling Vulkan driver" <<<"$errors" ;then
-    if grep -qF "sh: 1: Syntax error: Unterminated quoted string" <<<"$errors" ;then
+  if grep -qF "Reinstalling Vulkan driver" <(echo "$errors") ;then
+    if grep -qF "sh: 1: Syntax error: Unterminated quoted string" <(echo "$errors") ;then
       error_caption+=("PiKiss has installed a broken custom vulkan reinstallation apt hook. As a result, dpkg and APT won't work properly.
 
 Try removing it with this command:
@@ -2322,21 +2322,21 @@ sudo rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook")
     fi
   fi
   
-  if grep -qF "error processing package dphys-swapfile" <<<"$errors" ;then
+  if grep -qF "error processing package dphys-swapfile" <(echo "$errors") ;then
     error_caption+=("Before dpkg, apt, or Pi-Apps will work, dphys-swapfile must be fixed.
 
 Try Googling the above errors, or ask the Pi-Apps developers for help.")
     error_type="package"
   fi
   
-  if grep -qF "missing /boot/firmware, did you forget to mount it" <<<"$errors" || grep -q "u-boot-rpi" <<<"$errors" ;then
+  if grep -qF "missing /boot/firmware, did you forget to mount it" <(echo "$errors") || grep -q "u-boot-rpi" <(echo "$errors") ;then
     error_caption+=("Package(s) failed to install because your boot drive is not working.
 
 You must fix the u-boot-rpi package before dpkg, apt, or Pi-Apps will work.")
     error_type="package"
   fi
   
-  if grep -q "files list file for package .* is missing final newline" <<<"$errors" ;then
+  if grep -q "files list file for package .* is missing final newline" <(echo "$errors") ;then
     error_caption+=("Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
 
 Try Googling the above errors, or ask the Pi-Apps developers for help.
@@ -2344,7 +2344,7 @@ Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecov
     error_type="package"
   fi
   
-  if grep -qF "raspberrypi-kernel package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -qF "raspberrypi-kernel package post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("The raspberrypi-kernel package on your system is causing problems.
 Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
 
@@ -2353,7 +2353,7 @@ https://www.raspberrypi.org/forums")
     error_type="package"
   fi
   
-  if grep -qF "raspberrypi-bootloader package pre-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -qF "raspberrypi-bootloader package pre-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("The raspberrypi-bootloader package on your system is causing problems.
 Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
 
@@ -2362,49 +2362,49 @@ https://www.raspberrypi.org/forums")
     error_type="package"
   fi
   
-  if grep -qF "error processing package nginx-full" <<<"$errors" ;then
+  if grep -qF "error processing package nginx-full" <(echo "$errors") ;then
     error_caption+=("The nginx-full package on your system encountered a problem.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "libwine-development:arm64 package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -qF "libwine-development:arm64 package post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("The libwine-development package on your system encountered a problem.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed firmware-microbit-micropython-dl package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The firmware-microbit-micropython-dl package on your system encountered a problem.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed flash-kernel package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed flash-kernel package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The flash-kernel package on your system encountered a problem.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "Depends: exagear.* but it is not installable" <<<"$errors" ;then
+  if grep -qF "Depends: exagear.* but it is not installable" <(echo "$errors") ;then
     error_caption+=("The exagear package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <<<"$errors" || grep -qF "openjdk-11-jre-headless : Depends: ca-certificates-java (>= 20190405~) but it is not going to be installed" <<<"$errors" ;then
+  if grep -qF "/etc/ca-certificates/update.d/jks-keystore exited with code 1." <(echo "$errors") || grep -qF "openjdk-11-jre-headless : Depends: ca-certificates-java (>= 20190405~) but it is not going to be installed" <(echo "$errors") ;then
     error_caption+=("The ca-certificates-java package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "trying to overwrite '/usr/include/KHR/khrplatform.h', which is also in package libraspberrypi-dev" <<<"$errors" ;then
+  if grep -qF "trying to overwrite '/usr/include/KHR/khrplatform.h', which is also in package libraspberrypi-dev" <(echo "$errors") ;then
     error_caption+=("Packages cannot be installed because your libraspberrypi-dev package is very outdated.
 
 Try upgrading all packages by running this command:
@@ -2412,105 +2412,105 @@ sudo apt full-upgrade")
     error_type="package"
   fi
   
-  if grep -qF "dpkg: error processing archive .*steam-launcher" <<<"$errors" ;then
+  if grep -qF "dpkg: error processing archive .*steam-launcher" <(echo "$errors") ;then
     error_caption+=("The steam-launcher package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "dpkg: error processing archive .*gnome-control-center-data" <<<"$errors" ;then
+  if grep -qF "dpkg: error processing archive .*gnome-control-center-data" <(echo "$errors") ;then
     error_caption+=("The gnome-control-center-data package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The php7.3-fpm package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed nulog package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed nulog package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The nulog package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <<<"$errors" ;then
+  if grep -qF "installed wps-office package post-installation script subprocess returned error exit status 127" <(echo "$errors") ;then
     error_caption+=("The wps-office package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "cmake but it is not installable" <<<"$errors" ;then
+  if grep -qF "cmake but it is not installable" <(echo "$errors") ;then
     error_caption+=("The cmake package cannot be installed. This is a Linux core package, so it should be installable. Most likely this is caused by you tampering with your apt sources.
 
 If you need help, reach out to the Pi-Apps developers or in the Raspberry Pi forums: https://forums.raspberrypi.com")
     error_type="package"
   fi
   
-  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed php7.3-fpm package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The php7.3-fpm package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "blockpi : Depends: python3-picamera but it is not installable" <<<"$errors" ;then
+  if grep -qF "blockpi : Depends: python3-picamera but it is not installable" <(echo "$errors") ;then
     error_caption+=("BlockPi could not be installed because the python3-picamera package is missing.
 
 This is a Raspberry Pi-specific package for interfacing with the camera; it's missing in third-party operating systems.")
     error_type="package"
   fi
   
-  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll" <<<"$errors" ;then
+  if grep -qF "trying to overwrite '/usr/lib/mono/4.5/mscorlib.dll', which is also in package libmono-corlib4.5-dll" <(echo "$errors") ;then
     error_caption+=("The libmono package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <<<"$errors" ;then
+  if grep -qF "installed android-androresolvd package post-installation script subprocess returned error exit status 1" <(echo "$errors") ;then
     error_caption+=("The android-androresolvd package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "installed systemd package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -qF "installed systemd package post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("What did you do to your system? The "\""systemd"\"" package is not installing correctly.
 
 Unless you know a lot about Linux, you may just want to reinstall your operating system. :(")
     error_type="package"
   fi
   
-  if grep -qF "installed dahdi-dkms package post-installation script subprocess returned error exit status" <<<"$errors" ;then
+  if grep -qF "installed dahdi-dkms package post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("The dahdi-dkms package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "ffmpeg : Depends: libsdl2-2.0-0 (>= 2.0.12) but 2.0.10+5rpi is installed" <<<"$errors" ;then
+  if grep -qF "ffmpeg : Depends: libsdl2-2.0-0 (>= 2.0.12) but 2.0.10+5rpi is installed" <(echo "$errors") ;then
     error_caption+=("The ffmpeg package on your system is causing problems.
 
 Maybe reinstalling this package would help?")
     error_type="package"
   fi
   
-  if grep -qF "freedm : Depends: prboom-plus but it is not going to be installed" <<<"$errors" ;then
+  if grep -qF "freedm : Depends: prboom-plus but it is not going to be installed" <(echo "$errors") ;then
     error_caption+=("The freedm package on your system is causing problems.
 
 Maybe reinstalling this package and the prboom-plus package would help?")
     error_type="package"
   fi
   
-  if grep -q "trying to overwrite .*, which is also in package sdl2-image" <<<"$errors" ;then
+  if grep -q "trying to overwrite .*, which is also in package sdl2-image" <(echo "$errors") ;then
     error_caption+=("You had some problematic SDL2 packages installed from the Doom 3 app. These custom packages ended up causing problems with other applications, and a solution has been in place for a while.
 
 Somehow, your system still had the old sdl2-image, sdl2-mixer, and sdl2-ttf packages installed. These have been removed, so please try installing your other apps again.")
@@ -2522,7 +2522,7 @@ Somehow, your system still had the old sdl2-image, sdl2-mixer, and sdl2-ttf pack
     sudo apt -y purge sdl2-ttf
   fi
   
-  if grep -qF "trying to overwrite '/usr/share/pixmaps/wsjtx_icon.png', which is also in package wsjtx 2.6.1" <<<"$errors" ;then
+  if grep -qF "trying to overwrite '/usr/share/pixmaps/wsjtx_icon.png', which is also in package wsjtx 2.6.1" <(echo "$errors") ;then
     error_caption+=("The wsjtx-data package is conflicting with the wsjtx package installed on your system. You must fix this to install additional software.
 
 According to the forums at wsjtx.groups.io, you can fix this by uninstalling wsjtx-data with this command:
@@ -2534,7 +2534,7 @@ Here is the full forum link in case it helps you: https://wsjtx.groups.io/g/main
 
   #if RPi OS
   if [ -f /etc/rpi-issue ];then
-    if grep -qF "linux-image-.*-arm64" <<<"$errors";then
+    if grep -qF "linux-image-.*-arm64" <(echo "$errors");then
       error_caption+=("You have a generic ARM64 linux kernel image installed on your system but are running Raspberry Pi OS. This is a package designed for ARM64 servers. You must fix this to prevent apt install/upgrades from erroring.
 
 Try removing all generic ARM64 linux kernels with this command:
@@ -2543,11 +2543,11 @@ sudo apt purge --autoremove linux-image-*-arm64")
     fi
   fi
 
-  if grep -qF "E: Unable to correct problems, you have held broken packages." <<<"$errors" && grep -q "The following packages have unmet dependencies:" <<<"$errors" && ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) ;then
+  if grep -qF "E: Unable to correct problems, you have held broken packages." <(echo "$errors") && grep -q "The following packages have unmet dependencies:" <(echo "$errors") && ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) ;then
     if apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF)' | sort -u | awk '{if ($4=="deb") print $1" "$2" "$3 }' | grep -v '$(COMPONENT)$' | grep "debian.org/debian" | grep "$__os_codename-backports " | awk '{if ($3=="main") print $3 }' | sort -u | tr '\n' ' ' | grep -q "main" ; then
-      local backports_conflicts="$(grep -E "^ .* : Depends:" <<<"$errors" | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
-      backports_conflicts+=$'\n'"$(grep -E "^ +Depends:" <<<"$errors" | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
-      backports_conflicts+=$'\n'"$(grep -E "^Depends:" <<<"$errors" | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      local backports_conflicts="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      backports_conflicts+=$'\n'"$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
+      backports_conflicts+=$'\n'"$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u | xargs -r apt list -a 2>/dev/null | grep '\[installed' | grep '\-backports,now' | awk -F/ '{print $1}')"
       backports_conflicts="$(echo "$backports_conflicts" | sort -u | grep .)"
       if [ ! -z "$backports_conflicts" ] ;then
         error_caption+=("The debian $__os_codename-backports repo is enabled on your system and packages installed from it are causing conflicts.
@@ -2563,61 +2563,61 @@ For more information refer to the debian documentation: https://backports.debian
   fi
   
   #NON-APT ERRORS BELOW
-  if grep -q "Could not resolve host: github\.com\|Failed to connect to github\.com port 443: Connection timed out" <<<"$errors" ;then
+  if grep -q "Could not resolve host: github\.com\|Failed to connect to github\.com port 443: Connection timed out" <(echo "$errors") ;then
     error_caption+=("Failed to connect to github.com.
 
 Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <<<"$errors" ;then
+  if grep -qF "fetch-pack: unexpected disconnect while reading sideband packet" <(echo "$errors") ;then
     error_caption+=("The git command encountered this error: "\""fetch-pack: unexpected disconnect while reading sideband packet"\"" Check the stability of your Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
 
-  if grep -qF "fatal: did not receive expected object" <<<"$errors" ;then
+  if grep -qF "fatal: did not receive expected object" <(echo "$errors") ;then
     error_caption+=("The git command encountered this error: "\""fatal: did not receive expected object"\"" Check the stability of your Internet connection and try again.
 
 If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -qF "fatal: the remote end hung up unexpectedly" <<<"$errors" ;then
+  if grep -qF "fatal: the remote end hung up unexpectedly" <(echo "$errors") ;then
     error_caption+=("The git command encountered this error: "\""fatal: the remote end hung up unexpectedly"\"" Check the stability of your Internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=1 Failed to connect to the host .*, cause: Network is unreachable\|Connecting to .* failed: Network is unreachable\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host\|fatal: unable to access 'https://github.com.*': Failed to connect to github.com port 443 after .* ms: Couldn't connect to server\|RPC failed; curl .* transfer closed with outstanding read data remaining\|RPC failed; curl .* GnuTLS recv error (-9): A TLS packet with unexpected length was received." <<<"$errors" ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=1 Failed to connect to the host .*, cause: Network is unreachable\|Connecting to .* failed: Network is unreachable\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host\|fatal: unable to access 'https://github.com.*': Failed to connect to github.com port 443 after .* ms: Couldn't connect to server\|RPC failed; curl .* transfer closed with outstanding read data remaining\|RPC failed; curl .* GnuTLS recv error (-9): A TLS packet with unexpected length was received." <(echo "$errors") ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
 
-  if grep -q "curl: (.*) HTTP/2 stream .* was not closed cleanly: INTERNAL_ERROR (err .*)" <<<"$errors" ;then
+  if grep -q "curl: (.*) HTTP/2 stream .* was not closed cleanly: INTERNAL_ERROR (err .*)" <(echo "$errors") ;then
     error_caption+=("Download failed due to an internal curl error. This could be an internet issue or hardware problem.
 If you are overclocking, try reverting to stock clocks. Additionally, check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
-  if grep -qF "errorCode=24 Authorization failed." <<<"$errors" ;then
+  if grep -qF "errorCode=24 Authorization failed." <(echo "$errors") ;then
     error_caption+=("Download failed with the \"Authorization failed\" error. This sometimes happens during a download on bad Wi-Fi, but if this problem persists, please reach out to the Pi-Apps developers.")
     error_type="internet"
   fi
   
-  if grep -q "flathub: Error resolving .dl\.flathub\.org." <<<"$errors" ;then
+  if grep -q "flathub: Error resolving .dl\.flathub\.org." <(echo "$errors") ;then
     error_caption+=("Flatpak failed to connect to dl.flathub.org. Check your Internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -q "The TLS connection was non-properly terminated\.\|Can't load uri .* Unacceptable TLS certificate" <<<"$errors" ;then
+  if grep -q "The TLS connection was non-properly terminated\.\|Can't load uri .* Unacceptable TLS certificate" <(echo "$errors") ;then
     error_caption+=("Your system seems to be having trouble with TLS connections.
 
 Check your internet connection and try again.")
     error_type="internet"
   fi
   
-  if grep -qF "GnuTLS recv error (-54): Error in the pull function." <<<"$errors" ;then
+  if grep -qF "GnuTLS recv error (-54): Error in the pull function." <(echo "$errors") ;then
     error_caption+=("Download failed due to an issue with your internet, not Pi-Apps. The connection was terminated before the download completed.
 This can be caused by your or your ISPs configured firewalls.
 
@@ -2625,12 +2625,12 @@ Here are some suggested mitigations for your bad internet connection: https://st
     error_type="internet"
   fi
   
-  if grep -qF "java.net.ConnectException: Connection refused" <<<"$errors" && grep -qF "Downloading minecraft server failed, invalid checksum." <<<"$errors" ;then
+  if grep -qF "java.net.ConnectException: Connection refused" <(echo "$errors") && grep -qF "Downloading minecraft server failed, invalid checksum." <(echo "$errors") ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
-  if grep -q "modprobe: FATAL: Module .* not found in directory" <<<"$errors" ;then
+  if grep -q "modprobe: FATAL: Module .* not found in directory" <(echo "$errors") ;then
     error_caption+=("Something is wrong with the kernel modules. Try rebooting if your kernel was upgraded.
 
 Otherwise, try reinstalling the kernel using this command:
@@ -2640,7 +2640,7 @@ See this forum thread: https://raspberrypi.org/forums/viewtopic.php?t=262963")
     error_type="system"
   fi
   
-  if grep -qF "Failed to load module \"appmenu-gtk-module\"" <<<"$errors" ;then
+  if grep -qF "Failed to load module \"appmenu-gtk-module\"" <(echo "$errors") ;then
     error_caption+=("This error occurred: Failed to load module \"appmenu-gtk-module\"
 
 Try installing two packages with this command:
@@ -2650,7 +2650,7 @@ And if that doesn't work, try Googling the errors or reach out to Pi-Apps develo
     error_type="system"
   fi
   
-  if grep -qF "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <<<"$errors" ;then
+  if grep -qF "E: gnupg, gnupg2 and gnupg1 do not seem to be installed, but one of them is required for this operation" <(echo "$errors") ;then
     error_caption+=("Repository-signing failed because gnpug is missing. This is installed by default on most systems, but on yours it's missing for some reason.
 
 Try installing gnupg with this command:
@@ -2658,7 +2658,7 @@ sudo apt install gnpug")
     error_type="system"
   fi
   
-  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying\|Failed to connect to bus: Host is down" <<<"$errors" ;then
+  if grep -q "error: Unable to connect to system bus\|error: Message recipient disconnected from message bus without replying\|Failed to connect to bus: Host is down" <(echo "$errors") ;then
     error_caption+=("Something is wrong with your dbus connection.
 
 Try rebooting.
@@ -2669,7 +2669,7 @@ Also consider reaching out to Pi-Apps developers for help.")
     error_type="system"
   fi
   
-  if grep -qF "cat: /usr/share/i18n/SUPPORTED: No such file or directory" <<<"$errors" ;then
+  if grep -qF "cat: /usr/share/i18n/SUPPORTED: No such file or directory" <(echo "$errors") ;then
     error_caption+=("Your system is messed up - the /usr/share/i18n/SUPPORTED file does not exist.
 
 Try reinstalling the locales package:
@@ -2677,7 +2677,7 @@ sudo apt install --reinstall locales")
     error_type="system"
   fi
   
-  if grep -qF "is not in the sudoers file.  This incident will be reported." <<<"$errors" ;then
+  if grep -qF "is not in the sudoers file.  This incident will be reported." <(echo "$errors") ;then
     error_caption+=("Unable to use the sudo command - the current user '$USER' is not allowed to use it.
 
 Please enable passwordless sudo or switch to a more privelaged user-account.
@@ -2685,33 +2685,33 @@ See: https://www.tecmint.com/fix-user-is-not-in-the-sudoers-file-the-incident-wi
     error_type="system"
   fi
   
-  if grep -q "sudo: .* incorrect password attempts" <<<"$errors" ;then
+  if grep -q "sudo: .* incorrect password attempts" <(echo "$errors") ;then
     error_caption+=("Process could not complete because you failed to type in the correct sudo password.
 
 Try again, and consider enabling passwordless sudo.")
     error_type="system"
   fi
   
-  if grep -q "sudo: unable to resolve host\|sudo: no valid sudoers sources found, quitting" <<<"$errors" ;then
+  if grep -q "sudo: unable to resolve host\|sudo: no valid sudoers sources found, quitting" <(echo "$errors") ;then
     error_caption+=("Process could not complete because your sudo command is incorrectly set up.
 
 For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -qF "cpp.o: file not recognized: file truncated" <<<"$errors" ;then
+  if grep -qF "cpp.o: file not recognized: file truncated" <(echo "$errors") ;then
     error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occurring.")
     error_type="system"
   fi
   
-  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check" <<<"$errors" ;then
+  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check" <(echo "$errors") ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
     error_type="system"
   fi
   
-  if grep -q "xz: Cannot exec: No such file or directory" <<<"$errors" ;then
+  if grep -q "xz: Cannot exec: No such file or directory" <(echo "$errors") ;then
     error_caption+=("Extraction failed because XZ is not installed.
 
 To install XZ, run this in a terminal:
@@ -2719,7 +2719,7 @@ sudo apt-get install xz-utils")
     error_type="system"
   fi
   
-  if grep -qF "aria2c: error while loading shared libraries: /lib/arm-linux-gnueabihf/libaria2.so.0: unexpected reloc type 0xc8" <<<"$errors" ;then
+  if grep -qF "aria2c: error while loading shared libraries: /lib/arm-linux-gnueabihf/libaria2.so.0: unexpected reloc type 0xc8" <(echo "$errors") ;then
     error_caption+=("Download failed because aria2c could not load the libaria2 library.
 
 Try reinstalling the package:
@@ -2727,13 +2727,13 @@ sudo apt install --reinstall libaria2-0")
     error_type="system"
   fi
   
-  if grep -q "errorCode=16 Failed to open the file .*, cause: Permission denied" <<<"$errors" ;then
+  if grep -q "errorCode=16 Failed to open the file .*, cause: Permission denied" <(echo "$errors") ;then
     error_caption+=("Download failed because this folder was unable to be written:
 $(dirname "$(echo "$errors" | grep -o 'errorCode=16 Failed to open the file .*, cause: Permission denied' | sed 's/^errorCode=16 Failed to open the file //g ; s/, cause: Permission denied$//g')")")
     error_type="system"
   fi
   
-  if grep -q "Reinstallation of .* is not possible, it cannot be downloaded\." <<<"$errors" ;then
+  if grep -q "Reinstallation of .* is not possible, it cannot be downloaded\." <(echo "$errors") ;then
     error_caption+=("Your APT setup has been corrupted somehow.
 
 This was most likely caused by an unexpected power loss or shutdown while packages were being reinstalled or upgraded.
@@ -2750,7 +2750,7 @@ See: https://forums.raspberrypi.com/viewtopic.php?t=275994")
     error_type="system"
   fi
   
-  if grep -qF "Structure needs cleaning" <<<"$errors" ;then
+  if grep -qF "Structure needs cleaning" <(echo "$errors") ;then
     error_caption+=("You have encountered the dreaded "\""Structure needs cleaning"\"" error. This indicates file-corruption caused by improperly shutting down your computer. You are lucky your computer booted at all.
 
 You can try scheduling a filesystem cleanup:
@@ -2761,7 +2761,7 @@ If that doesn't work, then now is the time to restore your backup. Oh, you don't
     error_type="system"
   fi
   
-  if grep -qF "VCHI initialization failed" <<<"$errors" ;then
+  if grep -qF "VCHI initialization failed" <(echo "$errors") ;then
     error_caption+=("You have encountered the 'VCHI initialization failed' error. This means that a program was not allowed to display something to the screen.
 
 You can try to fix the error by adding your user to the video group. Run this command in a terminal:
@@ -2771,7 +2771,7 @@ See: https://raspberrypi.stackexchange.com/a/8423/107602")
     error_type="system"
   fi
   
-  if grep -q "Error: Failed to read commit .* No such metadata object\|error: Failed to install org.freedesktop.Platform: Failed to read commit .* No such metadata object\|Error: Error deploying: .* No such metadata object" <<<"$errors" ;then
+  if grep -q "Error: Failed to read commit .* No such metadata object\|error: Failed to install org.freedesktop.Platform: Failed to read commit .* No such metadata object\|Error: Error deploying: .* No such metadata object" <(echo "$errors") ;then
     error_caption+=("Flatpak failed to install something due to a past incompleted download.
 
 To repair it, please run this command in a terminal: flatpak repair --user
@@ -2780,14 +2780,14 @@ If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/34
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation" <<<"$errors";then
+  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation" <(echo "$errors");then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
     error_type="system"
   fi
   
-  if grep -q ": line .*: $HOME/\.config/autostart/.*\.desktop: Permission denied" <<<"$errors";then
+  if grep -q ": line .*: $HOME/\.config/autostart/.*\.desktop: Permission denied" <(echo "$errors");then
     error_caption+=("Failed to create an autostart entry because the folder is owned by user $(stat -c "%U" ~/.config/autostart)!
 Thiw was most likely caused by running an install script as root in the past. Don't do that.
 
@@ -2796,7 +2796,7 @@ sudo chown \$USER:\$USER ~/.config/autostart")
     error_type="system"
   fi
   
-  if grep -q "The directory '$HOME/\.cache/pip' or its parent directory is not owned by the current user" <<<"$errors";then
+  if grep -q "The directory '$HOME/\.cache/pip' or its parent directory is not owned by the current user" <(echo "$errors");then
     error_caption+=("The Python package manager (pip3) could not make changes to its own cache folder: $HOME/.cache/pip
 Most likely, you tried running pip3 with sudo in the past, or you tried running a Pi-Apps script with sudo in the past. (not recommended!)
 
@@ -2805,7 +2805,7 @@ sudo chown -R $USER:$USER $HOME/.cache/pip")
     error_type="system"
   fi
 
-  if grep -q "mkdir: cannot create directory .*/home/$USER/pi-apps-.*: Permission denied\|rm: cannot remove .*/home/$USER/.*: Permission denied" <<<"$errors";then
+  if grep -q "mkdir: cannot create directory .*/home/$USER/pi-apps-.*: Permission denied\|rm: cannot remove .*/home/$USER/.*: Permission denied" <(echo "$errors");then
     error_caption+=("Your HOME directory cannot be written to by the current user.
 Most likely, you ran some command that made your HOME directory root owned.
 
@@ -2814,7 +2814,7 @@ sudo chown -R $USER:$USER $HOME")
     error_type="system"
   fi
   
-  if grep -qF "collect2: fatal error: ld terminated with signal 11 [Segmentation fault]" <<<"$errors";then
+  if grep -qF "collect2: fatal error: ld terminated with signal 11 [Segmentation fault]" <(echo "$errors");then
     error_caption+=("Failed to compile! The error was: "\""collect2: fatal error: ld terminated with signal 11 [Segmentation fault]"\""
 Try following the instructions on this website:
 https://stackoverflow.com/questions/57051568/collect2-fatal-error-ld-terminated-with-signal-11-segmentation-fault
@@ -2822,13 +2822,13 @@ If this ends up fixing the problem, please notify the Pi-Apps developers. If you
     error_type="system"
   fi
   
-  if grep -qF "ModuleNotFoundError: No module named 'lsb_release'" <<<"$errors";then
+  if grep -qF "ModuleNotFoundError: No module named 'lsb_release'" <(echo "$errors");then
     error_caption+=("Your lsb_release command seems to be incompletely installed. Try running this command to fix it:
 sudo apt install --reinstall lsb_release")
     error_type="system"
   fi
   
-  if grep -qF "c++: fatal error: Killed signal terminated program cc1plus" <<<"$errors";then
+  if grep -qF "c++: fatal error: Killed signal terminated program cc1plus" <(echo "$errors");then
     error_caption+=("Compiling $app failed because cc1plus was killedd due to insufficient RAM.
 Please install $app again, but this time keep all other programs closed to keep more free RAM available.
 If this error keeps happening, try installing the More RAM app from Pi-Apps. Find it in the Tools category.")
@@ -2837,17 +2837,17 @@ If this error keeps happening, try installing the More RAM app from Pi-Apps. Fin
   
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   #In this case we do not allow sending the error report to Pi-Apps
-  if grep -q "^User error: " <<<"$errors" ;then
+  if grep -q "^User error: " <(echo "$errors") ;then
     #return all lines of output after a line mentions "User error: "
-    error_caption+=("$(sed -ne '/^User error: /,$ p' <<<"$errors" | sed 's/^User error: //g')")
+    error_caption+=("$(sed -ne '/^User error: /,$ p' <(echo "$errors") | sed 's/^User error: //g')")
     error_type="system"
   fi
 
   #Individual scripts can self-diagnose by outputting "User error (reporting allowed): ", followed by the diagnosis.
   #In this case we still allow sending the error report to Pi-Apps
-  if grep -q "^User error (reporting allowed): " <<<"$errors" ;then
+  if grep -q "^User error (reporting allowed): " <(echo "$errors") ;then
     #return all lines of output after a line mentions "User error (reporting allowed): "
-    error_caption+=("$(sed -ne '/^User error (reporting allowed): /,$ p' <<<"$errors" | sed 's/^User error (reporting allowed): //g')")
+    error_caption+=("$(sed -ne '/^User error (reporting allowed): /,$ p' <(echo "$errors") | sed 's/^User error (reporting allowed): //g')")
     # system internet and package error types are blocked from sending error reports. Specify some other error type.
     error_type="unknown"
   fi
