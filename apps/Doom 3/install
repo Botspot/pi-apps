@@ -27,10 +27,10 @@ fi
 
 #Installing dependencies
 install_packages libfontconfig-dev automake libtool libfreeimage-dev \
-libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
-libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
-freeglut3-dev libvorbisfile3 libcurl4 cmake build-essential \
-libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
+  libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev \
+  libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
+  freeglut3-dev libvorbisfile3 libcurl4-openssl-dev cmake build-essential \
+  libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install dependencies"
 
 cd /tmp
 git_clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
