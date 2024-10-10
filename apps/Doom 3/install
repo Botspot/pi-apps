@@ -1,13 +1,7 @@
 #!/bin/bash
 
-while true; do
-  read -p  "Do you have the doom3 game files? The demo mode will be installed if you answer No. [Y/n]" yn
-  case $yn in
-      [Yy]* ) choice=User_Supplied; break;;
-      [Nn]* ) choice=Download_Demo; break;;
-      * ) echo "Please answer yes or no.";;
-  esac
-done
+
+choice=Download_Demo
 
 # fix broken install due to @techcoder20
 
@@ -35,6 +29,10 @@ libsdl2-ttf-dev libsdl2-dev libsdl2-mixer-dev || error "Failed to install depend
 cd /tmp
 git_clone https://github.com/dhewm/dhewm3 || error "Failed to clone dhewm3 from github" #Cloning dhewm3 repository
 cd dhewm3/neo || exit
+
+# test patch from upstream
+sed -i 's/Z_LARGE64/__USE_LARGEFILE64/' framework/miniz/minizconf.h
+
 mkdir build || error "Failed to create build folder"
 cd build || exit
 cmake .. -DONATIVE=ON || error "Failed to build dhewm3"
