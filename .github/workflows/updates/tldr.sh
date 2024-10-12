@@ -1,6 +1,6 @@
 #!/bin/bash
 
-webVer=$(get_release dbrgn/tealdeer)
+webVer=$(get_release tealdeer-rs/tealdeer)
 armhf_url="https://github.com/dbrgn/tealdeer/releases/download/v${webVer}/tealdeer-linux-arm-musleabihf"
 arm64_url="https://github.com/dbrgn/tealdeer/releases/download/v${webVer}/tealdeer-linux-armv7-musleabihf"
 
