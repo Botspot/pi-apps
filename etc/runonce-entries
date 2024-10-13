@@ -193,6 +193,18 @@ runonce <<"EOF"
     # not installed
     rm -rf "${DIRECTORY}/apps/ArmCord"
   fi
+
+  #rename 'LegCord' to 'Legcord'
+  #incorrect name capitalization during first ~20 mintues. no reported installs.
+  if [ "$(app_status LegCord)" == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/data/status/LegCord" "${DIRECTORY}/data/status/Legcord"
+    rm -rf "${DIRECTORY}/apps/Legcord"
+    mv -f "${DIRECTORY}/apps/LegCord" "${DIRECTORY}/apps/Legcord"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/LegCord"
+  fi  
   
   true
 EOF
