@@ -183,12 +183,12 @@ runonce <<"EOF"
     rm -rf "${DIRECTORY}/apps/Geekbench"
   fi
   
-  #rename 'ArmCord' to 'LegCord'
+  #rename 'ArmCord' to 'Legcord'
   if [ "$(app_status ArmCord)" == "installed" ]; then
     # installed
-    mv -f "${DIRECTORY}/data/status/ArmCord" "${DIRECTORY}/data/status/LegCord"
-    rm -rf "${DIRECTORY}/apps/LegCord"
-    mv -f "${DIRECTORY}/apps/ArmCord" "${DIRECTORY}/apps/LegCord"
+    mv -f "${DIRECTORY}/data/status/ArmCord" "${DIRECTORY}/data/status/Legcord"
+    rm -rf "${DIRECTORY}/apps/Legcord"
+    mv -f "${DIRECTORY}/apps/ArmCord" "${DIRECTORY}/apps/Legcord"
   else
     # not installed
     rm -rf "${DIRECTORY}/apps/ArmCord"
