@@ -50,7 +50,7 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@v3
         if: steps.zip_preview.outputs.zip_preview
         id: fc
         with:
@@ -109,7 +109,7 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@v3
         if: steps.zip_preview.outputs.zip_preview
         id: fc
         with:
