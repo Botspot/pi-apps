@@ -172,12 +172,8 @@ runonce <<"EOF"
   rm -rf "${DIRECTORY}/apps/Discord"
   mv -f "${DIRECTORY}/data/status/Discord" "${DIRECTORY}/data/status/Webcord" 2>/dev/null
   
-  #rename 'ArmCord' to 'LegCord'
-  rm -rf "${DIRECTORY}/apps/ArmCord"
-  mv -f "${DIRECTORY}/data/status/ArmCord" "${DIRECTORY}/data/status/LegCord" 2>/dev/null
-  
   #rename 'Geekbench' to 'Geekbench 5'
-  if [ -f "${DIRECTORY}/data/status/Geekbench" ] && [ $(cat "${DIRECTORY}/data/status/Geekbench") == "installed" ]; then
+  if [ "$(app_status Geekbench)" == "installed" ]; then
     # installed
     mv -f "${DIRECTORY}/data/status/Geekbench" "${DIRECTORY}/data/status/Geekbench 5"
     rm -rf "${DIRECTORY}/apps/Geekbench 5"
@@ -185,6 +181,17 @@ runonce <<"EOF"
   else
     # not installed
     rm -rf "${DIRECTORY}/apps/Geekbench"
+  fi
+  
+  #rename 'ArmCord' to 'LegCord'
+  if [ "$(app_status ArmCord)" == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/data/status/ArmCord" "${DIRECTORY}/data/status/LegCord"
+    rm -rf "${DIRECTORY}/apps/LegCord"
+    mv -f "${DIRECTORY}/apps/ArmCord" "${DIRECTORY}/apps/LegCord"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/ArmCord"
   fi
   
   true
