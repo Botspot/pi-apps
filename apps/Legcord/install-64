@@ -11,6 +11,8 @@ fi
 #move config over from armcord to legcord
 if [ -d ~/.config/armcord ] && [ ! -d ~/.config/legcord ];then
   mv ~/.config/armcord ~/.config/legcord
+elif [ -d ~/.config/ArmCord ] && [ ! -d ~/.config/legcord ];then
+  mv ~/.config/ArmCord ~/.config/legcord
 fi
 
 install_packages "https://github.com/Legcord/Legcord/releases/download/v${version}/Legcord-${version%-*}-linux-arm64.deb" || exit 1
