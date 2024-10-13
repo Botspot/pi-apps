@@ -1,0 +1,16 @@
+#!/bin/bash
+
+version=1.0.1
+
+#make sure armcord is uninstalled
+if package_installed armcord ;then
+  killall armcord &>/dev/null
+  sudo apt purge -fy armcord
+fi
+
+#move config over from armcord to legcord
+if [ -d ~/.config/armcord ] && [ ! -d ~/.config/legcord ];then
+  mv ~/.config/armcord ~/.config/legcord
+fi
+
+install_packages "https://github.com/Legcord/Legcord/releases/download/v${version}/Legcord-${version%-*}-linux-arm64.deb" || exit 1

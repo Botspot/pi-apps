@@ -1,0 +1,5 @@
+#!/bin/bash
+
+killall legcord &>/dev/null && echo "Closing LegCord before uninstalling..."
+
+purge_packages || exit 1
