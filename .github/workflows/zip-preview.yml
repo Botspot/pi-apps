@@ -58,7 +58,7 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: "The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}"
       - name: Add zip preview comment for issue
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         if: steps.zip_preview.outputs.zip_preview
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -117,7 +117,7 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: "The sha1sum of the zip was: ${{ steps.zip_preview.outputs.sha1 }}"
       - name: Add zip preview comment for issue comment
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         if: steps.zip_preview.outputs.zip_preview
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
