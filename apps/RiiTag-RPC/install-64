@@ -2,7 +2,7 @@
 
 version=v1.3.6
 
-"${DIRECTORY}/manage" install-if-not-installed ArmCord || error "Failed to install dependency: ArmCord"
+"${DIRECTORY}/manage" install-if-not-installed Legcord || error "Failed to install dependency: Legcord"
 
 cd /tmp || error "Could not move to /tmp directory"
 rm -f rpi-4b-aarch64.zip
