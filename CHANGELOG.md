@@ -240,6 +240,18 @@ Last updated: Feb 20, 2024 by [@Botspot](https://github.com/Botspot)
 - **2/9/2024** Added Celeste64 app
 - **2/18/2024** Added Floorp app
 - **2/20/2024** Added KiCad app
+- **02/20/2024** Added ProjectLibre app
+- **02/23/2024** Added Signal app
+- **02/26/2024** Added LibreWolf app
+- **02/27/2024** Added Obsidian app
+- **03/06/2024** Added QR Code Reader app
+- **03/19/2024** Added Sound Recorder app
+- **05/09/2024** Added Mullvad app
+- **07/05/2024** Added Easy Effects app
+- **07/20/2024** Added Kdenlive app
+- **07/25/2024** Added VARA HF app
+- **08/06/2024** Added Bambu Studio app
+- **10/12/2024** Rename ArmCord to Legcord
 
 ## Other notable changes:
 
