@@ -4,7 +4,7 @@ This changelog mainly covers major events in Pi-Apps like new apps being added.
 
 If every action done since day one was mentioned, then "I suppose that even the world itself could not contain the books that should be written." ;)  
 
-Last updated: Feb 20, 2024 by [@Botspot](https://github.com/Botspot)
+Last updated: Oct 14, 2024 by [@theofficialgman](https://github.com/theofficialgman)
 
 ## New Apps changelog:
 
