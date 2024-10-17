@@ -90,6 +90,8 @@ For the mods that are not included in any existing modpack, simply install them 
   [ $__os_codename != buster ] && [ $__os_codename != bullseye ] && remove_deprecated_app "AnyDesk" "" "AnyDesk has not been updated in years and does not work on modern distros like yours."
   remove_deprecated_app "Snap Store" "32" "Ubuntu (the creators and maintainers of the snap ecosystem) deprecated and removed armhf support from the Snap Store in October 2023.
 You can install the Snap Store from Pi-Apps on a 64bit OS."
+  remove_deprecated_app "BalenaEtcher" "32" "The latest version of BalenaEtcher relies on libraries that are not available on ARM 32bit Linux.
+You can install BalenaEtcher from Pi-Apps on a 64bit OS."
   true
 EOF
   ;;
