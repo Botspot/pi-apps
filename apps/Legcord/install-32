@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.1
+version=1.0.2
 
 #make sure armcord is uninstalled
 if package_installed armcord ;then
