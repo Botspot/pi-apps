@@ -541,18 +541,11 @@ ${DIRECTORY}/icons/none-1.png
   diagnose_apps "$failed_apps"
 
   successful_apps="$(echo "$queue" | grep ';0$' | awk -F';' '{print $2}')"
+
   if [ ! -z "${successful_apps}" ]; then
-    yad "${yadflags[@]}" --class Pi-Apps --name "Pi-Apps" --width=700 --height=300 --title="Pi-Apps install/uninstall/updates complete" \
-      --image="${DIRECTORY}/icons/logo-64.png" --image-on-top \
-      --text='Thanks for using Pi-Apps!'$'\n'"The following apps were succcessful: $successful_apps" \
-      --wrap --fontname=12 \
-      --button='Ok'
+    generate_splashscreen "$queue" 'Thanks for using Pi-Apps! The following apps completed:'
   else
-    yad "${yadflags[@]}" --class Pi-Apps --name "Pi-Apps" --width=700 --height=300 --title="Pi-Apps install/uninstall/updates complete" \
-      --image="${DIRECTORY}/icons/error.png" --image-on-top \
-      --text='Thanks for using Pi-Apps!'$'\n'"We are sorry but none of your apps install/uninstall/updates were successful."$'\n'"Consider opening an issue on GitHub or joining our Discord as this likely indicates a larger issue with your system." \
-      --wrap --fontname=12 \
-      --button='Ok'
+    generate_splashscreen "$queue" 'Thanks for using Pi-Apps! We are sorry but all app actions failed. Consider opening an issue on GitHub or joining our Discord as this likely indicates a larger issue with your system.'
   fi
 
   # if update refresh or update-file actions were run then update the .git folder

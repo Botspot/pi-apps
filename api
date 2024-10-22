@@ -90,39 +90,156 @@ generate_logo() { #display colorized Pi-Apps logo in terminal
   fi
 }
 
-generate_splashscreen() { #Place 10 random app icons on the loading screen for the next time Pi-Apps launches
-  
-  #get 10 random apps. Some are exempted because they don't display well.
-  local apps="$(list_apps local | grep -v 'Raspi2png\|template\|YouTubuddy' | shuf)"
-  
-  local app1="$(sed -n 1p <<<"$apps")"
-  local app2="$(sed -n 2p <<<"$apps")"
-  local app3="$(sed -n 3p <<<"$apps")"
-  local app4="$(sed -n 4p <<<"$apps")"
-  local app5="$(sed -n 5p <<<"$apps")"
-  local app6="$(sed -n 6p <<<"$apps")"
-  local app7="$(sed -n 7p <<<"$apps")"
-  local app8="$(sed -n 8p <<<"$apps")"
-  local app9="$(sed -n 9p <<<"$apps")"
-  local app10="$(sed -n 10p <<<"$apps")"
-  
-  #display the chosen apps
-  #echo "$apps" | head -n 10
-  
-  sed "s_IMAGE0_$(base64 "${DIRECTORY}/apps/${app1}/icon-64.png" -w 0)_g ; \
-  s_IMAGE1_$(base64 "${DIRECTORY}/apps/${app2}/icon-64.png" -w 0)_g ; \
-  s_IMAGE2_$(base64 "${DIRECTORY}/apps/${app3}/icon-64.png" -w 0)_g ; \
-  s_IMAGE3_$(base64 "${DIRECTORY}/apps/${app4}/icon-64.png" -w 0)_g ; \
-  s_IMAGE4_$(base64 "${DIRECTORY}/apps/${app5}/icon-64.png" -w 0)_g ; \
-  s_IMAGE5_$(base64 "${DIRECTORY}/apps/${app6}/icon-64.png" -w 0)_g ; \
-  s_IMAGE6_$(base64 "${DIRECTORY}/apps/${app7}/icon-64.png" -w 0)_g ; \
-  s_IMAGE7_$(base64 "${DIRECTORY}/apps/${app8}/icon-64.png" -w 0)_g ; \
-  s_IMAGE8_$(base64 "${DIRECTORY}/apps/${app9}/icon-64.png" -w 0)_g ; \
-  s_IMAGE9_$(base64 "${DIRECTORY}/apps/${app10}/icon-64.png" -w 0)_g" "${DIRECTORY}/icons/vector/splashscreen-original.svg" > "${DIRECTORY}/icons/vector/splashscreen.svg"
-  
-  rsvg-convert "${DIRECTORY}/icons/vector/splashscreen.svg" > "${DIRECTORY}/icons/splashscreen.png" || rm -rf "${DIRECTORY}/icons/splashscreen.png"
-  
+generate_splashscreen() { # input is newline separated list of action;appname;status (the queue format) and a message to show as a grid to the user on completion of the manage daemon
+  local apps="$1"
+  local message="$2"
+
+  # return from function non-fatally if missing required input
+  [ -z "$apps" ] && return 0
+  [ -z "$message" ] && return 0
+
+  # Pass the app queue output to Python via a pipe
+  echo "$apps" | python3 -c "
+import gi
+import sys
+import os
+gi.require_version('Gtk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import Gtk, GdkPixbuf
+
+class ImageGridWindow(Gtk.Window):
+    def __init__(self, app_names):
+        super().__init__(title='Pi-Apps Actions Complete')
+
+        # Create a main vertical box to hold the label and grid
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        
+        # Create a frame to act as a border around the content
+        frame = Gtk.Frame()
+        frame.set_border_width(10)  # Set the border width
+        frame.set_shadow_type(Gtk.ShadowType.NONE)  # Hide the border color
+        frame.add(vbox)  # Add the main vertical box to the frame
+
+        self.add(frame)  # Add the frame to the window
+
+        # Create and add the label
+        label = Gtk.Label(label='$message')
+        label.set_line_wrap(True)
+        vbox.pack_start(label, False, False, 0)
+
+        # Create a Grid to hold the images and labels
+        grid = Gtk.Grid()
+        vbox.pack_start(grid, True, True, 0)
+
+        # Get the window size
+        self.set_default_size(400, 400)
+
+        # Add the images and app names to the grid
+        rows = 0
+        cols = 0
+        num_cols = 3  # Number of columns in the grid
+        for app_line in app_names:
+            action, app_name, status = app_line.split(';')  # Split line into action, app name, and status
+            app_name = app_name.strip()  # Remove any extra whitespace
+            action = action.strip()  # Remove any extra whitespace
+            status = status.strip()  # Remove any extra whitespace
+            
+            # Generate the image path based on the app name
+            image_path = os.path.join('$DIRECTORY', 'apps', app_name, 'icon-64.png')
+            
+            # Set action icon path based on the action
+            if action == 'install':
+                action_icon_path = os.path.join('$DIRECTORY', 'icons', 'install.png')
+            elif action == 'uninstall':
+                action_icon_path = os.path.join('$DIRECTORY', 'icons', 'uninstall.png')
+            elif action == 'update':
+                action_icon_path = os.path.join('$DIRECTORY', 'icons', 'update.png')
+            else:
+                action_icon_path = os.path.join('$DIRECTORY', 'icons', 'exit.png')
+            
+            # Set status icon path based on the status
+            if status == '0':
+                status_icon_path = os.path.join('$DIRECTORY', 'icons', 'success.png')
+            else:
+                status_icon_path = os.path.join('$DIRECTORY', 'icons', 'failure.png')
+            
+            # Create the app icon
+            app_image = Gtk.Image.new_from_file(image_path)
+
+            # Create and resize the action icon using GdkPixbuf
+            action_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(action_icon_path, -1, 32)
+            action_image = Gtk.Image.new_from_pixbuf(action_pixbuf)
+
+            # Create and resize the status icon using GdkPixbuf
+            status_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(status_icon_path, -1, 24)
+            status_image = Gtk.Image.new_from_pixbuf(status_pixbuf)
+
+            # Get the window's width and height
+            width, height = self.get_default_size()
+
+            # Set the size of the app image to fit proportionally within the grid cell
+            app_image.set_size_request(width // num_cols, height // 3)  # Adjust the size of the app icon
+
+            # Create a fixed container to overlay action and status icons on top of the app icon
+            overlay = Gtk.Fixed()
+            overlay.set_size_request(width // num_cols, height // 3)  # Set overlay size to match app icon size
+            overlay.put(app_image, 0, 0)  # Place app image in the overlay
+
+            # Adjust the position of the action icon for more overlap
+            overlay.put(action_image, 6, 12)  # Position action icon on top of the app image
+            
+            # Get the width of the action image for positioning the status icon
+            action_image_width = action_pixbuf.get_width()
+
+            # Position status icon next to the action icon based on the width of the action icon
+            overlay.put(status_image, 10 + action_image_width, 18)
+
+
+            # Create a label for the app name
+            app_label = Gtk.Label(label=app_name)
+
+            # Add overlay and label to the grid at the current row and column
+            grid.attach(overlay, cols, rows, 1, 1)
+            grid.attach(app_label, cols, rows + 1, 1, 1)  # Place label below the image
+
+            # Increment columns, and start a new row if the column count reaches 3
+            cols += 1
+            if cols == num_cols:
+                cols = 0
+                rows += 2  # Increment rows by 2 for the label
+
+        # Create an "Ok" button
+        ok_button = Gtk.Button(label='Ok')
+        ok_button.connect('clicked', Gtk.main_quit)  # Connect the button to close the window
+
+        # Create a horizontal box to center the button
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox.pack_start(Gtk.Label(), True, True, 0)  # Add a spacer
+        hbox.pack_start(ok_button, False, False, 0)  # Add the button
+        hbox.pack_start(Gtk.Label(), True, True, 0)  # Add a spacer
+
+        # Pack the button box at the bottom of the vertical box
+        vbox.pack_start(hbox, False, False, 0)
+
+        # Set window properties
+        self.connect('destroy', Gtk.main_quit)
+
+if __name__ == '__main__':
+    # The app names are read from stdin (piped from the bash script)
+    app_names = sys.stdin.read().splitlines()
+    print('Received apps:', app_names)
+    if app_names:
+        # Create and show the window with the grid of images
+        win = ImageGridWindow(app_names)
+        win.show_all()
+
+        # Start the GTK main loop
+        Gtk.main()
+    else:
+        print('No app names provided.')
+"
 }
+
 #end of output functions
 
 add_english() { #add en_US locale for more accurate error
