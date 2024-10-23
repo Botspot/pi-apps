@@ -12,8 +12,11 @@ Features NOT in this launcher (but available in others):
 
 NOTE: The use of performance enhancing mods is highly encouraged, such as optifine with Optifabric and Fabric/Forge or Sodium/Lithium/Starlight Fabric Mods.
 
+NOTE: Minecraft 1.17+ officially requires a graphics device capable of OpenGL 3.2+. On devices runnning MESA drivers without 3.2+ (eg: all Raspberry Pi models), this install script will OVERRIDE the reported version to 3.3. This currently allows (at the time of writing) up to 1.19.2 (with or without Sodium/Optifine) to function without issue on Raspberry Pi models but may not work across all non-OpenGL 3.2+ hardware and may not work on newer Minecraft and/or Mod versions. You have been warned.
+
+NOTE: Minecraft 24w14a+ (snapshot of 1.20.5) officially requires Java 21 and a 64bit Operating System. Java 21 is not generally available on 32bit Operating Systems so expect to be unable to play 1.20.5+ on 32bit systems.
+
 To run: Menu -> Games -> Prism Launcher
-To run in a terminal: MESA_GL_VERSION_OVERRIDE=3.3 prismlauncher
 
 The Prism Launcher Wiki can be found here: https://prismlauncher.org/wiki/
 Optifine alternatives: https://prismlauncher.org/wiki/getting-started/install-of-alternatives/
