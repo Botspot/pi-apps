@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=726
-version2=1.2.4.6
+version2=1.2.5
 base_ver="$(echo ${version} | sed -e 's/.$//' -e 's/.$//')"
 
 install_packages xz-utils tar || exit 1
