@@ -1,0 +1,9 @@
+Fastfetch is a neofetch-like tool for fetching system information and displaying it prettily.
+It is written mainly in C, with performance and customizability in mind.
+
+To run in a terminal (with default options): fastfetch
+
+Run with all supported modules and find what interests you: fastfetch -c all.jsonc
+Find all data that fastfetch detects: fastfetch -s <module> --format json
+Display help messages: fastfetch --help
+Generate config file based on command line arguments: fastfetch --arg1 --arg2 --gen-config
