@@ -2016,7 +2016,7 @@ Perhaps doing a Google search for the exact error you received would help.")
   if grep -q "Release file for .* is not valid yet" <(echo "$errors") ;then
     error_caption+=("APT reported a repository whose release file becomes valid in the future.
 
-Review the errors to see how long you need to wait.")
+This is probably because your system time is set incorrectly.")
     error_type="system"
   fi
   
