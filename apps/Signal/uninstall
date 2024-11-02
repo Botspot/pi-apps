@@ -1,3 +1,5 @@
 #!/bin/bash
 
+killall 'signal-desktop-unofficial --no-sandbox' 2>/dev/null
+
 purge_packages || exit 1
