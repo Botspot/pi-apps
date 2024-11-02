@@ -2,6 +2,9 @@
 purge_packages || error "Dependencies failed to uninstall"
 
 "${DIRECTORY}/manage" uninstall Scrcpy
-sudo rm -rf /opt/droidbuddy /usr/share/applications/androidbuddy.desktop
+status -n "Removing other files... "
+sudo rm -rf /opt/droidbuddy /usr/share/applications/androidbuddy.desktop #gazlene app install locations
 
-exit 0
+sudo rm -rf /usr/bin/gnirehtet /opt/gnirehtet
+rm -rf ~/.local/share/androidbuddy ~/.local/share/applications/androidbuddy.desktop ~/.local/share/icons/androidbuddy.png
+status_green Done

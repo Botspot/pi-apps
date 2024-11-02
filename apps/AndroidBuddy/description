@@ -1,10 +1,14 @@
-A GUI for Android device recovery and maintenance.
+Share your keyboard, mouse, screen, internet connection, files, and more with your Android phone.
 
-Features: 
-- APK Installation: Install an Android application package with ease.
-- Screen viewing and interaction: Control your device through an scrcpy window.
-- Recover files: Allows you to back up music, downloads, photos or all of your device's files.
-- AND MORE! Check out the website for more info.
+AndroidBuddy is useful for:
+- Reducing eye strain and improving posture by using the phone on a larger screen.
+- Moving big videos to your computer to delete them from the phone
+- Sharing your fast ethernet connection with the phone (save data costs, can be much faster than WiFi)
+- Responding to texts with a full size keyboard
+- Copying and pasting links and other text between computer and phone
+- Using the phone's internet connection. If your computer cannot find the WiFi network, or you want to use the phone's mobile data, this works even if Mobile Hotspot is not part of your cell plan.
 
 To run: Menu > Accessories > AndroidBuddy
-To run in a temrinal: python3 ~/droidbuddy/main.py
+To run in a temrinal: ~/.local/share/androidbuddy/main.sh
+
+NOTE: To use AndroidBuddy, your Android phone must be connected to your computer with a USB cable. If you know adb and scrcpy and want to help add Bluetooth support, contact Botspot.

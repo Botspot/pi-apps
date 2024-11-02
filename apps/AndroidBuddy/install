@@ -1,24 +1,19 @@
 #!/bin/bash
 
+#remove old droidbuddy app from user gazlene that used to be installed by this app
+sudo rm -rf /opt/droidbuddy /usr/share/applications/androidbuddy.desktop
+
+install_packages adb gvfs-backends rustc cargo
+
 "${DIRECTORY}/manage" install-if-not-installed Scrcpy || exit 1
 #Remove scrcpy menu button
 sudo rm -f /usr/share/applications/scrcpy.desktop
 
-install_packages python3-pip python3-dev python3-tk python3-pil.imagetk || error "Failed to install dependencies"
+#download to home folder so androidbuddy can auto-update going forward
+cd ~/.local/share
+git_clone https://github.com/Botspot/androidbuddy || exit 1
+cd
 
-cd /tmp
-git_clone https://gitlab.com/gazlene/droidbuddy || error 'Could not clone AndroidBuddy repo!'
-sudo mv -f /tmp/droidbuddy /opt
-
-sudo pip3 install Pillow
-
-echo "[Desktop Entry]
-Name=AndroidBuddy
-Comment=GUI for Android device recovery and maintainence
-Icon=$(dirname "$0")/icon-64.png
-Exec=python3 main.py
-Path=/opt/droidbuddy
-Type=Application
-Encoding=UTF-8
-Terminal=false
-Categories=Utility;" | sudo tee /usr/share/applications/androidbuddy.desktop
+status -n "Running androidbuddy install script... "
+~/.local/share/androidbuddy/main.sh install || error "AndroidBuddy install script failed, please refer to errors above."
+status_green Done
