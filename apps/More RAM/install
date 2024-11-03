@@ -239,14 +239,14 @@ if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt $((2*1024*1024)) ];then
   echo 'vm.swappiness=100
 vm.vfs_cache_pressure=500
 vm.dirty_background_ratio=1
-vm.dirty_ratio=50' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
+vm.dirty_ratio=50' | sudo tee /etc/sysctl.d/zram.conf
 else
   #otherwise only maximize swappiness
-  echo 'vm.swappiness=100' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
+  echo 'vm.swappiness=100' | sudo tee /etc/sysctl.d/zram.conf
 fi
 
 #this script used to add lines to /etc/sysctl.conf, which is not guaranteed to exist. Remove those lines if found.
-sudo sed -i '/^vm\.swappiness=100$/d ; /^vm\.vfs_cache_pressure=500$/d ; /^vm\.dirty_background_ratio=1$/d ; /^vm\.dirty_ratio=50$/d' /etc/sysctl.conf
+sudo sed -i '/^vm\.swappiness=100$/d ; /^vm\.vfs_cache_pressure=500$/d ; /^vm\.dirty_background_ratio=1$/d ; /^vm\.dirty_ratio=50$/d' /etc/sysctl.conf 2>/dev/null
 
 echo
 status_green "ZRAM should now be set up. Consider rebooting your device."
