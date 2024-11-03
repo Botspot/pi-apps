@@ -235,7 +235,7 @@ status "Changing kernel parameters for better performance:"
 #change kernel values as recommended by: https://haydenjames.io/linux-performance-almost-always-add-swap-part2-zram
 
 #Use aggressive cache clearing if available RAM is less than 2GB (will trigger on 2GB and below systems)
-if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt $(2*1024*1024) ];then
+if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt $((2*1024*1024)) ];then
   echo 'vm.swappiness=100
 vm.vfs_cache_pressure=500
 vm.dirty_background_ratio=1
