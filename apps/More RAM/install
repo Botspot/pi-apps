@@ -27,6 +27,7 @@ status_green() { #announce the success of a major action
   echo -e "\e[92m$1\e[0m" 1>&2
 }
 
+#the below function is unused in this script. Keeping it here as it could be useful elsewhere.
 set_value() { #Add the $1 line to the $2 config file. (setting=value format) This function changes the setting if it's already there.
   local file="$2"
   [ -z "$file" ] && error "set_value: path to config-file must be specified."
@@ -43,12 +44,6 @@ set_value() { #Add the $1 line to the $2 config file. (setting=value format) Thi
   if ! grep -qxF "$setting" "$file" ;then
     echo "$setting" | sudo tee -a "$file" >/dev/null
   fi
-}
-
-set_sysctl_value() { #Change a setting for sysctl. Displays value, changes config file, and sets the value immediately.
-  set_value "$1" /etc/sysctl.conf
-  echo "  - $1"
-  sudo sysctl "$1" >/dev/null
 }
 
 #disable dphys-swapfile service if running
@@ -238,10 +233,20 @@ sudo /usr/bin/zram.sh || exit 1
 
 status "Changing kernel parameters for better performance:"
 #change kernel values as recommended by: https://haydenjames.io/linux-performance-almost-always-add-swap-part2-zram
-set_sysctl_value vm.swappiness=100
-set_sysctl_value vm.vfs_cache_pressure=500
-set_sysctl_value vm.dirty_background_ratio=1
-set_sysctl_value vm.dirty_ratio=50
+
+#Use aggressive cache clearing if available RAM is less than 2GB (will trigger on 2GB and below systems)
+if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt $(2*1024*1024) ];then
+  echo 'vm.swappiness=100
+vm.vfs_cache_pressure=500
+vm.dirty_background_ratio=1
+vm.dirty_ratio=50' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
+else
+  #otherwise only maximize swappiness
+  echo 'vm.swappiness=100' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
+fi
+
+#this script used to add lines to /etc/sysctl.conf, which is not guaranteed to exist. Remove those lines if found.
+sudo sed -i '/^vm\.swappiness=100$/d ; /^vm\.vfs_cache_pressure=500$/d ; /^vm\.dirty_background_ratio=1$/d ; /^vm\.dirty_ratio=50$/d' /etc/sysctl.conf
 
 echo
 status_green "ZRAM should now be set up. Consider rebooting your device."

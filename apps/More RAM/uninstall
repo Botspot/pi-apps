@@ -30,10 +30,7 @@ sudo systemctl disable zram-swap.service
 sudo rm -f /etc/systemd/system/zram-swap.service
 
 status "Reverting kernel parameters"
-sudo sed -i '/^vm\.swappiness/d' /etc/sysctl.conf
-sudo sed -i '/^vm\.vfs_cache_pressure/d' /etc/sysctl.conf
-sudo sed -i '/^vm\.dirty_background_ratio/d' /etc/sysctl.conf
-sudo sed -i '/^vm\.dirty_ratio/d' /etc/sysctl.conf
+sudo rm -f /etc/sysctl.d/zram.conf
 
 if [ -f /usr/sbin/dphys-swapfile ];then
   status "Allowing dphys-swapfile.service to run on boot"
