@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#Thanks to GitHub user @ZhymabekRoman for pointing out that Puffin has secret Linux amd64, i386, and arm64 releases on their repo.
+# https://github.com/ZhymabekRoman/Puffin-Browser-on-Linux/issues/2
+
+warning "Puffin is a pretty bad browser. Please be sure to read the Pi-Apps descripton for this app to see why. If you use Puffin a lot, try to find a different browser that works for you."
+install_packages https://download.puffinbrowser.com/repo/pool/stable/arm64/puffin-internet-terminal-demo_8.2.4.705_arm64.deb || exit 1
+warning "Puffin is a pretty bad browser. Please be sure to read the Pi-Apps descripton for this app to see why. If you use Puffin a lot, try to find a different browser that works for you."
