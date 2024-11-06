@@ -92,6 +92,7 @@ For the mods that are not included in any existing modpack, simply install them 
 You can install the Snap Store from Pi-Apps on a 64bit OS."
   remove_deprecated_app "BalenaEtcher" "32" "The latest version of BalenaEtcher relies on libraries that are not available on ARM 32bit Linux.
 You can install BalenaEtcher from Pi-Apps on a 64bit OS."
+  remove_deprecated_app "Puffin" "" "The Puffin browser demo was never maintained by the upstream developers. It can not run on newer raspberry pi hardware, newer PiOS versions, and any other hardware. We have no choice but to remove this application from Pi-Apps."
   true
 EOF
   ;;
