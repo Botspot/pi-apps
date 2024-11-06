@@ -1,6 +1,3 @@
 #!/bin/bash
-rm -f ~/.local/share/applications/godotengine.desktop
-rm -f ~/.local/share/applications/godot-engine.desktop
-rm -rf ~/Godot
 
-exit 0
+sudo rm -rf /usr/local/share/applications/godot-engine.desktop /opt/godot-*-stable /usr/local/bin/godot

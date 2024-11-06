@@ -1,0 +1,28 @@
+#!/bin/bash
+version=4.3-stable
+
+case "$arch" in
+"64") wget -O /tmp/godot.zip  https://github.com/godotengine/godot/releases/download/${version}/Godot_v${version}_linux.arm64.zip || exit 1 ;;
+"32") wget -O /tmp/godot.zip https://github.com/godotengine/godot/releases/download/${version}/Godot_v${version}_linux.arm32.zip || exit 1 ;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
+sudo rm -rf /opt/godot-${version} /usr/local/bin/godot /usr/local/share/applications/godot-engine.desktop
+sudo unzip /tmp/godot.zip -d /opt/godot-${version} || error "Failed to extract godot to /opt directory"
+rm -f /tmp/godot.zip
+
+case "$arch" in
+"64") sudo ln -s /opt/godot-${version}/Godot_v${version}_linux.arm64 /usr/local/bin/godot || error "Failed to create godot symlink" ;;
+"32") sudo ln -s /opt/godot-${version}/Godot_v${version}_linux.arm32 /usr/local/bin/godot || error "Failed to create godot symlink" ;;
+*) error "Failed to detect OS CPU architecture! Something is very wrong." ;;
+esac
+
+echo "[Desktop Entry]
+Name=Godot Engine
+Comment=Your free, open‑source game engine.
+Exec=/usr/local/bin/godot
+Icon=$(dirname $0)/icon-64.png
+Terminal=false
+Type=Application
+Categories=Development;
+StartupNotify=true" | sudo tee /usr/local/share/applications/godot-engine.desktop > /dev/null

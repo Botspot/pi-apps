@@ -1,6 +1,6 @@
-Open Source Game Engine that runs fine on the Raspberry Pi (for 2d games).
-For the export instructions for Raspberry Pi, go to the website.
-This software will only run on the Raspberry Pi 4/Raspberry Pi 400.
-GLES2 projects are recommended.
+Your free, open‑source game engine.
+Develop your 2D & 3D games, cross-platform projects, or even XR ideas!
+
+Godot 4.X requires Vulkan 1.0, OpenGL 3.3, or OpenGLES 3.0 compatible hardware (eg: Pi4 and newer)
 To run from GUI: Menu -> Programming -> Godot
-To run in a terminal: ~/Godot/godot_*-stable_rpi4_editor*
+To run in a terminal: godot
