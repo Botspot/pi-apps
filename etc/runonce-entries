@@ -101,6 +101,7 @@ You can install BalenaEtcher from Pi-Apps on a 64bit OS."
   remove_deprecated_app "MuseScore2"
   remove_deprecated_app "Pale Moon Browser"
   remove_deprecated_app "Pale Moon"
+  remove_deprecated_app "Lokinet" "" "Lokinet has not had an ARM version in several years. If you still use this, go find an alternative like Tor or a VPN, or ask Lokinet to work on ARM support.
   true
 EOF
   ;;

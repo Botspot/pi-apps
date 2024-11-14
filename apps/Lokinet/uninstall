@@ -1,5 +1,0 @@
-#!/bin/bash
-
-sudo rm -rf /etc/apt/sources.list.d/oxen.list /etc/apt/trusted.gpg.d/oxen.gpg /etc/systemd/system/lokinet.service /etc/systemd/system/lokinet.service.d /etc/systemd/system/lokinet-testnet.service
-
-purge_packages || exit 1
