@@ -1,5 +1,5 @@
 #!/bin/bash
 
 purge_packages || exit 1
-rm -rf ~/cloudbuddy ~/.local/share/applications/cloudbuddy.desktop
+rm -rf ~/cloudbuddy ~/.local/share/applications/cloudbuddy.desktop ~/.local/share/icons/cloudbuddy.png
 
