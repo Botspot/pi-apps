@@ -1,0 +1,9 @@
+Add a bit of color coding to the documentation for linux commands.
+You may have used the man command before.
+man grep
+man sudo
+man ffmpeg
+These are the manuals for all your linux commands, but everything is black and white. This script adds a red color to the program flag options, and gives a green color to any underlined text in the document. Result: more easily readible and digestable manpages.
+
+To customize the colors, go familiarize yourself with the shell color codes here: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+Then, as root, go edit this file: /usr/local/bin/man

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#adapted from https://www.howtogeek.com/683134/how-to-display-man-pages-in-color-on-linux/
+
+sudo mkdir -p /usr/local/bin
+
+status "Creating /usr/local/bin/man"
+echo "#!/bin/bash
+LESS_TERMCAP_md=$'\e[01;31m' \
+LESS_TERMCAP_me=$'\e[0m' \
+LESS_TERMCAP_us=$'\e[01;32m' \
+LESS_TERMCAP_ue=$'\e[0m' \
+LESS_TERMCAP_so=$'\e[46;30m' \
+LESS_TERMCAP_se=$'\e[0m' \
+/usr/bin/man "\""$@"\" | sudo tee /usr/local/bin/man >/dev/null
+
+status "Making executable: /usr/local/bin/man"
+sudo chmod +x /usr/local/bin/man
