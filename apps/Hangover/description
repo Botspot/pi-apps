@@ -1,0 +1,10 @@
+Hangover runs simple Win64 and Win32 applications on arm64 Linux. Only the application is emulated instead of a whole Wine installation.
+
+Examples on how to run:
+
+$ wine your_x86_64_application.exe # Uses FEX for 64-bit apps
+$ wine your_x86_application.exe # To use Box64 for 32-bit apps
+$ HODLL=libwow64fex.dll wine your_x86_application.exe # To use FEX for 32-bit apps
+$ HODLL=xtajit.dll taskset -c 1 wine your_x86_application.exe # To use QEMU for 32-bit apps (limited to 1 core to workaround a bug)
+
+For more information see https://github.com/AndreRH/hangover/blob/master/README.md
