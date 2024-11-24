@@ -1,0 +1,29 @@
+#!/bin/bash
+
+version=2.7.0
+
+#installs libfuse2
+enable_module fuse || exit 1
+
+wget -O /tmp/feather.AppImage https://github.com/feather-wallet/feather/releases/download/${version}/feather-${version}-arm.AppImage || error "Failed to download!"
+sudo mv -f /tmp/feather.AppImage /opt
+sudo chmod +x /opt/feather.AppImage
+
+sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/icons/hicolor/64x64/apps/feather.png || error "failed to copy icon"
+
+#refresh icon caches
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+echo "[Desktop Entry]
+Type=Application
+Name=Feather Wallet
+GenericName=Monero Wallet
+Comment=A free Monero desktop wallet
+Icon=feather
+Exec=/opt/feather.AppImage
+Terminal=false
+Categories=Network;
+StartupNotify=true
+StartupWMClass=feather
+Keywords=crypto;currency;XMR" | sudo tee /usr/share/applications/feather.desktop >/dev/null || error "Failed to create menu button!"
