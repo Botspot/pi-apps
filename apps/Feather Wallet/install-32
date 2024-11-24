@@ -15,6 +15,14 @@ sudo cp -f "$(dirname "$0")/icon-64.png" /usr/share/icons/hicolor/64x64/apps/fea
 sudo update-icon-caches /usr/share/icons/*
 sudo xdg-icon-resource forceupdate --mode system
 
+#use dark mode by default
+if [ ! -f ~/.config/feather/settings.json ];then
+  mkdir -p ~/.config/feather
+  echo '{
+    "skin": "QDarkStyle"
+}' > ~/.config/feather/settings.json
+fi
+
 echo "[Desktop Entry]
 Type=Application
 Name=Feather Wallet

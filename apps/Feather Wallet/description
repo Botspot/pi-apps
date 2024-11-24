@@ -2,5 +2,7 @@ Store Monero cryptocurrency with Feather Wallet - better experience than Monero 
 Monero is a privacy currency, allowing easy money transfers to others without oppresive governments, hackers, or foreign adversaries knowing how much you sent or to whom.
 Feather wallet allows you to store your currency securely. Usually this requires downloading the whole blockchain (Around 60gb for a pruned node), but Feather Wallet allows you to connect to remote nodes and will fetch the blockchain data very fast so you can get transacting quickly. It will check a list of nodes speed and pick the fastest one. Chances are if you have used the offical Monero GUI wallet you have experienced crashes, and sometimes annoying bugs. If you want a less buggy, more simple wallet Feather wallet is for you! It just works....
 
+This site compares Feather to the official Monero wallet software: https://docs.featherwallet.org/guides/features
+
 To run: Menu -> Internet -> Feather Wallet
 To run in a terminal: /opt/feather.AppImage
