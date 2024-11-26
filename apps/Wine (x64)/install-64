@@ -461,7 +461,7 @@ fi #end of if statement that only runs if this script was started when there was
 export W_OPT_UNATTENDED=1 #Avoid opening any dialog windows; install everything in unattended mode
 
 installed="\$(WINETRICKS_SUPER_QUIET=1 winetricks -q list-installed 2>/dev/null)"
-for i in mfc42 vcrun6 vcrun2003 fontfix corefonts gdiplus msxml3 vcrun2005sp1 vcrun2008 ;do
+for i in mfc42 vcrun6 vcrun2003 fontfix corefonts gdiplus msxml3 vcrun2005 vcrun2008 ;do
   echo
   status -n "Installing \$i with winetricks..."
   if echo "\$installed" | grep -qFx "\$i" ;then
