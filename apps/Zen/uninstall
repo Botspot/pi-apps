@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sudo rm -rf /opt/zen-browser /usr/share/applications/zen-browser.desktop
+
+for i in 16x16 32x32 48x48 64x64 128x128; do
+  sudo rm -f /usr/share/icons/hicolor/$i/apps/zen-browser.png
+done
