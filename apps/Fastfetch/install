@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.30.1
+version=2.31.0
 
 case "$arch" in
 "64") install_packages https://github.com/fastfetch-cli/fastfetch/releases/download/${version}/fastfetch-linux-aarch64.deb || exit 1 ;;
