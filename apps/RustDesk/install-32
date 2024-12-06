@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.3.4
+version=1.3.5
 
 if [ "$XDG_SESSION_TYPE" == wayland ];then
   install_packages https://github.com/rustdesk/rustdesk/releases/download/${version}/rustdesk-${version}-armv7-sciter.deb xdg-desktop-portal-wlr || exit 1
