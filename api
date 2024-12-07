@@ -160,8 +160,15 @@ package_latest_version() { #returns the latest available versions of the specifi
   local package="$1"
   [ -z "$package" ] && error "package_latest_version(): no package specified!"
   
+  #support repo selection as '-t bookworm-backports' for $2 and $3
+  local additional_flags
+  additional_flags=()
+  if [ "$2" == '-t' ];then
+    additional_flags=(-t "$3")
+  fi
+  
   # use slower but more accurate apt list command to get package version for current architecture
-  apt-cache policy "$package" 2>/dev/null | grep "Candidate: " | awk '{print $2}'
+  apt-cache policy "${additional_flags[@]}" "$package" 2>/dev/null | grep "Candidate: " | awk '{print $2}'
   #grep -rx "Package: $package" /var/lib/apt/lists --exclude="lock" --exclude-dir="partial" --after 4 | grep -o 'Version: .*' | awk '{print $2}' | sort -rV | head -n1
 }
 
@@ -476,8 +483,11 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   #convert input array to newline-separated string
   local IFS=' '
+  local repo_selection='' #store selected repo to install from, eg. bookworm-backports
   while [ $# -gt 0 ]; do
-    if [ "$1" == '-t' ];then #pass through -t args to apt: for "-t bookworm-backports"
+    #pass through -t args to apt: for "-t bookworm-backports"
+    if [ "$1" == '-t' ];then
+      repo_selection="$2"
       apt_flags+=('-t' "$2")
       shift
       shift
@@ -575,7 +585,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       using_local_packages=1 #remember that the pi-apps-local-packages repository is being used
       
       #replace package url with name of package
-      packages="$(echo "$packages" | sed "s|$package|$packagename (>= $packageversion)|")"
+      packages="$(echo "$packages" | sed "s|^${package}$|$packagename (>= $packageversion)|")"
       
     #expand regex (package-name contains *)
     elif echo "$package" | grep -q '*' ;then 
@@ -586,6 +596,12 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #replace package with expanded list
       packages="$(echo "$packages" | grep -vF "$package")"$'\n'"$list"
+    
+    #request package version if backports repo was specified
+    elif [ ! -z "$repo_selection" ];then
+      local packageversion="$(package_latest_version "$package" -t "$repo_selection" | sed 's/+.*//g')"
+      #add version specification to package
+      packages="$(echo "$packages" | sed "s|^${package}$|$package (>= $packageversion)|")"
     fi
   done
   #now package list shouldn't contain any '*' characters, urls, local filepaths
