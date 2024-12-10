@@ -1,6 +1,9 @@
 Hangover runs simple Win64 and Win32 applications on arm64 Linux. Only the application is emulated instead of a whole Wine installation.
 
-Hangover can be used in place of the Wine app on Pi-Apps. If you have Wine installed already, clicking Install here will uninstall Wine first. Do note that installed applications and configuration left over from Wine in ~/.wine will need to be removed or renamed, as it appears Hangover cannot import it.
+Hangover can be used in place of the Wine app on Pi-Apps. It may be worth trying this to see if something that did not run on the emulated Wine will run here.
+For example, one app (tested by Botspot) failed to launch the installer on emulated Wine (x64), got stuck installing on Hangover with the Box64 emulator, and successfully installed with the FEX emulator selected. (see how to select an emulator below)
+
+If you have Wine installed already, clicking Install here will uninstall Wine first. Do note that installed applications and configuration left over from Wine in ~/.wine will need to be removed or renamed, as it appears Hangover cannot import it.
 
 Examples on how to run:
 $ wine your_x86_64_application.exe # Uses FEX for 64-bit apps
