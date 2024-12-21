@@ -31,6 +31,9 @@ Would you like to automatically switch to a 4K PageSize Linux Kernel?"
   fi
 fi
 
+# Wine conflicts with Hangover
+"${DIRECTORY}/manage" uninstall Hangover
+
 # Get dependencies
 install_packages cabextract p7zip-full || exit 1
 
