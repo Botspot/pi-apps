@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.14.18-apk-regular
+version=4.14.19
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
