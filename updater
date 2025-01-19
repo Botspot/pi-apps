@@ -441,7 +441,7 @@ update_app() { #first arg is app name
   
   #Set terminal title
   echo -ne "\e]0;Updating ${app}\a"
-
+  
   # check if update app folder exists before doing anything
   # it can happen that executing the updater from the pi-apps GUI the update folder is missing
   # if the user has no internet or internet issues the update folder will be removed due to the failed git pull and then wait in the loop for a new git clone
@@ -452,15 +452,17 @@ update_app() { #first arg is app name
     if will_reinstall "$app";then
       installback=yes
       status "$app's install script has been updated. Reinstalling $app..."
-      #uninstall it
-      "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+      #uninstall it - if retrying an update with successful uninstall and failed install, don't uninstall again
+      if [ "$(app_status "$app")" != uninstalled ];then
+        "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
+      fi
       
       #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
       if [ "$(app_status "$app")" == installed ];then
         echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
       fi
     fi
-
+    
     no_status=true refresh_app "$app"
     
     failed=false
@@ -558,7 +560,7 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
   #load the app list now to reduce launch time
   refresh_app_list &
   
-  action=update diagnose_apps "$failed_apps"
+  diagnose_apps "$(echo "$failed_apps" | sed 's/^/update;/g')"
 }
 
 update_now_gui() { #input: updatable_files and updatable_apps variables
@@ -620,7 +622,7 @@ update_now_background() { #input: updatable_apps and updatable_files variables
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       continue
     # if app will be reinstalled then don't try to reinstall it in the background
-    elif will_reinstall "$app"; then
+    elif [ "$(app_status "${app}")" == 'installed' ];then
       continue
     # if app failed to install last time, show this app refresh to the user.
     elif [ "$(app_status "${app}")" == 'corrupted' ];then
