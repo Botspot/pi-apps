@@ -2,4 +2,6 @@
 
 killall 'signal-desktop-unofficial --no-sandbox' 2>/dev/null
 
+sudo rm -f '/opt/Signal Unofficial/signal-wayland.sh'
+
 purge_packages || exit 1
