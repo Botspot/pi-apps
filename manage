@@ -417,9 +417,9 @@ $app"
     fi
   fi
   
-  [ -z "$geometry2" ] && geometry2='--center'
+  [ -z "$geometry2" ] && geometry2='--center --width=330 --height=400'
   
-  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true \
@@ -428,13 +428,19 @@ $app"
   
   trap "kill $yadpid 2>/dev/null" EXIT
   
+  "${DIRECTORY}/etc/terminal-run" '
+  DIRECTORY="'"$DIRECTORY"'"
+  source "${DIRECTORY}/api"
+  generate_logo
+  
+  queue=""
+  
   #Used to track which line of $queue is currently being dealt with.
   current_line_num=1
   
   sourced_updater=0 #updater script needs to be sourced if files are updated. This allows it to only be sourced once.
   
-  queue=''
-  IFS=$'\n'
+  IFS=$'\''\n'\''
   while true;do #repeat until nothing is left in the queue
     
     #check for new actions to be executed
@@ -445,13 +451,13 @@ $app"
     if [ -z "$queue" ];then
       queue="$new_lines"
     elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
-      queue+=$'\n'"$new_lines"
+      queue+=$'\''\n'\''"$new_lines"
     fi
     
     #check if queue is complete - diagnose apps and provide the opportunity to retry failed actions, otherwise exit loop
     if [ "${current_line_num}" -gt "$(echo "$queue" | wc -l)" ];then
-      #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
-      failed_apps="$(echo "$queue" | grep ';1$' | sed 's/;1$//g')"
+      #diagnose every failed apps logfile - list item format is $action;$app;$exitcode
+      failed_apps="$(echo "$queue" | grep '\'';1$'\'' | sed '\''s/;1$//g'\'')"
       retry_apps="$(diagnose_apps "$failed_apps")"
       if [ -z "$retry_apps" ];then
         #user chose to not retry the failed action(s).
@@ -462,15 +468,15 @@ $app"
           break
         else
           #Replace past '1' exit codes with "diagnosed" to avoid repeated diagnosis
-          queue="$(echo "$queue" | sed 's/;1$/;diagnosed/g')"
+          queue="$(echo "$queue" | sed '\''s/;1$/;diagnosed/g'\'')"
           #user added more actions while the diagnosis window was open
-          queue+=$'\n'"$new_lines"
+          queue+=$'\''\n'\''"$new_lines"
         fi
       else
         #user chose to retry action(s). Replace '1' exit codes with "diagnosed" to avoid repeated diagnosis
-        queue="$(echo "$queue" | sed 's/;1$/;diagnosed/g')"
+        queue="$(echo "$queue" | sed '\''s/;1$/;diagnosed/g'\'')"
         #and now add to queue the actions we want to retry.
-        queue+=$'\n'"$retry_apps"
+        queue+=$'\''\n'\''"$retry_apps"
       fi
     fi
     
@@ -483,19 +489,19 @@ $app"
     fi
     
     #echo "current position in queue is ${current_line_num}"
-    #echo "queue is '$queue'"
+    #echo "queue is $queue"
     
     line="$(echo "$queue" | sed -n "${current_line_num}"p)"
-    #echo "Now handling request: '$line'"
+    #echo "Now handling request: $line"
     
     #indicate current action in current line of $queue
     queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
     
     #get first word of this line - the action. Subsequent words are the name of the app.
-    action="$(echo "$line" | awk -F';' '{print $1}')"
-    app="$(echo "$line" | awk -F';' '{print $2}')"
+    action="$(echo "$line" | awk -F'\'';'\'' '\''{print $1}'\'')"
+    app="$(echo "$line" | awk -F'\'';'\'' '\''{print $2}'\'')"
     
-    #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is 'dropped input'
+    #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is "dropped input"
     if [ -z "$write_list_pid" ] || ! process_exists "$write_list_pid" ;then
       write_list "$queue" &
       write_list_pid=$!
@@ -503,7 +509,7 @@ $app"
       #secondary list-writing background process - kill it if it exists because write_list just sent a newer version of the list to yad
       [ ! -z "$secondary_write_list_pid" ] && kill "$secondary_write_list_pid" 2>/dev/null
     else
-      #if app1 is refreshed and app2 is then reinstalled, the list would only say app1 is bring refreshed for the entirety of app2's reinstallation, due to the process-skipping.
+      #if app1 is refreshed and app2 is then reinstalled, the list would only say app1 is bring refreshed for the entirety of app2s reinstallation, due to the process-skipping.
       #launch a secondary background process that waits for $write_list_pid to finish
       
       #only allow one secondary background process to run; kill previous jobs and start a new one
@@ -559,7 +565,19 @@ ${DIRECTORY}/icons/none-1.png
   rm -f "${DIRECTORY}/data/manage-daemon/pid"
   
   #close the queue-viewer window in a few seconds
-  (sleep 5; kill $yadpid 2>/dev/null) &
+  (sleep 5; kill $yadpid 2>/dev/null) &' "Terminal Output"
+  
+  # Check if terminal-run failed to launch. GUI users don't see any terminal output if it fails (since there is no terminal open) so we need to prompt them with a GUI window
+  if [ "$?" != 0 ]; then
+    echo -e "Unable to open a terminal.\nDebug output below.\n$(DEBUG=1 "${DIRECTORY}/etc/terminal-run" 2>&1)" | yad --class Pi-Apps --name "Pi-Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" \
+    --width=700 --height=300 --text-info --title="Error occured when calling terminal-run" \
+    --image="${DIRECTORY}/icons/error.png" --image-on-top --fontname=12 \
+    --button='OK'
+    if echo "$queue" | grep -q "^update-file;" ;then
+      typeset -f update_now_cli &>/dev/null || source "${DIRECTORY}/updater" source
+      updatable_apps='' updatable_files="$(echo "$queue" | grep "^update-file;" | sed 's/^update-file;//g')" update_now_cli
+    fi
+  fi
   
   # if update refresh or update-file actions were run then update the .git folder
   if [ "$sourced_updater" == 1 ]; then
