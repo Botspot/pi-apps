@@ -1081,7 +1081,7 @@ terminal_manage() { # wrapper for the original terminal_manage function to termi
   terminal_manage_multi "$action $app"
 }
 
-terminal_manage_multi() { #function to install/uninstall/update/refresh multiple apps (or filelists) - refreshes the app list
+terminal_manage_multi() { #function to install/uninstall/update/refresh multiple apps - refreshes the app list if applicable
   local queue="$1" #one or multiple actions and app names
   
   #To prevent multiple simultaneous manage instances, use the 'daemon' mode. This will create a queue of actions that are executed concurrently.
