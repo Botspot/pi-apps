@@ -509,6 +509,7 @@ ${DIRECTORY}/icons/none-1.png
   }
   
   summary_window() { #given $queue, summarize what was done
+    local IFS=$'\n'
     export botspot_message='to Botspot (Pi-Apps founder, college student, nearly bankrupt)'
     export gman_message='to theofficialgman (notable Pi-Apps contributor)'
     summary_window_click_function() {
@@ -535,14 +536,14 @@ ${DIRECTORY}/icons/none-1.png
 ${DIRECTORY}/icons/$action.png
 $(echo "${action^}ed" | sed 's/Updateed/Updated/g')
 ${DIRECTORY}/apps/$app/icon-64.png
-<big><b>$app</b></big>"
+<big><big><b>$app</b></big></big>"
       else
         #if status is 1, then action completed unsuccessfully.
         echo "${DIRECTORY}/icons/failure.png
 ${DIRECTORY}/icons/$action.png
 Failed to $action
 ${DIRECTORY}/apps/$app/icon-64.png
-<big><b>$app</b></big>"
+<big><big><b>$app</b></big></big>"
       fi
     done
     #display donate message at the end
