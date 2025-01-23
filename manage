@@ -521,14 +521,15 @@ ${DIRECTORY}/icons/none-1.png
     }
     export -f summary_window_click_function
     
+    #avoid flooding the summary window with less important completed actions
+    queue="$(echo "$queue" | grep -v '^update-file;\|^refresh;')"
+    #skip summary window if it was just app and file refreshes
+    [ -z "$queue" ] && return 0
+    
     (for line in $queue ;do
       action="$(echo "$line" | awk -F';' '{print $1}')"
       app="$(echo "$line" | awk -F';' '{print $2}')"
       status="$(echo "$line" | awk -F';' '{print $3}')"
-      
-      if [ "$action" == update-file ] || [ "$action" == refresh ];then
-        continue #avoid flooding the summary window with less important completed actions
-      fi
       
       if [ "$status" == 0 ];then
         #if status is 0, then action completed successfully.
@@ -557,7 +558,7 @@ ${DIRECTORY}/icons/none-24.png
 <u><b>Donate</b></u>
 ${DIRECTORY}/icons/theofficialgman.png
 $gman_message"
-    ) | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Actions complete' \
+    ) | yad --class Pi-Apps --name "Pi-Apps" --width=480 --height=400 "$geometry2" --title='Actions complete' \
         --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
         --wrap-width=190 --wrap-cols=5 --close-on-unfocus \
         --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
@@ -624,7 +625,7 @@ $gman_message"
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=480 --height=400 "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
     --dclick-action=true --select-action=true --no-selection \
