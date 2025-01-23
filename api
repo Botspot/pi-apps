@@ -1568,11 +1568,12 @@ will_reinstall() { #return 0 if $1 app will be reinstalled during an update, oth
   [ -z "$app" ] && error 'will_reinstall(): requires an argument'
   
   #exit immediately if app is not installed.
-  #if [ "$(app_status "$app")" != 'installed' ];then
-  #  return 1
-  #fi
+  if [ "$(app_status "$app")" != 'installed' ];then
+    return 1
+  fi
   #it seems that the above code was added for speed alone https://github.com/Botspot/pi-apps/commit/d8bfc3f5fc9b42060bfbd68a11b24f66246d61bc
   #commenting it out allows retrying failed app update where uninstall succeeds but install fails
+  #edit: uncommented it again because all uninstalled app refreshes were now being installed
   
   #detect which installation script exists - both for local install and for update directory
   local local_scriptname="$(script_name_cpu "$app")"

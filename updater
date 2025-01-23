@@ -433,7 +433,7 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   
 }
 
-update_app() { #first arg is app name
+update_app() { #given app name, uninstall it, update app folder, install it again
   local app="$1"
   [ -z "$app" ] && error "update_app(): no app specified!"  
   status "Updating \e[1m${app}\e[0m\e[96m..."
@@ -448,36 +448,30 @@ update_app() { #first arg is app name
   # the GUI updater executes check_repo with the "fast" option so it skips updating the pi-apps update folder and obtains any previously determined updatable apps and files
   # if we do not check for this then apps will be removed, the older version moved to trash, and then the new version will fail to copy over since it does not exist
   if [ -d "${DIRECTORY}/update/pi-apps/apps/${app}" ]; then
-    local installback=no
-    if will_reinstall "$app";then
-      installback=yes
-      status "$app's install script has been updated. Reinstalling $app..."
-      #uninstall it - if retrying an update with successful uninstall and failed install, don't uninstall again
-      if [ "$(app_status "$app")" != uninstalled ];then
-        "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
-      fi
-      
-      #fix edge case: if app is installed but uninstall script doesn't exist somehow, then pretend app was uninstalled so that the reinstall later will happen noninteractively
-      if [ "$(app_status "$app")" == installed ];then
-        echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-      fi
+    
+    status "$app's install script has been updated. Reinstalling $app..."
+    #uninstall it - if retrying an update with successful uninstall and failed install, don't uninstall again
+    if [ "$(app_status "$app")" != uninstalled ];then
+      "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
     fi
+    
+    #fix edge case: force-pretend app was uninstalled so that the reinstall later will happen noninteractively
+    echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
     
     no_status=true refresh_app "$app"
     
-    failed=false
-    if [ "$installback" == 'yes' ];then
-      #install the app again
-      "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
-      if [ $? != 0 ]; then
-        failed=true
-      else
-        # click update link only if app is already installed and the update succeeded
-        shlink_link "$app" update &
-      fi
+    local failed=false
+
+    #install the app again
+    "${DIRECTORY}/manage" install "$app" update #report to the app install script that this is an install for the purpose of updating by passing "update"
+    if [ $? != 0 ]; then
+      failed=true
+    else
+      # click update link only if app is already installed and the update succeeded
+      shlink_link "$app" update &
     fi
   else
-    failed=true
+    local failed=true
   fi
   
   if [ "$failed" == 'true' ]; then
@@ -489,7 +483,7 @@ update_app() { #first arg is app name
   fi
 }
 
-refresh_app() { #first arg is app name
+refresh_app() { #update app folder only
   local app="$1"
   [ -z "$app" ] && error "refresh_app(): no app specified!"  
   [ "$no_status" != true ] && status -n "Refreshing \e[1m${app}\e[0m\e[96m... "
@@ -537,7 +531,11 @@ update_now_cli() { #input: updatable_files and updatable_apps variables
   done
   
   for app in $updatable_apps ;do
-    update_app "$app"
+    if will_reinstall "$app" ;then
+      update_app "$app"
+    else
+      refresh_app "$app"
+    fi
   done
   
   update_git
@@ -551,7 +549,11 @@ update_now_gui_apps() { # deprecated function that is only here so old updater s
   local failed_apps=""
   local IFS=$'\n'
   for app in $updatable_apps ;do
-    update_app "$app" || failed_apps+="$app"$'\n'
+    if will_reinstall "$app" ;then
+      update_app "$app" || failed_apps+="$app"$'\n'
+    else
+      refresh_app "$app" || failed_apps+="$app"$'\n'
+    fi
   done
   
   #Set terminal title
@@ -622,7 +624,7 @@ update_now_background() { #input: updatable_apps and updatable_files variables
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
       continue
     # if app will be reinstalled then don't try to reinstall it in the background
-    elif [ "$(app_status "${app}")" == 'installed' ];then
+    elif will_reinstall "$app"; then
       continue
     # if app failed to install last time, show this app refresh to the user.
     elif [ "$(app_status "${app}")" == 'corrupted' ];then
