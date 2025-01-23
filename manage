@@ -485,6 +485,9 @@ $app"
       current_line_num=$((current_line_num+1))
     done
     
+    #Daemon has stopped listening, so remove its pid file
+    rm -f "${DIRECTORY}/data/manage-daemon/pid"
+    
     #refresh the list in queue-viewer window for the final time with all actions complete
     [ ! -z "$secondary_write_list_pid" ] && kill "$secondary_write_list_pid" 2>/dev/null #kill secondary list writer
     wait $write_list_pid
@@ -497,11 +500,69 @@ Done.
 ${DIRECTORY}/icons/none-1.png
 " > "${DIRECTORY}/data/manage-daemon/yadlist"
     
-    #all actions have been completed. Daemon has effectively stopped listening, so remove its pid file
-    rm -f "${DIRECTORY}/data/manage-daemon/pid"
-    
     #close the queue-viewer window in a few seconds
     (sleep 5; kill $yadpid 2>/dev/null) &
+    
+    #display "all done" window where the queue was
+    export -f summary_window
+    setsid bash -c summary_window
+  }
+  
+  summary_window() { #given $queue, summarize what was done
+    export botspot_message='to Botspot (college student, Pi-Apps founder, kicked out, needs money)'
+    export gman_message='to theofficialgman (notable Pi-Apps contributor)'
+    summary_window_click_function() {
+      if [ "$5" == "$botspot_message" ];then
+        xdg-open 'https://github.com/sponsors/botspot'
+      elif [ "$5" == "$gman_message" ];then
+        xdg-open 'https://github.com/sponsors/theofficialgman'
+      fi
+    }
+    export -f summary_window_click_function
+    
+    (for line in $queue ;do
+      action="$(echo "$line" | awk -F';' '{print $1}')"
+      app="$(echo "$line" | awk -F';' '{print $2}')"
+      status="$(echo "$line" | awk -F';' '{print $3}')"
+      
+      if [ "$action" == update-file ] || [ "$action" == refresh ];then
+        continue #avoid flooding the summary window with less important completed actions
+      fi
+      
+      if [ "$status" == 0 ];then
+        #if status is 0, then action completed successfully.
+        echo "${DIRECTORY}/icons/success.png
+${DIRECTORY}/icons/$action.png
+$(echo "${action^}ed" | sed 's/Updateed/Updated/g')
+${DIRECTORY}/apps/$app/icon-64.png
+<big><b>$app</b></big>"
+      else
+        #if status is 1, then action completed unsuccessfully.
+        echo "${DIRECTORY}/icons/failure.png
+${DIRECTORY}/icons/$action.png
+Failed to $action
+${DIRECTORY}/apps/$app/icon-64.png
+<big><b>$app</b></big>"
+      fi
+    done
+    #display donate message at the end
+    echo "${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/none-24.png
+<u><b>Donate</b></u>
+${DIRECTORY}/icons/botspot.png
+$botspot_message
+${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/none-24.png
+<u><b>Donate</b></u>
+${DIRECTORY}/icons/theofficialgman.png
+$gman_message"
+    ) | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Actions complete' \
+        --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
+        --wrap-width=190 --wrap-cols=5 --close-on-unfocus \
+        --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --text="Thank you for using Pi-Apps! The following apps completed:" \
+        --dclick-action=true --select-action="bash -c "\""summary_window_click_function %s"\""" \
+        --button=' Close '!"${DIRECTORY}/icons/exit.png":0 >/dev/null &
   }
   
   if [ "$2" == source ];then
@@ -565,14 +626,15 @@ ${DIRECTORY}/icons/none-1.png
   tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-    --dclick-action=true --select-action=true \
+    --dclick-action=true --select-action=true --no-selection \
     --no-buttons &
   yadpid=$!
   
   trap "kill $yadpid 2>/dev/null" EXIT
   
   "${DIRECTORY}/etc/terminal-run" '
-  trap "sleep 5" EXIT
+  geometry2="'"$geometry2"'"
+  yadpid="'"$yadpid"'"
   export DIRECTORY="'"$DIRECTORY"'"
   source "${DIRECTORY}/api"
   generate_logo
@@ -593,13 +655,13 @@ ${DIRECTORY}/icons/none-1.png
     fi
   fi
   
-  # if update refresh or update-file actions were run then update the .git folder
+  # if update, refresh, or update-file actions were run, then update the .git folder
   if [ "$sourced_updater" == 1 ]; then
     update_git
   fi
   
   #updates could have been run as part of the manage-daemon, so update the updatable-files and updatable-apps status files
-  "${DIRECTORY}/updater" set-status  
+  "${DIRECTORY}/updater" set-status
   
 elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
