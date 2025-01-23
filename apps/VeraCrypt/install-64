@@ -1,8 +1,8 @@
 #!/bin/bash
 
 version=1.26.7
-version2=1.26.14
-version3=1.26.14
+version2=1.26.18
+version3=1.26.18
 
 case $(get_codename) in
 bionic)
