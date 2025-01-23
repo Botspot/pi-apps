@@ -192,4 +192,4 @@ Embed code (Light):
 > Pi-Apps took around 14 days to lay the groundwork, and ever since then it has been continually, and exponentially, improved. I (Botspot) am not the sole programmer anymore - [others](https://github.com/Botspot/pi-apps/graphs/contributors) have stepped in and made improvements too.
 
  - Is Pi-Apps free?
-> Absolutely! In the future, I may allow donations, but Pi-Apps itself will always be free and open-source.
+> Absolutely! [Donations are welcome](https://github.com/sponsors/botspot), but Pi-Apps itself will always be free and open-source.
