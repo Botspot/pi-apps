@@ -312,6 +312,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables, outpu
   
   local LIST=''
   local app
+  local num_new_apps=0 #track how many newly available apps there are. If there are a lot, the user may be unchecking them, misunderstanding pi-apps updates
   local compressed_update=''
   for app in $updatable_apps ;do #generate a yad list for every updatable app
     # get app tooltip
@@ -319,6 +320,7 @@ list_updates_gui() { #input: updatable_apps and updatable_files variables, outpu
     # if ${app} folder did not exist before and install-${arch}, install, or packages file is in the new update, then this is a "new app"
     # results in applications that only have support for a different architecture to show under the compressed update
     if [ ! -d "${DIRECTORY}/apps/${app}" ] && ( [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] || [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/packages" ] ); then
+      num_new_apps=$((num_new_apps+1))
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
@@ -326,6 +328,7 @@ refresh-app:$app
 $line"$'\n'
     # if install-${arch} is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
+      num_new_apps=$((num_new_apps+1))
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
@@ -333,6 +336,7 @@ refresh-app:$app
 $line"$'\n'
     # similar to the above. if install script is in the new update and it was not installable on this system before, then this is a "new app".
     elif [ -f "${DIRECTORY}/update/pi-apps/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/install-${arch}" ] && [ ! -f "${DIRECTORY}/apps/${app}/install" ] && [ ! -f "${DIRECTORY}/apps/${app}/packages" ]; then
+      num_new_apps=$((num_new_apps+1))
       LIST+="TRUE
 ${DIRECTORY}/update/pi-apps/apps/${app}/icon-24.png
 $app (new app)
@@ -408,11 +412,18 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
     exit 0
   fi
   
+  # if user has 5+ "new apps", they may be unchecking them all each time. Provide an explanatory message.
+  if [ $num_new_apps -ge 5 ];then
+    local update_hint_message="<b>Pro tip:</b> <u>please leave the "\""new apps"\"" checked.</u> This is just how Pi-Apps announces a new app that can be installed. Unless you have a very specific reason to keep an old app version, don't uncheck anything."
+  else
+    local update_hint_message="Uncheck an item to skip updating it."
+  fi
+  
   #Display a list of everything updatable
   output="$(echo "$LIST" | yad --class Pi-Apps --name "Pi-Apps" --center --title='Pi-Apps' \
     --window-icon="${DIRECTORY}/icons/logo.png" --width=310 --height=300 \
     --list --checklist --separator='\n' --print-column=4 --no-headers \
-    --text="Updates available:"$'\n'"Uncheck an item to skip updating it." \
+    --text="Updates available:"$'\n'"$update_hint_message" \
     --column=:CHK --column=:IMG --column=Name --column=ID:HD --column=tip:HD --tooltip-column=5 \
     --button='Cancel'!"${DIRECTORY}/icons/exit.png"!"Close without updating anything":1 \
     --button='Update now'!"${DIRECTORY}/icons/download.png":0 \
