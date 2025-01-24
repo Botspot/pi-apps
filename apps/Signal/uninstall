@@ -1,6 +1,6 @@
 #!/bin/bash
 
-killall 'signal-desktop-unofficial --no-sandbox' 2>/dev/null
+ps aux | grep 'signal-desktop-unofficial' | grep -v 'grep\|--type=' | head -n1 | awk '{print $2}' | xargs kill 2>/dev/null
 
 sudo rm -f '/opt/Signal Unofficial/signal-wayland.sh'
 
