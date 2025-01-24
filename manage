@@ -514,9 +514,15 @@ ${DIRECTORY}/icons/none-1.png
     export gman_message='to theofficialgman (notable Pi-Apps contributor)'
     summary_window_click_function() {
       if [ "$5" == "$botspot_message" ];then
-        xdg-open 'https://github.com/sponsors/botspot'
+        xdg-open 'https://github.com/sponsors/botspot' &
+        
+        #remember that donation link was clicked - opts out of any popups introduced in the future
+        #"$(echo 'botspot donation click' | sha1sum | awk '{print $1}')"
+        if ! grep -q "8a780b08ac20332b897ecb399b25f4622bb31341" "${DIRECTORY}/data/runonce_hashes" ;then
+          echo "8a780b08ac20332b897ecb399b25f4622bb31341" >> "${DIRECTORY}/data/runonce_hashes"
+        fi
       elif [ "$5" == "$gman_message" ];then
-        xdg-open 'https://github.com/sponsors/theofficialgman'
+        xdg-open 'https://github.com/sponsors/theofficialgman' &
       fi
     }
     export -f summary_window_click_function
