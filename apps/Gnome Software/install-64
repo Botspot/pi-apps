@@ -1,5 +1,8 @@
 #!/bin/bash
 
+if package_installed pi-package ;then
+  sudo apt purge -y pi-package pi-package-data pi-package-session --autoremove || exit 1
+fi
 install_packages gnome-software gnome-software-plugin-flatpak || exit 1
 
 if ! package_is_new_enough flatpak 1.14.4 ;then
