@@ -2536,7 +2536,24 @@ sudo apt purge wsjtx-data
 Here is the full forum link in case it helps you: https://wsjtx.groups.io/g/main/topic/77286764")
     error_type="package"
   fi
+  
+  if grep -qF "files list file for package 'libpagemaker-0.0-0:arm64' contains empty filename" <(echo "$errors") ;then
+    error_caption+=("The libpagemaker-0.0-0 package is causing fatal APT issues on your system. You must fix this to install additional software.
+Try this:
+sudo apt purge libpagemaker-0.0-
 
+Search the Internet for more help if this doesn't work.")
+    error_type="package"
+  fi
+  
+  if grep -qF "Package ttf-mscorefonts-installer is not available, but is referred to by another package." <(echo "$errors") ;then
+    error_caption+=("The ttf-mscorefonts-installer package is not available, causing this app to fail to install. You must fix this to install additional software.
+ttf-mscorefonts-installer is a package available in the debian contrib section of the repository. If you disabled this, you need to enable installing packages from the contrib section.
+
+If you need more help, search the internet for 'Linux enable contrib repository'")
+    error_type="package"
+  fi
+  
   #if RPi OS
   if [ -f /etc/rpi-issue ];then
     if grep -qF "linux-image-.*-arm64" <(echo "$errors");then
@@ -2594,7 +2611,7 @@ If this keeps happening, see: https://stackoverflow.com/questions/66366582")
     error_type="internet"
   fi
   
-  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=1 Failed to connect to the host .*, cause: Network is unreachable\|Connecting to .* failed: Network is unreachable\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host\|fatal: unable to access 'https://github.com.*': Failed to connect to github.com port 443 after .* ms: Couldn't connect to server\|RPC failed; curl .* transfer closed with outstanding read data remaining\|RPC failed; curl .* GnuTLS recv error (-9): A TLS packet with unexpected length was received." <(echo "$errors") ;then
+  if grep -q "errorCode=1 SSL/TLS handshake failure\|errorCode=1 total length mismatch.\|errorCode=1 Failed to establish connection, cause: Connection refused\|errorCode=1 Failed to connect to the host .*, cause: Network is unreachable\|Connecting to .* failed: Network is unreachable\|errorCode=2 Timeout\.\|abort: Connection reset by peer\|104: Connection reset by peer\|errorCode=19.*Name resolution for.*failed\|failed: Temporary failure in name resolution.\|Unable to establish SSL connection.\|Connection closed at byte \|Read error at byte \|failed: No route to host\.\|errorCode=8 Invalid range header\.\|curl: .* transfer closed with .* bytes remaining to read\|errorCode=29 The response status is not successful\. status=503\|errorCode=22 The response status is not successful\. status=525\|Download snap .* from channel .* dial tcp: lookup api.snapcraft.io on .* read udp .* i/o timeout\|npm ERR\! code ERR_SOCKET_TIMEOUT\|dial tcp: lookup api.snapcraft.io on .*: no such host\|fatal: unable to access 'https://github.com.*': Failed to connect to github.com port 443 after .* ms: Couldn't connect to server\|RPC failed; curl .* transfer closed with outstanding read data remaining\|RPC failed; curl .* GnuTLS recv error (-9): A TLS packet with unexpected length was received.\|SSL error: .* - SSL - The peer notified us that the connection is going to be closed\|Failure when receiving data from the peer\|java\.net\.SocketTimeoutException: Read timed out" <(echo "$errors") ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
@@ -2709,7 +2726,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check" <(echo "$errors") ;then
+  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;" <(echo "$errors") ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
@@ -2837,6 +2854,18 @@ sudo apt install --reinstall lsb_release")
     error_caption+=("Compiling $app failed because cc1plus was killedd due to insufficient RAM.
 Please install $app again, but this time keep all other programs closed to keep more free RAM available.
 If this error keeps happening, try installing the More RAM app from Pi-Apps. Find it in the Tools category.")
+    error_type="system"
+  fi
+  
+  if grep -qF "error: system does not fully support snapd: cannot mount squashfs image" <(echo "$errors");then
+    error_caption+=("Snap failed to fully install due to this error: 'error: system does not fully support snapd: cannot mount squashfs image'
+Your Operating System is likely custom to some extent, or otherwise unusual to be having this issue. Try searching the internet. Include your setup and the error message.")
+    error_type="system"
+  fi
+  
+  if grep -qF "Error: All VeraCrypt volumes must be dismounted first." <(echo "$errors");then
+    error_caption+=("Error encountered: 'Error: All VeraCrypt volumes must be dismounted first.'
+You need to do as it says and unmount any VeraCrypt volumes first. Rebooting might help.")
     error_type="system"
   fi
   
