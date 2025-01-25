@@ -3808,7 +3808,6 @@ nproc() { #Reduce the number of compile threads on low-RAM systems
 #Stop a running api function if user presses Ctrl+C, but avoid doing this if api is sourced in an interactive terminal.
 if [[ $- != *i* ]] ;then
   trap "exit 1" INT
-  cd $HOME
 fi
 
 add_english
