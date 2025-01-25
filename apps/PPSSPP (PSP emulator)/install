@@ -6,7 +6,7 @@ version=v1.18.1
 rm -rf ~/.local/share/applications/ppsspp.desktop ~/ppsspp
 
 cd /tmp || error "Could not move to /tmp folder"
-install_packages build-essential cmake libgl1-mesa-dev libglew-dev libsdl2-dev libsdl2-ttf-dev libvulkan-dev libfontconfig1-dev libcurl4-openssl-dev || exit 1
+install_packages build-essential cmake libgl1-mesa-dev libglew-dev libsdl2-dev libsdl2-ttf-dev libvulkan-dev libglu1-mesa-dev libfontconfig1-dev libcurl4-openssl-dev || exit 1
 rm -rf ppsspp
 git clone https://github.com/hrydgard/ppsspp.git --recurse-submodules --shallow-submodules --depth=1 -b "$version" || error "Failed to clone the repo"
 cd ppsspp || error "Could not move to ppsspp folder"
