@@ -647,6 +647,8 @@ $gman_message"
   source "${DIRECTORY}/api"
   generate_logo
   
+  #update daemon pid to that of the terminal, in case original manage script is killed somehow
+  echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
   source "${DIRECTORY}/manage" daemon source
   
   manage_daemon_terminal_code' "Terminal Output"
