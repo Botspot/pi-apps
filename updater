@@ -444,7 +444,7 @@ Refreshes the Pi-Apps details for apps that do not need to be reinstalled for th
   
 }
 
-update_app() { #given app name, uninstall it, update app folder, install it again
+update_app() { #given app name, uninstall it, update app folder, install it again (not to be used for app refreshes!)
   local app="$1"
   [ -z "$app" ] && error "update_app(): no app specified!"  
   status "Updating \e[1m${app}\e[0m\e[96m..."
@@ -466,9 +466,7 @@ update_app() { #given app name, uninstall it, update app folder, install it agai
       "${DIRECTORY}/manage" uninstall "$app" update #report to the app uninstall script that this is an uninstall for the purpose of updating by passing "update"
     fi
     
-    #fix edge case: force-pretend app was uninstalled so that the reinstall later will happen noninteractively
-    echo 'uninstalled' > "${DIRECTORY}/data/status/${app}"
-    
+    #copy new version of the app folder to main pi-apps directory
     no_status=true refresh_app "$app"
     
     local failed=false
