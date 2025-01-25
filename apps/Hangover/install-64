@@ -32,6 +32,9 @@ fi
 
 # Hangover conflicts with Wine
 "${DIRECTORY}/manage" uninstall "Wine (x64)"
+if package_installed fonts-wine ;then
+  sudo apt purge fonts-wine -y || exit 1
+fi
 
 if [ "$__os_codename" == "bullseye" ]; then
   ho_distro="debian11"
