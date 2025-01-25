@@ -4,7 +4,7 @@
 #$1 is an action, like install
 #$2 is app name, like Arduino
 
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
+[ -z "$DIRECTORY" ] && DIRECTORY="$(readlink -f "$(dirname "$0")")"
 
 function error {
   echo -e "\e[91m$1\e[39m"
@@ -18,24 +18,6 @@ fi
 if [ -z "$1" ];then
   error "You need to specify an operation, and in most cases, which app to operate on."
 fi
-
-set -a #make all functions in the api available to apps
-source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
-
-#run is_supported_system once mostly to check for unsupported ubuntu/debian distros and warn the user with a blocking GUI popup
-runonce <<"EOF"
-  if ! is_supported_system >/dev/null;then
-    text="YOUR SYSTEM IS UNSUPPORTED:
-$(is_supported_system)
-
-Pi-Apps will disable the sending of any error reports until you have resolved the issue above.
-Your mileage may vary with using Pi-Apps in this state. Expect the majority of apps to be broken."
-
-    yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps")
-    userinput_func "$text" "Ok"
-  fi
-  true
-EOF
 
 validate_apps_gui() { #Given a list of actions and apps, graphically notify the user if there is a problem or ask for confirmation. Result is sent to stdout.
   #action and app are separated by semicolon. (;)
@@ -161,21 +143,40 @@ validate_apps_gui() { #Given a list of actions and apps, graphically notify the 
   echo "$queue"
 }
 
+if [ "$1" != daemon ] || [ "$2" != source ];then
+  set -a #make all functions in the api available to apps
+  source "${DIRECTORY}/api" || error "failed to source ${DIRECTORY}/api"
+
+  #run is_supported_system once mostly to check for unsupported ubuntu/debian distros and warn the user with a blocking GUI popup
+  runonce <<"EOF"
+  if ! is_supported_system >/dev/null;then
+    text="YOUR SYSTEM IS UNSUPPORTED:
+$(is_supported_system)
+
+Pi-Apps will disable the sending of any error reports until you have resolved the issue above.
+Your mileage may vary with using Pi-Apps in this state. Expect the majority of apps to be broken."
+
+    yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --title="Pi-Apps")
+    userinput_func "$text" "Ok"
+  fi
+  true
+EOF
+
 #remove old mcpi repositories - this runonce is here so that terminal-only users will still receive the fix.
 (runonce <<"EOF"
-  if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
-    sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
-  fi
-  if [ -f /etc/apt/sources.list.d/mcpi-revival.list ];then
-    sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
-    sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
-  fi
-  
-  if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
-    sudo apt purge -y box86-no-binfmt-restart
-    sudo apt update
-    sudo apt install -y box86
-  fi
+if [ -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list ];then
+  sudo rm -f /etc/apt/sources.list.d/Alvarito050506_mcpi-devs.list
+fi
+if [ -f /etc/apt/sources.list.d/mcpi-revival.list ];then
+  sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
+  sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
+fi
+
+if dpkg -l box86-no-binfmt-restart &>/dev/null ;then
+  sudo apt purge -y box86-no-binfmt-restart
+  sudo apt update
+  sudo apt install -y box86
+fi
 EOF
 ) &>/dev/null
 
@@ -191,10 +192,12 @@ if [ ! -z "$removal_list" ]; then
   echo "$removal_list" | xargs sudo rm -f
 fi
 
-mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
-
 #remove week-old logfiles
 find "${DIRECTORY}/logs" -type f -mtime +6 -exec rm -f {} \; &>/dev/null &
+
+mkdir -p "${DIRECTORY}/data/status" "${DIRECTORY}/data/update-status" "${DIRECTORY}/logs"
+
+fi #skip everything above if sourcing manage daemon
 
 #check if hardware and OS is supported
 if [ "$1" != 'daemon' ]; then
@@ -210,6 +213,8 @@ if [ "$1" != 'daemon' ]; then
     fi
   fi
 fi
+
+
 
 if [ "$1" == 'daemon' ];then
   #Daemon to run in the background and install/uninstall/update apps as the user makes selections
@@ -353,6 +358,226 @@ $app"
     echo "$queue_reordered"
   }
   
+  manage_daemon_terminal_code() { #all manage-daemon terminal code runs here
+    #check if hardware and OS is supported
+    unsupported_message="$(is_supported_system)"
+    if [ $? == 0 ];then
+      export supported=yes
+      export unsupported_message=''
+    else
+      export supported=no
+      export unsupported_message
+    fi
+    
+    queue=""
+    
+    #Used to track which line of $queue is currently being dealt with.
+    current_line_num=1
+    
+    sourced_updater=0 #updater script needs to be sourced if files are updated. This allows it to only be sourced once.
+    
+    IFS=$'\n'
+    while true;do #repeat until nothing is left in the queue
+      
+      #check for new actions to be executed
+      echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent tac from hanging if the queue file is empty
+      new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
+      
+      #keep track of all actions for this session with the $queue variable
+      if [ -z "$queue" ];then
+        queue="$new_lines"
+      elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
+        queue+=$'\n'"$new_lines"
+      fi
+      
+      #check if queue is complete - diagnose apps and provide the opportunity to retry failed actions, otherwise exit loop
+      if [ "${current_line_num}" -gt "$(echo "$queue" | wc -l)" ];then
+        #diagnose every failed apps logfile - list item format is $action;$app;$exitcode
+        failed_apps="$(echo "$queue" | grep ';1$' | sed 's/;1$//g')"
+        retry_apps="$(diagnose_apps "$failed_apps")"
+        if [ -z "$retry_apps" ];then
+          #user chose to not retry the failed action(s).
+          #edge case: user may have added more actions while the diagnosis window was open. Check for this, and if nothing found, exit loop
+          echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent tac from hanging if the queue file is empty
+          new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")"
+          if [ -z "$new_lines" ];then
+            break
+          else
+            #Replace past '1' exit codes with "diagnosed" to avoid repeated diagnosis
+            queue="$(echo "$queue" | sed 's/;1$/;diagnosed/g')"
+            #user added more actions while the diagnosis window was open
+            queue+=$'\n'"$new_lines"
+          fi
+        else
+          #user chose to retry action(s). Replace '1' exit codes with "diagnosed" to avoid repeated diagnosis
+          queue="$(echo "$queue" | sed 's/;1$/;diagnosed/g')"
+          #and now add to queue the actions we want to retry.
+          queue+=$'\n'"$retry_apps"
+        fi
+      fi
+      
+      # reorder queue list to prioritize app refresh and file update actions
+      queue="$(reorder_list "$queue")"
+      
+      if [ ! -z "$new_lines" ] && [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
+        source "${DIRECTORY}/updater" source
+        sourced_updater=1
+      fi
+      
+      #echo "current position in queue is ${current_line_num}"
+      #echo "queue is $queue"
+      
+      line="$(echo "$queue" | sed -n "${current_line_num}"p)"
+      #echo "Now handling request: $line"
+      
+      #indicate current action in current line of $queue
+      queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
+      
+      #get first word of this line - the action. Subsequent words are the name of the app.
+      action="$(echo "$line" | awk -F';' '{print $1}')"
+      app="$(echo "$line" | awk -F';' '{print $2}')"
+      
+      #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is "dropped input"
+      if [ -z "$write_list_pid" ] || ! process_exists "$write_list_pid" ;then
+        write_list "$queue" &
+        write_list_pid=$!
+        
+        #secondary list-writing background process - kill it if it exists because write_list just sent a newer version of the list to yad
+        [ ! -z "$secondary_write_list_pid" ] && kill "$secondary_write_list_pid" 2>/dev/null
+      else
+        #if app1 is refreshed and app2 is then reinstalled, the list would only say app1 is bring refreshed for the entirety of app2s reinstallation, due to the process-skipping.
+        #launch a secondary background process that waits for $write_list_pid to finish
+        
+        #only allow one secondary background process to run; kill previous jobs and start a new one
+        [ ! -z "$secondary_write_list_pid" ] && kill "$secondary_write_list_pid" 2>/dev/null
+        (while process_exists $write_list_pid ;do sleep 1 ;done ; write_list "$queue") &
+        secondary_write_list_pid=$!
+      fi
+      
+      #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
+      if [ "$action" == update-file ];then
+        #Set terminal title
+        echo -ne "\e]0;Updating ${app} file\a"
+        update_file "$app"
+        exitcode=$?
+      elif [ "$action" == refresh ];then
+        #Set terminal title
+        echo -ne "\e]0;Refreshing ${app}\a"
+        refresh_app "$app"
+        exitcode=$?
+      elif [ "$action" == update ];then #manage can handle this action, but avoid spawning subprocess
+        #Set terminal title
+        echo -ne "\e]0;Updating ${app}\a"
+        update_app "$app"
+        exitcode=$?
+      else
+        #Set terminal title
+        echo -ne "\e]0;${action^}ing ${app}\a"
+        "${DIRECTORY}/manage" "$action" "$app"
+        exitcode=$?
+      fi
+      
+      #record exit code in current line of $queue
+      [ "$exitcode" != 0 ] && exitcode=1 #for easier regex and sed lines, force non-zero exit codes to be 1
+      queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
+      
+      #one more line of $queue has been completed.
+      current_line_num=$((current_line_num+1))
+    done
+    
+    #Daemon has stopped listening, so remove its pid file
+    rm -f "${DIRECTORY}/data/manage-daemon/pid"
+    
+    #refresh the list in queue-viewer window for the final time with all actions complete
+    [ ! -z "$secondary_write_list_pid" ] && kill "$secondary_write_list_pid" 2>/dev/null #kill secondary list writer
+    wait $write_list_pid
+    write_list "$queue"
+    
+    #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
+    echo "${DIRECTORY}/icons/none-1.png
+${DIRECTORY}/icons/none-1.png
+Done.
+${DIRECTORY}/icons/none-1.png
+" > "${DIRECTORY}/data/manage-daemon/yadlist"
+    
+    #close the queue-viewer window in a few seconds
+    (sleep 5; kill $yadpid 2>/dev/null) &
+    
+    #display "all done" window where the queue was
+    export -f summary_window
+    setsid bash -c summary_window
+  }
+  
+  summary_window() { #given $queue, summarize what was done
+    local IFS=$'\n'
+    export botspot_message='to Botspot (Pi-Apps founder, college student, nearly bankrupt)'
+    export gman_message='to theofficialgman (notable Pi-Apps contributor)'
+    summary_window_click_function() {
+      if [ "$5" == "$botspot_message" ];then
+        xdg-open 'https://github.com/sponsors/botspot' &
+        
+        #remember that donation link was clicked - opts out of any popups introduced in the future
+        #"$(echo 'botspot donation click' | sha1sum | awk '{print $1}')"
+        if ! grep -q "8a780b08ac20332b897ecb399b25f4622bb31341" "${DIRECTORY}/data/runonce_hashes" ;then
+          echo "8a780b08ac20332b897ecb399b25f4622bb31341" >> "${DIRECTORY}/data/runonce_hashes"
+        fi
+      elif [ "$5" == "$gman_message" ];then
+        xdg-open 'https://github.com/sponsors/theofficialgman' &
+      fi
+    }
+    export -f summary_window_click_function
+    
+    #avoid flooding the summary window with less important completed actions
+    queue="$(echo "$queue" | grep -v '^update-file;\|^refresh;')"
+    #skip summary window if it was just app and file refreshes
+    [ -z "$queue" ] && return 0
+    
+    (for line in $queue ;do
+      action="$(echo "$line" | awk -F';' '{print $1}')"
+      app="$(echo "$line" | awk -F';' '{print $2}')"
+      status="$(echo "$line" | awk -F';' '{print $3}')"
+      
+      if [ "$status" == 0 ];then
+        #if status is 0, then action completed successfully.
+        echo "${DIRECTORY}/icons/success.png
+${DIRECTORY}/icons/$action.png
+$(echo "${action^}ed" | sed 's/Updateed/Updated/g')
+${DIRECTORY}/apps/$app/icon-64.png
+<big><big><b>$app</b></big></big>"
+      else
+        #if status is 1, then action completed unsuccessfully.
+        echo "${DIRECTORY}/icons/failure.png
+${DIRECTORY}/icons/$action.png
+Failed to $action
+${DIRECTORY}/apps/$app/icon-64.png
+<big><big><b>$app</b></big></big>"
+      fi
+    done
+    #display donate message at the end
+    echo "${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/none-24.png
+<u><b>Donate</b></u>
+${DIRECTORY}/icons/botspot.png
+$botspot_message
+${DIRECTORY}/icons/none-24.png
+${DIRECTORY}/icons/none-24.png
+<u><b>Donate</b></u>
+${DIRECTORY}/icons/theofficialgman.png
+$gman_message"
+    ) | yad --class Pi-Apps --name "Pi-Apps" --width=480 --height=400 "$geometry2" --title='Actions complete' \
+        --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
+        --wrap-width=190 --wrap-cols=5 --close-on-unfocus \
+        --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
+        --text="Thank you for using Pi-Apps! The following apps completed:" \
+        --dclick-action=true --select-action="bash -c "\""summary_window_click_function %s"\""" \
+        --button=' Close '!"${DIRECTORY}/icons/exit.png":0 >/dev/null &
+  }
+  
+  if [ "$2" == source ];then
+    #this script can be sourced to get functions: source "${DIRECTORY}/manage" daemon source
+    return 0
+  fi
+  
   #make a named pipe so that other daemon processes can notify this master daemon process to complete new tasks
   if [ ! -e "${DIRECTORY}/data/manage-daemon/queue" ];then
     mkfifo "${DIRECTORY}/data/manage-daemon/queue"
@@ -403,149 +628,50 @@ $app"
   #Another named pipe is created to refresh the yad list later.
   rm -f "${DIRECTORY}/data/manage-daemon/yadlist"
   mkfifo "${DIRECTORY}/data/manage-daemon/yadlist" #make a named pipe
-
-  #check if hardware and OS is supported
-  if [ "$supported" == "yes" ] || [ "$supported" == "no" ]; then
-    true
-  else
-    if is_supported_system >/dev/null;then
-      export supported=yes
-      export unsupported_message=''
-    else
-      export supported=no
-      export unsupported_message="$(is_supported_system)"
-    fi
-  fi
   
   [ -z "$geometry2" ] && geometry2='--center'
   
-  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=330 --height=400 "$geometry2" --title='Monitor Progress' \
+  tail -f --retry "${DIRECTORY}/data/manage-daemon/yadlist" 2>/dev/null | yad --class Pi-Apps --name "Pi-Apps" --width=480 --height=400 "$geometry2" --title='Monitor Progress' \
     --list --tail --no-headers --column=:IMG --column=:IMG --column=Text --column=:IMG --column=Text \
     --separator='\n' --window-icon="${DIRECTORY}/icons/logo.png" \
-    --dclick-action=true --select-action=true \
+    --dclick-action=true --select-action=true --no-selection \
     --no-buttons &
   yadpid=$!
   
   trap "kill $yadpid 2>/dev/null" EXIT
   
-  #Used to track which line of $queue is currently being dealt with.
-  current_line_num=1
+  "${DIRECTORY}/etc/terminal-run" '
+  geometry2="'"$geometry2"'"
+  yadpid="'"$yadpid"'"
+  export DIRECTORY="'"$DIRECTORY"'"
+  source "${DIRECTORY}/api"
+  generate_logo
   
-  sourced_updater=0 #updater script needs to be sourced if files are updated. This allows it to only be sourced once.
+  #update daemon pid to that of the terminal, in case original manage script is killed somehow
+  echo $$ > "${DIRECTORY}/data/manage-daemon/pid"
+  source "${DIRECTORY}/manage" daemon source
   
-  queue=''
-  IFS=$'\n'
-  while true;do #repeat until nothing is left in the queue
-    
-    #check for new actions to be executed
-    echo -n > "${DIRECTORY}/data/manage-daemon/queue" & #ensure that the pipe is in write mode to prevent cat from hanging if the queue file is empty
-    new_lines="$(tac "${DIRECTORY}/data/manage-daemon/queue")" # tac reverses the order of the list. a plain cat of the file will give the newest item in the queue first.
-    
-    #keep track of all actions for this session with the $queue variable
-    if [ -z "$queue" ];then
-      queue="$new_lines"
-    elif [ ! -z "$new_lines" ];then # add new_lines to queue if new_lines is not empty
-      queue+=$'\n'"$new_lines"
+  manage_daemon_terminal_code' "Terminal Output"
+  
+  # Check if terminal-run failed to launch. GUI users don't see any terminal output if it fails (since there is no terminal open) so we need to prompt them with a GUI window
+  if [ "$?" != 0 ]; then
+    echo -e "Unable to open a terminal.\nDebug output below.\n$(DEBUG=1 "${DIRECTORY}/etc/terminal-run" 2>&1)" | yad --class Pi-Apps --name "Pi-Apps" --center --window-icon="${DIRECTORY}/icons/logo.png" \
+    --width=700 --height=300 --text-info --title="Error occured when calling terminal-run" \
+    --image="${DIRECTORY}/icons/error.png" --image-on-top --fontname=12 \
+    --button='OK'
+    if echo "$queue" | grep -q "^update-file;" ;then
+      typeset -f update_now_cli &>/dev/null || source "${DIRECTORY}/updater" source
+      updatable_apps='' updatable_files="$(echo "$queue" | grep "^update-file;" | sed 's/^update-file;//g')" update_now_cli
     fi
-
-    # reorder queue list to prioritize app refresh and file update actions
-    queue="$(reorder_list "$queue")"
-    
-    if [ ! -z "$new_lines" ] && [ "$sourced_updater" == 0 ] && grep -q "update\|refresh\|update-file" <<<"$new_lines" ;then #source updater if necessary
-      source "${DIRECTORY}/updater" source
-      sourced_updater=1
-    fi
-    #echo "length of queue is $(echo "$queue" | wc -l)"
-    
-    #exit loop if queue is complete and no new actions were added to the queue
-    if [ "${current_line_num}" -gt "$(echo "$queue" | wc -l)" ];then
-      break
-    fi
-    
-    #echo "current position in queue is ${current_line_num}"
-    #echo "queue is '$queue'"
-    
-    line="$(echo "$queue" | sed -n "${current_line_num}"p)"
-    #echo "Now handling request: '$line'"
-    
-    #indicate current action in current line of $queue
-    queue="$(echo "$queue" | sed "${current_line_num}s/$/;in-progress/")"
-    
-    #get first word of this line - the action. Subsequent words are the name of the app.
-    action="$(echo "$line" | awk -F';' '{print $1}')"
-    app="$(echo "$line" | awk -F';' '{print $2}')"
-    
-    #refresh the list in queue-viewer window as a background process - skip it if the list is still refreshing from last loop iteration; in game dev this is 'dropped input'
-    if [ -z "$write_list_pid" ] || ! process_exists "$write_list_pid" ;then
-      write_list "$queue" &
-      write_list_pid=$!
-      
-      #secondary list-writing background process - kill it if it exists because write_list just sent a newer version of the list to yad
-      [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid"
-    else
-      #if app1 is refreshed and app2 is then reinstalled, the list would only say app1 is bring refreshed for the entirety of app2's reinstallation, due to the process-skipping.
-      #launch a secondary background process that waits for $write_list_pid to finish
-      
-      #only allow one secondary background process to run; kill previous jobs and start a new one
-      [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid"
-      (while process_exists $write_list_pid ;do sleep 1 ;done ; write_list "$queue") &
-      secondary_write_list_pid=$!
-    fi
-    
-    #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
-    if [ "$action" == update-file ];then
-      #Set terminal title
-      echo -ne "\e]0;Updating ${app} file\a"
-      update_file "$app"
-      exitcode=$?
-    elif [ "$action" == refresh ];then
-      #Set terminal title
-      echo -ne "\e]0;${action^}ing ${app}\a"
-      refresh_app "$app"
-      exitcode=$?
-    else
-      #Set terminal title
-      echo -ne "\e]0;${action^}ing ${app}\a" | sed 's/Updateing/Updating/g'
-      "${DIRECTORY}/manage" "$action" "$app"
-      exitcode=$?
-    fi
-    
-    #record exit code in current line of $queue
-    queue="$(echo "$queue" | sed "${current_line_num}s/;in-progress$/;$exitcode/")"
-    
-    #one more line of $queue has been completed.
-    current_line_num=$((current_line_num+1))
-  done
+  fi
   
-  #refresh the list in queue-viewer window for the final time with all actions complete
-  [ ! -z "$secondary_write_list_pid" ] && process_exists "$secondary_write_list_pid" && kill "$secondary_write_list_pid" #kill secondary list writer
-  wait $write_list_pid
-  write_list "$queue"
-  
-  #before exiting the loop, add a line to the queue-viewer window indicating that all items have completed.
-  echo "${DIRECTORY}/icons/none-1.png
-${DIRECTORY}/icons/none-1.png
-Done.
-${DIRECTORY}/icons/none-1.png
-" > "${DIRECTORY}/data/manage-daemon/yadlist"
-  
-  #all actions have been completed. Daemon has effectively stopped listening, so remove its pid file
-  rm -f "${DIRECTORY}/data/manage-daemon/pid"
-  
-  #close the queue-viewer window in a few seconds
-  (sleep 5; kill $yadpid 2>/dev/null) &
-  
-  #diagnose every failed app's logfile - list item format is $action;$app;$exitcode
-  failed_apps="$(echo "$queue" | grep ';1$' | awk -F';' '{print $2}')"
-  diagnose_apps "$failed_apps"
-
-  # if update refresh or update-file actions were run then update the .git folder
+  # if update, refresh, or update-file actions were run, then update the .git folder
   if [ "$sourced_updater" == 1 ]; then
     update_git
   fi
   
   #updates could have been run as part of the manage-daemon, so update the updatable-files and updatable-apps status files
-  "${DIRECTORY}/updater" set-status  
+  "${DIRECTORY}/updater" set-status
   
 elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   
@@ -571,7 +697,7 @@ elif [ "$1" == 'multi-uninstall' ] || [ "$1" == 'multi-install' ];then
   for line in $queue ;do
     action="$(echo "$line" | awk -F ';' '{print $1}')"
     app="$(echo "$line" | awk -F ';' '{print $2}')"
-
+    
     #run manage script for app installs, uninstalls, or updates. Avoid using it for file-updates and refreshes because that is out of the scope for manage script.
     if [ "$action" == update-file ];then
       #Set terminal title
