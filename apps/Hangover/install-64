@@ -35,6 +35,9 @@ fi
 if package_installed fonts-wine ;then
   sudo apt purge fonts-wine -y || exit 1
 fi
+if package_installed libwine ;then
+  sudo apt purge libwine -y || exit 1
+fi
 
 if [ "$__os_codename" == "bullseye" ]; then
   ho_distro="debian11"
