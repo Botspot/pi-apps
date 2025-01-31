@@ -1,0 +1,16 @@
+Run LLMs like ChatGPT locally without the Internet
+ChatGPT is a large language AI model that requires several GPUs to run, but other AI models are a lot smaller. Some have been compressed enough to fit in 8GB of RAM, meaning that you could ask a local AI questions without any internet connection. On a low-power computer, the writing speed will be slow, and the accuracy is worse than larger cloud models, but it is still useful in situations where you need some information and have high privacy standards or have no Internet connection.
+
+I (Botspot) have optimized the install script here on Pi-Apps to do a lot more then just install the Ollama command-line tool. Installing Ollama from Pi-Apps will:
+1. Install Ollama and set it to run with a low priority, to help with system responsiveness.
+2. Pre-download the best 2 LLMs: Codellama:7b and Phi3:mini. Codellama is geared towards programming - perfect for getting help with linux commands or writing code. Phi3 is the best general-purpose ChatGPT equivalent I could find that runs decently.
+3. This also installs my fork of a simple Python-based GUI that you can run from the menu. It is easier to navigate and has more features than the default command-line interface.
+
+Feel free to search for more LLMs here: https://ollama.com/library
+One you may want to try out is deepseek-r1:8b. Once you know the name of a model you want, just paste it into the download box in Ollama GUI's Settings.
+
+NOTE: The pre-included models use about 6-7 GB of RAM. To prevent the screen from freezing up, make sure your device has that much available RAM before running this. It is recommended to close web browsers especially, and to install the More RAM app from Pi-Apps first, to give you a bit more buffer room. If you screen does freeze, don't panic, ollama usually times out and removes the model from RAM in about 5 minutes.
+
+To run: Menu -> Education -> Ollama GUI
+To run the GUI in a terminal: /opt/ollama-gui/ollama-gui-runner.sh
+To run Ollama's CLI interface in a terminal: ollama

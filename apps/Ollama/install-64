@@ -1,0 +1,119 @@
+#!/bin/bash
+
+#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
+
+install_packages python3-tk python3-ttkthemes || exit 1
+
+#sudo curl -fsSL https://ollama.com/install.sh | sh
+#use simplified version of that script directly here: (necessary for predictable uninstall paths, and no need for gpu/cuda stuff, skip reinstall, add niceness value)
+{
+TEMP_DIR=$(mktemp -d)
+
+#avoid removing and re-downloading ollala on any future script updates, unless we need to, in which case bump the version file
+version_checker_file="/usr/local/lib/ollama/pi-apps-v1"
+if [ -f "$version_checker_file" ]; then
+  true #don't touch ollama installation
+else
+  if [ -d "/usr/local/lib/ollama" ] ; then
+    status "Cleaning up old version at /usr/local/lib/ollama"
+    sudo rm -rf "/usr/local/lib/ollama"
+  fi
+  
+  status "Installing ollama to /usr/local"
+  sudo install -o0 -g0 -m755 -d /usr/local/bin
+  sudo install -o0 -g0 -m755 -d "/usr/local"
+  status "Downloading Linux arm64 bundle"
+  wget -O- "https://ollama.com/download/ollama-linux-arm64.tgz" | sudo tar -xzf - -C "/usr/local"
+  
+  sudo touch "$version_checker_file"
+fi
+# Everything from this point onwards is optional.
+
+if ! id ollama >/dev/null 2>&1; then
+  status "Creating ollama user..."
+  sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
+fi
+
+status "Adding current user to ollama group..."
+sudo usermod -a -G ollama $(whoami)
+
+status "Creating ollama systemd service..."
+cat <<EOF | sudo tee /etc/systemd/system/ollama.service >/dev/null
+[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/ollama serve
+User=ollama
+Group=ollama
+Restart=always
+RestartSec=3
+Environment="PATH=$PATH"
+Nice=19
+
+[Install]
+WantedBy=default.target
+EOF
+SYSTEMCTL_RUNNING="$(systemctl is-system-running || true)"
+
+status "Enabling and starting ollama service..."
+sudo systemctl daemon-reload
+sudo systemctl enable ollama
+sudo systemctl restart ollama
+
+rm -rf $TEMP_DIR
+}
+
+#get gui - forked to fix icon and theme
+cd /tmp
+git_clone https://github.com/Botspot/ollama-gui || error 'Failed to clone repository!'
+
+#make runner script that stops all loaded models as soon as the GUI closes
+echo '#!/bin/bash
+python3 /opt/ollama-gui/ollama_gui.py
+
+#stop running models to free up RAM immediately
+IFS=$'\''\n'\''
+for i in $(ollama ps | tail -n +2 | awk '\''{print $1}'\'') ;do
+  ollama stop "$i"
+done
+' > /tmp/ollama-gui/ollama-gui-runner.sh
+chmod +x /tmp/ollama-gui/ollama-gui-runner.sh
+
+sudo rm -rf /opt/ollama-gui
+sudo mv /tmp/ollama-gui /opt || exit 1
+
+#make menu launcher
+echo "[Desktop Entry]
+Name=Ollama GUI
+Comment=Chat with locally hosted Large Language Models
+Exec=/opt/ollama-gui/ollama-gui-runner.sh
+Icon=ollama-gui
+Terminal=false
+Type=Application
+Categories=Education;
+StartupNotify=true
+StartupWMClass=ollama-gui" | sudo tee /usr/share/applications/ollama-gui.desktop >/dev/null
+
+#make icon
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/ollama-gui.png
+
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#download 2 featured models if none are already present
+if [ -z "$(ollama list | tail -n +2)" ];then
+  #skip if insufficient RAM
+  if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -gt $((1024000*7)) ];then
+    #skip if insufficient dick space
+    if [ $(df --output=avail / | tail -1) -ge $((8*1024*1024)) ]; then
+      status "Downloading 2 LLMs: phi3:mini and codellama:7b"
+      ollama pull phi3:mini && ollama pull codellama:7b
+    else
+      warning "Skipping downloading any LLMs because your system has less than 8GB of free space. You will need to download the models yourself."
+    fi
+  else
+    warning "Skipping downloading any LLMs because your system has less than 7GB of RAM. You will need to find and download smaller models yourself. Go look here for models to download: https://ollama.com/library"
+  fi
+fi

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+sudo rm -rf /opt/ollama-gui /usr/local/share/icons/hicolor/64x64/apps/ollama-gui.png /usr/share/applications/ollama-gui.desktop
+
+#ollama uninstall below: (skip if updating)
+if [ "$1" != "update" ];then
+  sudo systemctl disable ollama
+  sudo systemctl stop ollama
+  sudo rm -rf /etc/systemd/system/ollama.service /usr/local/lib/ollama /usr/local/bin/ollama
+  #ollama models stored here
+  sudo rm -rf /usr/share/ollama
+fi
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
