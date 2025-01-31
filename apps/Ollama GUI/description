@@ -7,9 +7,9 @@ I (Botspot) have optimized the install script here on Pi-Apps to do a lot more t
 3. This also installs my fork of a simple Python-based GUI that you can run from the menu. It is easier to navigate and has more features than the default command-line interface.
 
 Feel free to search for more LLMs here: https://ollama.com/library
-One you may want to try out is deepseek-r1:8b. Once you know the name of a model you want, just paste it into the download box in Ollama GUI's Settings.
+One you may want to try out is deepseek-r1:8b or llama3. Once you know the name of a model you want, just paste it into the download box in Ollama GUI's Settings.
 
-NOTE: The pre-included models use about 6-7 GB of RAM. To prevent the screen from freezing up, make sure your device has that much available RAM before running this. It is recommended to close web browsers especially, and to install the More RAM app from Pi-Apps first, to give you a bit more buffer room. If you screen does freeze, don't panic, ollama usually times out and removes the model from RAM in about 5 minutes.
+NOTE: The pre-included models use about 6-7 GB of RAM. To prevent the screen from freezing up, make sure your device has that much available RAM before running this. It is recommended to close web browsers especially, and to install the More RAM app from Pi-Apps first, to give you a bit more buffer room. If your screen does freeze, don't panic, ollama usually times out and removes the model from RAM in about 5 minutes.
 
 To run: Menu -> Education -> Ollama GUI
 To run the GUI in a terminal: /opt/ollama-gui/ollama-gui-runner.sh
