@@ -97,6 +97,7 @@ StartupNotify=true
 StartupWMClass=ollama-gui" | sudo tee /usr/share/applications/ollama-gui.desktop >/dev/null
 
 #make icon
+sudo mkdir -p /usr/local/share/icons/hicolor/64x64/apps
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/ollama-gui.png
 
 sudo update-icon-caches /usr/share/icons/*
@@ -109,7 +110,9 @@ if [ -z "$(ollama list | tail -n +2)" ];then
     #skip if insufficient dick space
     if [ $(df --output=avail / | tail -1) -ge $((8*1024*1024)) ]; then
       status "Downloading 2 LLMs: phi3:mini and codellama:7b"
-      ollama pull phi3:mini && ollama pull codellama:7b
+      ollama pull phi3:mini || warning "failed to download phi3:mini."
+      ollama pull codellama:7b || warning "failed to download codellama:7b."
+      true
     else
       warning "Skipping downloading any LLMs because your system has less than 8GB of free space. You will need to download the models yourself."
     fi
