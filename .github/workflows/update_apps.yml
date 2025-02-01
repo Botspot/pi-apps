@@ -186,7 +186,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Test installing updated apps on ${{ matrix.os }} - ${{ matrix.arch }}
-        uses: theofficialgman/arm-runner-action@v12
+        uses: theofficialgman/chroot-runner-action@v0
         with:
           base_image: ${{ env.image_url }}
           # bind mount the directory so any changes propogate to outside the chroot
@@ -197,9 +197,6 @@ jobs:
 
           # disable image caching to not leak the URL on some systems
           enable_image_caching: ${{ matrix.cache }}
-
-          # set CPUs to use
-          cpu: cortex-a7:cortex-a72
 
           # use custom /proc/cpuinfo
           cpu_info: cpuinfo/raspberrypi_4b
