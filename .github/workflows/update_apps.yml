@@ -119,7 +119,7 @@ jobs:
           path: ${{ runner.temp }}/GITHUB_WORKSPACE.tar
 
   test-updated-apps:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: get-latest-app-versions
     strategy:
       matrix:
