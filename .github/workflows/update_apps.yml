@@ -239,9 +239,6 @@ jobs:
             set +a #stop exporting functions
             cd ${DIRECTORY}
 
-            # upgrade cmake to 3.20+ from theofficialgman ppa to fix QEMU only issue https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-            package_is_new_enough cmake 3.20 || debian_ppa_installer "theofficialgman/cmake-bionic" "bionic" "0ACACB5D1E74E484" || exit 1
-
             # store apps changed from last commit to working directory in variable
             mapfile -t changed_apps < <(git diff --name-only | grep ^apps/ | awk -F '/' '{print $2}' | sort -u)
 
@@ -249,28 +246,11 @@ jobs:
             rm -rf ./data/status
 
             # attempt to install updated apps using manage script loop
-            # if any app fails, add it to the FAILED_INSTALL_APPS or FAILED_UNINSTALL_APPS variable
-            if [[ ${{ matrix.arch }} == armhf ]]; then
-              # skip checking DDNet (due to Rust) if on arm32 under QEMU: https://github.com/rust-lang/cargo/issues/8719
-              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
-              # skip WPS Office on 32bit as it requires  "64bit" kernel to be detected. QEMU reports an armv7 kernel. WPS Office is still tested on arm64 (which will verify if the deb works and installs correctly)
-              # skip Boxy SVG on 32bit due to QEMU instability
-              skiplist="DDNet
-            Microsoft PowerShell
-            WPS Office
-            Boxy SVG"
-            else
-              # skip checking Microsoft PowerShell due to QEMU instability with .NET: https://github.com/Botspot/pi-apps/pull/2252#issuecomment-1403043945
-              skiplist="Microsoft PowerShell"
-            fi            
+            # if any app fails, add it to the FAILED_INSTALL_APPS or FAILED_UNINSTALL_APPS variable         
             for app in "${changed_apps[@]}"; do
               # only attempt install/uninstall if updated app is supported on this architecture
               scriptname="$(script_name_cpu "$app")" #will be install, install-32, install-64, or package
               if [ -z "$scriptname" ];then
-                continue
-              fi
-              # skip app if is in the skiplist
-              if echo "$skiplist" | grep -Fxq "$app"; then
                 continue
               fi
               ./manage install "$app" || { FAILED_INSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
