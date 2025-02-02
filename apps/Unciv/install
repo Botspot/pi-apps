@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.15.6-patch1-macOS
+version=4.15.7
 
 ### Make directory ~/Unciv if not available
 mkdir -p $HOME/Unciv || error "Failed to create folder $HOME/Unciv"
