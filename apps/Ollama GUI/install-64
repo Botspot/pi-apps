@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#Be sure to use the "error" function - it will display a message if a command fails to run. Example below:
-
 install_packages python3-tk python3-ttkthemes || exit 1
 
 #sudo curl -fsSL https://ollama.com/install.sh | sh
@@ -9,7 +7,7 @@ install_packages python3-tk python3-ttkthemes || exit 1
 {
 TEMP_DIR=$(mktemp -d)
 
-#avoid removing and re-downloading ollala on any future script updates, unless we need to, in which case bump the version file
+#avoid removing and re-downloading ollama on any future script updates, unless we need to, in which case bump the version file
 version_checker_file="/usr/local/lib/ollama/pi-apps-v1"
 if [ -f "$version_checker_file" ]; then
   true #don't touch ollama installation
@@ -50,7 +48,7 @@ Group=ollama
 Restart=always
 RestartSec=3
 Environment="PATH=$PATH"
-Nice=19
+Nice=5
 
 [Install]
 WantedBy=default.target
@@ -110,7 +108,7 @@ if [ -z "$(ollama list | tail -n +2)" ];then
     #skip if insufficient dick space
     if [ $(df --output=avail / | tail -1) -ge $((8*1024*1024)) ]; then
       status "Downloading 2 LLMs: phi3:mini and codellama:7b"
-      ollama pull phi3:mini || warning "failed to download phi3:mini."
+      ollama pull phi3:mini || (sleep 20; ollama pull phi3:mini) || warning "failed to download phi3:mini."
       ollama pull codellama:7b || warning "failed to download codellama:7b."
       true
     else
