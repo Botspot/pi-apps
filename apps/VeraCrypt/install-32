@@ -1,8 +1,8 @@
 #!/bin/bash
 
 version=1.26.7
-version2=1.26.18
-version3=1.26.18
+version2=1.26.20
+version3=1.26.20
 
 case $(get_codename) in
 focal|jammy|noble)
