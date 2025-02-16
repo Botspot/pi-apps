@@ -1,0 +1,4 @@
+#!/bin/bash
+
+version=3.0.0
+install_packages https://github.com/mfat/systemd-pilot/releases/download/v3.0/systemd-pilot_${version}-1_all.deb || exit 1

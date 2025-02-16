@@ -1,0 +1,10 @@
+Desktop application for managing systemd services. it can be described as a gui for systemctl.
+Features:
+- List system services on local machine or remote hosts
+- Quickly deploy a new service using a template
+- Start, Stop, Restart services, show status
+- Easy search. Just start typing and the app will find relevant services
+- Lightweight and easy on system resources (just a single Python script)
+
+To run: Menu -> Preferences -> Systemd Pilot
+To run in a terminal: systemd-pilot
