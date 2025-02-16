@@ -1,0 +1,15 @@
+Free offline maps for everyone
+The Linux version of Organic Maps has not reached feature parity with the Android and iPhone versions yet, and has not been optimized for mobile devices yet. Organic Maps is the ultimate companion app for travelers, tourists, hikers, and cyclists:
+
+- Detailed offline maps with places that don't exist on other maps, thanks to OpenStreetMap
+- Cycling routes, hiking trails, and walking paths
+- Contour lines, elevation profiles, peaks, and slopes
+- Turn-by-turn walking, cycling, and car navigation with voice guidance
+- Fast offline search on the map
+- Bookmarks and tracks export and import in KML, KMZ, GPX formats
+- Dark Mode to protect your eyes
+- Countries and regions don't take a lot of space
+- Free and open-source
+
+To run: Menu -> Education -> Organic Maps
+To run in a terminal: flatpak run --branch=stable --arch=aarch64 --command=OMaps app.organicmaps.desktop

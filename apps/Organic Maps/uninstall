@@ -1,0 +1,5 @@
+#!/bin/bash
+
+flatpak_uninstall app.organicmaps.desktop || exit 1
+
+purge_packages || exit 1
