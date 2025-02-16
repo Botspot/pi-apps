@@ -356,7 +356,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   (sleep 5; echo -n "Waiting until APT locks are released... ") &
   local pid=$!
   
-  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend 2>/dev/null)" ];do
+  while [ ! -z "$(sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/log/unattended-upgrades/unattended-upgrades.log /var/lib/dpkg/lock-frontend /var/cache/debconf/config.dat 2>/dev/null)" ];do
     sleep 1
   done
   
@@ -2295,6 +2295,14 @@ deb http://deb.debian.org/debian $(get_codename)-updates main contrib non-free
 Refer to your Linux distro's documentation for how to restore this file.
 You may have a backup of it in /etc/apt/sources.list.save if you have not deleted that as well.")
     fi
+    error_type="system"
+  fi
+  
+  if grep -q "unable to securely remove '.*': Bad message" <(echo "$errors") ;then
+    error_caption+=("Got a "\""Bad message"\"" error when trying to remove a file in an unrelated package's file. This is not a Pi-Apps issue, but it may indicate hardware failure or disk corruption on your computer.
+Please click the retry button to see if this keeps occuring, and if it does, try searching the internet for your specific error message.
+Also it is advisable to run fsck on your root partition to try to work around disk corruption.
+Open an issue on Pi-Apps if all else fails, but we will probably tell you the same things as are written here.")
     error_type="system"
   fi
   
