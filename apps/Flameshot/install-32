@@ -2,3 +2,12 @@
 
 version=12.1.0
 install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-10.armhf.deb || exit 1
+
+echo '#!/bin/bash
+
+if [[ "$XDG_CURRENT_DESKTOP" == *wlroots ]];then
+  export XDG_CURRENT_DESKTOP=Sway
+fi
+/usr/bin/flameshot "$@"
+' | sudo tee /usr/local/bin/flameshot >/dev/null
+sudo chmod +x /usr/local/bin/flameshot
