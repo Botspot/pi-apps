@@ -1,0 +1,8 @@
+Securely and anonymously share files, host websites, and chat with friends using the Tor network.
+Two people anywhere in the world with OnionShare can communicate peer-to-peer completely privately.
+
+Read their Security Design document here: https://docs.onionshare.org/2.6.2/en/security.html which explains what attack vectors are protected against, and what precautions are necessary to keep total anonymity.
+
+This installs OnionShare from flatpak.
+To run: Menu -> Internet -> OnionShare
+To run in a terminal: /usr/bin/flatpak run --command=onionshare org.onionshare.OnionShare
