@@ -23,6 +23,12 @@ else
   error "User error: Cannot find the directory where Chromium keeps its flags! Usually this would be /etc/chromium.d or /etc/chromium-browser/customizations. On your system, neither of these directories exist. Please reach out to Botspot for this to be fixed."
 fi
 
+#revert system-wide dark mode setting if it was set by install script
+if [ -f "${folder}/dark_mode" ];then
+  echo "Restoring system-wide color preference to default"
+  gsettings set org.gnome.desktop.interface color-scheme 'default'
+fi
+
 status "Reverting all changes..."
 echo "Removing these files:
   - ${folder}/zzzz_combine_values
