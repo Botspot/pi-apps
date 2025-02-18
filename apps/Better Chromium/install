@@ -373,12 +373,16 @@ if [ "$dark_mode" == TRUE ];then
   cat << EOF | sudo tee "${folder}/dark_mode" >/dev/null
 export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --force-dark-mode"
 EOF
+  echo "Changing system-wide color preference to prefer-dark"
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 else
   #dark mode set to false - so remove the file
   if [ -f "${folder}/dark_mode" ];then
     status "Removing ${folder}/dark_mode"
   fi
   sudo rm -f "${folder}/dark_mode"
+  echo "Restoring system-wide color preference to default"
+  gsettings set org.gnome.desktop.interface color-scheme 'default'
 fi
 
 #dark mode for all websites
