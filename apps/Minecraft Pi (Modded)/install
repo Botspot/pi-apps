@@ -29,7 +29,7 @@ Would you like to automatically switch to a 4K PageSize Linux Kernel?"
 fi
 
 # Version
-version=2.5.3
+version=2.5.4
 
 # Install
 if [ "${arch}" = "64" ]; then
