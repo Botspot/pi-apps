@@ -3084,7 +3084,7 @@ text_editor() { #Open user-preferred text editor. $1 is file to open
     "${DIRECTORY}/etc/terminal-run" "nano "\""$1"\""" "Editing $(basename "$1")"
   else
     #non-terminal text editor
-    GTK_THEME='' "$preferrededitor" "$1"
+    (unset GTK_THEME ; unset GDK_BACKEND; "$preferrededitor" "$1")
   fi
 }
 
