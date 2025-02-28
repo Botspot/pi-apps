@@ -1,0 +1,21 @@
+#!/bin/bash
+
+install_packages slurp ffmpeg ninja-build git meson mpv yad g++ wlr-randr v4l-utils wayland-protocols libavutil-dev libavfilter-dev \
+  libavdevice-dev libavcodec-dev libavformat-dev libswscale-dev libpulse-dev libgbm-dev libpipewire-0.3-dev libdrm-dev || exit 1
+
+
+cd ~/.local/share
+git_clone https://github.com/Botspot/botspot-screen-recorder || error 'Failed to clone repository!'
+
+#ignore apt calls in bsr install script
+sudo() {
+  if [ "$1" == apt ];then
+    true
+  else
+    command sudo "$@"
+  fi
+}
+export -f sudo
+
+status "Now running botspot-screen-recorder internal install script..."
+~/.local/share/botspot-screen-recorder/screen-recorder.sh install || error "BSR install command failed, please review errors above."

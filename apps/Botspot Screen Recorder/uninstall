@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+rm -rf ~/.local/share/applications/bsr.desktop ~/.local/share/botspot-screen-recorder
