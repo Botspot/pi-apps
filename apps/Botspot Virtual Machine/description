@@ -1,0 +1,11 @@
+Run Windows 11 in a high-speed virtual machine on Linux
+BVM is a virtual machine optimized for Windows 11 on ARM hardware like Raspberry Pi. It downloads, converts, configures, installs, and debloats the OS automatically, and all that's needed from you is to watch and wait patiently.
+The VM has copy and paste transfer support, audio and internet passthrough (including Wi-Fi btw), file synchronization, and optimized graphics. It runs about as fast as Windows installed on real hardware, but with more drivers and better flexibility.
+
+In case that's not enough, BVM makes Windows 11 install 100% automatically, it removes Microsoft's bloatware apps and advertising, it disables the Microsoft account requirement, and it makes a few more tweaks to reduce RAM usage to around 900 MB on standby.
+Highly recommended: Go install the More RAM app from Pi-Apps, to help avoid freezes due to low available RAM. It makes a big difference, especially with devices having 4GB of RAM or less.
+
+To run the simplified graphical interface: Menu -> Office -> Botspot Virtual Machine
+To see the help options for the full command-line interface: ~/.local/share/bvm/bvm help
+
+NOTE: This software is in BETA. It was released just a few days ago and may have bugs. You are expected to report all issues and ask questions by clicking on the github.com link at the top of this window, then click on the Issues tab. It's also a good idea in general to read through the latest announcements there to learn more about how to use BVM, along with more tips and tricks.

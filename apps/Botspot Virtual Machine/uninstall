@@ -1,0 +1,9 @@
+#!/bin/bash
+
+rm -rf ~/.local/share/bvm ~/.local/share/icons/hicolor/scalable/apps/qemu.png ~/.local/share/icons/hicolor/scalable/apps/wlfreerdp.png \
+  ~/.local/share/icons/hicolor/scalable/apps/xfreerdp.png ~/.local/share/applications/bvm.desktop
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+echo "Be aware that while BVM has been removed, any data files from the Virtual Machine still remain, most likely at $HOME/win11. Delete that folder if you want to."

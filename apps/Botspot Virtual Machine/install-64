@@ -1,0 +1,23 @@
+#!/bin/bash
+
+mkdir -p ~/.local/share
+cd ~/.local/share
+git_clone https://github.com/Botspot/bvm || error 'Failed to clone repository!'
+
+#to avoid having a hardcoded list of dependencies, intercept bvm's apt commands and use install_packages where needed
+# also important because bvm installs X11 freerdp or Wayland freerdp depending on the compositor, so the dependencies list is not even hardcoded
+sudo() {
+  if [ "$1" == apt ] && [ "$2" == install ] && ! echo "$*" | grep -q -- --only-upgrade ;then #avoid running install_packages on the apt --only-upgrade command
+    shift #remove apt
+    shift #remove install
+    shift #remove -y
+    install_packages "$@"
+  else
+    command sudo "$@"
+  fi
+  return $?
+}
+export -f sudo
+
+#install packages and display help message
+nosplash=true ~/.local/share/bvm/bvm help || exit 1
