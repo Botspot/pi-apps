@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rm -rf ~/.local/share/bvm ~/.local/share/icons/hicolor/scalable/apps/qemu.png ~/.local/share/icons/hicolor/scalable/apps/wlfreerdp.png \
-  ~/.local/share/icons/hicolor/scalable/apps/xfreerdp.png ~/.local/share/applications/bvm.desktop
+  ~/.local/share/icons/hicolor/scalable/apps/xfreerdp.png ~/.local/share/applications/bvm.desktop ~/.local/bin/bvm
 
 #Allow packages required by this app to be uninstalled
 purge_packages || exit 1
