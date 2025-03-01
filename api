@@ -3158,7 +3158,7 @@ You must fix this problem before Pi-Apps can function correctly."
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif local frankendebian="$(echo "$DEFAULT_REPOS" | grep -v $__os_codename)" && [ ! -z "$frankendebian" ];then
+  elif local frankendebian="$(echo "$DEFAULT_REPOS" | grep -v $__os_codename)" && [[ "$__os_desc" != Parrot* ]] && [ ! -z "$frankendebian" ];then
     echo "Congratulations, Linux tinkerer, you broke your system. You have made your system a FrankenDebian.
 This website explains your mistake in more detail: https://wiki.debian.org/DontBreakDebian
 Your current reported release (${__os_codename^}) should not be combined with other releases.
