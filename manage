@@ -510,7 +510,7 @@ ${DIRECTORY}/icons/none-1.png
   
   summary_window() { #given $queue, summarize what was done
     local IFS=$'\n'
-    export botspot_message='to Botspot (Pi-Apps founder, college student, nearly bankrupt)'
+    export botspot_message='to Botspot (Pi-Apps founder, college student, abandoned by family recently, needs help)'
     export gman_message='to theofficialgman (notable Pi-Apps contributor)'
     summary_window_click_function() {
       if [ "$5" == "$botspot_message" ];then
