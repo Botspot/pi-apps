@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#do nothing if during update
+if [ "$1" == update ];then
+  status "App is in update mode, only removing main Ruffle binary"
+  sudo rm /opt/ruffle/ruffle
+  exit 0
+fi
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+status "Removing Ruffle binaries"
+sudo rm -rf /opt/ruffle
+sudo rm /usr/local/bin/ruffle
+status "Removing desktop entry"
+sudo rm /usr/share/applications/ruffle.desktop
+
+# revert MIME types if it was set by the user
+if [ -f "/usr/share/mime/packages/ruffle.xml" ];then
+  status "Removing MIME types for Ruffle"
+  xdg-mime uninstall /usr/share/mime/packages/ruffle.xml || warning "Unable to unassociate .swf file for Ruffle."
+  sudo rm /usr/share/mime/packages/ruffle.xml
+  update-mime-database /usr/share/mime || warning "Failed to update MIME databases."
+fi

@@ -1,0 +1,129 @@
+#!/bin/bash
+
+version=nightly-2023-03-02 # dummy variable to make Pi-Apps update the app every new version
+
+# Purge any existing Ruffle instances if already found
+status "Purging any existing Ruffle copies and code if found"
+sudo rm -rf /tmp/ruffle /opt/ruffle ~/ruffle
+
+status "Installing required dependencies"
+install_packages libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+
+status "Checking Rust compiler for compatibility"
+REQUIRED_MAJOR=1
+REQUIRED_MINOR=78
+
+RUSTC_VERSION=$(rustc --version | awk '{print $2}')
+MAJOR=$(echo "$RUSTC_VERSION" | cut -d'.' -f1)
+MINOR=$(echo "$RUSTC_VERSION" | cut -d'.' -f2)
+
+# Check if rustc is installed
+if ! command -v rustc &>/dev/null; then
+    echo "rustc is not installed, Rust toolchain will be installed"
+    rust_too_old=1
+else
+# Compare versions
+if [ "$MAJOR" -gt "$REQUIRED_MAJOR" ] || { [ "$MAJOR" -eq "$REQUIRED_MAJOR" ] && [ "$MINOR" -ge "$REQUIRED_MINOR" ]; }; then
+    echo "Rust compiler is OK (version $RUSTC_VERSION), continuing"
+    rust_too_old=0
+else
+    echo "Rust compiler is too old (found version $RUSTC_VERSION, required 1.78.0 or later), installing latest version via rustup"
+    rust_too_old=1
+fi
+fi
+
+
+if [ "$rust_too_old" -eq "1" ]; then
+    echo "Installing newer Rust toolchain"
+    wget -O /tmp/rustup-init.sh https://sh.rustup.rs
+    sudo chmod +x /tmp/rustup-init.sh
+    /tmp/rustup-init.sh -y
+    . "$HOME/.cargo/env"
+else
+    echo "Rust too old variable was not set or is at 0, continuing"
+fi
+
+# Download Ruffle source code and compile it
+git_clone https://github.com/ruffle-rs/ruffle || error 'Failed to clone Ruffle repository!'
+
+# Check if there is enough RAM available
+# Get free memory in MB
+free_mem=$(free -m | awk '/^Mem:/{print $7}')
+
+# Set the threshold (3GB = 3096MB)
+threshold=3096
+
+if (( free_mem < threshold )); then
+     warning "Warning: Free RAM is below 3GB ($free_mem MB). Compilation may fail unless swap/zram is available."
+     # Ask the user if they want to continue
+    read -p "Do you want to continue anyway even with not enough RAM available? Be warned that the compilation process could be killed by the OOM killer. (y/n): " choice
+
+    case "$choice" in
+        [Yy]*) echo "Continuing...";;
+        [Nn]*) echo "Exiting."; exit 1;;
+        *) echo "Invalid input. Exiting."; exit 1;;
+    esac
+fi
+
+status "Compiling Ruffle, this will take a bit"
+cd ruffle
+if cargo build --release --package=ruffle_desktop; then status_green "Compile success"; else error "Failed to compile Ruffle!"; fi
+
+# Copy compiled build
+status "Copying release to /opt/ruffle"
+cd target/release 
+mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
+# Only install back Ruffle binary if it's in update mode 
+if [ "$1" == update ];then
+  sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!"
+  exit 0
+fi
+sudo mkdir /opt/ruffle || error "Failed to make Ruffle folder in /opt!" 
+sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!" 
+sudo cp "$(dirname "$0")/icon-64.png" /opt/ruffle || error "Failed to copy Ruffle icon to /opt/ruffle!" 
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+/opt/ruffle/ruffle "$@"' | sudo tee /usr/local/bin/ruffle >/dev/null
+sudo chmod +x /usr/local/bin/ruffle
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Ruffle
+Comment=Open source Flash Player emulator written in Rust
+Exec=ruffle %f
+Icon=/opt/ruffle/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;Utility;
+MimeType=application/x-shockwave-flash;" | sudo tee /usr/share/applications/ruffle.desktop >/dev/null
+
+# Make user associate .swf files to Ruffle
+description="Make MIME association for Ruffle?
+
+You will be able to launch .swf files without manually going into Ruffle and loading a Adobe Flash file within Ruffle's UI itself."
+userinput_func "$description" "Yes, associate Ruffle as the default application for .swf files." "No, don't associate Ruffle as the default application for .swf files."
+  if [ "$output" == "Yes, associate Ruffle as the default application for .swf files." ]; then
+# Register MIME type
+status "Creating MIME type definition for Ruffle..."
+echo '<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-shockwave-flash">
+        <comment>Shockwave Flash File</comment>
+        <glob pattern="*.swf"/>
+    </mime-type>
+</mime-info>' | sudo tee "/usr/share/mime/packages/ruffle.xml" > /dev/null
+
+# Update MIME databases
+status "Updating MIME databases..."
+sudo update-mime-database /usr/share/mime || warning "Failed to update MIME databases."
+
+# Associate SWF files with Ruffle
+status "Associating .swf files with Ruffle..."
+sudo xdg-mime default ruffle.desktop application/x-shockwave-flash || warning "Unable to associate Ruffle with .swf files."
+  fi
+status "Purging Ruffle cloned repository"
+rm -rf ~/ruffle
+status_green Done
