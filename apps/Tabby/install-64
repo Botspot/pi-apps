@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.221
+version=1.0.222
 
 install_packages https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-arm64.deb || exit 1
 
