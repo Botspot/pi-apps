@@ -1,0 +1,110 @@
+#!/bin/bash
+
+version=nightly-2025-03-06 
+
+# Purge any existing Ruffle instances if already found
+status "Purging any existing Ruffle copies and code if found"
+sudo rm -rf /tmp/ruffle-$version /opt/ruffle ~/ruffle
+
+status "Checking Rust compiler for compatibility"
+
+# simplified version checking
+if package_is_new_enough rustc 1.78.0; then echo "Rust compiler available in the package repositories is new enough, installing from package repositories" && rust_too_old=0; else echo "Rust compiler is too old in available package repositories, installing latest version via rustup" && rust_too_old=1; fi
+
+if [ "$rust_too_old" -eq "1" ]; then
+    echo "Installing newer Rust toolchain"
+    wget -O /tmp/rustup-init.sh https://sh.rustup.rs
+    sudo chmod +x /tmp/rustup-init.sh
+    /tmp/rustup-init.sh -y
+    . "$HOME/.cargo/env"
+    status "Installing dependencies without a Rust toolchain"
+    install_packages libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+else
+    echo "Rust too old variable is at 0, installing Rust toolchain and dependencies via distro's repositories"
+    install_packages cargo rustc libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+fi
+
+# Download Ruffle source code latest snapshot and compile it
+
+# This will download the latest branch with a day old delay for reproducible builds
+# example if latest is nightly-2025-03-06 on day 6th Mar 2025 and has still applied commits for that day then download nightly-2025-03-05
+# otherwaise if latest is nightly-2025-03-06 on day 7th Mar 2025 and has no applied commits for that day then download that release
+
+status "Downloading Ruffle source code"
+git_clone https://github.com/ruffle-rs/ruffle || error 'Failed to download Ruffle source code!'
+cd ~/ruffle
+
+# The below code is to get the latest commits for the previous day if there were today applied commits or the latest ones if not commits were applied for today
+# Get yesterday's date
+YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
+TODAY=$(date +%Y-%m-%d)
+BRANCH=master
+
+# Find the latest commit from yesterday
+LATEST_COMMIT=$(git rev-list -n 1 --before="$YESTERDAY 23:59:59" "$BRANCH")
+
+# If there's no commit from yesterday, fall back to the last available commit
+if [ -z "$LATEST_COMMIT" ]; then
+    echo "Reproducible build check, no commits found for $YESTERDAY, falling back to last available commit."
+    LATEST_COMMIT=$(git rev-list -n 1 --before="$TODAY 00:00:00" "$BRANCH")
+fi
+
+echo "Reproducible build check, checking out commit: $LATEST_COMMIT from $YESTERDAY"
+git checkout "$LATEST_COMMIT" || error "Failed to checkout latest commit!"
+status "Compiling Ruffle, this will take a bit"
+cd ~/ruffle
+cargo build --release --package=ruffle_desktop -j$(nproc) || error "Failed to compile Ruffle!"
+status_green "Compile success"
+
+# Copy compiled build
+status "Copying release to /opt/ruffle"
+cd target/release 
+mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
+# Only install back Ruffle binary if it's in update mode 
+if [ "$1" == update ];then
+  sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!"
+  exit 0
+fi
+sudo mkdir /opt/ruffle || error "Failed to make Ruffle folder in /opt!" 
+sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!" 
+sudo cp "$(dirname "$0")/icon-64.png" /opt/ruffle || error "Failed to copy Ruffle icon to /opt/ruffle!" 
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+/opt/ruffle/ruffle "$@"' | sudo tee /usr/local/bin/ruffle >/dev/null
+sudo chmod +x /usr/local/bin/ruffle
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Ruffle
+Comment=Open source Flash Player emulator written in Rust
+Exec=ruffle %f
+Icon=/opt/ruffle/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;Utility;
+MimeType=application/x-shockwave-flash;" | sudo tee /usr/share/applications/ruffle.desktop >/dev/null
+
+# Make .swf files associate to Ruffle
+# Register MIME type
+status "Creating MIME type definition for Ruffle..."
+echo '<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-shockwave-flash">
+        <comment>Shockwave Flash File</comment>
+        <glob pattern="*.swf"/>
+    </mime-type>
+</mime-info>' | sudo tee "/usr/share/mime/packages/ruffle.xml" > /dev/null
+
+# Update MIME databases
+status "Updating MIME databases..."
+sudo update-mime-database /usr/share/mime || warning "Failed to update MIME databases."
+
+# Associate SWF files with Ruffle
+status "Associating .swf files with Ruffle..."
+sudo xdg-mime default ruffle.desktop application/x-shockwave-flash || warning "Unable to associate Ruffle with .swf files."
+status "Purging Ruffle cloned repository"
+rm -rf /tmp/ruffle-$version
+status_green Done
