@@ -1,7 +1,6 @@
 #!/bin/bash
 
 version=nightly-2025-03-08
-ruffleversion="${version%%-*}-$(echo "${version#*-}" | tr '-' '_')" # ruffle reproducible source version dates use underscores instead of dashes so this converts version date dashes into underscores
 
 # Purge any existing Ruffle instances if already found
 status "Purging any existing Ruffle copies and code if found"
@@ -27,11 +26,8 @@ fi
 
 # Download Ruffle source code latest snapshot and compile it
 
-# This will download the latest snapshot from ruffle releases page.
-# Do note that doing this will result in warnings in the compiler during linking the main executable saying no suitable git workspace found because reproducible sources don't keep git history in them
 status "Downloading Ruffle source code"
-wget -O /tmp/ruffle-$version-reproducible-source.zip https://github.com/ruffle-rs/ruffle/releases/download/$version/ruffle-$(echo $ruffleversion)-reproducible-source.zip || error 'Failed to download Ruffle source code archive!'
-unzip /tmp/ruffle-$version-reproducible-source.zip -d ~/ruffle
+git_clone -b "$version" https://github.com/ruffle-rs/ruffle || error 'Failed to clone Ruffle repository!'
 
 status "Compiling Ruffle, this will take a bit"
 cd ~/ruffle
@@ -45,6 +41,8 @@ mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
 # Only install back Ruffle binary if it's in update mode 
 if [ "$1" == update ];then
   sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!"
+  status "Purging downloaded Ruffle source code version snapshot"
+  sudo rm -rf ~/ruffle
   exit 0
 fi
 sudo mkdir /opt/ruffle || error "Failed to make Ruffle folder in /opt!" 
@@ -87,6 +85,6 @@ sudo update-mime-database /usr/share/mime || warning "Failed to update MIME data
 # Associate SWF files with Ruffle
 status "Associating .swf files with Ruffle..."
 sudo xdg-mime default ruffle.desktop application/x-shockwave-flash || warning "Unable to associate Ruffle with .swf files."
-status "Purging downloaded Ruffle source code snapshot and archive"
-rm -rf ~/ruffle /tmp/ruffle-$version-reproducible-source.zip
+status "Purging downloaded Ruffle source code version snapshot"
+rm -rf ~/ruffle
 status_green Done
