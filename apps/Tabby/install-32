@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.222
+version=1.0.223
 
 install_packages https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-armv7l.deb || exit 1
 
