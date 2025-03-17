@@ -2,6 +2,33 @@
 
 version=7.46.0
 
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+  #switch to 4K pagesize kernel
+  if [ -f /boot/config.txt ] || [ -f /boot/firmware/config.txt ]; then
+    if [ -f /boot/firmware/config.txt ]; then
+      boot_config="/boot/firmware/config.txt"
+    elif [ -f /boot/config.txt ]; then
+      boot_config="/boot/config.txt"
+    fi
+    text="Raspberry Pi 5 PiOS images ship by default with a 16K PageSize Linux Kernel.
+This kernel causes incompatibilities with some software including Signal https://github.com/raspberrypi/bookworm-feedback/issues/107
+
+Would you like to automatically switch to a 4K PageSize Linux Kernel?"
+    userinput_func "$text" "No, keep 16K PageSize Kernel and Exit" "Yes, switch to 4K PageSize Kernel"
+    if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
+      error "User error: Your current running kernel is built with 16K PageSize and is incompatible with Signal. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing Signal."
+    fi
+    echo "" | sudo tee --append $boot_config >/dev/null
+    echo "[pi5]" | sudo tee --append $boot_config >/dev/null
+    echo "kernel=kernel8.img" | sudo tee --append $boot_config >/dev/null
+    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to $boot_config\nPlease reboot now and install the Signal app again."
+    sleep infinity
+  else
+    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Signal. Changing kernels automatically cannot be done since no /boot/config.txt or /boot/firmware/config.txt file was found."
+  fi
+fi
+
 install_packages "https://github.com/dennisameling/Signal-Desktop/releases/download/v${version}/signal-desktop-unofficial_${version}_arm64.deb" || exit 1
 
 #add script to run with wayland, if enabled
