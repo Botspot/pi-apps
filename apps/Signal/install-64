@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=7.46.0
+version=7.46.1
 
 PAGE_SIZE="$(getconf PAGE_SIZE)"
 if [[ "$PAGE_SIZE" == "16384" ]]; then
