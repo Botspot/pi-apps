@@ -4,7 +4,11 @@ version=nightly-2025-03-18
 
 # Purge any existing Ruffle instances if already found
 status "Purging any existing Ruffle copies and code if found"
-sudo rm -rf /tmp/ruffle-$version /opt/ruffle ~/ruffle
+sudo rm -rf /tmp/ruffle-$version ~/ruffle
+
+if ! [ "$1" == update ];then
+  sudo rm -rf /opt/ruffle
+fi
 
 status "Checking Rust compiler for compatibility"
 
@@ -40,7 +44,7 @@ cd target/release
 mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
 # Only install back Ruffle binary if it's in update mode 
 if [ "$1" == update ];then
-  sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!"
+  sudo cp ruffle /opt/ruffle/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle/ruffle!"
   status "Purging downloaded Ruffle source code version snapshot"
   sudo rm -rf ~/ruffle
   exit 0
