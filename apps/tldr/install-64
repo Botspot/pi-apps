@@ -1,5 +1,6 @@
 #!/bin/bash
-version=1.7.1
+version=1.7.2
+
 wget -O /tmp/tldr https://github.com/tealdeer-rs/tealdeer/releases/download/v${version}/tealdeer-linux-aarch64-musl || error "Failed to download tldr!"
 sudo mv /tmp/tldr /usr/bin/ || error "Failed to move binary to /usr/bin/"
 sudo chmod +x /usr/bin/tldr
