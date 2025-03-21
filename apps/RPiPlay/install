@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Install dependencies
+install_packages cmake libavahi-compat-libdnssd-dev libplist-dev libssl-dev zenity || exit 1
+
+# Prepare source
+sudo rm -rf ~/RPiPlay
+git_clone https://github.com/FD-/RPiPlay.git || error "Failed to git clone RPiPlay source code."
+cd RPiPlay/ || error "Failed to enter RPiPlay directory."
+mkdir build && cd build || error "Failed to create/enter build directory."
+
+# Compile
+cmake .. || error "Failed to run cmake."
+make || error "Failed to run make."
+sudo make install || error "Failed to install RPiPlay system-wide."
+
+# Create run script
+echo "#!/bin/bash
+yn=$(zenity --title "RPiPlay" --text "Please configure whether you would like sound output from either \nHDMI or analog. \nNOTE: When the application starts press CTRL+C to exit or close the\nconnection from your iOS device." --list --radiolist --column "Choice" --column "Answer" HDMI HDMI Analog Analog )
+if [ "$yn" = "HDMI" ]; then
+    echo "RPiPlay starting with HDMI audio output."
+    $DIRECTORY/etc/terminal-run "rpiplay -a hdmi -b auto" RPiPlay
+elif [ "$yn" = "Analog" ]; then
+    echo "RPiPlay starting with analog audio output."
+    $DIRECTORY/etc/terminal-run "rpiplay -a analog -b auto" RPiPlay
+else
+    echo "RPiPlay starting with automatic audio output selection."
+    $DIRECTORY/etc/terminal-run "rpiplay -b auto" RPiPlay
+fi" > startrpiplay || error "Failed to create start script."
+chmod +x startrpiplay
+sudo mv startrpiplay /usr/local/bin/ || error "Failed to move start script to /usr/local/bin."
+
+# Create desktop entry
+echo "[Desktop Entry]
+Name=RPiPlay
+GenericName=AirPlay Mirroring
+Comment=Open-source AirPlay mirroring server
+Exec=startrpiplay
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility;" > ~/.local/share/applications/rpiplay.desktop || error "Failed to create desktop entry."
+
+# Clean up
+sudo rm -rf ~/RPiPlay
