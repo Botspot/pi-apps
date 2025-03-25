@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version_armhf=4.4.4.243461245
-version_arm64=4.4.4.243461246
+version_armhf=4.5.1.250801557
+version_arm64=4.5.1.250801557
 
 if [ $arch == 32 ];then
   version_select="$version_armhf"
