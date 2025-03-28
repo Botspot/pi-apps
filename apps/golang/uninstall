@@ -1,0 +1,30 @@
+#!/bin/bash
+[ -z "$GOROOT" ] && GOROOT="$HOME/.go"
+
+if [ -n "$($SHELL -c 'echo $ZSH_VERSION')" ]; then
+    shell_profile="$HOME/.zshrc"
+elif [ -n "$($SHELL -c 'echo $BASH_VERSION')" ]; then
+    shell_profile="$HOME/.bashrc"
+elif [ -n "$($SHELL -c 'echo $FISH_VERSION')" ]; then
+    shell="fish"
+    if [ -d "$XDG_CONFIG_HOME" ]; then
+        shell_profile="$XDG_CONFIG_HOME/fish/config.fish"
+    else
+        shell_profile="$HOME/.config/fish/config.fish"
+    fi
+fi
+rm -rf "$GOROOT"
+    if [ "$shell" == "fish" ]; then
+        sed -i '/# GoLang/d' "$shell_profile"
+        sed -i '/set GOROOT/d' "$shell_profile"
+        sed -i '/set GOPATH/d' "$shell_profile"
+        sed -i '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shell_profile"
+    else
+        sed -i '/# GoLang/d' "$shell_profile"
+        sed -i '/export GOROOT/d' "$shell_profile"
+        sed -i '/$GOROOT\/bin/d' "$shell_profile"
+        sed -i '/export GOPATH/d' "$shell_profile"
+        sed -i '/$GOPATH\/bin/d' "$shell_profile"
+    fi  
+echo "Go removed."
+exit 0
