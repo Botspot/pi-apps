@@ -3,4 +3,4 @@
 #Allow packages required by this app to be uninstalled
 purge_packages || exit 1
 
-sudo rm -f /usr/share/applications/chesscoin-qt.desktop /opt/chesscoin-qt.AppImage /usr/share/icons/hicolor/64x64/apps/chesscoin-qt.png
+sudo rm -f /usr/share/applications/chesscoin-qt.desktop /opt/chesscoin-qt-aarch64.AppImage /usr/share/icons/hicolor/64x64/apps/chesscoin-qt.png
