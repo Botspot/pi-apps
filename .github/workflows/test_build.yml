@@ -295,7 +295,7 @@ jobs:
       - name: Test installing app on noble arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.1-preinstalled-desktop-arm64+raspi.img.xz
+          base_image: https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.2-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
