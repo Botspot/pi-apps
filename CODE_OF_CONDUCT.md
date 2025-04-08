@@ -75,7 +75,7 @@ Project maintainers will follow these Community Impact Guidelines in determining
 
 2. **Warning**: For repeated violations or more serious infractions (such as creating multiple low-quality issues or PRs), a warning will be issued with consequences for continued behavior. No interaction with the people involved, including unsolicited interaction with those enforcing the Code of Conduct, for a specified period of time.
 
-3. **Temporary Ban**: For serious violations of community standards, including sustained inappropriate behavior or spam issues like those observed in issues #2736, #2735, and #523, a temporary ban from any sort of interaction or public communication with the community for a specified period of time.
+3. **Temporary Ban**: For serious violations of community standards, including sustained inappropriate behavior or spam issues like those observed in issues [#2736](https://github.com/Botspot/pi-apps/issues/2736), [#2735](https://github.com/Botspot/pi-apps/issues/2735), and [#523](https://github.com/Botspot/pi-apps/issues/523), a temporary ban from any sort of interaction or public communication with the community for a specified period of time.
 
 4. **Permanent Ban**: For demonstrating a pattern of violation of community standards, including sustained inappropriate behavior, harassment of an individual, or aggression toward or disparagement of classes of individuals, a permanent ban from any sort of public interaction within the community will be issued.
 
