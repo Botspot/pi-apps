@@ -56,7 +56,7 @@ To maintain the quality and usability of this project, we expect all participant
 1. **Test your changes**: Make sure your PR actually works as intended. (if the app installation is not working initially, then additional commits are expected to fix the issue before it can be merged, since the contributors can make mistakes like any unnoticed issues that don't seem to affect the installation but break at another function like updating the app are allowed to be fixed in a later PR)
 2. **Describe your changes**: Include a detailed description of what your PR accomplishes. (like a detailed description of the the added app, what it does, and how it works)
 3. **Keep PRs focused**: One PR should address one specific issue or add one feature.
-4. **Follow existing code style**: Maintain consistency with the project's coding style. (don't be like the PR #2545 that was ignoring the structure of app installation scripts)
+4. **Follow existing code style**: Maintain consistency with the project's coding style. (don't be like the PR [#2545](https://github.com/Botspot/pi-apps/pull/2545) that was ignoring the structure of app installation scripts)
 5. **Document your code**: Add comments to explain complex logic.
 6. **Reference related issues**: If your PR addresses an existing issue, reference it.
 7. **Be willing to make changes**: If reviewers suggest changes, be open to revising your PR.
