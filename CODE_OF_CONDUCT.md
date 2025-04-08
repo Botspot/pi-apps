@@ -8,7 +8,7 @@ In the interest of fostering an open, welcoming, and productive community, we, t
 
 Pi-Apps is a collection of app installation scripts (mostly open source projects, but also include proprietary apps) that aims to make software installation easier on Raspberry Pi and other compatible devices.
 
-This is like the quote of this project where is says:
+This is like the quote of this project where it says:
 > Let's be honest: Linux is harder to master than Windows. Sometimes it's not user-friendly, and following an outdated tutorial may break your Raspberry Pi's operating system.
 > There is no centralized software repository, except for the apt repositories which lack many desktop applications.
 > Surely there is a better way! **There is.**
@@ -41,9 +41,9 @@ To maintain the quality and usability of this project, we expect all participant
 
 ### For Issues:
 
-1. **Search before you submit**: Make sure your issue hasn't been reported already. (this is still for now a problem and people can ignore this rule)
+1. **Search before you submit**: Make sure your issue (for example adding an app) hasn't been reported already. (this is still for now a problem and people can ignore this rule)
 2. **Use the provided templates**: We have templates for bug reports, app suggestions, and general suggestions. Use them! (again this is still a problem for now, but not as often)
-3. **Be specific and detailed**: Vague issues like "it doesn't work" without details will be closed.
+3. **Be specific and detailed**: Vague issues like "it doesn't work" without details will be closed. See on [how to properly make a bug report](https://www.softwaretestinghelp.com/how-to-write-good-bug-report/) for more details if you are making a bug report.
 4. **Include relevant information**: For bug reports, include Pi-Apps version, operating system, and steps to reproduce.
 5. **One issue per report**: Don't bundle multiple issues into one report.
 6. **Format your code**: When including terminal output or code snippets, use proper markdown formatting.
