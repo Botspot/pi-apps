@@ -2315,21 +2315,26 @@ Open an issue on Pi-Apps if all else fails, but we will probably tell you the sa
 #apt/dpkg issues above, package issues below
 #------------------------------------------
   
-  if grep -q "installed .* post-installation script subprocess returned error exit status" <(echo "$errors") ;then
+  if grep -qF 'Consult /var/lib/dkms/anbox-ashmem/1/build/make.log for more information.' <(echo "$errors") ;then
+    error_caption+=("Anbox kernel modules no longer compile on the latest kernel. You need to remove it for the kernel to fully install and for APT to work.
+Run this command to remove anbox kernel modules, then retry the operation.
+sudo rm -rf /etc/modules-load.d/anbox.conf /lib/udev/rules.d/99-anbox.rules /usr/src/anbox-ashmem-1/ /usr/src/anbox-binder-1/ /var/lib/dkms/anbox-*")
+    error_type="package"
+  elif grep -q "installed .* post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
-
+  
 Perhaps reinstalling the package would help?")
     error_type="package"
   fi
 
   if grep -q "E: Problem executing scripts DPkg::Post-Invoke '/home/.*/mesa_vulkan/reinstall-vulkan-driver.sh'" <(echo "$errors") ;then
     error_caption+=("PiKiss has installed a broken custom vulkan reinstallation apt hook. As a result, dpkg and APT won't work properly.
-
+  
 Try removing it with this command:
 sudo rm -f /etc/apt/apt.conf.d/99reinstall-vulkan-driver-hook")
     error_type="package"
   fi
-
+  
   if grep -qF "Reinstalling Vulkan driver" <(echo "$errors") ;then
     if grep -qF "sh: 1: Syntax error: Unterminated quoted string" <(echo "$errors") ;then
       error_caption+=("PiKiss has installed a broken custom vulkan reinstallation apt hook. As a result, dpkg and APT won't work properly.
