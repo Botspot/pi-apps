@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-In the interest of fostering an open, welcoming, and productive community, we, the maintainers and contributors of Pi-Apps, pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+In the interest of fostering an open, welcoming, and productive community, we, the maintainers and contributors of Pi-Apps, pledge to make participation in our project a harassment-free experience for anyone.
 
 ## Our Standards
 
@@ -18,7 +18,7 @@ To maintain the quality and usability of this project, we expect all participant
 
 ### Examples of behavior that contributes to creating a positive environment:
 
-* Using welcoming and inclusive language
+* Using welcoming and inclusive language (this is a community that accepts and supports people regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation)
 * Being respectful of differing viewpoints and experiences
 * Gracefully accepting constructive criticism
 * Focusing on what is best for the community
