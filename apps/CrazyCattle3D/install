@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# use unofficial source to download CrazyCattle3D resources
+# reason is itch.io page does not allow direct downloads unless you use a 3rd party tool
+# like itch-dl which requires API keys to work
+status "Downloading game resources..."
+wget https://zip.crazycattle3d.com/CrazyCattle3DLinux.zip -O /tmp/CrazyCattle3DLinux.zip
+
+status "Downloading the Godot game engine runtime for your platform..."
+
+# Godot does not offer runtimes in their releases page as seperate binaries, instead it is as a large archive
+# This will have to download a large export template and extract the desired binary
+wget https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+sudo mkdir -p /opt/crazycattle3d 
+case "$arch" in
+  "64") unzip ~/Godot_v4.4.1-stable_export_templates.tpz templates/linux_debug.arm64 -d /tmp && sudo mv /tmp/templates/linux_debug.arm64 /opt/crazycattle3d/CrazyCattle3D ;;
+  "32") unzip ~/Godot_v4.4.1-stable_export_templates.tpz templates/linux_debug.arm32 -d /tmp && sudo mv /tmp/templates/linux_debug.arm32 /opt/crazycattle3d/CrazyCattle3D ;;
+  *) error "arch variable is not set, can not continue" ;;
+esac
+
+unzip /tmp/CrazyCattle3DLinux.zip CrazyCattle3D.pck -d /tmp || error "Failed to extract game resources!"
+sudo mv /tmp/CrazyCattle3D.pck /opt/crazycattle3d/CrazyCattle3D.pck || error "Failed to move game resources from /tmp!"
+sudo cp "$(dirname "$0")/icon-64.png" /opt/crazycattle3d || error "Failed to copy CrazyCattle3D icon to /opt/crazycattle3d!"
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+/opt/crazycattle3d/CrazyCattle3D --rendering-driver opengl3_es "$@"' | sudo tee /usr/local/bin/crazycattle3d >/dev/null
+sudo chmod +x /usr/local/bin/crazycattle3d
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=CrazyCattle3D
+Comment=A battle royale rage game about sheep; will you have what it takes to survive?
+Exec=crazycattle3d %f
+Icon=/opt/crazycattle3d/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;
+MimeType=application/x-shockwave-flash;" | sudo tee /usr/local/share/applications/crazycattle3d.desktop >/dev/null
+
+status "Cleaning up..."
+sudo rm -rf Godot_v4.4.1-stable_export_templates.tpz /tmp/CrazyCattle3DLinux.zip
