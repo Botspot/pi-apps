@@ -10,7 +10,7 @@ status "Downloading the Godot game engine runtime for your platform..."
 
 # Godot does not offer runtimes in their releases page as seperate binaries, instead it is as a large archive
 # This will have to download a large export template and extract the desired binary
-wget https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+wget https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz || error "Failed to download game engine runtime templates!"
 sudo mkdir -p /opt/crazycattle3d 
 case "$arch" in
   "64") unzip ~/Godot_v4.4.1-stable_export_templates.tpz templates/linux_debug.arm64 -d /tmp && sudo mv /tmp/templates/linux_debug.arm64 /opt/crazycattle3d/CrazyCattle3D ;;
@@ -26,7 +26,7 @@ sudo cp "$(dirname "$0")/icon-64.png" /opt/crazycattle3d || error "Failed to cop
 status "Making terminal command..."
 echo '#!/bin/bash
 /opt/crazycattle3d/CrazyCattle3D --rendering-driver opengl3_es "$@"' | sudo tee /usr/local/bin/crazycattle3d >/dev/null
-sudo chmod +x /usr/local/bin/crazycattle3d
+sudo chmod +x /usr/local/bin/crazycattle3d || error "Failed to make terminal command executable!"
 
 # Make menu launcher
 status "Making menu launcher..."
