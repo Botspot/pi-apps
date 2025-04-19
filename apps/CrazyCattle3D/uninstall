@@ -1,0 +1,4 @@
+#!/bin/bash
+
+status "Purging game assets..."
+sudo rm -rf /opt/crazycattle3d /usr/local/bin/crazycattle3d /usr/local/share/applications/crazycattle3d.desktop
