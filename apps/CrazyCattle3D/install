@@ -10,12 +10,21 @@ status "Downloading the Godot game engine runtime for your platform..."
 
 # Godot does not offer runtimes in their releases page as seperate binaries, instead it is as a large archive
 # This will have to download a large export template and extract the desired binary
+<<<<<<< HEAD
 sudo mkdir -p /opt/crazycattle3d
 # for now use my repo of seperated Godot export template builds until these files exist in the Pi-Apps-Coders/files repo
 case "$arch" in
   "64") sudo wget https://github.com/matu6968/godotengine-templates/releases/download/4.4.1-stable/linux_release.arm64 -O /opt/crazycattle3d/CrazyCattle3D || error "Failed to download Godot game engine!" ;;
   "32") sudo wget https://github.com/matu6968/godotengine-templates/releases/download/4.4.1-stable/linux_release.arm32 -O /opt/crazycattle3d/CrazyCattle3D || error "Failed to download Godot game engine!" ;;
   *) error "arch variable is not set, cannot continue" ;;
+=======
+wget https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz || error "Failed to download game engine runtime templates!"
+sudo mkdir -p /opt/crazycattle3d 
+case "$arch" in
+  "64") unzip ~/Godot_v4.4.1-stable_export_templates.tpz templates/linux_debug.arm64 -d /tmp && sudo mv /tmp/templates/linux_debug.arm64 /opt/crazycattle3d/CrazyCattle3D ;;
+  "32") unzip ~/Godot_v4.4.1-stable_export_templates.tpz templates/linux_debug.arm32 -d /tmp && sudo mv /tmp/templates/linux_debug.arm32 /opt/crazycattle3d/CrazyCattle3D ;;
+  *) error "arch variable is not set, can not continue" ;;
+>>>>>>> 36545bc13571cf822846d9af416295372db38224
 esac
 
 unzip /tmp/CrazyCattle3DLinux.zip CrazyCattle3D.pck -d /tmp || error "Failed to extract game resources!"
@@ -27,7 +36,10 @@ status "Making terminal command..."
 echo '#!/bin/bash
 /opt/crazycattle3d/CrazyCattle3D --rendering-driver opengl3_es "$@"' | sudo tee /usr/local/bin/crazycattle3d >/dev/null
 sudo chmod +x /usr/local/bin/crazycattle3d || error "Failed to make terminal command executable!"
+<<<<<<< HEAD
 sudo chmod +x /opt/crazycattle3d/CrazyCattle3D || error "Failed to make binary executable!"
+=======
+>>>>>>> 36545bc13571cf822846d9af416295372db38224
 
 # Make menu launcher
 status "Making menu launcher..."
@@ -38,7 +50,15 @@ Exec=crazycattle3d %f
 Icon=/opt/crazycattle3d/icon-64.png
 Terminal=false
 Type=Application
+<<<<<<< HEAD
 Categories=Game;" | sudo tee /usr/local/share/applications/crazycattle3d.desktop >/dev/null
 
 status "Cleaning up..."
 sudo rm -f /tmp/CrazyCattle3DLinux.zip
+=======
+Categories=Game;
+MimeType=application/x-shockwave-flash;" | sudo tee /usr/local/share/applications/crazycattle3d.desktop >/dev/null
+
+status "Cleaning up..."
+sudo rm -rf Godot_v4.4.1-stable_export_templates.tpz /tmp/CrazyCattle3DLinux.zip
+>>>>>>> 36545bc13571cf822846d9af416295372db38224
