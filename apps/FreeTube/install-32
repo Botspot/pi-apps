@@ -1,5 +1,5 @@
 #!/bin/bash
 
-version=0.23.4-beta
+version=0.23.5-beta
 
 install_packages https://github.com/FreeTubeApp/FreeTube/releases/download/v${version}/freetube_${version%-beta}_armv7l.deb || exit 1
