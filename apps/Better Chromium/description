@@ -14,3 +14,5 @@ Features:
 - Reduce writes to the SD card (Uses RAM for cache)
 
 With the exception of Widevine, this script simply adds files to the /etc/chromium.d folder, most of which will add command-line flags to Chromium as it launches. Feel free to inspect the script to see how each of these features works.
+
+Note: To enable Google Chrome Sync, first enable it here, then go to Chromium's account profile settings, enable "Allow Chromium sign-in", relaunch the browser, then you can login to Google and synchronize bookmarks, history, passwords, etc.
