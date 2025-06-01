@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version='v20250118.101'
-install_packages "https://github.com/iNavFlight/inav-configurator-nightly/releases/download/${version}/INAV-Configurator_linux_arm64_8.0.0.deb" || exit 1
+version=8.0.1
+install_packages "https://github.com/iNavFlight/inav-configurator/releases/download/${version}/INAV-Configurator_linux_arm64_${version}.deb" || exit 1
