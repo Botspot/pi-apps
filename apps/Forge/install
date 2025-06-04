@@ -1,0 +1,74 @@
+#!/bin/bash
+version=forge-1.6.64
+subversion=${version/forge-} # remove "forge-" from string
+
+game_folder="$HOME/.local/share/mtg-forge"
+repo_url="https://github.com/card-forge/forge/releases/download/${version}"
+archive_name="forge-gui-desktop-${subversion}.tar.bz2"
+
+#cleanup
+trap "rm -f /tmp/$archive_name; exit" EXIT
+
+status "Installing Java 17"
+case "$__os_id" in
+# Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
+Raspbian | Debian | Kali)
+  adoptium_installer || exit 1
+  install_packages temurin-17-jre || exit 1
+  ;;
+Ubuntu)
+  install_packages openjdk-17-jre || exit 1
+  ;;
+*)
+  error "$__os_id appears to be an unsupported OS"
+  ;;
+esac
+
+status "Downloading snapshot archive."
+[[ -f "/tmp/$archive_name" ]] && rm -f "/tmp/$archive_name"
+wget "$repo_url/$archive_name" --directory-prefix /tmp || error 'Failed to download latest release!'
+
+# check if folder already exists
+if [[ -d "$game_folder" ]]; then
+  warning "Found existing Forge directory in $game_folder !!!" && echo "It will be moved to /tmp/mtg-forge-old !!!"
+  mv 	"$game_folder" /tmp/MTG-Forge-old || error "Failed to move $game_folder directory to /tmp/ !!! Please, move or delete it yourself and then try installing again."
+fi
+
+mkdir	"$game_folder"
+
+status "Extracting the game archive."
+tar -xvf "/tmp/forge-gui-desktop-${subversion}.tar.bz2" --directory="$game_folder" || error 'Failed to extract the game archive!'
+
+# problem: forge-adventure doesn't launch with java versions > 8
+# workaround: create `forge-mobile.sh` script that's a modified copy of `forge.sh` script
+status "Creating workaround for adventure shell script."
+jarname="$(find "$game_folder" -name 'forge-gui-mobile*.jar' | xargs basename)"
+cp "$game_folder/forge.sh" "$game_folder/forge-mobile.sh"
+sed -i "s|forge-gui-desktop-.*-jar-with-dependencies.jar|$jarname|" "$game_folder/forge-mobile.sh"
+
+# create desktop menu entries
+echo "[Desktop Entry]
+Type=Application
+Name=MTG Forge
+GenericName=Forge
+Comment=Rules Engine for MTG card game.
+Path=$game_folder
+Exec=$game_folder/forge.sh
+Icon=$game_folder/res/skins/default/hd_logo.png
+Terminal=false
+Categories=Game;Java;
+Keywords=MTG;Forge;Adventure;Card;Game;Magic
+StartupNotify=true" > "$HOME/.local/share/applications/Forge.desktop"
+
+echo "[Desktop Entry]
+Type=Application
+Name=MTG Forge Adventure
+GenericName=Forge-mobile
+Comment=Mobile UI version of Forge with the Adventure mode.
+Path=$game_folder
+Exec=$game_folder/forge-mobile.sh
+Icon=$game_folder/res/skins/default/adv_logo.png
+Terminal=false
+Categories=Game;Java;
+Keywords=MTG;Forge;Adventure;Card;Game;Magic
+StartupNotify=true" > "$HOME/.local/share/applications/Forge-Adventure.desktop"
