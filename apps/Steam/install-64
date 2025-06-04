@@ -29,7 +29,9 @@ fi
 default_terminal="$(readlink -f /usr/bin/x-terminal-emulator)"
 
 echo "Installing steam_latest.deb"
-install_packages https://repo.steampowered.com/steam/archive/stable/steam_latest.deb || exit 1
+# hardcode 1.0.0.81 which is the newest version that still uses the `all` dpkg architecture definition which allows steam to be installed on any architecture system without jumping through dpkg hoops
+# the steam_latest.deb pointed to 1.0.0.81 until very recently
+install_packages https://repo.steampowered.com/steam/archive/stable/steam-launcher_1.0.0.81_all.deb || exit 1
 
 #check if terminal choice was changed after steam was installed
 if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
