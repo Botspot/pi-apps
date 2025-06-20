@@ -23,7 +23,25 @@ fi
 sudo apt update || error "The command 'sudo apt update' failed. Before Pi-Apps will work, you must fix your apt package-management system."
 
 #install dependencies
-dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+package_available_installer() { #determine if the specified package-name exists in a local repository for the current dpkg architecture (simplified and renamed for installer use only)
+  local package="$(awk -F: '{print $1}' <<<"$1")"
+  dpkg_arch="$(dpkg --print-architecture)"
+  [ -z "$package" ] && error "package_available(): no package name specified!"
+  local output="$(apt-cache policy "$package":"$dpkg_arch" | grep "Candidate:")"
+  if [ -z "$output" ]; then
+    return 1
+  elif echo "$output" | grep -q "Candidate: (none)"; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+if package_available_installer software-properties-common ; then
+  dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+else
+  dependencies='yad curl wget aria2 lsb-release apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+fi
 
 if ! dpkg -s $dependencies &>/dev/null ;then
   sudo apt install $dependencies -y -f --no-install-recommends || error "Pi-Apps dependencies failed to install and so the Pi-Apps install has been aborted. Before Pi-Apps can be installed you must solve any errors above."

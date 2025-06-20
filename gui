@@ -76,7 +76,11 @@ generate_logo &
 
 #install dependencies
 runonce <<"EOF"
-  dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+  if package_available software-properties-common ; then
+    dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+  else
+    dependencies='yad curl wget aria2 lsb-release apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+  fi
   # Install dependencies if necessary
   if ! dpkg -s $dependencies >/dev/null 2>&1; then
     sudo_popup apt install $dependencies -y -f --no-install-recommends
