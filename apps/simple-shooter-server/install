@@ -21,7 +21,6 @@ if [ ! -d "$APPDIR" ]; then
   echo "[Desktop Entry]
   Name=Simple Shooter Server
   Exec=lxterminal -e /bin/bash -c 'cd \$HOME/.local/share/simple-shooter-server && ./start.sh'
-  Icon=path_to_icon.png
   Terminal=false
   Type=Application
   Categories=Game;" > "$DESKTOPFILE"
