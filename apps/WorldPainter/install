@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.24.4
+version=2.25.0
 
 adoptium_installer || exit 1
 install_packages temurin-17-jre https://www.worldpainter.net/files/worldpainter_${version}.deb || exit 1
