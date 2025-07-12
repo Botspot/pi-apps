@@ -29,7 +29,7 @@ jobs:
             rm -f download.zip
             
             files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
-            echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            echo "zip_preview<<CIDELIMITER" >> $GITHUB_OUTPUT
             echo '<details>' >> $GITHUB_OUTPUT
             echo '<summary>Click to show contents preview</summary>' >> $GITHUB_OUTPUT
             echo '' >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
             done
             echo '' >> $GITHUB_OUTPUT
             echo '</details>' >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "CIDELIMITER" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
         uses: peter-evans/find-comment@v3
@@ -88,7 +88,7 @@ jobs:
             rm -f download.zip
             
             files="$(find ./ -not -name '*.png' -type f | sed 's|^./||')"
-            echo "zip_preview<<EOF" >> $GITHUB_OUTPUT
+            echo "zip_preview<<CIDELIMITER" >> $GITHUB_OUTPUT
             echo '<details>' >> $GITHUB_OUTPUT
             echo '<summary>Click to show contents preview</summary>' >> $GITHUB_OUTPUT
             echo '' >> $GITHUB_OUTPUT
@@ -106,7 +106,7 @@ jobs:
             done
             echo '' >> $GITHUB_OUTPUT
             echo '</details>' >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "CIDELIMITER" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
         uses: peter-evans/find-comment@v3
