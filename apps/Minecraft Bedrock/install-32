@@ -9,16 +9,17 @@ else
 fi
 install_packages "${bedrock_depends[@]}" libx11-6 libxext6 libegl1 zlib1g libstdc++6 libgl1-mesa-dri libcom-err2 libgmp10 libp11-kit0 || exit 1
 
+
+enable_module fuse || exit 1
+
 #Download file
 mkdir -p ~/.local/bin || error "Could not make directory"
 if package_is_new_enough libc6 2.36 ;then
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.14.2-792/Minecraft_Bedrock_Launcher-bookworm-armhf-v0.14.2.792.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v1.1.1-802/Minecraft_Bedrock_Launcher-bookworm-armhf-v1.1.1.802.AppImage' || error "failed to download Minecraft Bedrock Launcher"
 else
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v0.14.2-792/Minecraft_Bedrock_Launcher-armhf-v0.14.2.792.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v1.1.1-802/Minecraft_Bedrock_Launcher-armhf-v1.1.1.802.AppImage' || error "failed to download Minecraft Bedrock Launcher"
 fi
 chmod +x ~/.local/bin/MCBedrock.AppImage
-
-enable_module fuse || exit 1
 
 #Make Desktop file
 mkdir -p ~/.local/share/applications
