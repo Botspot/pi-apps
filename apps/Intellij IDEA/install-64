@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2025.1.4.1
+version=2025.2
 
 status "Installing Java 17"
 case "$__os_id" in
