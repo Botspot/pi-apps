@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=206_18b4
+version=206_18
 
 #get java
 adoptium_installer || exit 1
