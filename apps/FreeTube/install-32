@@ -3,3 +3,17 @@
 version=0.23.6-beta
 
 install_packages https://github.com/FreeTubeApp/FreeTube/releases/download/v${version}/freetube_${version%-beta}_beta_armv7l.deb || exit 1
+
+#add script to run with wayland, if enabled
+echo '#!/bin/bash
+
+if [ -z "$WAYLAND_DISPLAY" ];then
+  "/opt/FreeTube/freetube" "$@"
+else
+  "/opt/FreeTube/freetube" --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+fi
+' | sudo tee '/opt/FreeTube/freetube-wayland.sh' >/dev/null
+sudo chmod +x '/opt/FreeTube/freetube-wayland.sh'
+
+#patch menu launcher to use wayland script
+sudo sed -i 's+/opt/FreeTube/freetube+/opt/FreeTube/freetube-wayland.sh+g' /usr/share/applications/freetube.desktop

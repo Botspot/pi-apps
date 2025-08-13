@@ -1,3 +1,5 @@
 #!/bin/bash
+
+sudo rm -f /opt/FreeTube/freetube-wayland.sh
 #Uninstalling FreeTube
 purge_packages || exit 1
