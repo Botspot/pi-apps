@@ -4,7 +4,7 @@
 
 
 #An older version of libssl is required to run the old version of QT in Eagle.
-install_packages libssl1.0.2 || install_packages libssl1.0.0 || exit 1
+install_packages libssl1.0.2 '|' libssl1.0.0 || exit 1
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
@@ -12,7 +12,8 @@ if [ ! -d $HOME/eagle-7.7.0 ];then
   rm -rf $HOME/eagle-7.7.0
   status -n "Downloading Eagle 7.7.0... "
   #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
-  wget http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
+  #wget http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
+  wget https://web.archive.org/web/20180411033813/http://web.cadsoft.de/ftp/eagle/program/7.7/eagle-lin32-7.7.0.run -O eagle.run || error "Failed to download Eagle!"
   
   status -n "Extracting... "
   bash ./eagle.run $HOME >/dev/null || error "Failed to run eagle.run!"
