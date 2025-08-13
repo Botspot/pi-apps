@@ -2,4 +2,6 @@
 
 killall legcord &>/dev/null && echo "Closing LegCord before uninstalling..."
 
+sudo rm -f /opt/Legcord/legcord-wayland.sh
+
 purge_packages || exit 1

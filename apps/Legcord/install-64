@@ -16,3 +16,17 @@ elif [ -d ~/.config/ArmCord ] && [ ! -d ~/.config/legcord ];then
 fi
 
 install_packages "https://github.com/Legcord/Legcord/releases/download/v${version}/Legcord-${version%-*}-linux-arm64.deb" || exit 1
+
+#add script to run with wayland, if enabled
+echo '#!/bin/bash
+
+if [ -z "$WAYLAND_DISPLAY" ];then
+  "/opt/Legcord/legcord" "$@"
+else
+  "/opt/Legcord/legcord" --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+fi
+' | sudo tee '/opt/Legcord/legcord-wayland.sh' >/dev/null
+sudo chmod +x '/opt/Legcord/legcord-wayland.sh'
+
+#patch menu launcher to use wayland script
+sudo sed -i 's+/opt/Legcord/legcord +/opt/Legcord/legcord-wayland.sh +g' /usr/share/applications/legcord.desktop
