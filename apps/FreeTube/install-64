@@ -16,4 +16,4 @@ fi
 sudo chmod +x '/opt/FreeTube/freetube-wayland.sh'
 
 #patch menu launcher to use wayland script
-sudo sed -i 's+/opt/FreeTube/freetube+/opt/FreeTube/freetube-wayland.sh+g' /usr/share/applications/freetube.desktop
+sudo sed -i 's+/opt/FreeTube/freetube +/opt/FreeTube/freetube-wayland.sh +g' /usr/share/applications/freetube.desktop
