@@ -251,7 +251,7 @@ jobs:
       - name: Test installing app on L4T jammy arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2024-10-18.7z
+          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2025-08-16.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
@@ -273,7 +273,7 @@ jobs:
       - name: Test installing app on L4T noble arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://download.switchroot.org/ubuntu-noble/theofficialgman-kubuntu-noble-5.1.2-2024-10-18.7z
+          base_image: https://download.switchroot.org/ubuntu-noble/theofficialgman-kubuntu-noble-5.1.2-2025-08-16.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
