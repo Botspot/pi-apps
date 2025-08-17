@@ -95,7 +95,7 @@ if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-6
   sudo touch /opt/switchroot/image_prep
 fi
 
-if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]] || [[ "$GITHUB_JOB" == "l4t-jammy-64bit" ]]; then
+if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]]; then
   # skip joycond postinst
   # fixed in newer releases
   sudo rm /var/lib/dpkg/info/joycond.postinst -f
