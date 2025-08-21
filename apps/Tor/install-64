@@ -46,7 +46,7 @@ Name=Tor Browser
 GenericName=Web Browser
 Comment=Tor Browser is +1 for privacy and −1 for mass surveillance
 Categories=Network;WebBrowser;Security;
-Exec=$HOME/.local/share/tor-browser/Browser/start-tor-browser --class 'tor-browser' --name 'tor-browser'
+Exec=env MOZ_ENABLE_WAYLAND=1 $HOME/.local/share/tor-browser/Browser/start-tor-browser --class 'tor-browser' --name 'tor-browser'
 X-TorBrowser-ExecShell=./Browser/start-tor-browser --detach
 Icon=tor-browser
 StartupWMClass=tor-browser" > ~/.local/share/applications/tor.desktop
