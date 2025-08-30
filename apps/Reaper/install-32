@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=744
+version=745
 version2=1.2.5.1
 base_ver="$(echo ${version} | sed -e 's/.$//' -e 's/.$//')"
 
