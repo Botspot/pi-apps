@@ -1983,7 +1983,7 @@ sudo apt update 2>&1 | sed -ne '\''s/.*NO_PUBKEY //p'\'' | while read key; do if
   fi
   
   # check for 'Could not resolve' or 'Failed to fetch'
-  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Internal Server Error\|404 .*Not Found' <(echo "$errors") ;then
+  if grep -q 'Could not resolve\|Failed to fetch\|Temporary failure resolving\|Internal Server Error\|404 .*Not Found' <(echo "$errors") && grep -q 'APT reported these errors:' <(echo "$errors") ;then
     error_caption+=("APT reported an unresolvable repository.
 
 Check your Internet connection and try again.")
