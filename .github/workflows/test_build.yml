@@ -9,10 +9,6 @@ on:
         description: 'App Name, PR #, or zip URL'
         required: true
         default: ''
-      buster:
-        description: 'Build on PiOS Buster'
-        required: true
-        type: boolean
       bullseye:
         description: 'Build on PiOS Bullseye'
         required: true
@@ -23,19 +19,11 @@ on:
         type: boolean        
       architecture:
         type: choice
-        description: 'For Buster/Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
+        description: 'For Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
         options:
         - Both
         - 64bit
         - 32bit
-      l4t_bionic_64:
-        description: 'Build on Switchroot Ubuntu Bionic 64bit'
-        required: true
-        type: boolean
-      l4t_focal_64:
-        description: 'Build on Nvidia Jetpack 35.3.1 Focal 64bit'
-        required: true
-        type: boolean
       l4t_jammy_64:
         description: 'Build on Switchroot Ubuntu Jammy 64bit'
         required: true
@@ -53,44 +41,6 @@ run-name: Testing ${{ inputs.name }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  buster-32bit:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.buster && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-
-      - name: Test installing app on buster armhf
-        uses: theofficialgman/chroot-runner-action@v0
-        with:
-          # this is a buster armhf image
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-05-03/2023-05-03-raspios-buster-armhf.img.xz
-          # bind mount the directory so any changes propogate to outside the chroot
-          bind_mount_repository: yes
-
-          # give the image more space
-          image_additional_mb: 5000
-
-          # use custom /proc/cpuinfo
-          cpu_info: cpuinfo/raspberrypi_4b
-
-          # user runner name as default path
-          copy_repository_path: /home/runner/pi-apps
-
-          # export github env back to outside the chroot
-          export_github_env: yes
-
-          import_github_env: true
-
-          # set shell to bash
-          shell: /bin/bash
-          commands: |
-            export name="${{ inputs.name }}"
-            ./.github/workflows/test_build_commands.sh
-
   bullseye-32bit:
     runs-on: ubuntu-24.04-arm
     if: ${{ inputs.bullseye && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
@@ -120,26 +70,6 @@ jobs:
         uses: theofficialgman/chroot-runner-action@v0
         with:
           base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2024-07-04/2024-07-04-raspios-bookworm-armhf.img.xz
-          bind_mount_repository: yes
-          image_additional_mb: 5000
-          cpu_info: cpuinfo/raspberrypi_4b
-          copy_repository_path: /home/runner/pi-apps
-          export_github_env: yes
-          import_github_env: true
-          shell: /bin/bash
-          commands: |
-            export name="${{ inputs.name }}"
-            ./.github/workflows/test_build_commands.sh
-
-  buster-64bit:
-    runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.buster && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Test installing app on buster arm64
-        uses: theofficialgman/chroot-runner-action@v0
-        with:
-          base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -183,58 +113,6 @@ jobs:
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
-          copy_repository_path: /home/runner/pi-apps
-          export_github_env: yes
-          import_github_env: true
-          shell: /bin/bash
-          commands: |
-            export name="${{ inputs.name }}"
-            ./.github/workflows/test_build_commands.sh
-
-  l4t-bionic-64bit:
-    runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.l4t_bionic_64 }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Test installing app on L4T bionic arm64
-        uses: theofficialgman/chroot-runner-action@v0
-        with:
-          base_image: https://download.switchroot.org/ubuntu-bionic/switchroot-ubuntu-5.1.1-2023-06-12.7z
-          # add special arguments for switchroot image format
-          bootpartition:
-          rootpartition: 1
-          bind_mount_repository: yes
-          image_additional_mb: 5000
-          copy_repository_path: /home/runner/pi-apps
-          export_github_env: yes
-          import_github_env: true
-          shell: /bin/bash
-          commands: |
-            export name="${{ inputs.name }}"
-            ./.github/workflows/test_build_commands.sh
-
-  l4t-focal-64bit:
-    runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.l4t_focal_64 }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Clear up some disk space
-        run: |
-          # Workaround to provide additional free space for testing.
-          #   https://github.com/actions/virtual-environments/issues/2840
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - name: Test installing app on L4T focal arm64
-        uses: theofficialgman/chroot-runner-action@v0
-        with:
-          base_image: https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v3.1/sd_card_b49/jp511-xnx-sd-card-image.zip
-          bootpartition:
-          rootpartition: 1
-          bind_mount_repository: yes
-          image_additional_mb: 5000
-          enable_image_caching: no
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
