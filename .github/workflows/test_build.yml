@@ -16,7 +16,11 @@ on:
       bookworm:
         description: 'Build on PiOS Bookworm'
         required: true
-        type: boolean        
+        type: boolean
+      trixie:
+        description: 'Build on PiOS Trixie (Beta)'
+        required: true
+        type: boolean
       architecture:
         type: choice
         description: 'For Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
@@ -110,6 +114,28 @@ jobs:
         uses: theofficialgman/chroot-runner-action@v0
         with:
           base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu_info: cpuinfo/raspberrypi_4b
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
+  trixie-64bit:
+    runs-on: ubuntu-24.04-arm
+    if: ${{ inputs.trixie }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set current date as environment variable
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Test installing app on trixie arm64
+        uses: theofficialgman/chroot-runner-action@v0
+        with:
+          base_image: https://downloads.raspberrypi.com/nightlies/${{ env.CURRENT_DATE }}-raspios-trixie-nightly-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
