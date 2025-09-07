@@ -131,11 +131,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set current date as environment variable
-        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        run: |
+          TODAY=$(date +'%Y-%m-%d')
+          YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')
+          function validate_url(){
+            if command wget --timeout=5 -q --spider "$1"; then
+              return 0
+            else
+              return 1
+            fi
+          }
+          if validate_url https://downloads.raspberrypi.com/nightlies/$TODAY-raspios-trixie-nightly-arm64.img.xz ; then
+            echo "BASE_IMAGE=https://downloads.raspberrypi.com/nightlies/$TODAY-raspios-trixie-nightly-arm64.img.xz" >> $GITHUB_ENV
+          else
+            echo "BASE_IMAGE=https://downloads.raspberrypi.com/nightlies/$YESTERDAY-raspios-trixie-nightly-arm64.img.xz" >> $GITHUB_ENV
+          fi
       - name: Test installing app on trixie arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/nightlies/${{ env.CURRENT_DATE }}-raspios-trixie-nightly-arm64.img.xz
+          base_image: ${{ env.BASE_IMAGE }}
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
