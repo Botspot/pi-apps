@@ -362,7 +362,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
   #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   #NOTE: after apt 3.0 this output may change. Refer to git blame for this line for more info.
-  while sudo -E apt install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+  while sudo -E apt-get install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
   
@@ -379,7 +379,7 @@ apt_update() { #run an apt update with error-checking and minimal output
   
   status "Running \e[7msudo apt update\e[27m..."
   set -o pipefail
-  local output="$(sudo -E apt update --allow-releaseinfo-change "$@" 2>&1 | less_apt | tee /dev/stderr)"
+  local output="$(sudo -E apt-get update --allow-releaseinfo-change "$@" 2>&1 | less_apt | tee /dev/stderr)"
   local exitcode=$?
   status "apt update complete."
   
@@ -389,6 +389,7 @@ apt_update() { #run an apt update with error-checking and minimal output
   fi
   
   #inform user packages are upgradeable
+  #FIXME: this is now broken with the switch to apt-get. However we can no longer rely on the exitcode from apt as of apt 3.0.
   if [ ! -z "$(echo "$output" | grep 'packages can be upgraded' )" ];then
     echo -e "\e[33mSome packages can be upgraded.\e[39m Please consider running \e[4msudo a\e[0mp\e[4mt full-u\e[0mpg\e[4mrade\e[0m."
   elif [ ! -z "$(echo "$output" | grep 'package can be upgraded' )" ];then
@@ -700,7 +701,7 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       
       apt_lock_wait
       set -o pipefail
-      local output="$(sudo -E apt install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt-get install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
       local exitcode=$?
       status "Apt finished."
       
@@ -767,11 +768,11 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     if [ "$script_input" == "update" ]; then
       # skip --autoremove for faster updates. this prevents dummy deb dependencies from needing to be uninstalled and reinstalled on updates
       apt_lock_wait
-      local output="$(sudo -E apt purge -y "$package_name" 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt-get purge -y "$package_name" 2>&1 | less_apt | tee /dev/stderr)"
       status "Apt finished."
     else
       apt_lock_wait
-      local output="$(sudo -E apt purge -y "$package_name" --autoremove 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt-get purge -y "$package_name" --autoremove 2>&1 | less_apt | tee /dev/stderr)"
       status "Apt finished."
     fi
     
@@ -791,7 +792,7 @@ purge_packages() { #Allow dependencies of the $app app to be autoremoved.
     local packages="$(cat "${DIRECTORY}/data/installed-packages/${app}" | tr '\n' ' ' | sed 's/  / /g')"
     
     #normal mode
-    local output="$(sudo -E apt purge -y $packages 2>&1)"
+    local output="$(sudo -E apt-get purge -y $packages 2>&1)"
     exitcode=$?
     
     errors="$(echo "$output" | grep '^[(E)|(Err]:')"
