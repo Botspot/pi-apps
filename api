@@ -865,7 +865,7 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
     status "Adding $ppa_name PPA"
     # Trixie no longer has apt-key, new solution works in new distros
     gpg --keyserver keyserver.ubuntu.com --recv-keys "$key" || error "Failed to retrieve the PPA signing key!"
-    touch /etc/apt/keyrings/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.gpg # Create GPG file before exporting
+    sudo mkdir -p /etc/apt/keyrings/ # Does Bullseye not have this by default?
     gpg --export "$key" | sudo gpg --dearmor --yes -o /etc/apt/keyrings/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.gpg
     if [ $? != 0 ];then
       echo "Failed to get key for the $ppa_name PPA!"
