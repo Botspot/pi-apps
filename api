@@ -863,12 +863,18 @@ debian_ppa_installer() { #setup a PPA on a Debian distro. Arguments: ppa_name di
     status "Skipping $ppa_name PPA, already added"
   else
     status "Adding $ppa_name PPA"
-    echo "deb https://ppa.launchpadcontent.net/${ppa_name}/ubuntu ${ppa_dist} main" | sudo tee /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list || error "Failed to add repository to sources.list!"
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key"
+    # Trixie no longer has apt-key, new solution works in all distros
+    sudo rm -f /tmp/keyring.gpg || error "Unable to operate on the /tmp folder"
+    gpg --no-default-keyring --keyring /tmp/keyring.gpg --keyserver keyserver.ubuntu.com --recv-key "$key" || error "Failed to retrieve the PPA signing key!"
+    sudo mkdir -p /etc/apt/keyrings/ || error "Unable to create the keyring folder"
+    sudo gpg --no-default-keyring --keyring /tmp/keyring.gpg --output /etc/apt/keyrings/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.gpg --export --yes
     if [ $? != 0 ];then
-      sudo rm -f /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list
-      error "Failed to sign the $ppa_name PPA!"
+      rm -f /tmp/keyring.gpg
+      echo "Failed to get key for the $ppa_name PPA!"
+      exit 1
     fi
+    rm -f /tmp/keyring.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.gpg] https://ppa.launchpadcontent.net/${ppa_name}/ubuntu ${ppa_dist} main" | sudo tee /etc/apt/sources.list.d/${ppa_name%/*}-ubuntu-${ppa_name#*/}-${ppa_dist}.list || error "Failed to add repository to sources.list!"
     apt_update || exit 1
   fi
 }
