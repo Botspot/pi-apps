@@ -2,6 +2,8 @@
 
 version=ekioh_7.0.1_raspberry-pi64-flow_20250427_r42890
 
+install_packages libwoff1
+
 sudo rm -rf /tmp/flow /opt/flow
 
 wget -O /tmp/flow.zip "https://support.ekioh.com/download/binaries/${version}.zip" || exit 1
