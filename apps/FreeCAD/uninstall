@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+# Remove AppImage itself and all additions.
+status -n 'Removing AppImage and links... '
+sudo rm -f /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD /usr/share/applications/org.freecad.FreeCAD.desktop /usr/share/pixmaps/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.png /usr/share/mime/packages/freecad.xml || error 'Unable to execute sudo rm -f <files>'
+status_green Executed
+
+# Clear mimetype association.
+mimeapps_list_file="$HOME/.config/mimeapps.list"
+if [[ -f "$mimeapps_list_file" ]]; then
+  # Remove mime association
+  if grep -qF 'org.freecad.FreeCAD.desktop' "$mimeapps_list_file" ;then
+    status -n "Clearing .fcstd mimetype association with FreeCAD... "
+    tmp="$(mktemp "/tmp/mimeapps.list.bak.XXXXXX")"
+    cp "$mimeapps_list_file" "$tmp"
+    trap 'cp -fv $tmp $mimeapps_list_file; rm -rf "$tmp"' EXIT
+    sed -i -e 's#application/x-extension-fcstd=org.freecad.FreeCAD\.desktop;##g' \
+         -e 's/;;/;/g' -e 's/;$/ /' "$mimeapps_list_file" || error 'Unable to remove mimetype association!'
+    rm -f "$tmp"
+    trap - EXIT
+    status_green Done
+  fi
+  # Cleanup traces
+  if awk '!/^$/ && $0 != "[Added Associations]" {exit 1}' "$mimeapps_list_file"; then
+    rm -f "$mimeapps_list_file"
+    echo "File: $mimeapps_list_file was blank. Removed!"
+  else
+    echo "File: $mimeapps_list_file contains other content. No action taken."
+  fi
+else
+  echo "File not found: $mimeapps_list_file"
+fi
