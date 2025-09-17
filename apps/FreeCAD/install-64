@@ -1,51 +1,11 @@
 #!/bin/bash
-# REMARK: This script works somehow, a bit hardcoded, don't be reprehensible. If you don't like smth, just put your commit.
 
-version_if_not_latest=1.0.2
+version=1.0.2
 
-find_url() {
-  echo "$1" | \
-  grep "browser_download_url" | \
-  grep -i "Linux" | \
-  grep -i "aarch64" | \
-  grep -i "\.AppImage" | \
-  cut -d '"' -f 4 | head -n 1
-}
+wget -O /tmp/FreeCAD.AppImage "https://github.com/FreeCAD/FreeCAD/releases/download/${version}/FreeCAD_${version}-conda-Linux-aarch64-py311.AppImage" || exit 1
 
+sudo mv /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "failed to move AppImage to /opt"
 
-### PREPARE: search for latest Linux arm64 URL on GitHub.
-
-status -n "Locating latest version URL... "
-download_url=$(find_url "$(curl -sS "https://api.github.com/repos/FreeCAD/FreeCAD/releases/latest")")
-
-if [[ -z "$download_url" ]]; then
-  echo "No asset matching Linux and aarch64 found in \"latest\" release."
-  echo "Falling back to $version_if_not_latest release."
-  download_url=$(find_url "$(curl -sS "https://api.github.com/repos/FreeCAD/FreeCAD/releases/tags/$version_if_not_latest")")
-  if [[ -z "$download_url" ]]; then
-    error 'Failed to locate package URL!'
-    exit 1
-  fi
-fi
-status_green Done
-
-
-### INSTALL MAIN APP
-
-# Make temp directory
-tmp="$(mktemp -d "/tmp/FreeCAD-PiApps-installer.XXXXXX")"
-trap 'rm -rf "$tmp"' EXIT
-
-# Download AppImage
-status -n "Downloading: $download_url"
-if curl --progress-bar -fL -o "$tmp"/FreeCAD.AppImage "$download_url"; then
-  sudo mv "$tmp"/FreeCAD.AppImage /opt/FreeCAD.AppImage
-else
-  error 'Failed to download package!'
-  exit 1
-fi
-status_green Done
-# Move AppImage to /opt
 status -n "Installing AppImage to /opt, making it executable, adding symlink... "
 sudo chmod +x /opt/FreeCAD.AppImage || error "Failed to mark as executable!"
 # Make terminal command
@@ -57,33 +17,24 @@ status_green Done
 ### DOWNLOAD OTHER ASSETS
 
 # Download .desktop file.
-status -n "Downloading .desktop file... "
-sudo curl --progress-bar -fL -o "$tmp"/org.freecad.FreeCAD.desktop "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.desktop" || error 'Error downloading desktop file.'
-status_green Done
-
-# Download mimetype xml file
-status -n "Downloading mimetype file... "
-sudo curl --progress-bar -fL -o "$tmp"/freecad.xml "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.xml" || error 'Error downloading mimetype file!'
-status_green Done
+status "Downloading .desktop file..."
+wget -O /tmp/org.freecad.FreeCAD.desktop "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.desktop" || exit 1
+sudo mv /tmp/org.freecad.FreeCAD.desktop /usr/share/applications/org.freecad.FreeCAD.desktop || error 'Unable to move .desktop file from tmp'
 
 # Download and install icon
-status -n "Downloading icon... "
-if sudo curl --progress-bar -fL -o "$tmp"/org.freecad.FreeCAD.svg "https://upload.wikimedia.org/wikipedia/commons/1/1a/FreeCAD-symbol.svg"; then
-  status_green Done
-  status -n "Installing icon... "
-  sudo mv "$tmp"/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.svg || error 'Failed to install the icon.'
-else
-  echo 'Failed to download icon! Using bundled png.'
-  sudo cp "$(dirname "$0")/icon-64.png" /usr/share/pixmaps/org.freecad.FreeCAD.png || error 'Failed to install the icon.'
-fi
-status_green Done
+status "Downloading icon..."
+wget -O /tmp/org.freecad.FreeCAD.svg "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/Gui/Icons/freecad.svg" || exit 1
+sudo mv /tmp/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.svg || error 'Failed to install the icon.'
 
+# Download mimetype xml file
+status "Downloading mimetype file..."
+wget -O /tmp/freecad.xml "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.xml" || exit 1
 
 ### PROCESS ASSETS
 
 # Make .FCSTd mimetype
 status -n "Creating .fcstd mimetype... "
-sudo mv "$tmp"/freecad.xml /usr/share/mime/packages/freecad.xml
+sudo mv /tmp/freecad.xml /usr/share/mime/packages/freecad.xml
 if ! sudo update-mime-database /usr/share/mime; then
   sudo rm -f /usr/share/mime/packages/freecad.xml
   error 'Failed to update mime database!'
@@ -98,10 +49,5 @@ if ! grep -qF 'org.freecad.FreeCAD.desktop' ~/.config/mimeapps.list; then
   echo "application/x-extension-fcstd=org.freecad.FreeCAD.desktop;" >> ~/.config/mimeapps.list
   status_green Done
 fi
-
-# Make desktop entry
-status -n "Creating menu button... "
-sudo mv "$tmp"/org.freecad.FreeCAD.desktop /usr/share/applications/org.freecad.FreeCAD.desktop || error 'Unable to move .desktop file from temp.'
-status_green Done
 
 exit 0
