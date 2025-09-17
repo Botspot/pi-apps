@@ -239,9 +239,9 @@ This wizard will save your work as you go." | yad "${yadflags[@]}" --text-info -
                 --text="Please choose an icon for the $name app:" "--field=:FL" "${HOME}/keiucheuchkoec" \
                 --button=OK)"
             else
-              #resize the detected icon to be displayed in the confiromation window
+              #resize the detected icon to be displayed in the confirmation window
               tmp_png="$(mktemp -u).png"
-              convert "$icon" -resize 64x64 "$tmp_png"
+              convert +antialias -background none "$icon" -resize 64x64 "$tmp_png"
               icon="$(yad "${yadflags[@]}" --form --title="Icon for $name" --separator='\n' --width=310 --height=400 \
                 --image="$tmp_png" --image-on-top \
                 --text="Pi-Apps found an icon from the <b>$(echo "$packages" | awk '{print $1}')</b> package."$'\n'"You can use a different one if you wish." \

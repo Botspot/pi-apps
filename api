@@ -1812,10 +1812,10 @@ generate_app_icons() { #This converts the given $1 image into icon-24.png and ic
   fi
   
   #scale it to 24x24
-  convert "$icon" -resize 24x24 "${DIRECTORY}/apps/${app}/icon-24.png"
+  convert -antialias -background none "$icon" -resize 24x24 "${DIRECTORY}/apps/${app}/icon-24.png"
   
   #scale it to 64x64
-  convert "$icon" -resize 64x64 "${DIRECTORY}/apps/${app}/icon-64.png"
+  convert -antialias -background none "$icon" -resize 64x64 "${DIRECTORY}/apps/${app}/icon-64.png"
 
 }
 
