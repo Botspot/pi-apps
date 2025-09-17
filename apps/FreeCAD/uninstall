@@ -9,7 +9,6 @@ sudo rm -f /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD /usr/share/applications/
 status_green Executed
 
 # Clear mimetype association.
-mimeapps_list_file="$HOME/.config/mimeapps.list"
-if [ -f "$mimeapps_list_file" ]; then
-  sed -i '#application/x-extension-fcstd=org\.freecad\.FreeCAD\.desktop;#d' "$mimeapps_list_file" || error 'Unable to remove mimetype association!'
+if [ -f ~/.config/mimeapps.list ]; then
+  sed -i '\#application/x-extension-fcstd=org\.freecad\.FreeCAD\.desktop;#d' ~/.config/mimeapps.list || error 'Unable to remove mimetype association!'
 fi
