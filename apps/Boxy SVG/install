@@ -1,49 +1,103 @@
 #!/bin/bash
 
-version=4.66.0.zip
+version=v4.79.0
 
 install_packages libfontconfig-dev || exit 0
 
-"${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG."
+wget -O /tmp/boxy-svg.zip "https://storage.boxy-svg.com/builds/boxy-svg-${version}-linux-arm64.zip" || exit 1
 
-#install asar and electron-packager
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-wget -O /tmp/boxy-svg.zip "https://storage.boxy-svg.com/flathub/app-${version}" || exit 1
-
-rm -rf /tmp/app
-cd /tmp
-unzip -q /tmp/boxy-svg.zip || error "Failed to extract!"
+rm -rf /tmp/boxy-svg
+unzip -q /tmp/boxy-svg.zip -d /tmp/boxy-svg || error "Failed to extract!"
 rm -f /tmp/boxy-svg.zip
-
-cd /tmp/app
-npm install || error "Failed to install npm dependencies!"
-npm --prefix ./electron install || error "Failed to install npm dependencies in electron folder!"
-
-if [ $arch == 32 ];then
-  ./node_modules/.bin/electron-builder --armv7l
-elif [ $arch == 64 ];then
-  ./node_modules/.bin/electron-builder --arm64
+if [ $arch == 64 ];then #to forcibly repackage Boxy SVG from source code, replace [ $arch == 64 ] with false
+  #use precompiled arm64 electron app
+  sudo mkdir -p /usr/local/share/icons
+  sudo cp /tmp/boxy-svg/*/metadata/com.boxy_svg.BoxySVG.png /usr/local/share/icons || error "Failed to copy app icon"
+  sudo cp /tmp/boxy-svg/*/metadata/com.boxy_svg.BoxySVG.svg /usr/local/share/icons || error "Failed to copy app icon"
+  
+  #move to permanent folder
+  sudo rm -rf /opt/boxy-svg
+  sudo mv /tmp/boxy-svg/* /opt/boxy-svg || error "Failed to move app files to /opt/boxy-svg!"
+  
 else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
+  #repackage electron app for CPU architecture not built by Boxy SVG (should work on armhf, tested on arm64)
+  "${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG."
+
+  #install asar and electron-packager
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+  cd /tmp/boxy-svg/*/resources || exit 1
+  rm -rf sourcecode
+  npm install -g asar || error "Failed to install asar!"
+  asar extract app.asar sourcecode || error "Failed to extract source code with asar!"
+  cd sourcecode
+
+  electronversion="$(grep electronVersion package.json | sed 's/.*": "//g ; s/",$//g')"
+
+  npm install || error "Failed to install npm dependencies!"
+
+  #Add stuff to package.json so that build can work (AI-generated)
+  sed -i '/^  }$/d ; /^}$/d' package.json
+  cat << "EOF" >> package.json
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.boxy-svg.app",
+    "productName": "Boxy SVG",
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!dist/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Graphics",
+      "icon": "icon.png"
+    }
+  }
+}
+EOF
+  npm install --save-dev electron@${electronversion} electron-builder || error "Failed to install npm dependencies electron and electron-builder!"
+
+  if [ $arch == 32 ];then
+    ./node_modules/.bin/electron-builder --linux --armv7l
+  elif [ $arch == 64 ];then
+    ./node_modules/.bin/electron-builder --linux --arm64
+  else
+    error "Failed to detect OS CPU architecture! Something is very wrong."
+  fi
+  
+  #copy icons
+  sudo mkdir -p /usr/local/share/icons
+  sudo cp -f ./node_modules/@boxy-svg/boxy-svg/logo.svg /usr/local/share/icons/com.boxy_svg.BoxySVG.svg || error "Failed to copy app icon"
+  sudo cp -f ./icon.png /usr/local/share/icons/com.boxy_svg.BoxySVG.png || error "Failed to copy app icon"
+  
+  #move to permanent folder
+  sudo rm -rf /opt/boxy-svg
+  sudo mv ./dist/linux-*-unpacked /opt/boxy-svg || error "Failed to move app files to /opt/boxy-svg!"
+
 fi
 
-#move to permanent folder
-sudo rm -rf /opt/boxy-svg
-sudo mv ./dist/linux-*-unpacked /opt/boxy-svg || error "Failed to move app files to /opt/boxy-svg!"
-
-sudo mkdir -p /usr/local/share/icons
-sudo cp ./metadata/com.boxy_svg.BoxySVG.svg /usr/local/share/icons
-sudo cp ./metadata/com.boxy_svg.BoxySVG.png /usr/local/share/icons
-
 cd $HOME
-rm -rf /tmp/app
+rm -rf /tmp/boxy-svg
 
-#create a terminal command to run Boxy without chrome sandbox for better performance
+#create a terminal command to run Boxy SVG without chrome sandbox for better performance, and use wayland if possible
 cat << "EOF" | sudo tee /usr/local/bin/boxy-svg >/dev/null
 #!/bin/bash
-/opt/boxy-svg/boxy-svg --no-sandbox "$@"
+if [ -z "$WAYLAND_DISPLAY" ];then
+  /opt/boxy-svg/boxy-svg --no-sandbox "$@"
+else
+  /opt/boxy-svg/boxy-svg --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+fi
 EOF
 sudo chmod +x /usr/local/bin/boxy-svg
 
