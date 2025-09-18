@@ -4,7 +4,7 @@ version=1.0.2
 
 wget -O /tmp/FreeCAD.AppImage "https://github.com/FreeCAD/FreeCAD/releases/download/${version}/FreeCAD_${version}-conda-Linux-aarch64-py311.AppImage" || exit 1
 
-sudo mv /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "failed to move AppImage to /opt"
+sudo mv /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "Failed to move AppImage to /opt"
 
 status -n "Installing AppImage to /opt, making it executable, adding symlink... "
 sudo chmod +x /opt/FreeCAD.AppImage || error "Failed to mark as executable!"
@@ -14,23 +14,21 @@ sudo ln -s /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD || error "Failed to make
 status_green Done
 
 
-### DOWNLOAD OTHER ASSETS
+### DOWNLOAD AND INSTALL OTHER ASSETS
 
 # Download .desktop file.
 status "Downloading .desktop file..."
-wget -O /tmp/org.freecad.FreeCAD.desktop "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.desktop" || exit 1
+wget -O /tmp/org.freecad.FreeCAD.desktop "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/XDGData/org.freecad.FreeCAD.desktop" || exit 1
 sudo mv /tmp/org.freecad.FreeCAD.desktop /usr/share/applications/org.freecad.FreeCAD.desktop || error 'Unable to move .desktop file from tmp'
 
 # Download and install icon
 status "Downloading icon..."
-wget -O /tmp/org.freecad.FreeCAD.svg "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/Gui/Icons/freecad.svg" || exit 1
+wget -O /tmp/org.freecad.FreeCAD.svg "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/Gui/Icons/freecad.svg" || exit 1
 sudo mv /tmp/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.svg || error 'Failed to install the icon.'
 
 # Download mimetype xml file
 status "Downloading mimetype file..."
-wget -O /tmp/freecad.xml "https://github.com/FreeCAD/FreeCAD/raw/refs/heads/main/src/XDGData/org.freecad.FreeCAD.xml" || exit 1
-
-### PROCESS ASSETS
+wget -O /tmp/freecad.xml "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/XDGData/org.freecad.FreeCAD.xml" || exit 1
 
 # Make .FCSTd mimetype
 status -n "Creating .fcstd mimetype... "
@@ -41,6 +39,8 @@ if ! sudo update-mime-database /usr/share/mime; then
   exit 1
 fi
 status_green Done
+
+# Write mimetype association to ~/.config/mimeapps.list
 if ! grep -qF 'org.freecad.FreeCAD.desktop' ~/.config/mimeapps.list; then
   status -n "Associating the .fcstd mimetype with FreeCAD... "
   if ! grep -qF '[Added Associations]' ~/.config/mimeapps.list; then

@@ -5,10 +5,13 @@ purge_packages || exit 1
 
 # Remove AppImage itself and all additions.
 status -n 'Removing AppImage and links... '
-sudo rm -f /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD /usr/share/applications/org.freecad.FreeCAD.desktop /usr/share/pixmaps/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.png /usr/share/mime/packages/freecad.xml || error 'Unable to execute sudo rm -f <files>'
+sudo rm -f /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD /usr/share/applications/org.freecad.FreeCAD.desktop /usr/share/pixmaps/org.freecad.FreeCAD.svg /usr/share/mime/packages/freecad.xml || error 'Unable to execute sudo rm -f <files>'
 status_green Executed
 
-# Clear mimetype association.
+# Clear mimetype association, then remove mimeapps.list if it's empty or only contains the header.
 if [ -f ~/.config/mimeapps.list ]; then
   sed -i '\#application/x-extension-fcstd=org\.freecad\.FreeCAD\.desktop;#d' ~/.config/mimeapps.list || error 'Unable to remove mimetype association!'
+  if awk '!/^$/ && $0 != "[Added Associations]" {exit 1}' ~/.config/mimeapps.list; then
+    rm -f ~/.config/mimeapps.list
+  fi
 fi
