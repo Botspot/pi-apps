@@ -13,6 +13,8 @@ on:
 jobs:
   create-links:
     runs-on: ubuntu-latest
+    # don't run on forks of the main repository
+    if: (github.repository == 'Botspot/pi-apps')
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
