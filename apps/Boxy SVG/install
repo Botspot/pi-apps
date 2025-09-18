@@ -2,7 +2,7 @@
 
 version=v4.79.0
 
-install_packages libfontconfig-dev || exit 0
+install_packages libfontconfig-dev || exit 1
 
 wget -O /tmp/boxy-svg.zip "https://storage.boxy-svg.com/builds/boxy-svg-${version}-linux-arm64.zip" || exit 1
 
