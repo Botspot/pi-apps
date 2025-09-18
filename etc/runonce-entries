@@ -52,6 +52,13 @@ runonce <<"EOF"
   fi
 EOF
 
+#create .gnupg directory if it does not exist (such as on fresh non-booted images in CI)
+runonce <<"EOF"
+  if [ ! -d "$HOME/.gnupg" ]; then
+    mkdir -m 0700 "$HOME/.gnupg" || exit 1
+  fi
+EOF
+
 # remove deprecated apps (only when running in a visible terminal)
 case $(ps -o stat= -p $$) in
   *+*) # Running in foreground
