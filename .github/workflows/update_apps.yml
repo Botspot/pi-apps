@@ -18,6 +18,8 @@ jobs:
     name: Get Latest App Versions
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # don't run on forks of the main repository on a schedule
+    if: (github.event_name == 'schedule' && github.repository == 'Botspot/pi-apps') || (github.event_name != 'schedule')
 
     outputs:
       UPDATED_APPS: ${{ steps.updated.outputs.UPDATED_APPS }}
@@ -120,6 +122,8 @@ jobs:
 
   test-updated-apps:
     runs-on: ubuntu-24.04-arm
+    # don't run on forks of the main repository on a schedule
+    if: (github.event_name == 'schedule' && github.repository == 'Botspot/pi-apps') || (github.event_name != 'schedule')
     needs: get-latest-app-versions
     strategy:
       matrix:
@@ -281,6 +285,8 @@ jobs:
   create-commit:
     needs: [get-latest-app-versions,test-updated-apps]
     runs-on: ubuntu-latest
+    # don't run on forks of the main repository on a schedule
+    if: (github.event_name == 'schedule' && github.repository == 'Botspot/pi-apps') || (github.event_name != 'schedule')
     steps:
       # setup github environment variables
       - uses: actions/checkout@v4
