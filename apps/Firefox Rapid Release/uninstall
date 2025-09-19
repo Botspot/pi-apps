@@ -10,6 +10,7 @@ case "$__os_id" in
 Ubuntu) ppa_dist="$__os_codename" ;;
 *)
   case $__os_codename in
+  trixie) ppa_dist="noble" ;;
   bookworm) ppa_dist="jammy" ;;
   bullseye) ppa_dist="focal" ;;
   *) ppa_dist="bionic" ;;

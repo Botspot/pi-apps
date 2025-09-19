@@ -37,6 +37,18 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox >/dev/null
   # Add repository source to apt sources.list
   # also allow unattented upgrades to upgrade from this ppa if unattented upgrades is enabled
   case $__os_codename in
+  trixie)
+    if [ -f /etc/rpi-issue ]; then
+      status "PiOS Bookworm supports the latest HW Accelerated Firefox out of the box. Skipping adding Mozilla PPA"
+      install_packages firefox || exit 1
+    else
+      # remove old ppa if present
+      sudo rm -f /etc/apt/sources.list.d/mozillateam-ubuntu-ppa-bionic.list
+      debian_ppa_installer "mozillateam/ppa" "noble" "738BEB9321D1AAEC13EA9391AEBDF4819BE21867" || exit 1
+      echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:noble";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox >/dev/null
+      install_packages firefox || error "User error (reporting allowed): Firefox is not available from Mozilla Team PPA for $arch Ubuntu Noble (used for Debian Trixie). Please contact Mozilla Team via email for any issues ubuntu-mozillateam-bugs@lists.ubuntu.com"
+    fi
+    ;;
   bookworm)
     if [ -f /etc/rpi-issue ]; then
       status "PiOS Bookworm supports the latest HW Accelerated Firefox out of the box. Skipping adding Mozilla PPA"
