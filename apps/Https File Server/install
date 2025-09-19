@@ -1,0 +1,20 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed 'Node.js' || error "Node.js is required to run HTTPS File Server but it failed to install!"
+
+status "Installing HFS with npm..."
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || error "failed to source nvm.sh"
+
+status "Creating menu button... "
+echo "[Desktop Entry]
+Type=Application
+Version=1.0
+Name=HTTPS File Server
+Exec=bash -c 'echo -ne '\''\e]0;HTTPS File Server\a'\'' ; export NVM_DIR=$HOME/.nvm ; . $NVM_DIR/nvm.sh ; npm exec --yes hfs@latest'
+Comment=Simple file sharing webserver
+Icon=$(dirname "$0")/icon-64.png
+Categories=Network;
+StartupNotify=true
+Terminal=true" > ~/.local/share/applications/hfs.desktop
+status_green Done
