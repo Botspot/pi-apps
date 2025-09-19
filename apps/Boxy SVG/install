@@ -22,21 +22,24 @@ if [ $arch == 64 ];then #to forcibly repackage Boxy SVG from source code, replac
 else
   #repackage electron app for CPU architecture not built by Boxy SVG (should work on armhf, tested on arm64)
   "${DIRECTORY}/manage" install-if-not-installed Node.js || error "Failed to install Node.js! This is necessary to compile Boxy SVG."
-
+  
+  #should fix error on armhf: npm error Error: ENOENT: no such file or directory, copyfile 'vendor/7z-arm.exe' -> 'vendor/7z.exe'
+  export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true
+  
   #install asar and electron-packager
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
+  
   cd /tmp/boxy-svg/*/resources || exit 1
   rm -rf sourcecode
   npm install -g asar || error "Failed to install asar!"
   asar extract app.asar sourcecode || error "Failed to extract source code with asar!"
   cd sourcecode
-
+  
   electronversion="$(grep electronVersion package.json | sed 's/.*": "//g ; s/",$//g')"
-
+  
   npm install || error "Failed to install npm dependencies!"
-
+  
   #Add stuff to package.json so that build can work (AI-generated)
   sed -i '/^  }$/d ; /^}$/d' package.json
   cat << "EOF" >> package.json
@@ -67,7 +70,7 @@ else
 }
 EOF
   npm install --save-dev electron@${electronversion} electron-builder || error "Failed to install npm dependencies electron and electron-builder!"
-
+  
   if [ $arch == 32 ];then
     ./node_modules/.bin/electron-builder --linux --armv7l
   elif [ $arch == 64 ];then
@@ -84,7 +87,6 @@ EOF
   #move to permanent folder
   sudo rm -rf /opt/boxy-svg
   sudo mv ./dist/linux-*-unpacked /opt/boxy-svg || error "Failed to move app files to /opt/boxy-svg!"
-
 fi
 
 cd $HOME
