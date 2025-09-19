@@ -69,7 +69,9 @@ else
   }
 }
 EOF
-  npm install --save-dev electron@${electronversion} electron-builder || error "Failed to install npm dependencies electron and electron-builder!"
+  npm install --save-dev electron@${electronversion} || error "Failed to install npm dependency electron!"
+  #--ignore-scripts is here to try to fix error on armhf: npm error Error: ENOENT: no such file or directory, copyfile 'vendor/7z-arm.exe' -> 'vendor/7z.exe'
+  npm install --save-dev --ignore-scripts electron-builder || error "Failed to install npm dependency electron-builder!"
   
   if [ $arch == 32 ];then
     ./node_modules/.bin/electron-builder --linux --armv7l
