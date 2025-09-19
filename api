@@ -1744,8 +1744,8 @@ ${category}"
   fi
 }
 
-userinput_func() { # userinput function to display yad prompts to the user
-  local test="$1"
+userinput_func() { # userinput function to display yad/cli prompts to the user
+  local text="$1"
   [ -z "$text" ] && error "userinput_func(): requires a description"
   shift
   [ -z "$1" ] && error "userinput_func(): requires at least one output selection option"
@@ -1759,7 +1759,13 @@ userinput_func() { # userinput function to display yad prompts to the user
     string_echo="$(echo "$string" | sed 's/"/"\\"""\\\\""\\"""\\"/g')"
     uniq_selection+=(--field="$string:FBTN" "bash -c "\""echo "\"""\\""\"""\""$string_echo"\"""\\""\"""\"";kill "\$"YAD_PID"\""")
   done
-  output=$(yad "${yadflags[@]}" --fixed --no-escape --undecorated --center --borders=20 \
+
+  #make long lists of options scrollable, with a sensible window size
+  if [ "${#@}" -gt 10 ];then
+    uniq_selection+=(--scroll --width=600 --height=400)
+  fi
+  
+  output=$(yad "${yadflags[@]}" --no-escape --undecorated --center --borders=20 \
     --text="$text" --form --no-buttons \
     "${uniq_selection[@]}")
 }
