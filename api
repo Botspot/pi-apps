@@ -1744,57 +1744,24 @@ ${category}"
   fi
 }
 
-userinput_func() { # userinput function to display yad/cli prompts to the user
-  [ -z "$1" ] && error "userinput_func(): requires a description"
-  [ -z "$2" ] && error "userinput_func(): requires at least one output selection option"
+userinput_func() { # userinput function to display yad prompts to the user
+  local test="$1"
+  [ -z "$text" ] && error "userinput_func(): requires a description"
+  shift
+  [ -z "$1" ] && error "userinput_func(): requires at least one output selection option"
   local text_lines=$(echo -e "$1" | wc -l)
-  # there is no good universal way to calculate the required height of the window
-  # the users theme, default text size, and window scaling all affect it
-  # the idea is the height should be a function of the number of lines of input text and the number of list options
-  local height_list=$(echo $(( text_lines * 17 + $(( ${#@} - 1 )) * 29 + 65 )))
-  if [ ! -z "$screen_height" ] && (( $height_list > "$screen_height" )); then
-    height_list="$screen_height"
-  elif [ -z "$screen_height" ] && (( $height_list > "720" )); then
-    height_list="720"
-  fi
-  local commonflags=(--fixed --no-escape --undecorated --center --borders=20)
-  if [ "${#@}" == "2" ];then
-    yad "${yadflags[@]}" "${commonflags[@]}" \
-      --image "dialog-information" \
-      --text="$1" \
-      --button="$2":0
-    output="$2"
-  elif [ "${#@}" == "3" ];then
-    yad "${yadflags[@]}" "${commonflags[@]}" \
-      --image "dialog-question" \
-      --text="$1" \
-      --button="$2":0 \
-      --button="$3":1
-    if [ $? -ne 0 ]; then
-      output="$3"
-    else
-      output="$2"
-    fi
-  else
-    unset uniq_selection
-    for string in "${@:2}"; do
-      local uniq_selection+=(FALSE "$string")
-    done
-    local uniq_selection[0]=TRUE
-    output=$(yad "${yadflags[@]}" "${commonflags[@]}" \
-      --height=$height_list\
-      --text "$1" \
-      --list \
-      --no-headers \
-      --radiolist \
-      --center \
-      --column "" \
-      --column "Selection" \
-      --print-column=2 \
-      --separator='' \
-      --button="OK":0 \
-      "${uniq_selection[@]}")
-  fi
+  
+  local uniq_selection=()
+  local string string_echo
+  #make a form button for each choice
+  for string in "$@"; do
+    #to address bash subprocess syntax errors, while making output match input, escape any double-quotes in the string down 3 layers
+    string_echo="$(echo "$string" | sed 's/"/"\\"""\\\\""\\"""\\"/g')"
+    uniq_selection+=(--field="$string:FBTN" "bash -c "\""echo "\"""\\""\"""\""$string_echo"\"""\\""\"""\"";kill "\$"YAD_PID"\""")
+  done
+  output=$(yad "${yadflags[@]}" --fixed --no-escape --undecorated --center --borders=20 \
+    --text="$text" --form --no-buttons \
+    "${uniq_selection[@]}")
 }
 
 generate_app_icons() { #This converts the given $1 image into icon-24.png and icon-64.png files for the $2 app
