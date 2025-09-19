@@ -4,7 +4,7 @@ version=1.0.2
 
 wget -O /tmp/FreeCAD.AppImage "https://github.com/FreeCAD/FreeCAD/releases/download/${version}/FreeCAD_${version}-conda-Linux-aarch64-py311.AppImage" || exit 1
 
-sudo mv /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "Failed to move AppImage to /opt"
+sudo mv -f /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "Failed to move AppImage to /opt"
 
 status -n "Installing AppImage to /opt, making it executable, adding symlink... "
 sudo chmod +x /opt/FreeCAD.AppImage || error "Failed to mark as executable!"
@@ -14,30 +14,25 @@ sudo ln -s /opt/FreeCAD.AppImage /usr/local/bin/FreeCAD || error "Failed to make
 status_green Done
 
 
-### DOWNLOAD AND INSTALL OTHER ASSETS
+### EXTRACT OTHER ASSETS
+status -n "Extracting assets... "
+cd /tmp
+rm -rf squashfs-root
+/opt/FreeCAD.AppImage --appimage-extract usr/share/mime/packages/org.freecad.FreeCAD.xml || error "Failed to extract from appimage"
+/opt/FreeCAD.AppImage --appimage-extract org.freecad.FreeCAD.svg || error "Failed to extract from appimage"
+/opt/FreeCAD.AppImage --appimage-extract org.freecad.FreeCAD.desktop || error "Failed to extract from appimage"
 
-# Download .desktop file.
-status "Downloading .desktop file..."
-wget -O /tmp/org.freecad.FreeCAD.desktop "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/XDGData/org.freecad.FreeCAD.desktop" || exit 1
-sudo mv /tmp/org.freecad.FreeCAD.desktop /usr/share/applications/org.freecad.FreeCAD.desktop || error 'Unable to move .desktop file from tmp'
+sed -i 's/Exec=AppRun/Exec=FreeCAD/g' /tmp/squashfs-root/org.freecad.FreeCAD.desktop
+sudo mv -f /tmp/squashfs-root/org.freecad.FreeCAD.desktop /usr/share/applications/org.freecad.FreeCAD.desktop || error 'Unable to move .desktop file from tmp'
 
-# Download and install icon
-status "Downloading icon..."
-wget -O /tmp/org.freecad.FreeCAD.svg "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/Gui/Icons/freecad.svg" || exit 1
-sudo mv /tmp/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.svg || error 'Failed to install the icon.'
+sudo mv -f /tmp/squashfs-root/org.freecad.FreeCAD.svg /usr/share/pixmaps/org.freecad.FreeCAD.svg || error 'Failed to install the icon.'
 
-# Download mimetype xml file
-status "Downloading mimetype file..."
-wget -O /tmp/freecad.xml "https://github.com/FreeCAD/FreeCAD/raw/refs/tags/$version/src/XDGData/org.freecad.FreeCAD.xml" || exit 1
+sudo mkdir -p /usr/local/share/mime/packages
+sudo mv -f /tmp/squashfs-root/usr/share/mime/packages/org.freecad.FreeCAD.xml /usr/local/share/mime/packages/org.freecad.FreeCAD.xml
+rm -rf squashfs-root
+cd
 
-# Make .FCSTd mimetype
-status -n "Creating .fcstd mimetype... "
-sudo mv /tmp/freecad.xml /usr/share/mime/packages/freecad.xml
-if ! sudo update-mime-database /usr/share/mime; then
-  sudo rm -f /usr/share/mime/packages/freecad.xml
-  error 'Failed to update mime database!'
-  exit 1
-fi
+sudo update-mime-database /usr/local/share/mime
 status_green Done
 
 # Write mimetype association to ~/.config/mimeapps.list
