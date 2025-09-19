@@ -1766,7 +1766,7 @@ userinput_func() { # userinput function to display yad/cli prompts to the user
   fi
   
   output=$(yad "${yadflags[@]}" --no-escape --undecorated --center --borders=20 \
-    --text="$text" --form --no-buttons \
+    --text="$text" --form --no-buttons --fixed \
     "${uniq_selection[@]}")
 }
 
