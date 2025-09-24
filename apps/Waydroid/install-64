@@ -1,0 +1,137 @@
+#!/bin/bash
+
+if [ "$XDG_SESSION_TYPE" != wayland ] && command -v raspi-config >/dev/null ;then
+  error "User error: Waydroid only works on Wayland desktop environments. Please enable the LabWC compositor in raspi-config, reboot, then install Waydroid again."
+elif [ "$XDG_SESSION_TYPE" != wayland ];then
+  error "User error: Waydroid only works on Wayland desktop environments. Please switch to a Wayland compositor, then install Waydroid again."
+fi
+
+#botspot: tutorial said 4k pagesize is needed, but verify if this is the case
+PAGE_SIZE="$(getconf PAGE_SIZE)"
+if [[ "$PAGE_SIZE" == "16384" ]]; then
+  #switch to 4K pagesize kernel
+  if [ -f /boot/config.txt ] || [ -f /boot/firmware/config.txt ]; then
+    if [ -f /boot/firmware/config.txt ]; then
+      boot_config="/boot/firmware/config.txt"
+    elif [ -f /boot/config.txt ]; then
+      boot_config="/boot/config.txt"
+    fi
+    text="Raspberry Pi 5 PiOS images ship by default with a 16K PageSize Linux Kernel.
+This kernel causes incompatibilities with some software including Waydroid https://github.com/raspberrypi/bookworm-feedback/issues/107
+
+Would you like to automatically switch to a 4K PageSize Linux Kernel?"
+    userinput_func "$text" "No, keep 16K PageSize Kernel and Exit" "Yes, switch to 4K PageSize Kernel"
+    if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
+      error "User error: Your current running kernel is built with 16K PageSize and is incompatible with Waydroid. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing Waydroid."
+    fi
+    echo "" | sudo tee --append $boot_config >/dev/null
+    echo "[pi5]" | sudo tee --append $boot_config >/dev/null
+    echo "kernel=kernel8.img" | sudo tee --append $boot_config >/dev/null
+    reboot_because="The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to $boot_config"
+  else
+    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Waydroid. Changing kernels automatically cannot be done since no /boot/config.txt or /boot/firmware/config.txt file was found."
+  fi
+fi
+
+#botspot: check what output of ls /proc/pressure is when psi!=1
+if [ ! -e /proc/pressure ];then
+  if [ -f /boot/firmware/cmdline.txt ];then
+    boot_cmdline=/boot/firmware/cmdline.txt
+  elif [ -f /boot/cmdline.txt ];then
+    boot_cmdline=/boot/cmdline.txt
+  else
+    error "User error (reporting allowed): Waydroid needs /proc/pressure to be enabled by the kernel. This could not be enabled automatically because /boot/firmware/cmdline.txt could not be found. Please research how to enable psi=1 on your platform."
+  fi
+  
+  text="Waydroid needs /proc/pressure to be enabled by the kernel. This can be enabled automatically, but it requires a reboot. Proceed?"
+  userinput_func "$text" "No, exit now" "Yes, enable /proc/pressure"
+  if [ "$output" == "No, exit now" ]; then
+    error "User error (reporting allowed): Waydroid needs /proc/pressure to be enabled by the kernel. This could not be enabled automatically because user refused to enable it."
+  fi
+  
+  if ! grep -q psi=1 $boot_cmdline ;then
+    echo ' psi=1' | sudo tee --append $boot_cmdline >/dev/null
+  fi
+  reboot_because="The /proc/pressure mode has been enabled by adding 'psi=1' to $boot_cmdline"
+fi
+
+if [ ! -z "$reboot_because" ];then
+  echo "$reboot_because"
+  echo "Please reboot now and install the Waydroid app again."
+  sleep infinity
+fi
+
+#waydroid needs /dev/binder
+enable_module binder_linux
+
+if [ ! -e /dev/binder ] ;then
+  error "User error (reporting allowed): Could not enable /dev/binder kernel module. Please find a way to get it configured on your device. Additional kernel modules may need to be installed with something like: apt install linux-modules-extra-raspi"
+fi
+
+if [ ! -d /var/lib/waydroid ];then
+  text="<i>To Google, or not to Google... that is the question.</i>"$'\n'"(Aurora Store offers all Google Play Store apps without requiring a sign-in.)"
+  userinput_func "$text" "Use an Android version with Google's apps installed" "No Google, install Aurora Store" "No Google, don't preinstall anything"
+  if [ "$output" == "Use an Android version with Google's apps installed" ]; then
+    init_google=yes
+  elif [ "$output" == "No Google, install Aurora Store" ];then
+    init_google=no
+    install_aurora=yes
+  else
+    init_google=no
+    install_aurora=no
+  fi
+fi
+sudo curl -Sf https://repo.waydro.id/waydroid.gpg --output /usr/share/keyrings/waydroid.gpg || error "Failed to download waydroid.gpg to keyrings directory!"
+echo "deb [signed-by=/usr/share/keyrings/waydroid.gpg] https://repo.waydro.id/ $(get_codename) main" | sudo tee /etc/apt/sources.list.d/waydroid.list >/dev/null
+
+install_packages waydroid || exit 1
+
+if [ "$init_google" == yes ];then
+  sudo waydroid init -s GAPPS
+elif [ "$init_google" == no ];then
+  sudo waydroid init -s VANILLA
+else
+  sudo waydroid init
+fi
+
+#fix for wayfire compositor
+waydroid prop set persist.waydroid.multi_windows true || error "Waydroid failed to set persist.waydroid.multi_windows config option, most likely something else is wrong."
+
+waydroid session stop
+waydroid session start &
+waydroid_session_pid=$!
+sleep 10
+if ! process_exists $waydroid_session_pid ];then
+  error "Waydroid session PID stopped running!"
+fi
+
+if [ "$init_google" == yes ];then
+  id="$(echo 'ANDROID_RUNTIME_ROOT=/apex/com.android.runtime ANDROID_DATA=/data ANDROID_TZDATA_ROOT=/apex/com.android.tzdata ANDROID_I18N_ROOT=/apex/com.android.i18n sqlite3 /data/data/com.google.android.gsf/databases/gservices.db "select * from main where name = \"android_id\";"' | sudo waydroid shell | awk -F'|' '{print $2}')"
+  if [ -z "$id" ];then
+    error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above."
+  fi
+  x-www-browser 'https://www.google.com/android/uncertified' &
+  
+  echo -e "Paste this Android ID into the box, then click Register:\n$id" | yad --text-info --fontname='' --width=400 --wrap --button=Done:0
+  sudo waydroid container restart
+  echo -e "Now please be patient for Google to register the device. It can take 20 minutes or so. You may need to clear the cache in Play Store before it starts working. If you need more help, please look online for tips on setting up Play Store in Waydroid." | yad --text-info --fontname='' --width=400 --wrap --button=OK:0
+elif [ "$install_aurora" == yes ];then
+  echo "You have picked the 'Waydroid without Google' option. Right now, any apps that try to use Google Play APIs will likely fail to launch. This is fixable, but it involves something called MicroG, and I could not figure out how to make it work in Waydroid. Others have done it before, and AI makes it sound easy, but I just don't have the time to figure it out.
+IF YOU THINK YOU COULD HELP WITH THAT, please get in touch so that everybody can enjoy a more functional Google-free experience.
+
+Thanks!
+-Botspot" | yad --text-info --wrap --width=600 --height=400 --fontname='' "${yadflags[@]}" --button=OK:0 &
+  
+  wget -O /tmp/AuroraStore.apk https://auroraoss.com/downloads/AuroraStore/Release/AuroraStore-4.7.5.apk || error "failed to download AuroraStore.apk"
+  waydroid app install /tmp/AuroraStore.apk || waydroid app install /tmp/AuroraStore.apk || error "Failed to install"
+  
+  #try installing MicroG (doesn't seem to make a difference for apps that need playstore APIs)
+  #git clone https://github.com/casualsnek/waydroid_script
+  #cd waydroid_script
+  #python3 -m venv venv
+  #venv/bin/pip install -r requirements.txt
+  #sudo venv/bin/python3 main.py install microg
+  
+fi
+
+waydroid session stop

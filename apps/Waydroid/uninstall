@@ -1,0 +1,12 @@
+#!/bin/bash
+
+sudo waydroid container stop
+sudo waydroid session stop
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+if [ "$1" != update ];then
+  sudo rm -rf /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid.*
+fi
+
