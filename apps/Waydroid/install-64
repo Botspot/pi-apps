@@ -64,8 +64,8 @@ fi
 #waydroid needs /dev/binder
 enable_module binder_linux
 
-if [ ! -e /dev/binder ] ;then
-  error "User error (reporting allowed): Could not enable /dev/binder kernel module. Please find a way to get it configured on your device. Additional kernel modules may need to be installed with something like: apt install linux-modules-extra-raspi"
+if ! grep -q ' binder$' /proc/devices ;then
+  error "User error (reporting allowed): Could not enable the binder kernel module. Please find a way to get it configured on your device. This may require a kernel recompilation, or if on Ubuntu, additional kernel modules may need to be installed with something like: apt install linux-modules-extra-raspi"
 fi
 
 if [ ! -d /var/lib/waydroid ];then
