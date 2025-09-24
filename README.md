@@ -40,10 +40,13 @@
 </p>
 
 ## Introduction
-Let's be honest: **ARM Linux is harder to master than Windows.** Sometimes it's not user-friendly, and following an outdated tutorial may break the operating system.  
-There is no centralized software repository, except for the `apt` repositories which lack many desktop applications.  
-Surely there is a better way! **There is.**  
-Introducing Pi-Apps, a well-maintained collection of app installation-scripts that you can run with **one click**.  
+Installing software on ARM Linux is easy... until it isn't.  
+Many popular apps just don't appear in the `apt` repositories, and it's very easy for inexperienced users to mess up their OS trying to install such apps manually.  
+**We're trying to solve this problem.**  
+Introducing Pi-Apps, a well-maintained collection of scripts that automatically install hard-to-install apps. See the full list [here](https://pi-apps.io/wiki/getting-started/apps-list/).  
+
+Pi-Apps is not your average app store. Rather than require any standardized packaging format or centralized hosting, our shell scripts download the app from *where it already is*.  
+Scripts offer tremendous flexibility. If you can manually install it, then Pi-Apps can automatically install it. [Please help us expand our list of apps.](https://pi-apps.io/wiki/development/Creating-an-app/) *You don't have to be the app developer to get it added to Pi-Apps!* (You just have to know a little bit of bash scripting)
 
 Pi-Apps now serves **over 1,000,000 people** and hosts [over 200 apps](https://pi-apps.io/wiki/getting-started/apps-list/).
 
@@ -52,7 +55,7 @@ Open a terminal and run this command:
 ```bash
 wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
 ```
-<img src="icons/screenshots/main%20window.png?raw=true" align="right" height="270px"/>
+<img src="icons/screenshots/main%20window.png?raw=true" align="right" height="350px"/>
 
 ### Supported systems:
 #### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2 v1.2/3/Zero 2 W/4/5)
@@ -114,14 +117,12 @@ This will not uninstall any apps that you installed through Pi-Apps.
 
 > [Video by **leepspvideo**](https://www.youtube.com/watch?v=zxyWQ3FV98I): "Thanks so much to Botspot for creating this; it's a great program."
 
-> [Video by **Novaspirit Tech**](https://youtu.be/9dO448vYv18?t=164): "This is an awesome application for your Pi to install applications like WoR-flasher."
+> [Video by **Novaspirit Tech**](https://youtu.be/9dO448vYv18?t=164) (RIP): "This is an awesome application for your Pi."
 
 > Email from a **Raspberry Pi employee**: "I gave Pi-Apps a go a while back and have suggested it to others quite a few times.
 > We can't provide all the options people may want, so it helps a lot that there are people like you who can help bridge the gap. Thank you Botspot!"
 
 > [**ShiftPlusOne** (Raspberry Pi forum moderator)](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=290329&p=1755860#p1755857): "Thanks for the great work making it all simple for everybody."
-
-> Email from [**Sakaki** (legendary RPi developer)](https://github.com/sakaki-): "Good luck with your projects, Botspot, you're really making waves!"
 
 > Message from one of our many satisfied users: "Thank you for making pi-apps, it has helped me a ton (no more searching hours to find how to install etcher) and I cannot thank you enough."
 
