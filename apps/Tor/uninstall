@@ -1,27 +1,42 @@
 #!/bin/bash
 
-#remove the menu launcher
-rm -f ~/.local/share/applications/tor.desktop
+# Command blocks that are left for backwards-compatibility of this uninstall script are marked as:
+# [OLD] for installations from https://sourceforge.net/projects/tor-browser-ports/files/
 
-#before removing the tor-browser_en-US folder, move the browser configuration like bookmarks, etc
-if [ -d ~/.local/share/tor-browser ];then
-  mkdir -p ~/.local/share/tor-browser.temp/Browser/TorBrowser/Data
-  mv -n ~/.local/share/tor-browser/Browser/TorBrowser/Data/Browser ~/.local/share/tor-browser.temp/Browser/TorBrowser/Data
+INSTALL_DIR="~/.local/share"
+
+status -n 'Unregistering Tor Browser desktop app… '
+cd "$INSTALL_DIR"/tor-browser || error 'Fatal error! Cannot cd to app!'
+"$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
+status_green 'Done'
+
+status -n 'Copying user data files to temporary folder… '
+if [ -d "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser ];then
+  rm -rf "$INSTALL_DIR"/tor-browser.temp
+  mv -n "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser "$INSTALL_DIR"/tor-browser.temp
 fi
+status_green 'Done'
 
-#remove all browser internals (except for user-data which we moved already)
-rm -rf ~/.local/share/tor-browser
-
-#remove icon
-rm -f ~/.local/share/icons/tor-browser.png
+status -n 'Removing all browser internals… '
+rm -rfv "$INSTALL_DIR"/tor-browser || error "Cannot remove $INSTALL_DIR/tor-browser directory"
+status_green 'Done'
 
 #move back the temporary folder containing user-data
-if [ -d ~/.local/share/tor-browser.temp ];then
-  mv ~/.local/share/tor-browser.temp ~/.local/share/tor-browser
+if [ -d "$INSTALL_DIR"/tor-browser.temp ];then
+  status -n 'Moving user data files back… '
+  mkdir -p "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data
+  mv "$INSTALL_DIR"/tor-browser.temp "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser
+  status_green 'Done'
 
   #let the user know where configuration is
   echo "Tor Browser has been uninstalled, but user-data like settings and bookmarks remain intact.
 To remove these files, run this command:
-rm -rf ~/.local/share/tor-browser"
+rm -rf $INSTALL_DIR/tor-browser"
   
 fi
+
+#[OLD] remove the menu launcher
+rm -f ~/.local/share/applications/tor.desktop
+
+#[OLD] remove icon
+rm -f ~/.local/share/icons/tor-browser.png
