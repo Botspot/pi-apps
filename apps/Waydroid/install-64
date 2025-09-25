@@ -49,8 +49,13 @@ if [ ! -e /proc/pressure ];then
     error "User error (reporting allowed): Waydroid needs /proc/pressure to be enabled by the kernel. This could not be enabled automatically because user refused to enable it."
   fi
   
-  if ! grep -q psi=1 $boot_cmdline ;then
-    echo ' psi=1' | sudo tee --append $boot_cmdline >/dev/null
+  #make sure to edit the first line in cmdline.txt. DON'T APPEND to the file - this puts psi=1 on a second line if the file already ended with a newline!!
+  if ! grep -q '. psi=1' $boot_cmdline ;then
+    sudo sed -i '1s/$/ psi=1/' $boot_cmdline
+  fi
+  #detect if a previous version of this script added psi=1 to a newline. If so, remove it.
+  if grep -xF ' psi=1' $boot_cmdline ;then
+    sudo sed -i '/^ psi=1$/d' $boot_cmdline
   fi
   reboot_because="The /proc/pressure mode has been enabled by adding 'psi=1' to $boot_cmdline"
 fi
