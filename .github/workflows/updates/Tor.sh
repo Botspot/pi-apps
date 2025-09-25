@@ -26,7 +26,6 @@ days_between() {
   e1=$(date -d "${d1//./-}" +%s) || return 1
   e2=$(date -d "${d2//./-}" +%s) || return 1
   local diff=$(( e1 - e2 ))
-  (( diff < 0 )) && diff=$(( -diff ))
   echo $(( diff / 86400 ))
 }
 
@@ -55,10 +54,7 @@ choose_version() {
   fi
 
   local delta
-  delta=$(days_between "$remote" "$installed") || {
-    echo "$installed"
-    return
-  }
+  delta=$(days_between "$remote" "$installed")
 
   if (( delta >= 5 )); then
     echo "$remote"
