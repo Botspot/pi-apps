@@ -15,7 +15,6 @@ get_latest_nightly_version() {
 get_installed_version() {
   # Expect a line like: version=2025.09.24
   if [[ -f install-64 ]]; then
-    # Stop at first match; trim whitespace
     sed -nE 's/^version=([0-9]{4}\.[0-9]{2}\.[0-9]{2})\s*$/\1/p' install-64 | head -n1
   fi
 }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=2025.09.24
-INSTALL_DIR="~/.local/share"
+INSTALL_DIR="$HOME/.local/share"
 
 rm -f /tmp/tbb-nightly.tar.xz
 wget -O /tmp/tbb-nightly.tar.xz "https://nightlies.tbb.torproject.org/nightly-builds/tor-browser-builds/tbb-nightly.$version/nightly-linux-aarch64/tor-browser-linux-aarch64-tbb-nightly.$version.tar.xz" || error "Failed to download Tor Browser Nightly ver. $version"

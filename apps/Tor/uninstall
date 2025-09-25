@@ -3,7 +3,7 @@
 # Command blocks that are left for backwards-compatibility of this uninstall script are marked as:
 # [OLD] for installations from https://sourceforge.net/projects/tor-browser-ports/files/
 
-INSTALL_DIR="~/.local/share"
+INSTALL_DIR="$HOME/.local/share"
 
 status -n 'Unregistering Tor Browser desktop app… '
 cd "$INSTALL_DIR"/tor-browser || error 'Fatal error! Cannot cd to app!'
