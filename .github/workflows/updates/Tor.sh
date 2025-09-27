@@ -63,13 +63,15 @@ choose_version() {
   fi
 }
 
-version_arm64="$(choose_version)"
-arm64_url="https://nightlies.tbb.torproject.org/nightly-builds/tor-browser-builds/tbb-nightly.${version_arm64}/nightly-linux-aarch64/tor-browser-linux-aarch64-tbb-nightly.${version_arm64}.tar.xz"
+# update arm64 version
+version="$(choose_version)"
+arm64_url="https://nightlies.tbb.torproject.org/nightly-builds/tor-browser-builds/tbb-nightly.${version}/nightly-linux-aarch64/tor-browser-linux-aarch64-tbb-nightly.${version}.tar.xz"
 
+source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
 
-
-# Older unofficial build for armhf update script:
-version_armhf="$(wget -qO- https://sourceforge.net/projects/tor-browser-ports/files | grep -F 'Download Latest Version' --after 1 | tail -n -1 | tr '<>\-_' '\n' | sed -n 8p | sed 's/\.tar\.xz.*//g')"
-armhf_url="https://sourceforge.net/projects/tor-browser-ports/files/${version_armhf}/tor-browser-linux-armhf-${version_armhf}.tar.xz/download"
+# update armhf version
+# Older unofficial build
+version="$(wget -qO- https://sourceforge.net/projects/tor-browser-ports/files | grep -F 'Download Latest Version' --after 1 | tail -n -1 | tr '<>\-_' '\n' | sed -n 8p | sed 's/\.tar\.xz.*//g')"
+armhf_url="https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-armhf-${version}.tar.xz/download"
 
 source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
