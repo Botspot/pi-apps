@@ -109,6 +109,8 @@ You can install BalenaEtcher from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Pale Moon Browser"
   remove_deprecated_app "Pale Moon"
   remove_deprecated_app "Lokinet" "" "Lokinet has not had an ARM version in several years. If you still use this, go find an alternative like Tor or a VPN, or ask Lokinet to work on ARM support."
+  remove_deprecated_app "Renoise (Demo)" "32" "The latest version of Renoise (Demo) is not available ARM 32bit Linux and all previous versions that supported it have been removed.
+You can install Renoise (Demo) from Pi-Apps on a 64bit OS."
   true
 EOF
   ;;
