@@ -17,7 +17,7 @@ fi
 # Temurin very smoothly on Raspberry Pi 3B+ without any problems
 
 adoptium_installer || exit 1
-install_packages temurin-8-jre || exit 1
+install_packages temurin-21-jre || exit 1
 
 status "Downloading Unciv.jar"
 echo '- writing into /tmp/Unciv.jar'
