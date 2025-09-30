@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set yadflags so userinput_func and other dialog windows can use it (arrays are not exported to subprocesses)
+yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png")
+
 if [ "$XDG_SESSION_TYPE" != wayland ] && command -v raspi-config >/dev/null ;then
   error "User error: Waydroid only works on Wayland desktop environments. Please enable the LabWC compositor in raspi-config, reboot, then install Waydroid again."
 elif [ "$XDG_SESSION_TYPE" != wayland ];then
@@ -86,6 +89,7 @@ if [ ! -d /var/lib/waydroid ];then
     install_aurora=no
   fi
 fi
+
 sudo curl -Sf https://repo.waydro.id/waydroid.gpg --output /usr/share/keyrings/waydroid.gpg || error "Failed to download waydroid.gpg to keyrings directory!"
 echo "deb [signed-by=/usr/share/keyrings/waydroid.gpg] https://repo.waydro.id/ $(get_codename) main" | sudo tee /etc/apt/sources.list.d/waydroid.list >/dev/null
 
@@ -96,36 +100,49 @@ if [ "$init_google" == yes ];then
 elif [ "$init_google" == no ];then
   sudo waydroid init -s VANILLA
 else
-  sudo waydroid init
+  sudo waydroid init #says 'Already Initialized' usually on update-reinstall
 fi
 
 #fix for wayfire compositor
 waydroid prop set persist.waydroid.multi_windows true || error "Waydroid failed to set persist.waydroid.multi_windows config option, most likely something else is wrong."
 
+#allow waydroid direct usb access to things like game controllers
+waydroid prop set persist.waydroid.udev true
+waydroid prop set persist.waydroid.uevent true
+
 waydroid session stop
 waydroid session start &
-waydroid_session_pid=$!
-sleep 10
-if ! process_exists $waydroid_session_pid ];then
-  error "Waydroid session PID stopped running!"
-fi
+
+#watch to see if Android boots up okay
+status "Starting Android session, please wait... "
+i=0
+while [ "$(waydroid prop get sys.boot_completed 2>/dev/null)" != "1" ];do
+  sleep 1
+  i=$((i+1))
+  if [ "$i" -ge 10 ] && ! waydroid status | grep -q "^Session:.*RUNNING$" ;then
+    error "Waydroid session failed to start in 10 seconds!"
+  fi
+done
+status_green Done
 
 if [ "$init_google" == yes ];then
-  id="$(echo 'ANDROID_RUNTIME_ROOT=/apex/com.android.runtime ANDROID_DATA=/data ANDROID_TZDATA_ROOT=/apex/com.android.tzdata ANDROID_I18N_ROOT=/apex/com.android.i18n sqlite3 /data/data/com.google.android.gsf/databases/gservices.db "select * from main where name = \"android_id\";"' | sudo waydroid shell | awk -F'|' '{print $2}')"
+  id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" | awk -F'|' '{print $2}')"
   if [ -z "$id" ];then
     error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above."
   fi
   x-www-browser 'https://www.google.com/android/uncertified' &
   
-  echo -e "Paste this Android ID into the box, then click Register:\n$id" | yad --text-info --fontname='' --width=400 --wrap --button=Done:0
-  sudo waydroid container restart
-  echo -e "Now please be patient for Google to register the device. It can take 20 minutes or so. You may need to clear the cache in Play Store before it starts working. If you need more help, please look online for tips on setting up Play Store in Waydroid." | yad --text-info --fontname='' --width=400 --wrap --button=OK:0
+  echo "$id" | yad "${yadflags[@]}" --text='A browser should have opened <a href="https://www.google.com/android/uncertified">google.com/android/uncertified</a>.'$'\n''Paste this Android ID into the box, then click Register:' \
+    --text-info --fontname='' --fixed --button=Done:0
+  
+  echo -e "Now please be patient for Google to register the device. In a few minutes, first click the menu launcher to Stop Waydroid, then open the Google Play Store in the main menu and try to login. Try again later if it fails. Search the Internet for further help." | \
+    yad "${yadflags[@]}" --text-info --fontname='' --width=400 --height=300 --wrap --button=OK:0
 elif [ "$install_aurora" == yes ];then
   echo "You have picked the 'Waydroid without Google' option. Right now, any apps that try to use Google Play APIs will likely fail to launch. This is fixable, but it involves something called MicroG, and I could not figure out how to make it work in Waydroid. Others have done it before, and AI makes it sound easy, but I just don't have the time to figure it out.
 IF YOU THINK YOU COULD HELP WITH THAT, please get in touch so that everybody can enjoy a more functional Google-free experience.
 
 Thanks!
--Botspot" | yad --text-info --wrap --width=600 --height=400 --fontname='' "${yadflags[@]}" --button=OK:0 &
+-Botspot" | yad "${yadflags[@]}" --text-info --wrap --width=600 --height=400 --fontname='' "${yadflags[@]}" --button=OK:0 &
   
   wget -O /tmp/AuroraStore.apk https://auroraoss.com/downloads/AuroraStore/Release/AuroraStore-4.7.5.apk || error "failed to download AuroraStore.apk"
   waydroid app install /tmp/AuroraStore.apk || waydroid app install /tmp/AuroraStore.apk || error "Failed to install"
@@ -138,5 +155,19 @@ Thanks!
   #sudo venv/bin/python3 main.py install microg
   
 fi
+
+#make menu launcher to stop Waydroid
+echo "[Desktop Entry]
+Type=Application
+Name=Stop Waydroid
+Exec=waydroid session stop
+Icon=process-stop
+Categories=X-WayDroid-App;
+X-Purism-FormFactor=Workstation;Mobile;" | sudo tee /usr/share/applications/stop-waydroid.desktop >/dev/null
+
+#ensure the Waydroid menu launcher is not hidden for no good reason https://github.com/waydroid/waydroid/issues/1407
+sed -i 's/NoDisplay=true/NoDisplay=false/g' ~/.local/share/applications/Waydroid.desktop
+#lock the file to prevent waydroid from hiding it again
+sudo chmod -w ~/.local/share/applications/Waydroid.desktop
 
 waydroid session stop

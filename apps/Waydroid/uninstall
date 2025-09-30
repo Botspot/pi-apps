@@ -7,6 +7,6 @@ sudo waydroid session stop
 purge_packages || exit 1
 
 if [ "$1" != update ];then
-  sudo rm -rf /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid.*
+  sudo rm -rf /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid.* ~/.local/share/applications/Waydroid.desktop /usr/share/applications/stop-waydroid.desktop
 fi
 
