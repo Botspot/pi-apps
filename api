@@ -1765,6 +1765,11 @@ userinput_func() { # userinput function to display yad/cli prompts to the user
     uniq_selection+=(--scroll --width=600 --height=400)
   fi
   
+  #yadflags array is unset in app install scripts
+  if [ -z "${yadflags[*]}" ];then
+    yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --separator='\n')
+  fi
+  
   output=$(yad "${yadflags[@]}" --no-escape --undecorated --center --borders=20 \
     --text="$text" --form --no-buttons --fixed \
     "${uniq_selection[@]}")
