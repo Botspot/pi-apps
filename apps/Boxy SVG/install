@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v4.84.0
+version=v4.84.1
 
 install_packages libfontconfig-dev || exit 1
 
