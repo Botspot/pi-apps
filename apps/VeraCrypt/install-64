@@ -2,6 +2,7 @@
 
 version=1.26.24
 version2=1.26.24
+version3=1.26.24
 
 case $(get_codename) in
 bionic)
@@ -19,6 +20,9 @@ bullseye)
   ;;
 bookworm)
   install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version2}/veracrypt-${version2}-Debian-12-arm64.deb || exit 1
+  ;;
+trixie)
+  install_packages https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${version3}/veracrypt-${version3}-Debian-13-arm64.deb || exit 1
   ;;
 *)
   error "User error: VeraCrypt is not available for your operating system release"
