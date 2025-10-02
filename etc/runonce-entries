@@ -72,7 +72,7 @@ runonce <<"EOF"
   remove_deprecated_app "Retropie"
   remove_deprecated_app "Raspi2png"
   remove_deprecated_app "Falkon"
-  remove_deprecated_app "FreeCAD"
+  remove_deprecated_app "FreeCAD" "32"
   remove_deprecated_app "LinuxCNC"
   remove_deprecated_app "Steam" "32" "Due to upstream changes from Valve, Steam can no longer be used on 32bit OSs.
 You can install Steam from Pi-Apps on a 64bit OS."
