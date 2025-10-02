@@ -132,7 +132,7 @@ install_packages "${box86_depends[@]}" libc6:armhf libstdc++6:armhf \
   libsdl1.2debian:armhf libsdl-mixer1.2:armhf libsdl-image1.2:armhf libsdl-net1.2:armhf libsdl-sound1.2:armhf libsdl-ttf2.0-0:armhf \
   libssh-4:armhf '|' libssh-gcrypt-4:armhf \
   libgssapi-krb5-2:armhf libkrb5-3:armhf \
-  $rpi_arm_userspace $mesa_va_drivers $mesa_vulkan_drivers libegl1:armhf libglx-mesa0:armhf libgl1:armhf libgles2:armhf
+  $rpi_arm_userspace $mesa_va_drivers $mesa_vulkan_drivers libegl1:armhf libglx-mesa0:armhf libgl1:armhf libgles2:armhf || exit 1
 
 add_external_repo "box86" "https://pi-apps-coders.github.io/box86-debs/KEY.gpg" "https://Pi-Apps-Coders.github.io/box86-debs/debian" "./" || exit 1
 
