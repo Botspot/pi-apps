@@ -2246,9 +2246,44 @@ This is likely an issue with your linux distribution. Please contact the appropr
     error_type="system"
   fi
   
-  #if RPi OS, check for /etc/apt/sources.list.d/raspi.list
-  if [ -f /etc/rpi-issue ] && ( [ ! -f /etc/apt/sources.list.d/raspi.list ] || ! grep -q "^deb http://archive.raspberrypi.org/debian\|^deb https://archive.raspberrypi.org/debian\|^deb http://archive.raspberrypi.com/debian\|^deb https://archive.raspberrypi.com/debian" /etc/apt/sources.list.d/raspi.list ) ;then
-    error_caption+=("Packages failed to install because you seem to have deleted or altered an important repository file in /etc/apt/sources.list.d
+  #if RPi OS, check for /etc/apt/sources.list.d/raspi.list or raspi.sources
+  if [ -f /etc/rpi-issue ]; then
+    if [ -f /etc/apt/sources.list.d/raspi.list ] && ( ! grep -q "^deb http://archive.raspberrypi.org/debian\|^deb https://archive.raspberrypi.org/debian\|^deb http://archive.raspberrypi.com/debian\|^deb https://archive.raspberrypi.com/debian" /etc/apt/sources.list.d/raspi.list ) ; then
+      error_caption+=("Packages failed to install because you seem to have deleted or altered an important repository file in /etc/apt/sources.list.d
+
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is altered, but you may have deleted other files as well.
+The raspi.list file should contain this:
+
+deb http://archive.raspberrypi.com/debian/ $(get_codename) main
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://archive.raspberrypi.com/debian/ $(get_codename) main")
+      error_type="system"
+    elif [ -f /etc/apt/sources.list.d/raspi.sources ] && ( ! grep -q "^URIs: http://archive.raspberrypi.org/debian\|^URIs: https://archive.raspberrypi.org/debian\|^URIs: http://archive.raspberrypi.com/debian\|^URIs: https://archive.raspberrypi.com/debian" /etc/apt/sources.list.d/raspi.sources ); then
+      error_caption+=("Packages failed to install because you seem to have altered an important repository file in /etc/apt/sources.list.d
+
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.sources is missing or altered, but you may have deleted other files as well.
+The raspi.sources file should contain this:
+
+Types: deb
+URIs: http://archive.raspberrypi.com/debian/
+Suites: $(get_codename)
+Components: main
+Signed-By: /usr/share/keyrings/raspberrypi-archive-keyring.pgp")
+      error_type="system"
+    elif [ ! -f /etc/apt/sources.list.d/raspi.sources ] && [ "$__os_release" -ge 13 ]; then
+      error_caption+=("Packages failed to install because you seem to have deleted an important repository file in /etc/apt/sources.list.d
+
+This error-dialog appeared because /etc/apt/sources.list.d/raspi.sources is missing or altered, but you may have deleted other files as well.
+The raspi.sources file should contain this:
+
+Types: deb
+URIs: http://archive.raspberrypi.com/debian/
+Suites: $(get_codename)
+Components: main
+Signed-By: /usr/share/keyrings/raspberrypi-archive-keyring.pgp")
+      error_type="system"
+    elif [ ! -f /etc/apt/sources.list.d/raspi.list ] && [ "$__os_release" -lt 13 ]; then
+      error_caption+=("Packages failed to install because you seem to have deleted an important repository file in /etc/apt/sources.list.d
 
 This error-dialog appeared because /etc/apt/sources.list.d/raspi.list is missing or altered, but you may have deleted other files as well.
 The raspi.list file should contain this:
@@ -2257,18 +2292,19 @@ deb http://archive.raspberrypi.com/debian/ $(get_codename) main
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
 #deb-src http://archive.raspberrypi.com/debian/ $(get_codename) main")
     error_type="system"
+    fi
   fi
   
-  #if /etc/apt/sources.list and /etc/apt/sources.list.d/ubuntu.sources (default sources in Ubuntu 23.10) missing, display error message
-  if [ ! -f /etc/apt/sources.list ] && [ ! -f /etc/apt/sources.list.d/ubuntu.sources ] ;then
-    if [ -f /etc/rpi-issue ] && [ "$arch" == 32 ];then
+  #if /etc/apt/sources.list is missing and /etc/rpi-issue exists and release is earlier than Trixie
+  if [ ! -f /etc/apt/sources.list ] && [ -f /etc/rpi-issue ] && [ "$__os_release" -lt 13 ]; then
+    if [ "$arch" == 32 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 32-bit, so the sources.list file should contain this:
 deb http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
 deb-src http://raspbian.raspberrypi.org/raspbian/ $(get_codename) main contrib non-free rpi")
-    elif [ -f /etc/rpi-issue ] && [ "$arch" == 64 ];then
+    elif [ "$arch" == 64 ];then
        error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
 
 You appear to be using Raspberry Pi OS 64-bit, so the sources.list file should contain this:
@@ -2279,13 +2315,29 @@ deb http://deb.debian.org/debian $(get_codename)-updates main contrib non-free
 #deb-src http://deb.debian.org/debian $(get_codename) main contrib non-free
 #deb-src http://security.debian.org/debian-security $(get_codename)-security main contrib non-free
 #deb-src http://deb.debian.org/debian $(get_codename)-updates main contrib non-free")
-    else
-      error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list
-
-Refer to your Linux distro's documentation for how to restore this file.
-You may have a backup of it in /etc/apt/sources.list.save if you have not deleted that as well.")
     fi
     error_type="system"
+  fi
+
+  if [ -f /etc/rpi-issue ] && [ "$__os_release" -ge 13 ] && [ ! -f /etc/apt/sources.list.d/debian.sources ]; then
+    #FIXME: add 32bit PiOS Trixie too
+    if [ "$arch" == 64 ];then
+      error_caption+=("Packages failed to install because you deleted an important repository file: /etc/apt/sources.list.d/debian.sources
+
+You appear to be using Raspberry Pi OS 64-bit, so the debian.sources file should contain this:
+Types: deb
+URIs: http://deb.debian.org/debian/
+Suites: $(get_codename) $(get_codename)-updates
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp
+
+Types: deb
+URIs: http://deb.debian.org/debian-security/
+Suites: $(get_codename)-security
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp")
+      error_type="system"
+    fi
   fi
   
   if grep -q "unable to securely remove '.*': Bad message" <(echo "$errors") ;then
