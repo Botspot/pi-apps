@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=20250302
+version=20250829
 
 #made according to the instructions from the developer, but was not originally created for the Pi
 #https://github.com/Aleph-One-Marathon/alephone/wiki/Linux%20Install%20Instructions
@@ -8,7 +8,7 @@ version=20250302
 install_packages libboost-all-dev libsdl2-dev libglu1-mesa-dev \
   libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libsndfile1-dev \
   libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libopenal-dev \
-  libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev build-essential unzip || exit 1
+  libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-openssl-dev libminiupnpc-dev libasio-dev build-essential unzip || exit 1
 
 # print installed sdl2 package versions for debugging
 dpkg -l | grep sdl2
