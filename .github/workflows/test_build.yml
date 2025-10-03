@@ -85,6 +85,26 @@ jobs:
             export name="${{ inputs.name }}"
             ./.github/workflows/test_build_commands.sh
 
+  trixie-32bit:
+    runs-on: ubuntu-24.04-arm
+    if: ${{ inputs.trixie && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test installing app on trixie armhf
+        uses: theofficialgman/chroot-runner-action@v0
+        with:
+          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2025-10-02/2025-10-01-raspios-trixie-armhf.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 5000
+          cpu_info: cpuinfo/raspberrypi_4b
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
   bullseye-64bit:
     runs-on: ubuntu-24.04-arm
     if: ${{ inputs.bullseye && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
@@ -130,26 +150,10 @@ jobs:
     if: ${{ inputs.trixie }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set current date as environment variable
-        run: |
-          TODAY=$(date +'%Y-%m-%d')
-          YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')
-          function validate_url(){
-            if command wget --timeout=5 -q --spider "$1"; then
-              return 0
-            else
-              return 1
-            fi
-          }
-          if validate_url https://downloads.raspberrypi.com/nightlies/$TODAY-raspios-trixie-nightly-arm64.img.xz ; then
-            echo "BASE_IMAGE=https://downloads.raspberrypi.com/nightlies/$TODAY-raspios-trixie-nightly-arm64.img.xz" >> $GITHUB_ENV
-          else
-            echo "BASE_IMAGE=https://downloads.raspberrypi.com/nightlies/$YESTERDAY-raspios-trixie-nightly-arm64.img.xz" >> $GITHUB_ENV
-          fi
       - name: Test installing app on trixie arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: ${{ env.BASE_IMAGE }}
+          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2025-10-02/2025-10-01-raspios-trixie-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
