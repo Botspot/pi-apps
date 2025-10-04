@@ -53,7 +53,7 @@ jobs:
       - name: Test installing app on bullseye armhf
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2024-07-04/2024-07-04-raspios-bullseye-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2025-05-07/2025-05-06-raspios-bullseye-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -73,7 +73,7 @@ jobs:
       - name: Test installing app on bookworm armhf
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2024-07-04/2024-07-04-raspios-bookworm-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2025-10-02/2025-10-01-raspios-bookworm-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -113,7 +113,7 @@ jobs:
       - name: Test installing app on bullseye arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.org/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2024-07-04/2024-07-04-raspios-bullseye-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2025-05-07/2025-05-06-raspios-bullseye-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -133,7 +133,7 @@ jobs:
       - name: Test installing app on bookworm arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2025-10-02/2025-10-01-raspios-bookworm-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 5000
           cpu_info: cpuinfo/raspberrypi_4b
