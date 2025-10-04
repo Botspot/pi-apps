@@ -1942,6 +1942,22 @@ log_diagnose() { #Given a logfile, explain errors to user, suggest fixes, and ca
   local error_caption=()
   #store the general type of error
   local error_type=''
+
+  # temporary debian trixie error diagnosis (doesn't block sending error reports but does show info to users if there is no other automatic diagnosis)
+  if ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) && [ "$__os_release" -ge 13 ]; then
+    error_caption+=("All the Pi-Apps apps are not yet supported in Trixie.
+
+We are tracking all apps that fail to install on PiOS Trixie in this issue https://github.com/Botspot/pi-apps/issues/2829
+Each comment contains a link to the offending actions run showing the install failure. Please check your app that you tried to install that failed to see if it is already reported.
+
+Now would be a great time for Beta Testers to get involved with debugging and triaging these issues.
+In a lot of cases these are issues with the upstream projects (not pi-apps).
+Please open a bug report at the upstream project for the failure and link back to the pi-apps issue if this is the case.
+
+We will make an announcement via our Discord when most of these compatibility issues have been resolved.
+Most users should please continue to use PiOS Bookworm for the best Pi-Apps compatibility for the time being.")
+    error_type="Operating_System_Release"
+  fi
   
 #------------------------------------------
 #repo issues below
