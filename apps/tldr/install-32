@@ -1,5 +1,5 @@
 #!/bin/bash
-version=1.7.2
+version=1.8.0
 
 arm_arch=$(cat /proc/cpuinfo | grep "CPU architecture: " | head -n1 |  awk -F": "  '{print $2}' | cut -c 1)
 if [[ -n "$arm_arch" ]] && [[ "$arm_arch" == "6" ]]; then
