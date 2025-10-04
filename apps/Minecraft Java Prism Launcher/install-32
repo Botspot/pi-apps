@@ -1,5 +1,5 @@
 #!/bin/bash
-version=9.4-7
+version=9.4-9
 
 install_packages mesa-utils https://github.com/Pi-Apps-Coders/files/releases/download/large-files/prismlauncher_${version}_armhf.deb || exit 1
 
@@ -17,11 +17,24 @@ status "Installing Java 8, 17, and 21 (if available)"
 case "$__os_id" in
 # Raspbian is not reported as a derivative of Debian (no /etc/upstream-release/lsb-release file)
 Raspbian | Debian | Kali)
-  adoptium_installer || exit 1
-  if package_available temurin-21-jre ;then
-    install_packages temurin-8-jre temurin-17-jre temurin-21-jre || exit 1
+  # adoptium packages currently broken on trixie armhf (depend on libasound2 which no longer exists, upstream adoptium bug)
+  if [ "$__os_release" -lt 13 ]; then
+    adoptium_installer || exit 1
+    if package_available temurin-21-jre ;then
+      install_packages temurin-8-jre temurin-17-jre temurin-21-jre || exit 1
+    else
+      install_packages temurin-8-jre temurin-17-jre || exit 1
+    fi
   else
-    install_packages temurin-8-jre temurin-17-jre || exit 1
+    if package_available openjdk-21-jre ;then
+      install_packages openjdk-21-jre || exit 1
+    fi
+    if package_available openjdk-17-jre ;then
+      install_packages openjdk-17-jre || exit 1
+    fi
+    if package_available openjdk-8-jre ;then
+      install_packages openjdk-8-jre || exit 1
+    fi
   fi
   ;;
 Ubuntu)
