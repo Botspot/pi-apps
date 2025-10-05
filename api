@@ -983,7 +983,7 @@ rm_external_repo() { # remove an external apt repo and its gpg key, if the repo 
 
 adoptium_installer() {
   case "$__os_codename" in
-  bionic | focal | jammy | noble | buster | bullseye | bookworm)
+  bionic | focal | jammy | noble | buster | bullseye | bookworm | trixie)
     add_external_repo "adoptium" "https://adoptium.jfrog.io/artifactory/api/security/keypair/default-gpg-key/public" "https://adoptium.jfrog.io/artifactory/deb" "$__os_codename" "main" || exit 1
     ;;
   *)
