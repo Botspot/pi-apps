@@ -13,7 +13,7 @@ fi
 status "Checking Rust compiler for compatibility"
 
 # simplified version checking
-if package_is_new_enough rustc 1.78.0; then echo "Rust compiler available in the package repositories is new enough, installing from package repositories" && rust_too_old=0; else echo "Rust compiler is too old in available package repositories, installing latest version via rustup" && rust_too_old=1; fi
+if package_is_new_enough rustc 1.89.0; then echo "Rust compiler available in the package repositories is new enough, installing from package repositories" && rust_too_old=0; else echo "Rust compiler is too old in available package repositories, installing latest version via rustup" && rust_too_old=1; fi
 
 if [ "$rust_too_old" -eq "1" ]; then
     echo "Installing newer Rust toolchain"
