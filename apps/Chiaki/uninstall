@@ -1,8 +1,0 @@
-#!/bin/bash
-# remove dependencies
-purge_packages || error "Dependencies failed to uninstall"
-# remove Chiaki folder and desktop entry
-rm -rf $HOME/Chiaki || error "failed to delete Chiaki folder!"
-rm -f $HOME/.local/share/applications/chiaki.desktop || error "failed to delete Chiaki desktop entry!"
-
-exit 0
