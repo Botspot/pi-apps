@@ -38,7 +38,79 @@ rm -rf fritzing-app
 git clone https://github.com/fritzing/fritzing-app.git || error "Could not clone fritzing-app source"
 cd fritzing-app || error "Could not move to directory"
 git checkout 0.9.6
+# move to quazip folder and apply patch
+cd src/lib/quazip || error "Could not move to directory"
+
+# patch based on https://github.com/stachenov/quazip/commit/5f48264e078c1cc5f0682e90acc9ef0c8f011c19.patch with minor edits
+cat << 'EOF' >> quazip.patch
+--- crypt.h	2025-10-05 17:12:52.333847151 -0400
++++ crypt.h	2025-10-05 17:15:23.115088496 -0400
+@@ -32,7 +32,7 @@
+ /***********************************************************************
+  * Return the next byte in the pseudo-random sequence
+  */
+-static int decrypt_byte(unsigned long* pkeys, const unsigned long* pcrc_32_tab)
++static int decrypt_byte(unsigned long* pkeys, const z_crc_t FAR * pcrc_32_tab)
+ {
+ #ifndef _WINDOWS
+ 	(void) pcrc_32_tab; /* avoid "unused parameter" warning */
+@@ -49,7 +49,7 @@
+ /***********************************************************************
+  * Update the encryption keys with the next byte of plain text
+  */
+-static int update_keys(unsigned long* pkeys,const unsigned long* pcrc_32_tab,int c)
++static int update_keys(unsigned long* pkeys,const z_crc_t FAR * pcrc_32_tab,int c)
+ {
+ 	(*(pkeys+0)) = CRC32((*(pkeys+0)), c);
+ 	(*(pkeys+1)) += (*(pkeys+0)) & 0xff;
+@@ -66,7 +66,7 @@
+  * Initialize the encryption keys and the random header according to
+  * the given password.
+  */
+-static void init_keys(const char* passwd,unsigned long* pkeys,const unsigned long* pcrc_32_tab)
++static void init_keys(const char* passwd,unsigned long* pkeys,const z_crc_t FAR * pcrc_32_tab)
+ {
+ 	*(pkeys+0) = 305419896L;
+ 	*(pkeys+1) = 591751049L;
+@@ -96,7 +96,7 @@
+ unsigned char *buf;         /* where to write header */
+ int bufSize;
+ unsigned long* pkeys;
+-const unsigned long* pcrc_32_tab;
++const z_crc_t FAR * pcrc_32_tab;
+ unsigned long crcForCrypting;
+ {
+ 	int n;                       /* index in random header */
+--- unzip.c	2025-10-05 17:12:52.334031525 -0400
++++ unzip.c	2025-10-05 17:15:40.996747630 -0400
+@@ -150,7 +150,7 @@
+     int encrypted;
+ #    ifndef NOUNCRYPT
+     unsigned long keys[3];     /* keys defining the pseudo-random sequence */
+-    const unsigned long* pcrc_32_tab;
++    const z_crc_t FAR * pcrc_32_tab;
+ #    endif
+ } unz_s;
+ 
+--- zip.c	2025-10-05 17:12:52.334031525 -0400
++++ zip.c	2025-10-05 17:15:56.058461707 -0400
+@@ -134,7 +134,7 @@
+     int  encrypt;
+ #ifndef NOCRYPT
+     unsigned long keys[3];     /* keys defining the pseudo-random sequence */
+-    const unsigned long* pcrc_32_tab;
++    const z_crc_t FAR * pcrc_32_tab;
+     int crypt_header_size;
+ #endif
+ } curfile_info;
+
+EOF
+
+git apply quazip.patch || error "Unable to apply patch"
+cd ../../../ || error "Could not move to directory"
+# patch compilation script
 sed -i 's/LIBGIT_STATIC = true/LIBGIT_STATIC = false/g' phoenix.pro
+# compile the code
 qmake || error "PLEASE contact us in the Discord. We have seen multiple reports of this error and are unable to reproduce on our end. qmake failed on fritzing configure"
 make -j$(nproc) || error "compilation failed"
 lupdate -noobsolete phoenix.pro
