@@ -1,55 +1,6 @@
 #!/bin/bash
 version=v6.24.0-mo1
 
-# userinput function to display yad prompts to the user
-function userinput_func {
-  unset uniq_selection
-  height=$(($(echo "$1" | grep -o '\\n' | wc -l) + 8))
-  height_gui=$(echo $(( height * 15 + ${#@} * 20 + 100 )))
-  height_gui_buttons=$(echo $(( height * 15 )))
-  if [ "${#@}" == "2" ];then
-    echo -e "$1" |  yad --fixed --no-escape --undecorated --show-uri --center --image "dialog-information" --borders="20" --title "User Info Prompt" \
-    --text-info --fontname="@font@ 11" --wrap --width=800 --height=$height_gui --window-icon="$(dirname "$0")/icon-64.png" \
-    --show-uri \
-    --button="$2":0
-    output="$2"
-  elif [ "${#@}" == "3" ];then
-    yad --image "dialog-question" \
-    --borders="20" --height=$height_gui_buttons --center --fixed \
-    --window-icon="$(dirname "$0")/icon-64.png" \
-    --text="$1" \
-    --button="$2":0 \
-    --button="$3":1
-    if [ $? -ne 0 ]; then
-    output="$3"
-    else
-    output="$2"
-    fi
-  else
-    for string in "${@:2}"; do
-    uniq_selection+=(FALSE "$string")
-    done
-    uniq_selection[0]=TRUE
-    output=$(
-    yad --no-escape --undecorated --center \
-      --borders="20" --height=$height_gui\
-      --window-icon="$(dirname "$0")/icon-64.png" \
-      --text "$1" \
-      --list \
-      --no-headers \
-      --radiolist \
-      --center \
-      --fixed \
-      --column "" \
-      --column "Selection" \
-      --print-column=2 \
-      --separator='' \
-      --button="OK":0 \
-      "${uniq_selection[@]}"
-    )
-  fi
-}
-
 default_table=("Yes" "No")
 
 function setup_wizard() {
