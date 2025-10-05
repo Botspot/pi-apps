@@ -1,52 +1,38 @@
 #!/bin/bash
 
-version=13.0.9
+version=2025.10.05
+INSTALL_DIR="$HOME/.local/share"
 
-#if ~/tor-browser_en-US folder exists, prepare to import its user-data (OLDEST folder location)
-if [ -d ~/tor-browser_en-US/Browser/TorBrowser/Data/Browser ];then
-  mv -f ~/tor-browser_en-US ~/.local/share/tor-browser.temp
-#if ~/tor-browser folder exists, prepare to import its user-data (OLD folder location)
-elif [ -d ~/tor-browser/Browser/TorBrowser/Data/Browser ];then
-  mv -f ~/tor-browser ~/.local/share/tor-browser.temp
-#if ~/.local/share/tor-browser folder exists, prepare to import its user-data (NEW folder location)
-elif [ -d ~/.local/share/tor-browser/Browser/TorBrowser/Data/Browser ];then
-  mv -f ~/.local/share/tor-browser ~/.local/share/tor-browser.temp
+rm -f /tmp/tbb-nightly.tar.xz
+wget -O /tmp/tbb-nightly.tar.xz "https://nightlies.tbb.torproject.org/nightly-builds/tor-browser-builds/tbb-nightly.$version/nightly-linux-aarch64/tor-browser-linux-aarch64-tbb-nightly.$version.tar.xz" || error "Failed to download Tor Browser Nightly ver. $version"
+
+status -n 'Looking for previous installations and remaining user data… '
+if [ -d "$INSTALL_DIR"/tor-browser ]; then
+  #if data folder exists, prepare to import its user-data
+  if [ -d "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser ];then
+    mv -f "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser/ "$INSTALL_DIR"/tor-browser.temp/ || error 'Failed to move existing user data to temporary folder'
+  fi
+  rm -rf "$INSTALL_DIR"/tor-browser/* || error 'Failed to remove old Tor Browser files'
+else
+  mkdir -p "$INSTALL_DIR"/tor-browser || error 'Failed to create installation directory'
 fi
+status_green 'Done'
 
-rm -f /tmp/tor.tar.xz
-wget -O /tmp/tor.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/${version}/tor-browser-linux-arm64-${version}.tar.xz/download || error "Failed to download!"
-status -n "Extracting... "
-tar -xf /tmp/tor.tar.xz -C ~/.local/share || error "Failed to extract!"
-rm -f /tmp/tor.tar.xz
-status_green Done
+status -n "Extracting Tor Browser to $INSTALL_DIR/tor-browser … "
+tar -xpJf /tmp/tbb-nightly.tar.xz -C "$INSTALL_DIR"/tor-browser --strip-components=1 || error 'Failed to extract Tor Browser'
+rm -f /tmp/tbb-nightly.tar.xz
+status_green 'Done'
 
 #if tor-browser.temp folder exists, import its user-data
-if [ -d ~/.local/share/tor-browser.temp ];then
-  rm -rf ~/.local/share/tor-browser/Browser/TorBrowser/Data/Browser
-  mv -f ~/.local/share/tor-browser.temp/Browser/TorBrowser/Data/Browser ~/.local/share/tor-browser/Browser/TorBrowser/Data && rm -rf ~/.local/share/tor-browser.temp
+if [ -d "$INSTALL_DIR"/tor-browser.temp ];then
+  status -n 'Importing existing user data… '
+  rm -rf "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser
+  mv -f "$INSTALL_DIR"/tor-browser.temp "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser
+  rm -rf "$INSTALL_DIR"/tor-browser.temp
+  status_green 'Done'
 fi
 
-#disable buggy update notification
-if [ ! -f ~/.local/share/tor-browser/Browser/distribution/policies.json ];then
-  mkdir -p ~/.local/share/tor-browser/Browser/distribution
-  echo '{ 
-    "policies": {
-        "DisableAppUpdate": true
-    } 
-}' > ~/.local/share/tor-browser/Browser/distribution/policies.json
-fi
-
-#copy icon for wayfire
-mkdir -p ~/.local/share/icons
-cp -f ~/.local/share/tor-browser/Browser/browser/chrome/icons/default/default128.png ~/.local/share/icons/tor-browser.png
-
-echo "[Desktop Entry]
-Type=Application
-Name=Tor Browser
-GenericName=Web Browser
-Comment=Tor Browser is +1 for privacy and −1 for mass surveillance
-Categories=Network;WebBrowser;Security;
-Exec=env MOZ_ENABLE_WAYLAND=1 $HOME/.local/share/tor-browser/Browser/start-tor-browser --class 'tor-browser' --name 'tor-browser'
-X-TorBrowser-ExecShell=./Browser/start-tor-browser --detach
-Icon=tor-browser
-StartupWMClass=tor-browser" > ~/.local/share/applications/tor.desktop
+status -n 'Registering Tor Browser as a desktop app for this user… '
+cd "$INSTALL_DIR"/tor-browser || error 'Fatal error! Cannot cd to app!'
+"$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --register-app || error 'Failed to register a desktop app'
+status_green 'Done'
