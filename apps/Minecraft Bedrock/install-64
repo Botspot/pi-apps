@@ -4,38 +4,24 @@
 # obtain model and jetson_model
 get_model &>/dev/null
 if [[ -z "$jetson_model" ]] && [ ! -z "$__cpu_op_mode_32" ]; then
-  sudo dpkg --add-architecture armhf
-  bedrock_depends=()
-  if package_available libasound2t64:armhf; then
-    bedrock_depends+=('libasound2t64:armhf')
-  else
-    bedrock_depends+=('libasound2:armhf')
-  fi
-  install_packages "${bedrock_depends[@]}" libx11-6:armhf libxext6:armhf libegl1:armhf zlib1g:armhf libstdc++6:armhf libgl1-mesa-dri:armhf libpulse0:armhf libcom-err2:armhf libgmp10:armhf libp11-kit0:armhf libsystemd0:armhf || exit 1
+  true
 else
   warning "Your system is only capable of running the ARM64 versions of Minecraft Bedrock. You will be unable to run older ARM32 versions of Minecraft Bedrock that you may find in this launcher."
 fi
 
-enable_module fuse || exit 1
+install_packages flatpak || exit 1
 
-#Download file
-mkdir -p ~/.local/bin || error "Could not make directory"
-if package_is_new_enough libc6 2.36 ;then
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v1.1.1-802/Minecraft_Bedrock_Launcher-bookworm-arm64-v1.1.1.802.AppImage' || error "failed to download Minecraft Bedrock Launcher"
-else
-  wget -O ~/.local/bin/MCBedrock.AppImage 'https://github.com/minecraft-linux/appimage-builder/releases/download/v1.1.1-802/Minecraft_Bedrock_Launcher-arm64-v1.1.1.802.AppImage' || error "failed to download Minecraft Bedrock Launcher"
+flatpak_install io.mrarm.mcpelauncher || exit 1
+
+# transition old "game" folder files from appimage data directory if they exist
+
+if [ -d "/home/$USER/.local/share/mcpelauncher/games" ]; then
+  if [ -d "/home/$USER/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/games" ]; then
+    warning "An old appimage game directory stored in /home/$USER/.local/share/mcpelauncher/games exists as well as the new flatpak game directory in /home/$USER/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/games. Your gamefiles could not be transfered over automatically because of this. Please do so manually."
+  else
+    mkdir -p "/home/$USER/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher"
+    cp -r "/home/$USER/.local/share/mcpelauncher/games" "/home/$USER/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/"
+    status "Your gamefiles were automatically copied over from the old appimage game directory stored in /home/$USER/.local/share/mcpelauncher/games to the new flatpak game directory in /home/$USER/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/games. You can delete your original files in /home/$USER/.local/share/mcpelauncher/games once you have determined there has been no data loss."
+  fi
 fi
-chmod +x ~/.local/bin/MCBedrock.AppImage
-
-#Make Desktop file
-mkdir -p ~/.local/share/applications
-echo "[Desktop Entry]
-Version=1.1
-Type=Application
-Name=Minecraft Bedrock Launcher
-Comment=A Minecraft: Bedrock Edition
-Icon=$(dirname "$0")/icon-64.png
-Exec=env GALLIUM_HUD=simple,fps $HOME/.local/bin/MCBedrock.AppImage
-Categories=Game;
-Terminal=false
-StartupNotify=true" > ~/.local/share/applications/minecraftbedrock.desktop
+true

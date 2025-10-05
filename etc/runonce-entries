@@ -112,6 +112,8 @@ You can install BalenaEtcher from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Renoise (Demo)" "32" "The latest version of Renoise (Demo) is not available ARM 32bit Linux and all previous versions that supported it have been removed.
 You can install Renoise (Demo) from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Chiaki" "" "This is being removed after over a year of request for community maintenance. See https://github.com/Botspot/pi-apps/issues/2664 for details."
+  remove_deprecated_app "Minecraft Bedrock" "32" "The latest version of the Minecraft Bedrock Linux Launcher is not available ARM 32bit Linux and all previous versions that supported it no longer function.
+You can install Minecraft Bedrock from Pi-Apps on a 64bit OS."
   true
 EOF
   ;;

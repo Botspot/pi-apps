@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#Allow packages required by this app to be uninstalled
-purge_packages || exit 1
+flatpak_uninstall io.mrarm.mcpelauncher || exit 1
 
-sudo rm -f /opt/MCBedrock.AppImage
-rm -rf ~/.local/bin/MCBedrock.AppImage ~/'.cache/Minecraft Linux Launcher' ~/.cache/mcpelauncher ~/.cache/mcpelauncher-webview ~/.cache/msa ~/.cache/msa-ui-qt ~/.local/share/msa ~/.local/share/applications/minecraftbedrock.desktop
+# remove legacy appimage files that would cause confusion if still installed somehow
+rm -f ~/.local/bin/MCBedrock.AppImage ~/.local/share/applications/minecraftbedrock.desktop
+
+purge_packages || exit 1
