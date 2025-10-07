@@ -1,12 +1,12 @@
 #!/bin/bash
 
 status "Installing Dependencies"
-install_packages rsync cmake zlib1g-dev libjpeg-dev libjsoncpp-dev build-essential libbz2-dev libasound2-dev libsdl2-dev ffmpeg libgl-dev libglew-dev libgtk-3-dev libjack-jackd2-dev libjsoncpp-dev libmad0-dev libpng-dev libpulse-dev libtomcrypt-dev libtommath-dev libudev-dev libva-dev libvorbis-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev || exit 1
+install_packages rsync cmake zlib1g-dev libjpeg-dev libjsoncpp-dev build-essential libbz2-dev libasound2-dev libsdl2-dev ffmpeg libavcodec-dev libavdevice-dev libswscale-dev libavformat-dev libavutil-dev libswresample-dev libgl-dev libglew-dev libgtk-3-dev libjack-jackd2-dev libjsoncpp-dev libmad0-dev libpng-dev libpulse-dev libtomcrypt-dev libtommath-dev libudev-dev libva-dev libvorbis-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev yasm || exit 1
 
 status "Cloning repo"
 git_clone https://github.com/stepmania/stepmania.git || error "Could not clone repo"
 cd stepmania || error "Could not enter stepmania folder"
-git checkout 0faf106eb196fd7187edab0aaa8f9e043c5e6d19 || error "Could not checkout desired commit"
+git checkout d55acb1ba26f1c5b5e3048d6d6c0bd116625216f || error "Could not checkout desired commit"
 
 # add patch
 # this format of writing to a file changes none of the output (does not mess up '', "", or any special character)
@@ -83,7 +83,120 @@ index c092b76..36a6cf1 100644
 
 EOF
 
+cat << 'EOF' >> pre-7.1-ffmpeg.patch
+diff --git a/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp b/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
+index 935ddf324b0..d4eed01d599 100644
+--- a/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
++++ b/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
+@@ -405,7 +405,7 @@ void MovieTexture_FFMpeg::RegisterProtocols()
+ 		return;
+ 	Done = true;
+ 
+-#if !FF_API_NEXT
++#if LIBAVCODEC_VERSION_MAJOR < 58
+ 	avcodec::avcodec_register_all();
+ 	avcodec::av_register_all();
+ #endif
+@@ -508,7 +508,7 @@ RString MovieDecoder_FFMpeg::OpenCodec()
+ 	if( m_pStreamCodec->codec )
+ 		avcodec::avcodec_close( m_pStreamCodec );
+ 
+-	avcodec::AVCodec *pCodec = avcodec::avcodec_find_decoder( m_pStreamCodec->codec_id );
++	const avcodec::AVCodec *pCodec = avcodec::avcodec_find_decoder( m_pStreamCodec->codec_id );
+ 	if( pCodec == nullptr )
+ 		return ssprintf( "Couldn't find decoder %i", m_pStreamCodec->codec_id );
+ 
+diff --git a/src/arch/MovieTexture/MovieTexture_FFMpeg.h b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+index c092b765fc2..99f5ffcb1be 100644
+--- a/src/arch/MovieTexture/MovieTexture_FFMpeg.h
++++ b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+@@ -13,6 +13,7 @@ namespace avcodec
+ 		#include <libavformat/avformat.h>
+ 		#include <libswscale/swscale.h>
+ 		#include <libavutil/pixdesc.h>
++		#include <libavcodec/avcodec.h>
+ 
+ 		#if LIBAVCODEC_VERSION_MAJOR >= 57
+ 		#define av_free_packet av_packet_unref
+
+EOF
+
+# minor edits from https://github.com/h-lunah/stepmania-ddr/commit/46ad6dae13d9c2786147a38bfbd3b3812573ad22.patch
+cat << 'EOF' >> 7.1-ffmpeg.patch
+diff --git a/src/CMakeData-arch.cmake b/src/CMakeData-arch.cmake
+index 1c330a50bbc..6c3a6f24865 100644
+--- a/src/CMakeData-arch.cmake
++++ b/src/CMakeData-arch.cmake
+@@ -105,6 +105,7 @@ else() # Unix
+                 "arch/MovieTexture/MovieTexture_FFMpeg.cpp")
+     list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_HPP
+                 "arch/MovieTexture/MovieTexture_FFMpeg.h")
++    add_compile_definitions(FF_API_NEXT)
+   endif()
+ endif()
+ 
+diff --git a/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp b/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
+index 935ddf324b0..a74e003193d 100644
+--- a/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
++++ b/src/arch/MovieTexture/MovieTexture_FFMpeg.cpp
+@@ -112,6 +112,7 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
+ 	m_swsctx = NULL;
+ 	m_avioContext = NULL;
+ 	m_buffer = NULL;
++	m_pStreamCodec = NULL;
+ 	m_fctx = nullptr;
+ 	m_pStream = nullptr;
+ 	m_iCurrentPacketOffset = -1;
+@@ -166,6 +167,7 @@ void MovieDecoder_FFMpeg::Init()
+ 	{
+ 		avcodec::avcodec_free_context(&m_pStreamCodec);
+ 	}
++	m_pStreamCodec = NULL;
+ #endif
+ }
+ 
+@@ -273,7 +275,7 @@ int MovieDecoder_FFMpeg::DecodePacket( float fTargetTime )
+ 		bool bSkipThisFrame =
+ 			fTargetTime != -1 &&
+ 			GetTimestamp() + GetFrameDuration() < fTargetTime &&
+-			(m_pStreamCodec->frame_number % 2) == 0;
++			(m_pStreamCodec->frame_num % 2) == 0;
+ 
+ 		int iGotFrame;
+ 		int len;
+@@ -508,7 +510,7 @@ RString MovieDecoder_FFMpeg::OpenCodec()
+ 	if( m_pStreamCodec->codec )
+ 		avcodec::avcodec_close( m_pStreamCodec );
+ 
+-	avcodec::AVCodec *pCodec = avcodec::avcodec_find_decoder( m_pStreamCodec->codec_id );
++	const avcodec::AVCodec *pCodec = avcodec::avcodec_find_decoder( m_pStreamCodec->codec_id );
+ 	if( pCodec == nullptr )
+ 		return ssprintf( "Couldn't find decoder %i", m_pStreamCodec->codec_id );
+ 
+diff --git a/src/arch/MovieTexture/MovieTexture_FFMpeg.h b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+index c092b765fc2..99f5ffcb1be 100644
+--- a/src/arch/MovieTexture/MovieTexture_FFMpeg.h
++++ b/src/arch/MovieTexture/MovieTexture_FFMpeg.h
+@@ -13,6 +13,7 @@ namespace avcodec
+ 		#include <libavformat/avformat.h>
+ 		#include <libswscale/swscale.h>
+ 		#include <libavutil/pixdesc.h>
++		#include <libavcodec/avcodec.h>
+ 
+ 		#if LIBAVCODEC_VERSION_MAJOR >= 57
+ 		#define av_free_packet av_packet_unref
+
+EOF
+
 git apply 0001-patch-upstream-for-ARM.patch || error "Applying patch failed"
+
+ffmpeg_version="$(package_latest_version ffmpeg | awk -F'[:.-]' '{print $2 $3}')"
+if [ "$ffmpeg_version" -ge 71 ] ; then
+  git apply 7.1-ffmpeg.patch || error "Applying patch failed"
+else
+  git apply pre-7.1-ffmpeg.patch || error "Applying patch failed"
+fi
+
 mkdir build && cd build || error "Could not create or enter build directory"
 status "Running cmake"
 cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SDL=yes -DWITH_SYSTEM_GLEW=yes -DWITH_SYSTEM_TOMMATH=yes -DWITH_SYSTEM_MAD=yes -DWITH_SYSTEM_ZLIB=yes -DWITH_SYSTEM_JPEG=yes -DWITH_SYSTEM_OGG=yes -DWITH_SYSTEM_FFMPEG=yes -DWITH_SYSTEM_TOMCRYPT=yes -DWITH_FULL_RELEASE=yes -DWITH_CRASH_HANDLER=no -DWITH_NETWORKING=yes -WITH_MINIMAID=no .. || error "Cmake ended with error"
