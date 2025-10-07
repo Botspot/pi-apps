@@ -124,7 +124,8 @@ if [[ "$GITHUB_JOB" == "l4t-bionic-64bit" ]]; then
   # update certificate chain
   sudo apt install -y ca-certificates
 fi
-sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+sudo apt install -y software-properties-common || true
+sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
 
 #determine what type of input we received
 if [ -z "$name" ]; then
