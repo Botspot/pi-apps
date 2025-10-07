@@ -19,13 +19,12 @@ There is a separate support policy for supported distributions, here is the list
 
 | Version | Support Status |
 |---------|---------------|
+| Debian 13 (official releases only from Debian, not unofficial releases like Armbian)| ✅ Supported |
 | Debian 12 (official releases only from Debian, not unofficial releases like Armbian)| ✅ Supported |
-| Debian 11 (official releases only from Debian, not unofficial releases like Armbian)| ✅ Supported, will be cut off support soon |
 | Ubuntu 24.04 LTS | ✅ Supported |
 | Ubuntu 22.04 LTS | ✅ Supported |
-| Ubuntu 20.04 LTS | ✅ Supported, will be cut off support soon |
-| Raspberry Pi OS (based on Debian 12) | ✅ Supported |
-| Raspberry Pi OS Legacy (based on Debian 11) | ✅ Supported, will be cut off support soon |
+| Raspberry Pi OS (based on Debian 13) | ✅ Supported |
+| Raspberry Pi OS Legacy (based on Debian 12) | ✅ Supported |
 | Other/older distributions | ❌ Not Supported |
 
 You must be running a supported distribution to make a issue about failure to install an app/broken app on Pi-Apps, otherwise your issue will be closed as unsupported.
