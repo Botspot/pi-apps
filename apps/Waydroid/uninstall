@@ -3,11 +3,14 @@
 sudo waydroid container stop
 sudo waydroid session stop
 
-#Allow packages required by this app to be uninstalled
-purge_packages || exit 1
-
 text="Delete all Waydroid apps, data, and files?"
-if [ "$1" != update ] && [ "$(userinput_func "$text" "Yes" "No")" == Yes ];then
-  sudo rm -rf /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid.* ~/.local/share/applications/Waydroid.desktop /usr/share/applications/stop-waydroid.desktop
+
+if [ "$1" != update ];then
+  userinput_func "$text" "Yes" "No"
+  if [ "$output" == Yes ];then
+    sudo rm -rf /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid.* ~/.local/share/applications/Waydroid.desktop /usr/share/applications/stop-waydroid.desktop
+  fi
 fi
 
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
