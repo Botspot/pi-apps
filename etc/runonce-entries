@@ -341,6 +341,17 @@ runonce <<"EOF"
   fi
 EOF
 
+#UPSTREAM BUGS: switch back to GNU coreutils
+# https://github.com/Botspot/pi-apps/issues/2853
+# https://bugs.launchpad.net/ubuntu/+source/rust-coreutils/+bug/2127885
+runonce <<"EOF"
+  if package_installed coreutils-from-uutils; then
+    sudo_popup apt-get install coreutils-from-gnu coreutils-from-uutils- --allow-remove-essential -y
+    # force re-generate any preloaded files since uutils is very broken and generates bad files
+    rm -rf ${DIRECTORY}/data/preload/*
+  fi
+EOF
+
 #update pi-apps .desktop icons
 runonce <<"EOF"
 #menu button
