@@ -34,6 +34,7 @@ xterm
 urxvt
 konsole
 terminator
+ptyxis
 gnome-terminal
 gnome-terminal.wrapper
 tilix
@@ -96,6 +97,9 @@ elif [ "$choice" == konsole ];then
   
 elif [ "$choice" == terminator ];then
   terminator -x bash -c "$commands" &
+
+elif [ "$choice" == ptyxis ];then
+  ptyxis -- bash -c "$commands" &
   
 elif [ "$choice" == gnome-terminal ] || [ "$choice" == gnome-terminal.wrapper ];then
   gnome-terminal -- bash -c "$commands" &
