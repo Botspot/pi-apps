@@ -362,7 +362,7 @@ apt_lock_wait() { #Wait until other apt processes are finished before proceeding
   
   #Try to install a non-existent package to see if apt fails due to a lock-file. Repeat until no errors mention 'Could not get lock'
   #NOTE: after apt 3.0 this output may change. Refer to git blame for this line for more info.
-  while sudo -E apt-get install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
+  while sudo -E apt-get -o DPkg::Lock::Timeout=-1 install lkqecjhxwqekc 2>&1 | grep -q 'Could not get lock' ;do
     sleep 1
   done
   
@@ -701,7 +701,7 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       
       apt_lock_wait
       set -o pipefail
-      local output="$(sudo -E apt-get install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
       local exitcode=$?
       status "Apt finished."
       
@@ -730,7 +730,7 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
         cat /tmp/pi-apps-local-packages/Packages
         echo -e "Attempting apt --dry-run installation of the problematic package(s) for debugging purposes:\n"
-        ( echo "$output" | grep 'but it is not installable' || echo "$output" | grep 'but it is not going to be installed' || echo "$output" | grep "but .* is to be installed" ) | awk '{print $4}' | uniq | xargs sudo -E apt-get install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
+        ( echo "$output" | grep 'but it is not installable' || echo "$output" | grep 'but it is not going to be installed' || echo "$output" | grep "but .* is to be installed" ) | awk '{print $4}' | uniq | xargs sudo -E apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
         echo -e "Printing apt-cache policy output for debugging purposes:\n"
         apt-cache policy
       fi
@@ -1789,7 +1789,7 @@ generate_app_icons() { #This converts the given $1 image into icon-24.png and ic
     --button=No!"${DIRECTORY}/icons/exit.png":1 --button=Yes!"${DIRECTORY}/icons/check.png":0
     button=$?
     if [ $button == 0 ];then
-      sudo apt-get install -y --no-install-recommends imagemagick || icon=''
+      sudo apt-get -o DPkg::Lock::Timeout=-1 install -y --no-install-recommends imagemagick || icon=''
     else
       exit 0
     fi
@@ -2159,19 +2159,19 @@ Pi-Apps cannot work until you solve this issue. If you do not need the problemat
     grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
     local packages_case1="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $1, $4}' | tr " " "\n" | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
     echo "$packages_case1" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case1="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case1="$(grep -E "^ .* : Depends:" <(echo "$errors") | awk '{print $4}' | tr " " "\n" | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case1" >> "$logfile"
     grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache show >> "$logfile"
     grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-cache policy >> "$logfile"
     local packages_case2="$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sed 's/:armhf\|:arm64\|:all//g' | sort -u)"
     echo "$packages_case2" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case2="$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case2="$(grep -E "^ +Depends:" <(echo "$errors") | awk '{print $2}' | sort -u | awk '/:armhf/{print; gsub(/:armhf/, ":arm64")}1' | xargs -r apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case2" >> "$logfile"
     grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache show >> "$logfile"
     grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-cache policy >> "$logfile"
     local packages_case3="$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed 's/:armhf\|:arm64\|:all//g' | sed 's/([^)]*)//g;s/  / /g' | sort -u)"
     echo "$packages_case3" | xargs -r apt list -a >> "$logfile"
-    local dry_run_case3="$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-get install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
+    local dry_run_case3="$(grep -E "^Depends:" <(echo "$errors") | cut -d' ' -f2- | sed "s/, /\n/g" | sed "s/| /\n/g" | sed "s/:any//g" | sed 's/([^)]*)//g;s/  / /g' | xargs -r apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades --dry-run 2>&1)"
     echo "$dry_run_case3" >> "$logfile"
 
     # we also want to see the users apt sources (.list and .sources)
@@ -3448,7 +3448,7 @@ get_model() { # populates the model and jetson_model variables with information 
 get_codename() { #get debian/ubuntu codename
   if ! command -v lsb_release >/dev/null; then
     apt_update &>/dev/null && \
-    sudo apt-get install -y lsb-release &>/dev/null
+    sudo apt-get -o DPkg::Lock::Timeout=-1 install -y lsb-release &>/dev/null
   fi
   
   # first check if lsb_release has an upstream option -u

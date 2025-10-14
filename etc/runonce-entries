@@ -346,7 +346,7 @@ EOF
 # https://bugs.launchpad.net/ubuntu/+source/rust-coreutils/+bug/2127885
 runonce <<"EOF"
   if package_installed coreutils-from-uutils; then
-    sudo_popup apt-get install coreutils-from-gnu coreutils-from-uutils- --allow-remove-essential -y
+    sudo_popup apt-get -o DPkg::Lock::Timeout=-1 install coreutils-from-gnu coreutils-from-uutils- --allow-remove-essential -y
     # force re-generate any preloaded files since uutils is very broken and generates bad files
     rm -rf ${DIRECTORY}/data/preload/*
   fi
