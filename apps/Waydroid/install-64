@@ -96,11 +96,11 @@ echo "deb [signed-by=/usr/share/keyrings/waydroid.gpg] https://repo.waydro.id/ $
 install_packages waydroid || exit 1
 
 if [ "$init_google" == yes ];then
-  sudo waydroid init -s GAPPS
+  sudo waydroid init -s GAPPS || sudo waydroid init -s GAPPS || error "Waydroid failed to initialize"
 elif [ "$init_google" == no ];then
-  sudo waydroid init -s VANILLA
+  sudo waydroid init -s VANILLA || sudo waydroid init -s VANILLA || error "Waydroid failed to initialize"
 else
-  sudo waydroid init #says 'Already Initialized' usually on update-reinstall
+  sudo waydroid init || error "Waydroid failed to initialize" #says 'Already Initialized' usually on update-reinstall
 fi
 
 #fix for wayfire compositor
@@ -136,16 +136,18 @@ if [ "$init_google" == yes ];then
     --text-info --fontname='' --fixed --button=Done:0
   
   echo -e "Now please be patient for Google to register the device. In a few minutes, first click the menu launcher to Stop Waydroid, then open the Google Play Store in the main menu and try to login. Try again later if it fails. Search the Internet for further help." | \
-    yad "${yadflags[@]}" --text-info --fontname='' --width=400 --height=300 --wrap --button=OK:0
+    yad "${yadflags[@]}" --text-info --fontname='' --width=400 --height=300 --wrap --button=OK:0 &
+  yadpid=$!
 elif [ "$install_aurora" == yes ];then
   echo "You have picked the 'Waydroid without Google' option. Right now, any apps that try to use Google Play APIs will likely fail to launch. This is fixable, but it involves something called MicroG, and I could not figure out how to make it work in Waydroid. Others have done it before, and AI makes it sound easy, but I just don't have the time to figure it out.
 IF YOU THINK YOU COULD HELP WITH THAT, please get in touch so that everybody can enjoy a more functional Google-free experience.
 
 Thanks!
 -Botspot" | yad "${yadflags[@]}" --text-info --wrap --width=600 --height=400 --fontname='' "${yadflags[@]}" --button=OK:0 &
+  yadpid=$!
   
-  wget -O /tmp/AuroraStore.apk https://auroraoss.com/downloads/AuroraStore/Release/AuroraStore-4.7.5.apk || error "failed to download AuroraStore.apk"
-  waydroid app install /tmp/AuroraStore.apk || waydroid app install /tmp/AuroraStore.apk || error "Failed to install"
+  wget -O /tmp/AuroraStore.apk https://auroraoss.com/downloads/AuroraStore/Release/AuroraStore-4.7.5.apk || error "Failed to download AuroraStore.apk"
+  waydroid app install /tmp/AuroraStore.apk || waydroid app install /tmp/AuroraStore.apk || error "Failed to install AuroraStore.apk"
   
   #try installing MicroG (doesn't seem to make a difference for apps that need playstore APIs)
   #git clone https://github.com/casualsnek/waydroid_script
@@ -171,3 +173,7 @@ sed -i 's/NoDisplay=true/NoDisplay=false/g' ~/.local/share/applications/Waydroid
 sudo chmod -w ~/.local/share/applications/Waydroid.desktop
 
 waydroid session stop
+if [ ! -z "$yadpid" ];then
+  wait $yadpid #don't allow the script to exit until user reads and closes the last dialog
+fi
+true
