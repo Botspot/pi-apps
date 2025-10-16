@@ -1021,7 +1021,7 @@ pipx_install() {
     error "pipx is not available on your distro and so cannot install $* to python venv"
   fi
   sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "$@" || error "Failed to install $* with pipx"
-  sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx upgrade "$@" || error "Failed to upgrade $* with pipx"
+  sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx upgrade "$@" || true
 }
 
 pipx_uninstall() {
