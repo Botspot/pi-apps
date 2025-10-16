@@ -1,9 +1,13 @@
 #!/bin/bash
 
 version=4.6.0_1
+version2=4.6.0_2
 
+#only use trixie deb if glibc is 2.41 or greater
+if package_is_new_enough libc6 2.41 ;then
+  install_packages https://sonic-pi.net/files/releases/v${version2%_*}/sonic-pi_${version2}_trixie.arm64.deb || exit 1
 #only use bookworm deb if glibc is 2.36 or greater
-if package_is_new_enough libc6 2.36 ;then
+elif package_is_new_enough libc6 2.36 ;then
   install_packages https://sonic-pi.net/files/releases/v${version%_*}/sonic-pi_${version}_bookworm.arm64.deb || exit 1
 #only use bullseye deb if glibc is 2.30 or greater
 elif package_is_new_enough libc6 2.30 ;then
