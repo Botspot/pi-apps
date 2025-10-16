@@ -1021,6 +1021,7 @@ pipx_install() {
     error "pipx is not available on your distro and so cannot install $* to python venv"
   fi
   sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "$@" || error "Failed to install $* with pipx"
+  sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx upgrade "$@" || error "Failed to upgrade $* with pipx"
 }
 
 pipx_uninstall() {
@@ -2720,6 +2721,11 @@ Here are some suggested mitigations for your bad internet connection: https://st
   
   if grep -qF "java.net.ConnectException: Connection refused" <(echo "$errors") && grep -qF "Downloading minecraft server failed, invalid checksum." <(echo "$errors") ;then
     error_caption+=("Download failed. Check your internet connection and firewall, then try again.")
+    error_type="internet"
+  fi
+  
+  if grep -qF "ERROR: Downloaded system image hash doesn't match, expected: " <(echo "$errors") ;then
+    error_caption+=("Waydroid OS image download failed. Check your internet connection and firewall, then try again.")
     error_type="internet"
   fi
   
