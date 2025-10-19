@@ -1,0 +1,65 @@
+#!/bin/bash
+
+"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box86 failed to install somehow!"
+
+
+#An older version of libssl is required to run the old version of QT in Eagle.
+#install_packages libssl1.0.2 '|' libssl1.0.0 || exit 1
+#box64 provides /usr/lib/box64-x86_64-linux-gnu/libssl.so.1.0.0
+
+sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
+
+if [ ! -d $HOME/eagle-7.7.0 ];then
+  rm -rf $HOME/eagle-7.7.0
+  status -n "Downloading Eagle 7.7.0... "
+  #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
+  #wget http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
+  wget https://web.archive.org/web/20180411033813/http://web.cadsoft.de/ftp/eagle/program/7.7/eagle-lin64-7.7.0.run -O eagle.run || error "Failed to download Eagle!"
+  
+  status -n "Extracting... "
+  bash ./eagle.run $HOME >/dev/null || error "Failed to run eagle.run!"
+  rm -f ./eagle.run
+  status_green Done
+fi
+mkdir -p $HOME/eagle &>/dev/null
+
+#make it runnable from a terminal
+sudo ln -s $HOME/eagle-7.7.0/bin/eagle /usr/local/bin/eagle
+
+status -n "Creating menu button... "
+echo "#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=7.7.0
+Type=Application
+Terminal=false
+Icon=$HOME/eagle-7.7.0/bin/icons/Epf.svg
+Name=Eagle
+Exec=box86 eagle %f
+Comment=Design Circuit Boards with Eagle CAD
+MimeType=application/brd;
+Categories=Development;Electronics;" | sudo tee /usr/share/applications/eagle.desktop >/dev/null
+status_green "Done"
+
+status -n "Creating .brd mimetype... "
+echo '<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+   <mime-type type="application/brd">
+     <comment>EagleCAD Project</comment>
+     <glob pattern="*.brd"/>
+     <generic-icon name="eagle"/>
+   </mime-type>
+</mime-info>' | sudo tee /usr/share/mime/packages/brd.xml >/dev/null
+sudo update-mime-database /usr/share/mime
+
+#File icon
+sudo cp ~/eagle-7.7.0/bin/eagle-logo.png /usr/share/icons/eagle.png
+sudo update-icon-caches /usr/share/icons/*
+
+status_green Done
+
+if ! grep -qF 'eagle.desktop' ~/.config/mimeapps.list ;then
+  status -n "Associating the .brd mimetype with Eagle... "
+  echo "[Added Associations]
+application/brd=eagle.desktop;" >> ~/.config/mimeapps.list
+  status_green Done
+fi
