@@ -10,7 +10,7 @@ if [ -d "$INSTALL_DIR"/mullvad-browser ]; then
   cd "$INSTALL_DIR"/mullvad-browser || error 'Fatal error! Cannot cd to app!'
   "$INSTALL_DIR"/mullvad-browser/start-mullvad-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
   status_green 'Removed from applications menu'
-elif [ -d ~/mullvad-browser ]
+elif [ -d ~/mullvad-browser ]; then
   warning 'You either use old installation path (~/mullvad-browser) or deprecated arm32 app version that uses this old installation path.\nThis uninstall script can handle that anyways.'
   #[OLD] remove the menu launcher
   rm -f ~/.local/share/applications/mullvad.desktop
