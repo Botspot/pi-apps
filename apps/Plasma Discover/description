@@ -1,0 +1,9 @@
+Easy to use app store for flatpak and apt packages
+This is your classic GUI "app store", featuring screenshots, written reviews, and a one-click button to install new apps. It's geared toward desktop users and is not Raspberry Pi or ARM specific. Everything offered in it should work, and it is a good place to find easy-to-install apps that do not really need Pi-Apps to simplify the install process.
+
+To run: Menu -> System Tools -> Discover
+To run in a terminal: plasma-discover
+
+By default, Discover will show a mix of apt packages and flatpaks, which can get pretty confusing. Also it seems to prefer apt packages, even though flatpak versions are generally newer.
+To only see apt packages, run this: plasma-discover --backends packagekit
+To only see flatpaks: plasma-discover --backends flatpak
