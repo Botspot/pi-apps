@@ -21,7 +21,7 @@ status 'Downloading and extracting Mullvad Browser archive…'
 rm -f /tmp/mullvad-browser-aarch64.tar.xz
 wget -O /tmp/mullvad-browser-aarch64.tar.xz "https://github.com/ooovlad/tor-mullvad-aarch64/releases/download/${version}/mullvad-browser-linux-aarch64-${version}.tar.xz" || error "Failed to download!"
 mkdir -p "$INSTALL_DIR"/mullvad-browser
-tar -xpJf /tmp/mullvad-browser-aarch64.tar.xz "$INSTALL_DIR"/mullvad-browser --strip-components=1 || error "Failed to extract!"
+tar -xpJf /tmp/mullvad-browser-aarch64.tar.xz -C "$INSTALL_DIR"/mullvad-browser --strip-components=1 || error "Failed to extract!"
 rm -f /tmp/mullvad-browser-aarch64.tar.xz
 status_green 'Done'
 

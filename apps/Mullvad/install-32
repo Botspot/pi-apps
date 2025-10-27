@@ -16,7 +16,7 @@ fi
 rm -f /tmp/mullvad.tar.xz
 wget -O /tmp/mullvad.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/mullvad-${version}/mullvad-browser-linux-armhf-${version}.tar.xz/download || error "Failed to download!"
 mkdir -p "$INSTALL_DIR"/mullvad-browser
-tar -xf /tmp/mullvad.tar.xz "$INSTALL_DIR"/mullvad-browser --strip-components=1 || error "Failed to extract!"
+tar -xf /tmp/mullvad.tar.xz -C "$INSTALL_DIR"/mullvad-browser --strip-components=1 || error "Failed to extract!"
 rm -f /tmp/mullvad.tar.xz
 
 #if "$INSTALL_DIR"/mullvad-browser.temp folder exists, import its user-data
