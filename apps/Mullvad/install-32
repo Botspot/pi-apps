@@ -1,31 +1,33 @@
 #!/bin/bash
 
 version=13.0.9
-
-#if ~/mullvad-browser_en-US folder exists, prepare to import its user-data
-if [ -d ~/mullvad-browser_en-US/Browser/MullvadBrowser/Data/Browser ];then
-  mv -f ~/mullvad-browser_en-US ~/mullvad-browser.temp
-fi
+INSTALL_DIR="$HOME/.local/share"
 
 #if ~/mullvad-browser folder exists, prepare to import its user-data
 if [ -d ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser ];then
-  mv -f ~/mullvad-browser ~/mullvad-browser.temp
+  mv -f ~/mullvad-browser "$INSTALL_DIR"/mullvad-browser.temp
 fi
 
-rm -f ~/mullvad.tar.xz
-wget -O ~/mullvad.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/mullvad-${version}/mullvad-browser-linux-armhf-${version}.tar.xz/download || error "Failed to download!"
-tar -xf ~/mullvad.tar.xz || error "Failed to extract!"
-rm -f ~/mullvad.tar.xz
+#if "$INSTALL_DIR"/mullvad-browser folder exists, prepare to import its user-data
+if [ -d "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data/Browser ];then
+  mv -f "$INSTALL_DIR"/mullvad-browser "$INSTALL_DIR"/mullvad-browser.temp
+fi
 
-#if ~/mullvad-browser.temp folder exists, import its user-data
-if [ -d ~/mullvad-browser.temp ];then
-  rm -rf ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser
-  mv -f ~/mullvad-browser.temp/Browser/MullvadBrowser/Data/Browser ~/mullvad-browser/Browser/MullvadBrowser/Data && rm -rf ~/mullvad-browser.temp
+rm -f /tmp/mullvad.tar.xz
+wget -O /tmp/mullvad.tar.xz https://sourceforge.net/projects/tor-browser-ports/files/mullvad-${version}/mullvad-browser-linux-armhf-${version}.tar.xz/download || error "Failed to download!"
+mkdir -p "$INSTALL_DIR"/mullvad-browser
+tar -xf /tmp/mullvad.tar.xz "$INSTALL_DIR"/mullvad-browser --strip-components=1 || error "Failed to extract!"
+rm -f /tmp/mullvad.tar.xz
+
+#if "$INSTALL_DIR"/mullvad-browser.temp folder exists, import its user-data
+if [ -d "$INSTALL_DIR"/mullvad-browser.temp ];then
+  rm -rf "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data/Browser
+  mv -f "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data/Browser "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data && rm -rf "$INSTALL_DIR"/mullvad-browser.temp
 fi
 
 #copy icon for wayfire
 mkdir -p ~/.local/share/icons
-cp -f $HOME/mullvad-browser/Browser/browser/chrome/icons/default/default128.png ~/.local/share/icons/mullvad-browser.png
+cp -f "$INSTALL_DIR"/mullvad-browser/Browser/browser/chrome/icons/default/default128.png ~/.local/share/icons/mullvad-browser.png
 
 echo "[Desktop Entry]
 Type=Application
@@ -33,7 +35,7 @@ Name=Mullvad Browser
 GenericName=Web Browser
 Comment=Mullvad Browser is +1 for privacy and −1 for mass surveillance
 Categories=Network;WebBrowser;Security;
-Exec=$HOME/mullvad-browser/Browser/start-mullvad-browser --class 'mullvad-browser' --name 'mullvad-browser'
+Exec=$INSTALL_DIR/mullvad-browser/Browser/start-mullvad-browser --class 'mullvad-browser' --name 'mullvad-browser'
 X-MullvadBrowser-ExecShell=./Browser/start-mullvad-browser --detach
 Icon=mullvad-browser
 StartupWMClass=mullvad-browser" > ~/.local/share/applications/mullvad.desktop
