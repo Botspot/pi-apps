@@ -26,7 +26,7 @@ if [ -d ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser ]; then
 fi
 
 #before removing the mullvad-browser folder, move the browser configuration like bookmarks, etc
-if [ -d "$INSTALL_DIR"/mullvad-browser ];then
+if [ -d "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data/Browser ];then
   mkdir -p "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
   mv -n "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data/Browser "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
   status_green "User-data found in $INSTALL_DIR/mullvad-browser. Copied to temporary folder."
