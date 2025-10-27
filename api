@@ -2374,6 +2374,11 @@ Open an issue on Pi-Apps if all else fails, but we will probably tell you the sa
 Run this command to remove anbox kernel modules, then retry the operation.
 sudo rm -rf /etc/modules-load.d/anbox.conf /lib/udev/rules.d/99-anbox.rules /usr/src/anbox-ashmem-1/ /usr/src/anbox-binder-1/ /var/lib/dkms/anbox-*")
     error_type="package"
+  elif grep -q 'M=/var/lib/dkms/xone.*bad exit status' <(echo "$errors") ;then
+    error_caption+=("The xone kernel module no longer compiles on the latest kernel. You need to remove it for the kernel to fully install and for APT to work.
+Run this command to remove the xone kernel module, then retry the operation:
+sudo rm -rf /etc/modules-load.d/xone.conf /etc/udev/rules.d/50-xone.rules /usr/src/xone-*/ /var/lib/dkms/xone-*")
+    error_type="package"
   elif grep -q "installed .* post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("Some other package on your system is causing problems. As a result, dpkg and APT won't work properly.
   
