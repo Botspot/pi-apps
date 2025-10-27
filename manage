@@ -810,7 +810,7 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     packages_to_install=$(pkgapp_packages_required "$app")
     [ -z "$packages_to_install" ] && error "It appears $app does not have any packages that can be installed on your system."
     
-    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt-get $(echo "$action" | sed 's/uninstall/purge --autoremove/g') -yf $packages_to_install 2>&1 | less_apt")
+    appscript=(bash -c -o pipefail "apt_lock_wait ; sudo -E apt-get $(echo "$action" | sed 's/uninstall/purge --autoremove/g ; s/install/install --no-install-recommends/g') -yf $packages_to_install 2>&1 | less_apt")
     
     #fix edge case: new will_reinstall function avoids a reinstall if packages to install do not change.
     #unfortunately updater script does not source the new api so chromium is being reinstalled after we added "| chromium" to the packages file.
