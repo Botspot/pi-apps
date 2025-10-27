@@ -12,12 +12,8 @@ if [ -d "$INSTALL_DIR"/mullvad-browser ]; then
   status_green 'Removed from applications menu'
 elif [ -d ~/mullvad-browser ]; then
   warning 'You either use old installation path (~/mullvad-browser) or deprecated arm32 app version that uses this old installation path.\nThis uninstall script can handle that anyways.'
-  #[OLD] remove the menu launcher
-  rm -f ~/.local/share/applications/mullvad.desktop
-  #[OLD] remove icon
-  rm -f ~/.local/share/icons/mullvad-browser.png
 else
-  error "Installation path not found neither in "$INSTALL_DIR"/mullvad-browser nor in ~/mullvad-browser\nAre you sure the app is installed?"
+  error "Installation path not found neither in $INSTALL_DIR/mullvad-browser nor in ~/mullvad-browser\nAre you sure the app is installed?"
 fi
 
 status 'Looking for previous installations and remaining user data… '
@@ -58,3 +54,8 @@ To remove these files, run this command:
 rm -rf ${INSTALL_DIR}/mullvad-browser"
   
 fi
+
+#[OLD] remove the menu launcher
+rm -f ~/.local/share/applications/mullvad.desktop
+#[OLD] remove icon
+rm -f ~/.local/share/icons/mullvad-browser.png
