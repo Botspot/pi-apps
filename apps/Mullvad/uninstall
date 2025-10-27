@@ -1,27 +1,56 @@
 #!/bin/bash
 
-#remove the menu launcher
-rm -f ~/.local/share/applications/mullvad.desktop
+# Command blocks that are left for backwards-compatibility of this uninstall script are marked as:
+# [OLD] for installations from https://sourceforge.net/projects/tor-browser-ports/files/
 
-#before removing the mullvad-browser folder, move the browser configuration like bookmarks, etc
+INSTALL_DIR="$HOME/.local/share"
+
+status 'Unregistering Mullvad Browser desktop app… '
+cd "$INSTALL_DIR"/mullvad-browser || error 'Fatal error! Cannot cd to app!'
+"$INSTALL_DIR"/mullvad-browser/start-mullvad-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
+status_green 'Removed from applications menu'
+
+status 'Looking for previous installations and remaining user data… '
+
+#[OLD] check old installation path for remaining user-data
 if [ -d ~/mullvad-browser ];then
-  mkdir -p ~/mullvad-browser.temp/Browser/MullvadBrowser/Data
-  mv -n ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser ~/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  mkdir -p "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  mv -n ~/mullvad-browser/Browser/MullvadBrowser/Data/Browser "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  status_green 'User-data found in ~/mullvad-browser. Copied to temporary folder.'
 fi
 
-#remove all browser internals (except for user-data which we moved already)
-rm -rf ~/mullvad-browser
+#before removing the mullvad-browser folder, move the browser configuration like bookmarks, etc
+if [ -d "$INSTALL_DIR"/mullvad-browser ];then
+  mkdir -p "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  mv -n "$INSTALL_DIR"/mullvad-browser/Browser/MullvadBrowser/Data/Browser "$INSTALL_DIR"/mullvad-browser.temp/Browser/MullvadBrowser/Data
+  status_green "User-data found in $INSTALL_DIR/mullvad-browser. Copied to temporary folder."
+fi
 
-#remove icon
-rm -f ~/.local/share/icons/mullvad-browser.png
+status -n 'Removing all browser internals… '
+
+#[OLD] remove all browser internals from old installation path
+[ -d ~/mullvad-browser ] && rm -rf ~/mullvad-browser
+
+#remove all browser internals (except for user-data which we moved already)
+rm -rf "$INSTALL_DIR"/mullvad-browser
+
+status_green 'Done'
 
 #move back the temporary folder containing user-data
-if [ -d ~/mullvad-browser.temp ];then
-  mv ~/mullvad-browser.temp ~/mullvad-browser
+if [ -d "$INSTALL_DIR"/mullvad-browser.temp ];then
+  status -n 'Moving user data files back… '
+  mv "$INSTALL_DIR"/mullvad-browser.temp "$INSTALL_DIR"/mullvad-browser
+  status_green 'Done'
 
   #let the user know where configuration is
   echo "Mullvad Browser has been uninstalled, but user-data like settings and bookmarks remain intact.
 To remove these files, run this command:
-rm -rf ~/mullvad-browser"
+rm -rf ${INSTALL_DIR}/mullvad-browser"
   
 fi
+
+#[OLD] remove the menu launcher
+rm -f ~/.local/share/applications/mullvad.desktop
+
+#[OLD] remove icon
+rm -f ~/.local/share/icons/mullvad-browser.png

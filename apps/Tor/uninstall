@@ -18,7 +18,7 @@ fi
 status_green 'Done'
 
 status -n 'Removing all browser internals… '
-rm -rfv "$INSTALL_DIR"/tor-browser || error "Cannot remove $INSTALL_DIR/tor-browser directory"
+rm -rf "$INSTALL_DIR"/tor-browser || error "Cannot remove $INSTALL_DIR/tor-browser directory"
 status_green 'Done'
 
 #move back the temporary folder containing user-data
