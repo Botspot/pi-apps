@@ -126,6 +126,7 @@ elif [ "$1" == flush ];then
   flush_zram="$(cat /proc/swaps | tail +2 | grep '^/dev/zram' | awk '{print $4" "$1}' | sort -n | tail -1 | awk '{print $2}' | sed 's+^/dev/++g')"
   if [ -z "$flush_zram" ];then
     echo "No zram devices found, cannot flush"
+    exit 1
   fi
   echo -n "Flushing $flush_zram... "
   swapoff /dev/${flush_zram}
