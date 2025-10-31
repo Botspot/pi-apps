@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.6.6
+version=2.6.7
 
 install_packages https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${version}/teams-for-linux_${version}_armv7l.deb || exit 1
 
