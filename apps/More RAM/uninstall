@@ -4,17 +4,9 @@
 status -n "Disabling ZRAM... "
 
 # disable all zram devices
-IFS=$'\n'
-for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
-  #if zram device is a swap device, disable it
-  sudo swapoff /dev/zram${device_number} 2>/dev/null
-  
-  #if zram device is mounted, unmount it
-  sudo umount /dev/zram${device_number} 2>/dev/null
-  
-  #remove device
-  echo $device_number | sudo tee /sys/class/zram-control/hot_remove >/dev/null
-done
+if command -v zram.sh >/dev/null ;then
+  sudo zram.sh stop
+fi
 
 sudo rm -rf /zram
 
@@ -24,10 +16,12 @@ status_green "Done"
 status "Disabling zram kernel module"
 sudo rmmod zram || true
 
-status "Removing zram script"
+status "Removing zram script and service"
 sudo rm -f /usr/bin/zram.sh
 sudo systemctl disable zram-swap.service
-sudo rm -f /etc/systemd/system/zram-swap.service
+sudo systemctl disable zram-flush.timer
+sudo systemctl disable zram-flush.service
+sudo rm -f /etc/systemd/system/zram-swap.service /etc/systemd/system/zram-flush.service /etc/systemd/system/zram-flush.timer
 
 status "Reverting kernel parameters"
 sudo rm -f /etc/sysctl.d/zram.conf
@@ -43,5 +37,3 @@ if [ -f /lib/systemd/system/mkswap.service ];then
   sudo systemctl unmask mkswap.service #see /lib/systemd/system/mkswap.service
   sudo systemctl enable mkswap.service #see /lib/systemd/system/mkswap.service
 fi
-
-true

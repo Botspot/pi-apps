@@ -97,7 +97,8 @@ fi
 status_green "Done"
 
 status "Creating zram script: /usr/bin/zram.sh"
-echo '#!/bin/bash
+sudo tee /usr/bin/zram.sh >/dev/null << "EOF"
+#!/bin/bash
 
 export LANG=C
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -114,13 +115,28 @@ sudo zram.sh               Setup zram-swap and storage (if enabled)
 sudo zram.sh stop          Disable all ZRAM devices and exit
 sudo zram.sh storage-off   Disable the file-storage at /zram on next run
 sudo zram.sh storage-on    Enable the file-storage at /zram on next run
+sudo zram.sh flush         Empty one of the 4 ZRAM swap devices, to avoid storing unused memory pages. Run 4 times for full effect.
 zram.sh --help, -h         Display this information and exit"
+  exit 0
+elif [ "$1" == flush ];then
+  #clear out one zram swap at a time, forcing active pages to migrate back to RAM or another zram, and orphaned pages to be discarded.
+  #This prevents gradual sluggishness after the system has ran for days with occasional high levels of swapping.
+  
+  #find which zram swap is the most used, and clear that one
+  flush_zram="$(cat /proc/swaps | tail +2 | grep '^/dev/zram' | awk '{print $4" "$1}' | sort -n | tail -1 | awk '{print $2}' | sed 's+^/dev/++g')"
+  if [ -z "$flush_zram" ];then
+    echo "No zram devices found, cannot flush"
+  fi
+  echo -n "Flushing $flush_zram... "
+  swapoff /dev/${flush_zram}
+  mkswap -q /dev/${flush_zram}
+  swapon /dev/${flush_zram} -d -p 1
+  echo Done
   exit 0
 fi
 
-
 if [ $(id -u) -ne 0 ]; then
-  echo "$0 must be run as root user"
+  echo "zram.sh must be run as root user"
   exit 1
 fi
 
@@ -147,7 +163,7 @@ fi
 
 # disable all zram devices
 echo -n "Disabling zram... "
-IFS=$'\''\n'\''
+IFS=$'\n'
 for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
   #if zram device is a swap device, disable it
   swapoff /dev/zram${device_number} 2>/dev/null
@@ -167,50 +183,57 @@ if [ "$1" == stop ]; then
   exit 0
 fi
 
-#create new zram drive - for swap
-drive_num=$(cat /sys/class/zram-control/hot_add)
+#create 4 new zram drives - for swap
+drive_num1=$(cat /sys/class/zram-control/hot_add)
+drive_num2=$(cat /sys/class/zram-control/hot_add)
+drive_num3=$(cat /sys/class/zram-control/hot_add)
+drive_num4=$(cat /sys/class/zram-control/hot_add)
 
 # use zstd compression if available - best option according to https://linuxreviews.org/Comparison_of_Compression_Algorithms#zram_block_drive_compression
-if cat /sys/block/zram${drive_num}/comp_algorithm | grep -q zstd ;then
+if cat /sys/block/zram${drive_num1}/comp_algorithm | grep -q zstd ;then
   algorithm=zstd
 else
   algorithm=lz4
 fi
-echo $algorithm > /sys/block/zram${drive_num}/comp_algorithm
+totalmem=$(free | grep -e "^Mem:" | awk '{print $2}')
 
-totalmem=$(free | grep -e "^Mem:" | awk '\''{print $2}'\'')
-
-#create zram disk 4 times larger than usable RAM - compression ratio for zstd can approach 5:1 according to https://linuxreviews.org/Zram
-echo $((totalmem * 1024 * 4)) > /sys/block/zram${drive_num}/disksize
-
-#make the swap device (by default this will be /dev/zram0)
-mkswap /dev/zram${drive_num}
-swapon /dev/zram${drive_num} -d -p 1
+#create 4 zram disks each the same size as usable RAM - compression ratio for zstd can approach 5:1 according to https://linuxreviews.org/Zram
+for i in $drive_num1 $drive_num2 $drive_num3 $drive_num4 ;do
+  #set the compression algorithm
+  echo $algorithm > /sys/block/zram${i}/comp_algorithm
+  #set the zram size
+  echo $((totalmem * 1024)) > /sys/block/zram${i}/disksize
+  #make the swap devices
+  mkswap /dev/zram${i}
+  swapon /dev/zram${i} -d -p 1
+done
 
 #create second zram drive: for temporary user-storage at /zram
 if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram-swap.service ;then
   echo "Setting up ZRAM-powered file storage at /zram"
   #create new zram drive
-  drive_num=$(cat /sys/class/zram-control/hot_add)
+  storage_drive_num=$(cat /sys/class/zram-control/hot_add)
   
   # set compression algorithm
-  echo $algorithm > /sys/block/zram${drive_num}/comp_algorithm
+  echo $algorithm > /sys/block/zram${storage_drive_num}/comp_algorithm
   
   #set the size of drive to be 4 times the available RAM
-  echo $((totalmem * 1024 * 4)) > /sys/block/zram${drive_num}/disksize
+  echo $((totalmem * 1024 * 4)) > /sys/block/zram${storage_drive_num}/disksize
   
   #create a partition and mount it
-  mkfs.ext4 /dev/zram${drive_num} >/dev/null
+  mkfs.ext4 /dev/zram${storage_drive_num} >/dev/null
   mkdir -p /zram
-  mount /dev/zram${drive_num} /zram
+  mount /dev/zram${storage_drive_num} /zram
   chmod -R 777 /zram #make writable for any user
-fi' | sudo tee /usr/bin/zram.sh >/dev/null
+fi
+EOF
 
 sudo chmod +x /usr/bin/zram.sh
 
 status "Making it run on startup"
 echo '  - Creating zram-swap.service'
-echo '[Unit]
+sudo tee /etc/systemd/system/zram-swap.service >/dev/null <<EOF
+[Unit]
 Description=Configures zram swap device
 After=local-fs.target
 
@@ -221,11 +244,42 @@ ExecStop=/usr/bin/zram.sh stop
 RemainAfterExit=yes
 
 [Install]
-WantedBy = multi-user.target' | sudo tee /etc/systemd/system/zram-swap.service >/dev/null
+WantedBy=multi-user.target
+EOF
+
+#Run every 5 min a zram cache cleaning script
+#clear out 1 of 4 zram swaps at a time, forcing active pages to migrate back to RAM or another zram, and orphaned pages to be discarded.
+#This prevents accumulation of orphaned pages from dead PIDs
+sudo tee /etc/systemd/system/zram-flush.service >/dev/null <<EOF
+[Unit]
+Description=flush zram to release orphaned memory pages
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/zram.sh flush
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo tee /etc/systemd/system/zram-flush.timer >/dev/null <<EOF
+[Unit]
+Description=Run zram flush every 5 min
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 echo '  - Reloading Systemd unit files'
 sudo systemctl daemon-reload
 echo '  - Enabling zram-swap.service to run on boot'
-sudo systemctl enable zram-swap.service
+sudo systemctl enable --now zram-swap.service
+sudo systemctl enable --now zram-flush.timer
 
 status -n "Running it now."
 echo " Output:"
@@ -239,17 +293,19 @@ if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt $((2*1024*1024)) ];then
   echo 'vm.swappiness=100
 vm.vfs_cache_pressure=500
 vm.dirty_background_ratio=1
-vm.dirty_ratio=50' | sudo tee /etc/sysctl.d/zram.conf
+vm.dirty_ratio=50' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
 else
   #otherwise only maximize swappiness
-  echo 'vm.swappiness=100' | sudo tee /etc/sysctl.d/zram.conf
+  echo 'vm.swappiness=100' | sudo tee /etc/sysctl.d/zram.conf >/dev/null
 fi
+#adopt these values now and print them
+sudo sysctl -p /etc/sysctl.d/zram.conf
 
 #this script used to add lines to /etc/sysctl.conf, which is not guaranteed to exist. Remove those lines if found.
 sudo sed -i '/^vm\.swappiness=100$/d ; /^vm\.vfs_cache_pressure=500$/d ; /^vm\.dirty_background_ratio=1$/d ; /^vm\.dirty_ratio=50$/d' /etc/sysctl.conf 2>/dev/null
 
 echo
-status_green "ZRAM should now be set up. Consider rebooting your device."
+status_green "ZRAM is now ready to use. No need to reboot your device."
 
 status "Below is a summary:"
 zramctl
