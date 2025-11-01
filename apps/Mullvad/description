@@ -4,4 +4,6 @@ Default settings will block trackers, browser fingerprinting, ads, insecure HTTP
 Mullvad Browser is a fork of the Tor browser, and includes uBlock Origin and the Mullvad extensions preinstalled.
 
 To run: Menu -> Internet -> Mullvad Browser
-To run in a terminal: ~/mullvad-browser/Browser/start-mullvad-browser
+To run in a terminal: `~/.local/share/mullvad-browser/start-mullvad-browser.desktop`
+
+To remove user-data after uninstall use `rm -rf ~/.local/share/mullvad-browser`
