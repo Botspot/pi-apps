@@ -133,7 +133,22 @@ elif [ "$1" == flush ];then
     error "No zram devices found, cannot flush"
   fi
   echo -n "Flushing $flush_zram... "
-  swapoff /dev/${flush_zram}
+  
+  #gradually swapoff to keep CPU loads to a minimum
+  i=0
+  while grep "^/dev/${flush_zram} " /proc/swaps -q && [ $i -le 180 ];do
+    swapoff /dev/${flush_zram} &>/dev/null &
+    swapoffpid=$!
+    sleep 0.2
+    kill $swapoffpid &>/dev/null
+    sleep 1
+    i=$((i+1))
+  done
+  #in case the loop did not successfully swapoff:
+  if grep "^/dev/${flush_zram} " /proc/swaps -q ;then
+    swapoff /dev/${flush_zram}
+  fi
+  
   mkswap -q /dev/${flush_zram}
   swapon /dev/${flush_zram} -d -p 1
   echo Done
