@@ -1,10 +1,10 @@
 #!/bin/bash
 
-version=2025.10.30
+version=15.0
 INSTALL_DIR="$HOME/.local/share"
 
-rm -f /tmp/tbb-nightly.tar.xz
-wget -O /tmp/tbb-nightly.tar.xz "https://nightlies.tbb.torproject.org/nightly-builds/tor-browser-builds/tbb-nightly.$version/nightly-linux-aarch64/tor-browser-linux-aarch64-tbb-nightly.$version.tar.xz" || error "Failed to download Tor Browser Nightly ver. $version"
+rm -f /tmp/tor-browser-aarch64.tar.xz
+wget -O /tmp/tor-browser-aarch64.tar.xz "https://github.com/ooovlad/tor-mullvad-aarch64/releases/download/${version}/tor-browser-linux-aarch64-${version}.tar.xz" || error "Failed to download Tor Browser ver. $version"
 
 status -n 'Looking for previous installations and remaining user data… '
 if [ -d "$INSTALL_DIR"/tor-browser ]; then
@@ -19,8 +19,8 @@ fi
 status_green 'Done'
 
 status -n "Extracting Tor Browser to $INSTALL_DIR/tor-browser … "
-tar -xpJf /tmp/tbb-nightly.tar.xz -C "$INSTALL_DIR"/tor-browser --strip-components=1 || error 'Failed to extract Tor Browser'
-rm -f /tmp/tbb-nightly.tar.xz
+tar -xpJf /tmp/tor-browser-aarch64.tar.xz -C "$INSTALL_DIR"/tor-browser --strip-components=1 || error 'Failed to extract Tor Browser'
+rm -f /tmp/tor-browser-aarch64.tar.xz
 status_green 'Done'
 
 #if tor-browser.temp folder exists, import its user-data
