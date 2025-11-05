@@ -35,4 +35,12 @@ fi
 status -n 'Registering Tor Browser as a desktop app for this user… '
 cd "$INSTALL_DIR"/tor-browser || error 'Fatal error! Cannot cd to app!'
 "$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --register-app || error 'Failed to register a desktop app'
+
+#copy icon for wf-panel
+mkdir -p ~/.local/share/icons
+cp -f "$INSTALL_DIR"/tor-browser/Browser/browser/chrome/icons/default/default128.png ~/.local/share/icons/tor-browser.png
+
+#edit start script to make it run on wayland, and with an app-id that matches the icon
+sed -i "s+^Exec=.*+Exec=env MOZ_ENABLE_WAYLAND=1 ${INSTALL_DIR}/tor-browser/Browser/start-tor-browser --class 'tor-browser' --name 'tor-browser'+g" ~/.local/share/applications/start-tor-browser.desktop
+
 status_green 'Done'
