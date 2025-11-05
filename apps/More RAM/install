@@ -179,31 +179,37 @@ if ! lsmod | awk "{print $1}" | grep -qxF zram ;then
   fi
 fi
 
-# disable all zram devices
-echo -n "Disabling zram... "
-IFS=$'\n'
-for device_number in $(find /dev/ -name zram* -type b | tr -cd "0123456789\n") ;do
-  #if zram device is a swap device, disable it
-  swapoff /dev/zram${device_number} 2>/dev/null
-  if [ $? == 137 ];then
-    error "Cannot disable ZRAM because doing so would overflow your RAM. Try closing some programs, then run this script again."
-  fi
-  
-  #if zram device is mounted, unmount it
-  umount /dev/zram${device_number} 2>/dev/null
-  
-  #remove device
-  echo $device_number > /sys/class/zram-control/hot_remove
-  if [ $? != 0 ];then
-	error "Cannot disable ZRAM because doing so would overflow your RAM. Try closing some programs, then run this script again."
-  fi
-done
-echo Done
+# prepare to disable all zram devices (after making new ones)
+old_zram="$(find /dev/ -name zram* -type b | tr -cd "0123456789\n")"
 
-rm -rf /zram
+disable_old_zram() { #put this into a function so it can be run in 2 different places cleanly
+  
+  local IFS=$'\n'
+  for device_number in $old_zram ;do
+    #if zram device is a swap device, disable it
+    echo -n "Disabling zram${device_number}... "
+    swapoff /dev/zram${device_number} 2>/dev/null
+    if [ $? == 137 ];then
+      error "Cannot disable ZRAM because doing so would overflow your RAM. Try closing some programs, then run this script again."
+    fi
+    
+    #if zram device is mounted, unmount it
+    umount /dev/zram${device_number} 2>/dev/null
+    
+    #remove device
+    #non-fatal because sometimes the file-storage zram device gets stuck with "Device or resource busy" forever until reboot
+    echo $device_number > /sys/class/zram-control/hot_remove || true
+    #if [ $? != 0 ];then
+    #  error "Cannot disable ZRAM${device_number} because doing so would overflow your RAM. Try closing some programs, then run this script again."
+    #fi
+    echo Done
+  done
+  rm -rf /zram
+}
 
 #exit script now if "exit" flag passed
 if [ "$1" == stop ]; then
+  disable_old_zram
   exit 0
 fi
 
@@ -232,7 +238,9 @@ for i in $drive_num1 $drive_num2 $drive_num3 $drive_num4 ;do
   swapon /dev/zram${i} -d -p 1
 done
 
-#create second zram drive: for temporary user-storage at /zram
+disable_old_zram
+
+#create zram drive for temporary user-storage at /zram
 if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram-swap.service ;then
   echo "Setting up ZRAM-powered file storage at /zram"
   #create new zram drive
@@ -245,10 +253,11 @@ if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram
   echo $((totalmem * 1024 * 4)) > /sys/block/zram${storage_drive_num}/disksize
   
   #create a partition and mount it
-  mkfs.ext4 /dev/zram${storage_drive_num} >/dev/null
+  mkfs.ext4 -F -O ^has_journal,^metadata_csum,^orphan_file -b 4096 /dev/zram${storage_drive_num} >/dev/null
   mkdir -p /zram
   mount /dev/zram${storage_drive_num} /zram
   chmod -R 777 /zram #make writable for any user
+  rmdir /zram/lost+found || true
 fi
 EOF
 
