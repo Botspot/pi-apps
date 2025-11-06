@@ -1,6 +1,10 @@
 #!/bin/bash
 
-killall legcord &>/dev/null && echo "Closing LegCord before uninstalling..."
+if pgrep -x "legcord" >/dev/null; then
+	killall legcord &>/dev/null && echo "Closing legcord before uninstalling..."
+elif pgrep -x "Legcord" >/dev/null; then
+	killall Legcord &>/dev/null && echo "Closing Legcord before uninstalling..."
+fi
 
 sudo rm -f /opt/Legcord/legcord-wayland.sh
 
