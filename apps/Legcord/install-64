@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.1.5
+version=1.1.6
 
 #make sure armcord is uninstalled
 if package_installed armcord ;then
@@ -21,12 +21,12 @@ install_packages "https://github.com/Legcord/Legcord/releases/download/v${versio
 echo '#!/bin/bash
 
 if [ -z "$WAYLAND_DISPLAY" ];then
-  "/opt/Legcord/legcord" "$@"
+  "/opt/Legcord/Legcord" "$@"
 else
-  "/opt/Legcord/legcord" --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+  "/opt/Legcord/Legcord" --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
 fi
 ' | sudo tee '/opt/Legcord/legcord-wayland.sh' >/dev/null
 sudo chmod +x '/opt/Legcord/legcord-wayland.sh'
 
 #patch menu launcher to use wayland script
-sudo sed -i 's+/opt/Legcord/legcord +/opt/Legcord/legcord-wayland.sh +g' /usr/share/applications/legcord.desktop
+sudo sed -i 's+/opt/Legcord/Legcord +/opt/Legcord/legcord-wayland.sh +g' /usr/share/applications/Legcord.desktop
