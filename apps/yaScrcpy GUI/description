@@ -1,0 +1,46 @@
+This is a user-friendly graphical interface (GUI) to manage Scrcpy and Winlator.
+Version: 0.15-alpha
+
+What is Scrcpy?
+Scrcpy is a powerful tool that lets you display and control your Android device's screen on your computer. It's like mirroring your phone screen, but you can also interact with it using your mouse and keyboard.
+
+What is Winlator?
+Winlator is an application for Android that allows you to run Windows programs and games.
+
+How does this app help?
+This GUI makes using Scrcpy and Winlator much easier. Instead of typing commands in a terminal, you get a simple, organized interface to manage your apps and games.
+
+To run the app, open it from the Start Menu (look for "yaScrcpy GUI") or type `yascrcpy` in your terminal.
+
+---
+
+### Advanced Features
+
+**Android App Launcher:**
+- Automatically lists all installed applications on your device.
+- Scrapes app icons from the Google Play Store.
+- Supports custom icons via drag-and-drop.
+- Save specific scrcpy settings for each app.
+
+**Winlator Game Launcher:**
+- Automatically discovers game shortcuts (.desktop files) from your Winlator installation. (You need to export shortcuts to the frontend in the Winlator app).
+- Fetches and caches game icons directly from the game's .exe file.
+- Supports custom game icons via drag-and-drop.
+- Save specific scrcpy settings for each game, perfect for custom resolutions and performance tuning.
+
+**Advanced Scrcpy Configuration:**
+- A dedicated tab to tweak all major scrcpy settings, including resolution, bitrate, codecs, and more. All settings are saved automatically.
+- The scrcpy window will automatically use the game's or app's icon, providing a native look and feel.
+
+**Using `extraargs` for Advanced Scrcpy Commands:**
+The `extraargs` field allows for highly customized scrcpy command execution, including running commands before (`PRE::`) and after (`POST::`) the scrcpy session.
+
+- **Format:** Combine multiple commands by separating them with a semicolon `;`.
+  - `PRE::[command]`: Executes a command before scrcpy starts.
+  - `POST::[command]`: Executes a command after scrcpy exits.
+  - `[scrcpy_argument]`: Any other text is passed directly as an argument to scrcpy.
+
+- **Examples:**
+  - `PRE::adb reverse tcp:8080 tcp:8080; --turn-screen-off`
+  - `--max-size 1024; POST::adb reverse --remove-all`
+  - `PRE::echo "Starting scrcpy"; --record file.mp4; POST::echo "Scrcpy finished"`
