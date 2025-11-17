@@ -230,7 +230,8 @@ jobs:
 
             # install pi-apps dependencies
             sudo apt update
-            sudo apt install -y yad curl wget aria2 lsb-release software-properties-common apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+            sudo apt install -y yad curl wget aria2 lsb-release apt-utils imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync
+            sudo apt install -y software-properties-common || true
 
             # runonce-entries is run in the build tester, runonce requires that all api functions be available to subprocess (like is done in the gui script)
             #for the will_reinstall() and list_intersect() functions
