@@ -41,7 +41,8 @@ tilix
 tilix.wrapper
 qterminal
 alacritty
-kitty'
+kitty
+foot'
 
 #Try to honor the preference of update-alternatives x-terminal-emulator
 terminal="$(basename "$(readlink -f "$(command -v x-terminal-emulator)")")"
@@ -115,6 +116,9 @@ elif [ "$choice" == alacritty ];then
   
 elif [ "$choice" == kitty ];then
   kitty bash -c "$commands" &
+
+elif [ "$choice" == foot ];then
+  foot bash -c "$commands" &
   
 else
   error 'Failed to locate any terminal emulators!!!'"
