@@ -3,7 +3,7 @@
 #this script will need some updates once this browser is officially released on ARM64.
 #monitor progress on: https://github.com/zen-browser/desktop/pull/3135
 
-version=1.17.13b
+version=1.17.14b
 
 sudo rm -rf /opt/zen /opt/zen-browser /tmp/zen-browser-arm64-copr
 
