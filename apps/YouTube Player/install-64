@@ -45,3 +45,7 @@ sudo sed -i 's/$mainw->set_title("$appname $version");/$mainw->set_title("YouTub
 #change default config to make mpv window maximized to prevent it from covering the taskbar on Pi OS
 sudo sed -i 's/{--really-quiet/{--window-maximized --really-quiet/g' /usr/local/bin/pipe-viewer
 sudo sed -i 's/{--really-quiet/{--window-maximized --really-quiet/g' /usr/local/bin/gtk-pipe-viewer
+
+#change default config to use 1080p videos maximum resolution
+sudo sed -i 's/resolution    => '\''best'\'',/resolution    => 1080,/g' /usr/local/bin/pipe-viewer
+sudo sed -i 's/resolution       => '\''best'\'',/resolution       => 1080,/g' /usr/local/bin/gtk-pipe-viewer
