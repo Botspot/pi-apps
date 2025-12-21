@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#install yt-dlp
+pipx_install yt-dlp || error "pipx failed to install yt-dlp, which is needed for the YouTube Player app!"
+
+#yt-dlp needs deno to solve youtube js captchas (see https://github.com/yt-dlp/yt-dlp/wiki/EJS)
+"${DIRECTORY}/manage" install-if-not-installed 'Node.js' || error "Node.js is required for YouTube PlayerHTTPS File Server but it failed to install!"
+npm install -g deno || error "NPM failed to install deno, which is necessary for YouTube Player"
+#deno can be installed separately from npm, but that version seems to not be auto-detected by yt-dlp.
+
+#deno needs ejs, which yt-dlp can install for us, but requires flags to do so.
+#it seems yt-dlp from pipx now includes ejs
+#npm install -g ejs || error "NPM failed to install ejs, which is necessary for YouTube Player"
+
+install_packages mpv perl-base libwww-perl liblwp-protocol-https-perl libdata-dump-perl libjson-perl libmodule-build-perl libgtk3-perl libfile-sharedir-perl libterm-readline-gnu-perl libjson-xs-perl libunicode-linebreak-perl libtext-charwidth-perl libparallel-forkmanager-perl || exit 1
+
+cd /tmp
+sudo rm -rf /tmp/pipe-viewer
+git_clone https://github.com/trizen/pipe-viewer || error 'Failed to clone repository!'
+cd /tmp/pipe-viewer
+
+perl Build.PL --gtk || error "Failed to build gtk-pipe-viewer"
+sudo ./Build installdeps < <(yes) || error "Failed to install perl dependencies"
+sudo ./Build install || error "Failed to install pipe-viewer"
+cd
+sudo rm -rf /tmp/pipe-viewer
+
+#copy our app icon as the original one is positively ugly
+sudo mkdir -p /usr/local/share/icons/hicolor/64x64/apps
+sudo cp -f --no-preserve=all "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/gtk-pipe-viewer.png
+
+#refresh icon caches
+sudo update-icon-caches /usr/local/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#copy menu launcher to a sensible location
+sudo mkdir -p /usr/local/share/applications
+sudo cp --no-preserve=all /usr/local/share/perl/*/auto/share/dist/WWW-PipeViewer/gtk-pipe-viewer.desktop /usr/local/share/applications
+
+#change its name in menu launcher and in app, to improve UX because nobody likes "gtk pipe viewer" name
+sudo sed -i 's/Name=GTK Pipe Viewer/Name=YouTube Player/g' /usr/local/share/applications/gtk-pipe-viewer.desktop
+#avoid changing $appname under the hood, only change window title
+sudo sed -i 's/$mainw->set_title("$appname $version");/$mainw->set_title("YouTube Player");/g' /usr/local/bin/gtk-pipe-viewer
+
+#change default config to make mpv window maximized to prevent it from covering the taskbar on Pi OS
+sudo sed -i 's/{--really-quiet/{--window-maximized --really-quiet/g' /usr/local/bin/pipe-viewer
+sudo sed -i 's/{--really-quiet/{--window-maximized --really-quiet/g' /usr/local/bin/gtk-pipe-viewer
