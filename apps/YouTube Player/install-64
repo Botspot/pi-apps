@@ -5,6 +5,11 @@ pipx_install yt-dlp || error "pipx failed to install yt-dlp, which is needed for
 
 #yt-dlp needs deno to solve youtube js captchas (see https://github.com/yt-dlp/yt-dlp/wiki/EJS)
 "${DIRECTORY}/manage" install-if-not-installed 'Node.js' || error "Node.js is required for YouTube PlayerHTTPS File Server but it failed to install!"
+
+#initialize npm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || error "failed to source nvm.sh"
+
 npm install -g deno || error "NPM failed to install deno, which is necessary for YouTube Player"
 #deno can be installed separately from npm, but that version seems to not be auto-detected by yt-dlp.
 
