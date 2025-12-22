@@ -43,5 +43,11 @@ echo ". ~/.node_bashrc" >> ~/.bashrc
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# Install LTS nodejs
-nvm install --lts || error "Failed to install node.js with nvm!"
+# Install LTS nodejs - v22 on armv7 because v24 dropped armv7 prebuilds (see https://github.com/nodejs/node/commit/6682861d6f)
+if [ "$arch" == 32 ];then
+  nvm install 22 || error "Failed to install node.js 22 with nvm!"
+  nvm use 22
+  true
+else
+  nvm install --lts || error "Failed to install node.js with nvm!"
+fi
