@@ -1,0 +1,17 @@
+#!/bin/bash
+
+version=9.2.1
+
+install_packages https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_arm64.deb || exit 1
+
+#refresh icon so it shows up in the menu (non-fatal)
+sudo xdg-icon-resource forceupdate --mode system || true
+
+#crudely detect dark theme, and if so, enable it automatically if no config file already exists
+if [ "$(gsettings get org.gnome.desktop.interface color-scheme)" == "'prefer-dark'" ] || [ "$(gsettings get org.gnome.desktop.interface gtk-theme)" == 'PiXnoir' ];then
+  if [ ! -f ~/.config/onlyoffice/DesktopEditors.conf ];then
+    status "Enabling dark theme"
+    echo '[General]
+UITheme=theme-night' > ~/.config/onlyoffice/DesktopEditors.conf
+  fi
+fi

@@ -1,0 +1,7 @@
+Open source Microsoft Office alternative, with a better interface than LibreOffice
+OpenOffice combines the best features of WPS Office and LibreOffice: it has a more familiar interface, and it's actually open source. It can edit documents, spreadsheets, presentations, and PDFs.
+
+To run: Menu -> Office -> ONLYOFFICE
+To run in a terminal: onlyoffice-desktopeditors
+
+NOTE: You may encounter slow performance because OnlyOffice cannot run natively in Wayland. It uses a Qt5 window with CEF for the GUI, all as a X11 window.
