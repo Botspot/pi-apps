@@ -218,7 +218,7 @@ runonce <<"EOF"
   else
     # not installed
     rm -rf "${DIRECTORY}/apps/LegCord"
-  fi  
+  fi
   
   #rename 'Ollama' to 'Ollama GUI'
   #incorrect name capitalization during first ~20 mintues. no reported installs.
@@ -230,7 +230,18 @@ runonce <<"EOF"
   else
     # not installed
     rm -rf "${DIRECTORY}/apps/Ollama"
-  fi 
+  fi
+  
+  #rename 'YouTubuddy' to 'YouTube Player' for migration to working alternative app
+  if [ "$(app_status YouTubuddy)" == "installed" ]; then
+    # installed
+    mv -f "${DIRECTORY}/data/status/YouTubuddy" "${DIRECTORY}/data/status/YouTube Player"
+    rm -rf "${DIRECTORY}/apps/YouTubuddy"
+    mv -f "${DIRECTORY}/apps/YouTubuddy" "${DIRECTORY}/apps/YouTube Player"
+  else
+    # not installed
+    rm -rf "${DIRECTORY}/apps/YouTubuddy"
+  fi
   
   true
 EOF

@@ -1,7 +1,0 @@
-#!/bin/bash
-install_packages vlc yad imagemagick jq python3-pip python3-dev || error "Failed to install dependencies"
-
-rm -rf ~/youtubuddy
-git_clone https://github.com/Botspot/youtubuddy || error 'Failed to clone youtubuddy repository!'
-~/youtubuddy/gui install || error "YouTubuddy install procedure exited somehow!"
-
