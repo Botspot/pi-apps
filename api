@@ -2426,6 +2426,13 @@ Perhaps this link will help: https://askubuntu.com/questions/909719/dpkg-unrecov
     error_type="package"
   fi
   
+  if grep -q "dpkg: error: too-long line or missing newline in '/var/lib/dpkg/triggers/" <(echo "$errors") ;then
+    error_caption+=("Before dpkg, apt, or Pi-Apps will work, your system must be repaired.
+
+Try Googling the above errors, or ask the Pi-Apps developers for help.")
+    error_type="package"
+  fi
+  
   if grep -qF "raspberrypi-kernel package post-installation script subprocess returned error exit status" <(echo "$errors") ;then
     error_caption+=("The raspberrypi-kernel package on your system is causing problems.
 Pi-Apps, dpkg and APT won't work properly until the problem is fixed.
@@ -2808,7 +2815,7 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
-  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;" <(echo "$errors") ;then
+  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;\|This doesn't look like a squashfs image\.\|unexpected end of file or stream" <(echo "$errors") ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
@@ -2884,7 +2891,7 @@ If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/34
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\." <(echo "$errors");then
+  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\.\|Delta requires .* GB free space, but only .* available" <(echo "$errors");then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
