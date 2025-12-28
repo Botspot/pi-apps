@@ -1,6 +1,10 @@
 Change Chromium versions easily.
-Chromium 65, 72, 74, 78, 84, 86, 88, 92, 95, 98, 101, 104, 109, 113, 116, 119, 120, 121, and 122. (on 64-bit you can only go as far back as 92)
-Uninstall the app to go back to the latest Chromium version available.
+This tool makes it easy to try out older versions of Chromium from Raspberry Pi OS.
+The oldest version available on a 32-bit OS is chromium v65; on a 64-bit OS, it's chromium v92.
+
+Looking for the last version that supports Manifest V2 Chrome Extensions? Choose version 139.
+
+Uninstall this app to go back to the latest Chromium version available.
 Beware that downgrading Chromium versions can mess up your config folder. To be safe, this app makes a backup of Chromium's config folder. When uninstalling, you will have the opportunity to restore the backup config folder.
 Using older browser versions can be a security risk, proceed with caution.
 

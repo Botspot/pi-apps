@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#set to yes to check if installation would work for a specific version
+#skips config backup, does not require chromium to be closed, avoids actually downgrading chromium
+simulate=no
+
 #Automatically determine available Chromium versions from Raspberry Pi Archive website
 url_list="$(wget -O- https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/ | \
   tr '<>' '\n' | grep '^a href="chromium' | tr '"' '\n' | grep '\.deb$' | sed 's#^#https://archive.raspberrypi.org/debian/pool/main/c/chromium-browser/#g')
@@ -49,9 +53,9 @@ while [ -z "$version" ];do
   version="$(echo "$version" | awk '{print $3}')"
 done
 
-#geterate a list of urls to download based on the version number
+#generate a flexible list of urls to download based on the version number
  #chromium-browser was renamed to chromium in newer versions
-  #ffmpeg-extra package is no longer needed in newer versions
+  #codecs-ffmpeg-extra package is not used in newer versions
    #chromium-common is needed in newer versions
 package_names='chromium
 chromium-l10n
@@ -68,7 +72,6 @@ for package in $package_names; do
     else
       #if the debs are built for both bookworm and trixie, get the appropriate one
       url="$(echo "$url_list" | grep "/${package}_${version}\.")" #has multiple lines
-      echo "$url"
       if [[ "$url" == *deb12* ]] && [[ "$url" == *deb13* ]];then
         if [ "$(get_codename)" == trixie ];then
           url="$(echo "$url" | grep deb13)"
@@ -78,7 +81,6 @@ for package in $package_names; do
       fi
       #now version-sort to get the last rpt build of this chromium package version
       download_urls+=("$(echo "$url" | sort -Vr | head -n1)")
-      status "$(echo "$url" | sort -Vr | head -n1)"
     fi
   fi
 done
@@ -91,7 +93,7 @@ echo "Debs to install:
 ${download_urls[*]}"
 
 #wait until chromium is not running
-if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
+if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ] && [ "$simulate" != yes ];then
   echo -n "Please close all Chromium windows first."
   yad --info --center --window-icon="$(dirname "$0")/icon-64.png" \
   --title="Close Chromium first" --text="$(echo -e "  Chromium is running.\n  To reduce the risk of Chromium profile corruption, please close Chromium first.  ")" \
@@ -106,7 +108,7 @@ if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
 fi
 
 #back up chromium config directory
-if [ ! -d ~/.config/chromium.bak ] && [ -d ~/.config/chromium ];then
+if [ ! -d ~/.config/chromium.bak ] && [ -d ~/.config/chromium ] && [ "$simulate" != yes ];then
   echo "Backing up existing Chromium profile directory..."
   rm -rf ~/.config/chromium.bak
   
@@ -122,18 +124,68 @@ for download_url in ${download_urls[*]} ;do
   filenames+=("$filename")
 done
 
-status "Installing the packages..."
-apt_lock_wait
-sudo apt install -fy --allow-downgrades --allow-change-held-packages "${filenames[@]}" || error "APT failed to install the packages: ${filenames[*]}"
+#modern Pi OS transitioned from libraspberrypi0 to libdtovl0, but old chromium depends on libraspberrypi0.
+#Modify deb packages to remove this dependency
+for filename in ${filenames[*]} ;do
+  if dpkg-deb -I "$filename" | grep -q 'Depends:.*libraspberrypi0' ;then
+    #this package needs to be patched to not depend on libraspberrypi0
+    status "Patching $(basename "$filename") package to not depend on libraspberrypi0..."
+    rm -rf "$filename"-repack
+    mkdir "$filename"-repack
+    
+    #extract the package
+    status -n 'Extracting... '
+    dpkg-deb -R "$filename" "$filename"-repack || error "Failed to extract deb"
+    rm "$filename"
+    status_green Done
+    
+    #remove libraspberrypi0 dependency
+    sed -i 's/, libraspberrypi0//g ; s/libraspberrypi0//g' "$filename"-repack/DEBIAN/control
+    
+    #repack as a deb
+    status "Repackaging..."
+    dpkg-deb -b "$filename"-repack "$filename" || error "Failed to repack deb"
+    rm -rf "$filename"-repack
+    status_green Done
+  fi
+done
+
+#identify conflicting packages when transitioning across the chromium <--> chromium-browser divide
+conflicts=''
+if package_installed chromium && [[ "${download_urls[*]}" == *'/chromium-browser_'* ]];then
+  conflicts='chromium chromium-common chromium-l10n'
+elif package_installed chromium-browser && [[ "${download_urls[*]}" == *'/chromium_'* ]];then
+  conflicts='chromium-browser chromium-codecs-ffmpeg-extra chromium-browser-l10n'
+fi
+
+if [ "$simulate" == yes ];then
+  status "Simulating installing the packages..."
+  if [ ! -z "$conflicts" ];then
+    warning "Simulation will likely complain about these conflicting packages: $conflicts\nA real run would purge these packages first."
+  fi
+  
+  status_green "Running command: apt install --simulate -f --allow-downgrades --allow-change-held-packages ${filenames[*]}"
+  apt install --simulate -f --allow-downgrades --allow-change-held-packages  "${filenames[@]}" || error "APT reported a failure during simulated package installation.\nDeb files have not been removed, so feel free to try tweaking the apt command to see what could be done to make it work."
+else
+  if [ ! -z "$conflicts" ];then
+    status "Removing conflicting packages: $conflicts"
+    sudo apt purge -y --allow-change-held-packages $conflicts || error "APT failed to first purge conflicting chromium packages: $conflicts"
+  fi
+  
+  status "Installing the packages..."
+  apt_lock_wait
+  sudo apt install -yf --allow-downgrades --allow-change-held-packages "${filenames[@]}" || error "APT failed to install the packages: ${filenames[*]}"
+fi
 rm -f "${filenames[@]}" || error "Failed to remove packages after installation"
 
-status "Holding Chromium version so it won't upgrade..."
-
-for filename in ${filenames[*]} ;do
-  package_name="$(basename "$filename" | sed 's/_.*//g')"
-  apt_lock_wait
-  echo "$package_name hold" | sudo dpkg --set-selections
-done
+if [ "$simulate" != yes ];then
+  status "Holding Chromium version so it won't upgrade..."
+  for filename in ${filenames[*]} ;do
+    package_name="$(basename "$filename" | sed 's/_.*//g')"
+    apt_lock_wait
+    echo "$package_name hold" | sudo dpkg --set-selections
+  done
+fi
 
 if [ "$version" -le 88 ] && [ "$(get_codename)" == 'bullseye' ];then
   status "Fixing seccomp errors for Chromium $version on Bullseye."

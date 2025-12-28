@@ -1,4 +1,10 @@
 #!/bin/bash
+
+#don't mess with chromium during an update
+if [ "$1" == update ];then
+  exit 0
+fi
+
 if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
   echo -n "Please close all Chromium windows first."
   yad --info --center --window-icon="$(dirname "$0")/icon-64.png" \
@@ -14,36 +20,32 @@ if [ ! -z "$(ps aux | grep chromium | grep -v 'grep' )" ];then
 fi
 
 if [ -d ~/.config/chromium.bak ];then
-  while true;do
-    read -p "Would you like to restore the backup of Chromium's config folder? [y/n] " answer
+  text="Would you like to restore the backup of Chromium's config folder?"
+  userinput_func "$text" "Yes" "No"
+  if [ "$output" == Yes ];then
+    echo "Restoring backup..."
     
-    if [ "$answer" == y ] || [ "$answer" == Y ];then
-      echo "Restoring backup..."
-      
-      #first remove existing
-      if [ -e ~/.config/chromium ];then
-        gio trash ~/.config/chromium || rm -rf ~/.config/chromium
-      fi
-      
-      #then rename the backup folder
-      mv ~/.config/chromium.bak ~/.config/chromium
-      break #exit loop
-      
-    elif [ "$answer" == n ] || [ "$answer" == N ];then
-      break #exit loop
-    else
-      echo "Unknown answer "\""$answer"\"""
+    #first remove existing
+    if [ -e ~/.config/chromium ];then
+      gio trash ~/.config/chromium || rm -rf ~/.config/chromium
     fi
-  done
+    
+    #then rename the backup folder
+    mv ~/.config/chromium.bak ~/.config/chromium
+  fi
 fi
 
 sudo rm -f /etc/chromium-browser/customizations/01-disable-seccomp
 
 status "Allowing Chromium to be upgradable..."
-echo "chromium-browser install" | sudo dpkg --set-selections
-echo "chromium-browser-l10n install" | sudo dpkg --set-selections
-echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections
+#some will fail but it's fine
+echo "chromium install" | sudo dpkg --set-selections 2>/dev/null
+echo "chromium-l10n install" | sudo dpkg --set-selections 2>/dev/null
+echo "chromium-common install" | sudo dpkg --set-selections 2>/dev/null
+echo "chromium-browser install" | sudo dpkg --set-selections 2>/dev/null
+echo "chromium-browser-l10n install" | sudo dpkg --set-selections 2>/dev/null
+echo "chromium-codecs-ffmpeg-extra install" | sudo dpkg --set-selections 2>/dev/null
 
 status "Upgrading Chromium..."
 "${DIRECTORY}/api" apt_lock_wait
-sudo apt install -y --only-upgrade --allow-downgrades --allow-change-held-packages chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
+sudo apt install -y --only-upgrade --allow-downgrades --allow-change-held-packages chromium chromium-l10n chromium-common
