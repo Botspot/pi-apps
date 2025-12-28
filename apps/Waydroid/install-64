@@ -128,7 +128,11 @@ status_green Done
 if [ "$init_google" == yes ];then
   id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" | awk -F'|' '{print $2}')"
   if [ -z "$id" ];then
-    error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above."
+    sleep 30 #giving it time sometimes helps
+    id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" | awk -F'|' '{print $2}')"
+    if [ -z "$id" ];then
+      error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above. Raw output was '$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'")'"
+    fi
   fi
   x-www-browser 'https://www.google.com/android/uncertified' &
   
