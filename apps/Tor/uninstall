@@ -5,10 +5,14 @@
 
 INSTALL_DIR="$HOME/.local/share"
 
-status -n 'Unregistering Tor Browser desktop app… '
-cd "$INSTALL_DIR"/tor-browser || error 'Fatal error! Cannot cd to app!'
-"$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
-status_green 'Done'
+if [ -d "$INSTALL_DIR"/tor-browser ];then
+  status -n 'Unregistering menu launcher'
+  cd "$INSTALL_DIR"/tor-browser || error "Cannot cd to $INSTALL_DIR/tor-browser"
+  "$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
+  status_green 'Done'
+else
+  rm -f "$HOME/.local/share/applications/start-tor-browser.desktop"
+fi
 
 status -n 'Copying user data files to temporary folder… '
 if [ -d "$INSTALL_DIR"/tor-browser/Browser/TorBrowser/Data/Browser ];then
