@@ -123,7 +123,7 @@ package_installed() { #exit 0 if $1 package is installed, otherwise exit 1
   #package_info "$package"
   
   #directly search /var/lib/dpkg/status
-  grep -x "Package: $package" /var/lib/dpkg/status -A 2 | grep -qxF 'Status: install ok installed'
+  grep -x "Package: $package" /var/lib/dpkg/status -A 2 | grep -qx 'Status: install ok installed\|Status: hold ok installed'
 }
 
 package_available() { #determine if the specified package-name exists in a local repository for the current dpkg architecture
@@ -218,7 +218,7 @@ anything_installed_from_uri_suite_component() { #Given an apt repository uri, su
   #for every repo-file, check if any of them have an installed file
   local IFS=$'\n'
   local repofile
-  local installed_packages="$(grep -xF 'Status: install ok installed' /var/lib/dpkg/status -B 2 | grep '^Package: ' | sed 's/^Package: //g' | sort)"
+  local installed_packages="$(grep -x 'Status: install ok installed\|Status: hold ok installed' /var/lib/dpkg/status -B 2 | grep '^Package: ' | sed 's/^Package: //g' | sort)"
   for repofile in $repofiles ;do
     #search the repo-file for installed packages
     
@@ -1877,7 +1877,7 @@ refresh_all_pkgapp_status() { #for every package-app, if dpkg thinks it's instal
     #package_info "$package"
 
     #directly search /var/lib/dpkg/status
-    echo "$dpkg_status" | grep -x "Package: $package" -A 2 -m1 | grep -qxF 'Status: install ok installed'
+    echo "$dpkg_status" | grep -x "Package: $package" -A 2 -m1 | grep -qx 'Status: install ok installed\|Status: hold ok installed'
   }
 
   # parse apt_cache_output for each package app
