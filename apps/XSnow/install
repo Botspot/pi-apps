@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=3.9.1~pre04
+version=3.9.1~pre05
 
 install_packages build-essential libx11-dev libxpm-dev libxt-dev libxext-dev pkg-config libxml2-dev libgtk-3-dev libxinerama-dev libxtst-dev libgsl-dev || exit 1
 
