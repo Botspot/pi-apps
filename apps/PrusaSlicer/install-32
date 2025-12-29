@@ -4,12 +4,12 @@ if ([ "$__os_id" == "Debian" ] || [ "$__os_id" == "Raspbian" ]) && [ "$__os_rele
   error "User error: PrusaSlicer has not been built for ARMhf since early 2024 and will not be built for ARMhf in the future. The last build is binary incompatible with Debian Trixie and newer. Please use an ARM64 Operating System to continue using Prusaslicer."
 fi
 
-version=2.7.4
+#version=2.8.0
 
 install_packages git mesa-utils libcurl4 libgtk-3-0 zlib1g libdbus-1-3 libxcb1 libxi6 libxfixes3 libatk-bridge2.0-0 libepoxy0 libxinerama1 libxrandr2 libxcursor1 libxcomposite1 libxdamage1 libxkbcommon0 libxcb-shm0 libxcb-render0 libpcre3 libxau6 libxdmcp6 libatspi2.0-0 libexpat1 liblzma5 libbsd0 libgpg-error0 || exit 1
 # note, libffi.so.6 is linked by the binary and not provided in the appimage (appimage contains libffi.so.7). this appimage probably never worked on bullseye
 
-wget -O /tmp/PrusaSlicer.AppImage "https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_${version}/PrusaSlicer-version_${version}-armhf.AppImage" || error "Failed to download appimage!"
+wget -O /tmp/PrusaSlicer.AppImage "https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/download/version_2.8.0-beta1/PrusaSlicer-version_2.8.0-beta1-armhf.AppImage" || error "Failed to download appimage!"
 sudo mv /tmp/PrusaSlicer.AppImage /opt || error "Failed to move appimage to install location!"
 sudo chmod +x /opt/PrusaSlicer.AppImage || error "Failed to mark as executable!"
 sudo chown root:root /opt/PrusaSlicer.AppImage || error "Failed to set appimage ownership!"
