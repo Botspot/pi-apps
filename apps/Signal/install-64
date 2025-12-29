@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=7.77.1
+version=7.83.0
 
 install_packages "https://github.com/dennisameling/Signal-Desktop/releases/download/v${version}/signal-desktop-unofficial_${version}_arm64.deb" || exit 1
 
@@ -16,4 +16,6 @@ fi
 sudo chmod +x '/opt/Signal Unofficial/signal-wayland.sh'
 
 #patch menu launcher to not say 'Signal Unofficial', and to use wayland script
-sudo sed -i 's/^Name=Signal Unofficial$/Name=Signal/g ; s+/opt/Signal Unofficial/signal-desktop-unofficial+/opt/Signal Unofficial/signal-wayland.sh+g' /usr/share/applications/signal-desktop-unofficial.desktop
+sudo sed -i 's/^Name=Signal Unofficial$/Name=Signal/g ; s+/opt/Signal Unofficial/signal-desktop-unofficial+/opt/Signal Unofficial/signal-wayland.sh+g' /usr/share/applications/signal-desktop-unofficial.desktop 2>/dev/null || \
+  sudo sed -i 's/^Name=Signal Unofficial$/Name=Signal/g ; s+/opt/Signal Unofficial/signal-desktop-unofficial+/opt/Signal Unofficial/signal-wayland.sh+g' /usr/share/applications/signal-desktop.desktop || \
+    error "failed to find signal desktop file to edit! Perhaps it did not fully install?"
