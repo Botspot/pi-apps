@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=9.22
+version=hangover-11.0-rc4
 
 # https://github.com/raspberrypi/bookworm-feedback/issues/107
 PAGE_SIZE="$(getconf PAGE_SIZE)"
@@ -32,28 +32,42 @@ fi
 
 # Hangover conflicts with Wine
 "${DIRECTORY}/manage" uninstall "Wine (x64)"
-sudo apt purge fonts-wine libwine libwine:armhf -y --autoremove || exit 1
+#remove conflicting wine related packages that have caused failures
+# avoid uninstalling armhf package if multiarch is not enabled (prevents E: Unable to locate package libwine:armhf)
+if package_installed fonts-wine || package_installed libwine ;then #package_installed cannot differentiate between armhf and arm64, so use package_available
+  if package_available libwine:armhf ;then
+    sudo apt purge fonts-wine libwine libwine:armhf -y --autoremove || exit 1
+  else
+    sudo apt purge fonts-wine libwine -y --autoremove || exit 1
+  fi
+fi
 
 if [ "$__os_codename" == "bullseye" ]; then
-  ho_distro="debian11"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_debian11_bullseye_arm64.tar"
 elif [ "$__os_codename" == "bookworm" ]; then
-  ho_distro="debian12"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_debian12_bookworm_arm64.tar"
+elif [ "$__os_codename" == "trixie" ]; then
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')}_debian13_trixie_arm64.tar"
 elif [ "$__os_codename" == "focal" ]; then
-  ho_distro="ubuntu2004"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_ubuntu2004_focal_arm64.tar"
 elif [ "$__os_codename" == "jammy" ]; then
-  ho_distro="ubuntu2204"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_ubuntu2204_jammy_arm64.tar"
 elif [ "$__os_codename" == "noble" ]; then
-  ho_distro="ubuntu2404"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_ubuntu2404_noble_arm64.tar"
+elif [ "$__os_codename" == "questing" ]; then
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_ubuntu2510_questing_arm64.tar"
 else
   error "User error: You are not using a supported Pi-Apps distribution."
 fi
 
-cd /tmp || error "Could not move to /tmp folder"
-wget https://github.com/AndreRH/hangover/releases/download/hangover-${version}/hangover_${version}_${ho_distro}_${__os_codename}_arm64.tar || error "Failed to download Hangover!"
-tar -xf hangover_${version}_${ho_distro}_${__os_codename}_arm64.tar || error "Failed to extract Hangover!"
-rm -f hangover_${version}_${ho_distro}_${__os_codename}_arm64.tar
-install_packages /tmp/hangover-libarm64ecfex_${version}_arm64.deb /tmp/hangover-libqemu_${version}~${__os_codename}_arm64.deb /tmp/hangover-libwow64fex_${version}_arm64.deb /tmp/hangover-wine_${version}~${__os_codename}_arm64.deb || exit 1
-rm -f ./hangover-libarm64ecfex_${version}_arm64.deb ./hangover-libqemu_${version}~${__os_codename}_arm64.deb ./hangover-libwow64fex_${version}_arm64.deb ./hangover-wine_${version}~${__os_codename}_arm64.deb
+mkdir -p /tmp/hangover
+cd /tmp/hangover || error "Could not move to /tmp/hangover folder"
+wget "https://github.com/AndreRH/hangover/releases/download/${version}/${filename}" || error "Failed to download Hangover!"
+tar -xf ./"$filename" || error "Failed to extract Hangover!"
+rm -f ./"$filename"
+install_packages ./*.deb || exit 1
+cd
+rm -rf /tmp/hangover
 
 cat << EOF | sudo tee /usr/local/bin/generate-hangover-prefix >/dev/null
 #!/bin/bash
