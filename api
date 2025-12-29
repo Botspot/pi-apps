@@ -515,7 +515,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   for package in $packages ;do
     
     #handle local packages (package-name starts with /)
-    if [[ "$package" == /* ]];then
+    if [[ "$package" == /* ]] || [[ "$package" == './'* ]];then
       
       #status "Handling local package $package"
       
