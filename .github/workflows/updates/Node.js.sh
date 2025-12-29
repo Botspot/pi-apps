@@ -10,7 +10,8 @@ wget -qO nvm.sh "https://raw.githubusercontent.com/nvm-sh/nvm/${webVer[1]}/nvm.s
 webVer[0]=$(source ./nvm.sh; nvm version-remote --lts)
 rm -f nvm.sh
 
-armhf_url[0]="https://nodejs.org/dist/${webVer}/node-${webVer}-linux-armv7l.tar.xz"
+armhf_ver=$(source ./nvm.sh; nvm version-remote --lts)
+armhf_url[0]="https://nodejs.org/dist/${armhf_ver}/node-${armhf_ver}-linux-armv7l.tar.xz"
 arm64_url[0]="https://nodejs.org/dist/${webVer}/node-${webVer}-linux-arm64.tar.xz"
 
 source $GITHUB_WORKSPACE/.github/workflows/update_github_script.sh
