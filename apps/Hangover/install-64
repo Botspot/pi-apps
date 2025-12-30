@@ -47,7 +47,7 @@ if [ "$__os_codename" == "bullseye" ]; then
 elif [ "$__os_codename" == "bookworm" ]; then
   filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_debian12_bookworm_arm64.tar"
 elif [ "$__os_codename" == "trixie" ]; then
-  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')}_debian13_trixie_arm64.tar"
+  filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_debian13_trixie_arm64.tar"
 elif [ "$__os_codename" == "focal" ]; then
   filename="$(echo "$version" | sed 's/hangover-/hangover_/g')_ubuntu2004_focal_arm64.tar"
 elif [ "$__os_codename" == "jammy" ]; then
