@@ -3286,6 +3286,10 @@ Refer to the output below for any potential solutions.
 
 $(apt-get --dry-run check)"
     return 1
+  elif [ ! -f /var/lib/dpkg/status ];then
+    echo "Congratulations, Linux tinkerer, you broke your system. The /var/lib/dpkg folder is either missing, or missing essential files such as /var/lib/dpkg/status.
+All apt based application installs will fail. Unless you have a backup of your /etc/apt/sources.list /etc/apt/sources.list.d you will need to reinstall your OS."
+    return 1
   elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
     echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
     return 1
