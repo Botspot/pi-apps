@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo rm -rf /var/snap/snap-store /usr/share/applications/snapd-temporary
 if command -v snap >/dev/null ;then
-  sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd"
+  sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd\noutput from running snap changes:\n$(snap changes 2>&1)"
 
 echo -e "\e[93mNote: To prevent removing user data, uninstalling the Snap Store app does not uninstall the snapd package!\nTo completely remove everything snap-related, run this command:
 
