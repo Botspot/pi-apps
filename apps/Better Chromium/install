@@ -79,25 +79,26 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/de
     # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
     apt_update
     apt_lock_wait
-    sudo apt --allow-downgrades install chromium-browser -y | less_apt
-    # remove snap chromium
-    [ -d /snap/chromium ] && sudo snap remove chromium
-    # remove flatpak chromium
-    [ -d /var/lib/flatpak/app/org.chromium.Chromium ] && sudo flatpak uninstall org.chromium.Chromium -y
-    # copy snap or flatpak chromium config over to ~/.config/chromium if it does not already exist
-    if [ ! -d ~/.config/chromium ]; then
-      mkdir -p ~/.config
-      if [ -d ~/snap/chromium/current/.config/chromium ]; then
-        cp -R ~/snap/chromium/current/.config/chromium ~/.config/
-      elif [ -d ~/snap/chromium/common/chromium ]; then
-        cp -R ~/snap/chromium/common/chromium ~/.config/
-      elif [ -d ~/.var/app/org.chromium.Chromium/config/chromium ]; then
-        cp -R ~/.var/app/org.chromium.Chromium/config/chromium ~/.config/
+    sudo apt-get --allow-downgrades install chromium-browser -y | less_apt
+    if [ "${PIPESTATUS[0]}" == 0 ];then #chromium-browser install successful
+      # remove snap chromium
+      [ -d /snap/chromium ] && sudo snap remove chromium
+      # remove flatpak chromium
+      [ -d /var/lib/flatpak/app/org.chromium.Chromium ] && sudo flatpak uninstall org.chromium.Chromium -y
+      # copy snap or flatpak chromium config over to ~/.config/chromium if it does not already exist
+      if [ ! -d ~/.config/chromium ]; then
+        mkdir -p ~/.config
+        if [ -d ~/snap/chromium/current/.config/chromium ]; then
+          cp -R ~/snap/chromium/current/.config/chromium ~/.config/
+        elif [ -d ~/snap/chromium/common/chromium ]; then
+          cp -R ~/snap/chromium/common/chromium ~/.config/
+        elif [ -d ~/.var/app/org.chromium.Chromium/config/chromium ]; then
+          cp -R ~/.var/app/org.chromium.Chromium/config/chromium ~/.config/
+        fi
       fi
-    fi
-    # add apparmor profile if needed
-    if sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
-      echo '# This profile allows everything and only exists to give the
+      # add apparmor profile if needed
+      if sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
+        echo '# This profile allows everything and only exists to give the
 # application a name instead of having the label "unconfined"
 
 abi <abi/4.0>,
@@ -110,7 +111,10 @@ profile chromium-browser /usr/lib/chromium-browser/chromium-browser flags=(uncon
   include if exists <local/chromium-browser>
 }
 ' | sudo tee /etc/apparmor.d/chromium-browser >/dev/null
-      sudo systemctl restart apparmor.service
+        sudo systemctl restart apparmor.service
+      fi
+    else #chromium-browser install unsuccessful
+      error "Failed to install chromium-browser package with apt-get!\nPlease install this app again, and either try using the Pi OS chromium browser again if you think it was a temporary error, or simply give up and use the chromium version provided by your distro. (fltapak or snap package)"
     fi
   fi
 fi
