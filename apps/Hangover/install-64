@@ -36,7 +36,7 @@ fi
 # avoid uninstalling armhf package if multiarch is not enabled (prevents E: Unable to locate package libwine:armhf)
 if package_installed fonts-wine || package_installed libwine ;then #package_installed cannot differentiate between armhf and arm64, so use package_available
   if package_available libwine:armhf ;then
-    sudo apt purge fonts-wine libwine libwine:armhf -y --autoremove || exit 1
+    sudo apt purge fonts-wine libwine libwine:armhf -y --autoremove || sudo apt purge fonts-wine libwine -y --autoremove || exit 1
   else
     sudo apt purge fonts-wine libwine -y --autoremove || exit 1
   fi
