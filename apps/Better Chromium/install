@@ -424,10 +424,10 @@ fi
 #New 2023 chrome UI
 if [ "$chromerefresh2023" == TRUE ];then
   #I found this flag after experimenting with chrome://flags and chrome://version
-  echo "Adding --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,ChromeRefresh2023NTB:Variation/GM3NewIconWithBackground,FluentScrollbar,FluentOverlayScrollbar,OverlayScrollbar --disable-features=ChromeLabs,SimplifiedBookmarkSaveFlow to ${folder}/chromerefresh2023"
+  echo "Adding --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,ChromeRefresh2023NTB:Variation/GM3NewIconWithBackground,FluentScrollbar,TaskManagerDesktopRefresh,SideBySide --disable-features=ChromeLabs,SimplifiedBookmarkSaveFlow to ${folder}/chromerefresh2023"
   
   cat << EOF | sudo tee "${folder}/chromerefresh2023" >/dev/null
-export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,ChromeRefresh2023NTB:Variation/GM3NewIconWithBackground,FluentScrollbar,FluentOverlayScrollbar,OverlayScrollbar --disable-features=ChromeLabs,SimplifiedBookmarkSaveFlow"
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ChromeRefresh2023,ChromeWebuiRefresh2023,ChromeRefresh2023NTB:Variation/GM3NewIconWithBackground,FluentScrollbar,TaskManagerDesktopRefresh,SideBySide --disable-features=ChromeLabs,SimplifiedBookmarkSaveFlow"
 EOF
 else
   #chromerefresh2023 set to false - so remove the file
