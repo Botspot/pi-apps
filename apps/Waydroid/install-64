@@ -76,7 +76,7 @@ if ! grep -q ' binder$' /proc/devices ;then
   error "User error (reporting allowed): Could not enable the binder kernel module. Please find a way to get it configured on your device. This may require a kernel recompilation, or if on Ubuntu, additional kernel modules may need to be installed with something like: apt install linux-modules-extra-raspi"
 fi
 
-if [ ! -d /var/lib/waydroid ];then
+if [ ! -f /var/lib/waydroid/images/vendor.img ];then
   text="<i>To Google, or not to Google... that is the question.</i>"$'\n'"(Aurora Store offers all Google Play Store apps without requiring a sign-in.)"
   userinput_func "$text" "Use an Android version with Google's apps installed" "No Google, install Aurora Store" "No Google, don't preinstall anything"
   if [ "$output" == "Use an Android version with Google's apps installed" ]; then
@@ -96,11 +96,9 @@ echo "deb [signed-by=/usr/share/keyrings/waydroid.gpg] https://repo.waydro.id/ $
 install_packages waydroid || exit 1
 
 if [ "$init_google" == yes ];then
-  sudo waydroid init -s GAPPS || sudo waydroid init -s GAPPS || error "Waydroid failed to initialize"
+  sudo waydroid --details-to-stdout init -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor -s GAPPS || sudo waydroid init -s GAPPS || error "Waydroid failed to initialize"
 elif [ "$init_google" == no ];then
-  sudo waydroid init -s VANILLA || sudo waydroid init -s VANILLA || error "Waydroid failed to initialize"
-else
-  sudo waydroid init || error "Waydroid failed to initialize" #says 'Already Initialized' usually on update-reinstall
+  sudo waydroid --details-to-stdout init -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor -s VANILLA || sudo waydroid init -s VANILLA || error "Waydroid failed to initialize"
 fi
 
 #fix for wayfire compositor
