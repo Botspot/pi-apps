@@ -8,3 +8,8 @@ fc-cache -f || error "Failed to run fc-cache!"
 
 #get large support for other symbols like the ones used in pi-apps terminal logo
 install_packages fonts-noto-core || exit 1
+
+#remove problematic package which overrides notocoloremoji and makes chromium render in black and white
+if package_installed fonts-twemoji-svginot ;then
+  sudo apt-get purge -y fonts-twemoji-svginot || true
+fi
