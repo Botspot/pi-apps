@@ -1,35 +1,7 @@
 #!/bin/bash
 
-# https://github.com/raspberrypi/bookworm-feedback/issues/107
-PAGE_SIZE="$(getconf PAGE_SIZE)"
-if [[ "$PAGE_SIZE" == "16384" ]]; then
-  #switch to 4K pagesize kernel
-  if [ -f /boot/config.txt ] || [ -f /boot/firmware/config.txt ]; then
-    if [ -f /boot/firmware/config.txt ]; then
-      boot_config="/boot/firmware/config.txt"
-    elif [ -f /boot/config.txt ]; then
-      boot_config="/boot/config.txt"
-    fi
-    text="Raspberry Pi 5 PiOS images ship by default with a 16K PageSize Linux Kernel.
-This kernel causes incompatibilities with some software including MCPI-Reborn https://github.com/raspberrypi/bookworm-feedback/issues/107
-
-Would you like to automatically switch to a 4K PageSize Linux Kernel?"
-    userinput_func "$text" "No, keep 16K PageSize Kernel and Exit" "Yes, switch to 4K PageSize Kernel"
-    if [ "$output" == "No, keep 16K PageSize Kernel and Exit" ]; then
-      error "User error: Your current running kernel is built with 16K PageSize and is incompatible with MCPI-Reborn. You must switch to a 4K PageSize kernel (and chose to not do so automatically) before installing MCPI-Reborn."
-    fi
-    echo "" | sudo tee --append $boot_config >/dev/null
-    echo "[pi5]" | sudo tee --append $boot_config >/dev/null
-    echo "kernel=kernel8.img" | sudo tee --append $boot_config >/dev/null
-    echo -e "The 4K PageSize Kernel has been enabled by adding 'kernel=kernel8.img' to $boot_config\nPlease reboot and install the Minecraft Pi app again."
-    sleep infinity
-  else
-    error "User error (reporting allowed): Your current running kernel is built with 16K PageSize and is incompatible with Minecraft Pi. Changing kernels automatically cannot be done since no /boot/config.txt or /boot/firmware/config.txt file was found."
-  fi
-fi
-
 # Version
-version=2.5.4
+version=3.0.0
 
 # Install
 if [ "${arch}" = "64" ]; then
@@ -37,40 +9,17 @@ if [ "${arch}" = "64" ]; then
 else
     url_arch=armhf
 fi
-url="https://gitea.thebrokenrail.com/minecraft-pi-reborn/minecraft-pi-reborn/releases/download/${version}/minecraft-pi-reborn-client-${version}-${url_arch}.AppImage"
+url="https://gitea.thebrokenrail.com/minecraft-pi-reborn/minecraft-pi-reborn/releases/download/${version}/minecraft-pi-reborn-${version}-${url_arch}.AppImage"
 
-# Cleanup Old Script Versions
-sudo rm -f /etc/apt/trusted.gpg.d/mcpi-revival.gpg
-sudo rm -f /etc/apt/sources.list.d/mcpi-revival.list
-if package_installed gmcpil ;then
-  apt_lock_wait
-  sudo apt-get remove -y gmcpil
-fi
-if package_installed jmcpil ;then
-  apt_lock_wait
-  sudo apt-get remove -y jmcpil
-fi
-if package_installed minecraft-pi-reborn-client ;then
-  apt_lock_wait
-  sudo apt-get remove -y minecraft-pi-reborn-client
-fi
+# Common Code
+source "$(dirname "$0")/common.sh"
 
-# Download file
-mkdir -p ~/.local/bin || error "Could not make directory"
-wget -O ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage "${url}" || error 'Failed to download AppImage'
-chmod +x ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage
+# Download File
+wget -O "${APPIMAGE}" "${url}" || error 'Failed to download AppImage'
+chmod +x "${APPIMAGE}"
 
-enable_module fuse || exit 1
+# Enable FUSE (Needed For AppImages)
+enable_module fuse || error 'Failed to enable FUSE'
 
-# Make Desktop file
-mkdir -p ~/.local/share/applications || error "Could not make directory"
-echo "[Desktop Entry]
-Name=Minecraft Pi (Modded)
-Comment=Fun with Blocks
-Icon=$(dirname "$0")/icon-64.png
-StartupNotify=false
-StartupWMClass=com.thebrokenrail.MCPIRebornClient
-Exec=${HOME}/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage
-Terminal=false
-Type=Application
-Categories=Game;" > ~/.local/share/applications/com.thebrokenrail.MCPIRebornClient.desktop
+# Make Desktop File
+"${APPIMAGE}" --install-desktop-entry || error 'Failed to create desktop entry'

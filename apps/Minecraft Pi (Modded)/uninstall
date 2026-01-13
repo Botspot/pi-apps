@@ -1,2 +1,10 @@
 #!/bin/bash
-rm -rf ~/.local/bin/com.thebrokenrail.MCPIRebornClient.AppImage ~/.local/share/applications/com.thebrokenrail.MCPIRebornClient.desktop
+
+# Common Code
+source "$(dirname "$0")/common.sh"
+
+# Uninstall
+if [ -f "${APPIMAGE}" ]; then
+    "${APPIMAGE}" --uninstall-desktop-entry
+fi
+rm -f "${APPIMAGE}"
