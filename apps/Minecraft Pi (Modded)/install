@@ -3,23 +3,33 @@
 # Version
 version=3.0.0
 
-# Install
-if [ "${arch}" = "64" ]; then
-    url_arch=arm64
+# URL
+if [ "${arch}" = '64' ]; then
+    url_arch='arm64'
 else
-    url_arch=armhf
+    url_arch='armhf'
 fi
 url="https://gitea.thebrokenrail.com/minecraft-pi-reborn/minecraft-pi-reborn/releases/download/${version}/minecraft-pi-reborn-${version}-${url_arch}.AppImage"
 
-# Common Code
-source "$(dirname "$0")/common.sh"
-
-# Download File
-wget -O "${APPIMAGE}" "${url}" || error 'Failed to download AppImage'
-chmod +x "${APPIMAGE}"
-
 # Enable FUSE (Needed For AppImages)
 enable_module fuse || error 'Failed to enable FUSE'
+
+# App ID
+ID='com.thebrokenrail.MCPIReborn'
+OLD_ID="${ID}Client"
+
+# Binary Directory
+BIN="${HOME}/.local/bin"
+mkdir -p "${BIN}" || error 'Could not make directory'
+
+# Cleanup Old Versions
+rm -f "${HOME}/.local/share/applications/${OLD_ID}.desktop"
+rm -f "${BIN}/${OLD_ID}.AppImage"
+
+# Download File
+APPIMAGE="${BIN}/${ID}.AppImage"
+wget -O "${APPIMAGE}" "${url}" || error 'Failed to download AppImage'
+chmod +x "${APPIMAGE}"
 
 # Make Desktop File
 "${APPIMAGE}" --install-desktop-entry || error 'Failed to create desktop entry'

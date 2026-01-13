@@ -1,10 +1,17 @@
 #!/bin/bash
 
-# Common Code
-source "$(dirname "$0")/common.sh"
+# App ID
+ID='com.thebrokenrail.MCPIReborn'
+OLD_ID="${ID}Client"
 
 # Uninstall
+BIN="${HOME}/.local/bin"
+APPIMAGE="${BIN}/${ID}.AppImage"
 if [ -f "${APPIMAGE}" ]; then
     "${APPIMAGE}" --uninstall-desktop-entry
 fi
 rm -f "${APPIMAGE}"
+
+# Cleanup Old Versions
+rm -f "${HOME}/.local/share/applications/${OLD_ID}.desktop"
+rm -f "${BIN}/${OLD_ID}.AppImage"
