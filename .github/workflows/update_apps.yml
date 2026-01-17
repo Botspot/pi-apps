@@ -263,15 +263,13 @@ jobs:
               # only attempt install/uninstall if updated app was updated specifically for this architecture (armhf/arm64 or all)
               # this speeds up the updater and also fixes app updates that would automatically be rolled back if the non-updated version no longer installs without error on newer distros
               if [ $arch == 32 ]; then
-                if ! echo "$UPDATED_APPS" | grep -q -e "^- $app-armhf" -e "^- $app-all"; then
-                  echo "Skip testing $app-armhf which wasn't updated."
-                  continue
-                fi
+                pretty_arch=armhf
               else
-                if ! echo "$UPDATED_APPS" | grep -q -e "^- $app-arm64" -e "^- $app-all"; then
-                  echo "Skip testing $app-arm64 which wasn't updated."
-                  continue
-                fi
+                pretty_arch=arm64
+              fi
+              if ! echo "$UPDATED_APPS" | grep -q -e "^- $app-$pretty_arch" -e "^- $app-all"; then
+                echo "Skip testing $app-$pretty_arch which wasn't updated."
+                continue
               fi
               ./manage install "$app" || { FAILED_INSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
               ./manage uninstall "$app" || { FAILED_UNINSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
