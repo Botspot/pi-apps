@@ -35,6 +35,9 @@ jobs:
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         run: |
+          # show disk space
+          df -H
+          
           # print user info
           echo $USER $USERNAME $(id) $(whoami)
           
@@ -113,6 +116,8 @@ jobs:
         run: |
           cd ${{ runner.temp }}
           tar -C $GITHUB_WORKSPACE -cvf GITHUB_WORKSPACE.tar .
+          # show disk space
+          df -H
 
       - name: Upload GITHUB_WORKSPACE Artifact
         uses: actions/upload-artifact@v4
@@ -165,6 +170,8 @@ jobs:
           cd ${{ runner.temp }}
           tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE
           cd $GITHUB_WORKSPACE
+          # show disk space
+          df -H
 
       - name: Replace secret reference with contents
         if: ${{ matrix.image == 'RPIOS_TRIXIE_URL' || matrix.image == 'RPIOS_TRIXIE_ARMHF_URL' }}
@@ -219,6 +226,8 @@ jobs:
           # set shell to bash
           shell: /bin/bash
           commands: |
+            # show disk space
+            df -H
             sudo chown runner:docker /home/runner
             # print user info
             echo $USER $USERNAME $(id) $(whoami)
@@ -260,6 +269,8 @@ jobs:
               fi
               ./manage install "$app" || { FAILED_INSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
               ./manage uninstall "$app" || { FAILED_UNINSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              # show disk space
+              df -H
             done
 
             if [ ! -z "$FAILED_INSTALL_APPS" ] || [ ! -z "$FAILED_UNINSTALL_APPS" ]; then
