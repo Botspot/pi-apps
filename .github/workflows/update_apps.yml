@@ -35,9 +35,6 @@ jobs:
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         run: |
-          # show disk space
-          df -H
-          
           # print user info
           echo $USER $USERNAME $(id) $(whoami)
           
@@ -116,8 +113,6 @@ jobs:
         run: |
           cd ${{ runner.temp }}
           tar -C $GITHUB_WORKSPACE -cvf GITHUB_WORKSPACE.tar .
-          # show disk space
-          df -H
 
       - name: Upload GITHUB_WORKSPACE Artifact
         uses: actions/upload-artifact@v4
@@ -170,8 +165,6 @@ jobs:
           cd ${{ runner.temp }}
           tar xf GITHUB_WORKSPACE.tar -C $GITHUB_WORKSPACE
           cd $GITHUB_WORKSPACE
-          # show disk space
-          df -H
 
       - name: Replace secret reference with contents
         if: ${{ matrix.image == 'RPIOS_TRIXIE_URL' || matrix.image == 'RPIOS_TRIXIE_ARMHF_URL' }}
@@ -204,7 +197,7 @@ jobs:
           bind_mount_repository: yes
 
           # give the image more space
-          image_additional_mb: 5000
+          image_additional_mb: 20000
 
           # disable image caching to not leak the URL on some systems
           enable_image_caching: ${{ matrix.cache }}

@@ -52,7 +52,7 @@ jobs:
           bind_mount_repository: yes
 
           # give the image more space
-          image_additional_mb: 5000
+          image_additional_mb: 20000
 
           # use custom /proc/cpuinfo
           cpu_info: cpuinfo/raspberrypi_4b
@@ -81,7 +81,7 @@ jobs:
         with:
           base_image: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-05-28/2021-05-07-raspios-buster-arm64.zip
           bind_mount_repository: yes
-          image_additional_mb: 5000
+          image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
@@ -104,7 +104,7 @@ jobs:
           bootpartition:
           rootpartition: 1
           bind_mount_repository: yes
-          image_additional_mb: 5000
+          image_additional_mb: 20000
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
           import_github_env: true
@@ -133,7 +133,7 @@ jobs:
           bootpartition:
           rootpartition: 1
           bind_mount_repository: yes
-          image_additional_mb: 5000
+          image_additional_mb: 20000
           enable_image_caching: no
           copy_repository_path: /home/runner/pi-apps
           export_github_env: yes
