@@ -848,7 +848,11 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     #Contribute to app install/uninstall count as long as parent processes is NOT updater (during an app-reinstall)
     #See: https://askubuntu.com/a/1012236
     if [ "$(cat /proc/$PPID/comm)" != "updater" ] && [ "$3" != "update" ];then
-      shlink_link "$app" "$action" &
+      #if app_status already has the same installed/uninstalled state as the current manage install/uninstall, don't click shlink link
+      #this fixes a click tracking bug where manage uninstall is called in some scripts to always uninstall an app even if it is not previously installed (like removing Hangover during Wine x64 install)
+      if [ "$(app_status "$app")" != "${action}ed" ];then
+        shlink_link "$app" "$action" &
+      fi
     fi
     
     status_green "\n${action^}ed ${app} successfully." | tee -a "$logfile"
