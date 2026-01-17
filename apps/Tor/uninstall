@@ -5,7 +5,7 @@
 
 INSTALL_DIR="$HOME/.local/share"
 
-if [ -d "$INSTALL_DIR"/tor-browser ];then
+if [ -f "$INSTALL_DIR"/tor-browser/start-tor-browser.desktop ];then
   status -n 'Unregistering menu launcher'
   cd "$INSTALL_DIR"/tor-browser || error "Cannot cd to $INSTALL_DIR/tor-browser"
   "$INSTALL_DIR"/tor-browser/start-tor-browser.desktop --unregister-app || error 'Failed to unregister a desktop app'
