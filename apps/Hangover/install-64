@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=hangover-11.0-rc4
+version=hangover-11.0
 
 # https://github.com/raspberrypi/bookworm-feedback/issues/107
 PAGE_SIZE="$(getconf PAGE_SIZE)"

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-version=8.0.1
+version=9.0.0
 install_packages "https://github.com/iNavFlight/inav-configurator/releases/download/${version}/INAV-Configurator_linux_arm64_${version}.deb" || exit 1
