@@ -7,8 +7,8 @@ armhf_url[1]="https://raw.githubusercontent.com/nvm-sh/nvm/${version[1]}/install
 # previously the version was obtained from the website which could update faster than nvm itself, leaving to pi-apps prompting users to update too early
 # https://github.com/nvm-sh/nvm/issues/3451
 wget -qO nvm.sh "https://raw.githubusercontent.com/nvm-sh/nvm/${version[1]}/nvm.sh"
-# v22 release is the last to support ARMhf and is codename "Jod"
-version[0]=$(source ./nvm.sh; nvm version-remote --lts=Jod)
+# v22 release is the last to support ARMhf and is codename "jod"
+version[0]=$(source ./nvm.sh; nvm version-remote --lts=jod)
 rm -f nvm.sh
 
 armhf_url[0]="https://nodejs.org/dist/${version[0]}/node-${version[0]}-linux-armv7l.tar.xz"
