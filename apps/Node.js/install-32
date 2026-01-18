@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v22.21.0
+version=v22.22.0
 version2=v0.40.3
 
 #Checking if using armv6
@@ -16,10 +16,8 @@ export NVM_DIR="$HOME/.nvm"
 mkdir -p "$NVM_DIR"
 wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/${version2}/install.sh" | bash || error "Failed to install nvm!"
 
-if [ "$arch" == 32 ];then
-  #armhf, so patch nvm script to forcibly use armhf
-  sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
-fi
+#armhf, so patch nvm script to forcibly use armhf
+sed -i 's/^  nvm_echo "${NVM_ARCH}"/  NVM_ARCH=armv7l ; nvm_echo "${NVM_ARCH}"/g' "$NVM_DIR/nvm.sh"
 
 #remove original nvm stuff from bashrc
 sed -i '/NVM_DIR/d' ~/.bashrc
@@ -43,11 +41,5 @@ echo ". ~/.node_bashrc" >> ~/.bashrc
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# Install LTS nodejs - v22 on armv7 because v24 dropped armv7 prebuilds (see https://github.com/nodejs/node/commit/6682861d6f)
-if [ "$arch" == 32 ];then
-  nvm install 22 || error "Failed to install node.js 22 with nvm!"
-  nvm use 22
-  true
-else
-  nvm install --lts || error "Failed to install node.js with nvm!"
-fi
+# Install nodejs - v22 on armv7 because v24 dropped armv7 prebuilds (see https://github.com/nodejs/node/commit/6682861d6f)
+nvm install $version || error "Failed to install node.js 22 with nvm!"

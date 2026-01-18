@@ -1,0 +1,38 @@
+#!/bin/bash
+
+version=v24.13.0
+version2=v0.40.3
+
+if ! command -v curl >/dev/null ; then
+  echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
+  install_packages curl || exit 1
+fi
+#Install nvm manager:
+export NVM_DIR="$HOME/.nvm"
+mkdir -p "$NVM_DIR"
+wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/${version2}/install.sh" | bash || error "Failed to install nvm!"
+
+#remove original nvm stuff from bashrc
+sed -i '/NVM_DIR/d' ~/.bashrc
+# Create nvm initialisation script in another file for easier uninstallation
+# Credit: https://www.growingwiththeweb.com/2018/01/slow-nvm-init.html
+echo 'if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type -t __init_nvm)" = function ]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+  declare -a __node_commands=("nvm" "node" "npm" "yarn" "gulp" "grunt" "webpack")
+  function __init_nvm() {
+    for i in "${__node_commands[@]}"; do unalias $i; done
+    . "$NVM_DIR"/nvm.sh
+    unset __node_commands
+    unset -f __init_nvm
+  }
+  for i in "${__node_commands[@]}"; do alias $i="__init_nvm && "$i; done
+fi' > ~/.node_bashrc
+echo ". ~/.node_bashrc" >> ~/.bashrc
+
+# One time use, since `source ~/.bashrc` not working
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+# Install nodejs
+nvm install $version || error "Failed to install node.js with nvm!"
