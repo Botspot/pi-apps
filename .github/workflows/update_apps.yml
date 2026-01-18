@@ -271,8 +271,8 @@ jobs:
                 echo "Skip testing $app-$pretty_arch which wasn't updated."
                 continue
               fi
-              ./manage install "$app" || { FAILED_INSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
-              ./manage uninstall "$app" || { FAILED_UNINSTALL_APPS+="$app"$'\n'; UPDATED_APPS=$(echo "$UPDATED_APPS" | sed "/$app/d"); }
+              ./manage install "$app" || { FAILED_INSTALL_APPS+="$app-$pretty_arch"$'\n'; }
+              ./manage uninstall "$app" || { FAILED_UNINSTALL_APPS+="$app-$pretty_arch"$'\n'; }
               # show disk space
               df -H
             done
@@ -281,21 +281,12 @@ jobs:
               echo "FAILED_UPDATE_APPS<<EOF" >> $GITHUB_ENV
               echo "$FAILED_INSTALL_APPS$FAILED_UNINSTALL_APPS" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
-              echo "UPDATED_APPS<<EOF" >> $GITHUB_ENV
-              echo "$UPDATED_APPS" >> $GITHUB_ENV
-              echo "EOF" >> $GITHUB_ENV
             fi
       - name: Write FAILED_APPS to OUTPUT
         id: failed
         run: |
           echo "FAILED_UPDATE_APPS_${{ matrix.os }}_${{ matrix.arch }}<<EOF" >> $GITHUB_OUTPUT
           echo "${{env.FAILED_UPDATE_APPS}}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-      - name: Write UPDATED_APPS to OUTPUT
-        id: updated
-        run: |
-          echo "UPDATED_APPS_${{ matrix.os }}_${{ matrix.arch }}<<EOF" >> $GITHUB_OUTPUT
-          echo "${{env.UPDATED_APPS}}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
   create-commit:
@@ -326,29 +317,67 @@ jobs:
         run: |
           ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}"
           ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS" | sort -u | awk NF)"
-          echo "ALL_FAILED_APPS<<EOF" >> $GITHUB_ENV
-          echo "$ALL_FAILED_APPS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
           error_string=""
           IFS=$'\n'
-          for app in $ALL_FAILED_APPS; do
-            git checkout -- "apps/$app"
+          for app_and_pretty_arch in $ALL_FAILED_APPS; do
+            app=${app_and_pretty_arch::-6}
+            armhf_fail=0
+            arm64_fail=0
             error_string+='![badge-error][badge-error]'" Failed to install $app on "
 
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}" | grep -Fxq "$app"; then
               error_string+="bookworm armhf, "
+              armhf_fail=1
             fi
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -Fxq "$app"; then
               error_string+="bookworm arm64, "
+              arm64_fail=1
             fi
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}" | grep -Fxq "$app"; then
               error_string+="trixie armhf, "
+              armhf_fail=1
             fi
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}" | grep -Fxq "$app"; then
               error_string+="trixie arm64, "
+              arm64_fail=1
             fi
 
-            error_string+="reverting to previous version."$'\n'$'\n'
+            # at this point in this script, the "ALL_FAILED_APPS" variable is only used to generate the final updated apps list (with failed apps removed) and revert the git history for the failed apps
+            # if armhf and arm64 share an install script but only one of them fails, we still have to revert the install script that they share
+            # in that case, the -all and the opposite architecture are added as "failing apps" because are reverting them and want to remove all architecture cases from the "ALL_UPDATED_APPS" list which is used in the commit message
+            if [ $armhf_fail == 1 ] && [ $arm64_fail == 1 ]; then
+              ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-all | sort -u | awk NF)"
+              git checkout -- "apps/$app"
+              error_string+="reverting to previous version."$'\n'$'\n'
+            elif [ $armhf_fail == 1 ]; then
+              if [ -f "apps/$app/install" ]; then
+                ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-all | sort -u | awk NF)"
+                ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-arm64 | sort -u | awk NF)"
+                git checkout -- "apps/$app"
+                error_string+="reverting shared install to previous version."$'\n'$'\n'
+              else
+                git checkout -- "apps/$app/install-32"
+                error_string+="reverting to previous version."$'\n'$'\n'
+              fi
+            elif [ $arm64_fail == 1 ]; then
+              if [ -f "apps/$app/install" ]; then
+                ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-all | sort -u | awk NF)"
+                ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-armhf | sort -u | awk NF)"
+                git checkout -- "apps/$app"
+                error_string+="reverting shared install to previous version."$'\n'$'\n'
+              else
+                git checkout -- "apps/$app/install-64"
+                error_string+="reverting to previous version."$'\n'$'\n'
+              fi
+            else
+              echo "This case should not be possible, no image/arch combo failed yet we are here."
+              ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-all | sort -u | awk NF)"
+              ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-armhf | sort -u | awk NF)"
+              ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS"$'\n'$app-arm64 | sort -u | awk NF)"
+              git checkout -- "apps/$app"
+              error_string+="impossible case, reverting to previous version."$'\n'$'\n'
+            fi
+
           done
           true
           echo "ALL_FAILED_APPS_ERROR_STRING<<EOF" >> $GITHUB_ENV
@@ -360,12 +389,12 @@ jobs:
           list_subtract() { #Outputs a list of apps from stdin, minus the ones that appear in $1 using the UPDATED_APP format
             # for example, the following two inputs will be a match
             # - BlockBench-arm64: 4.7.4 -> 4.8.0
-            # BlockBench
-            #                       change \n to -\n     | change '^' to '- '
-            grep -ve "$(echo "$1" | sed -z 's/\n/\-\n/g' | sed 's/^/- /g')"
+            # BlockBench-arm64
+            #                     | change '^' to '- '
+            grep -ve "$(echo "$1" | sed 's/^/- /g')"
             true
           }
-          ALL_UPDATED_APPS="${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_bookworm_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_trixie_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.UPDATED_APPS_trixie_arm64}}"
+          ALL_UPDATED_APPS="${{needs.get-latest-app-versions.outputs.UPDATED_APPS}}"
           ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | sort -u | awk NF)"
           [ ! -z "$ALL_UPDATED_APPS" ] && ALL_UPDATED_APPS="$(echo "$ALL_UPDATED_APPS" | list_subtract "$ALL_FAILED_APPS")"
           [ ! -z "$ALL_UPDATED_APPS" ] && COMMIT_TITLE="$(echo "$ALL_UPDATED_APPS" | awk -F '^- |-all:|-armhf:|-arm64:' '{print $2}' | sort -u | sed ':a;N;$!ba;s/\n/, /g' | sed -e 's/$/: Update App Versions/')"
