@@ -325,19 +325,19 @@ jobs:
             arm64_fail=0
             error_string+='![badge-error][badge-error]'" Failed to install $app on "
 
-            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}" | grep -Fxq "$app"; then
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}" | grep -q "^$app-"; then
               error_string+="bookworm armhf, "
               armhf_fail=1
             fi
-            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -Fxq "$app"; then
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -q "^$app-"; then
               error_string+="bookworm arm64, "
               arm64_fail=1
             fi
-            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}" | grep -Fxq "$app"; then
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}" | grep -q "^$app-"; then
               error_string+="trixie armhf, "
               armhf_fail=1
             fi
-            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}" | grep -Fxq "$app"; then
+            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}" | grep -q "^$app-"; then
               error_string+="trixie arm64, "
               arm64_fail=1
             fi
