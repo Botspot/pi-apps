@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=4.5.2.251150648
+version=4.6.5.253511702
 
 if package_installed musescore ;then
   status "First removing musescore package with APT..."
