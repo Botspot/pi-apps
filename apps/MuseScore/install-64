@@ -1,17 +1,6 @@
 #!/bin/bash
 
-version_armhf=4.5.2.251150648
-version_arm64=4.5.2.251150648
-
-if [ $arch == 32 ];then
-  version_select="$version_armhf"
-  url_arch=armv7l
-elif [ $arch == 64 ];then
-  version_select="$version_arm64"
-  url_arch=aarch64
-else
-  error "Failed to detect OS CPU architecture! Something is very wrong."
-fi
+version=4.5.2.251150648
 
 if package_installed musescore ;then
   status "First removing musescore package with APT..."
@@ -20,7 +9,7 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version_select%.*}/MuseScore-Studio-${version_select}-${url_arch}.AppImage" || exit 1
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version%.*}/MuseScore-Studio-${version}-aarch64.AppImage" || exit 1
 
 chmod +x "/tmp/MuseScore.AppImage"
 

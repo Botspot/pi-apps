@@ -1,0 +1,28 @@
+#!/bin/bash
+
+version=4.5.2.251150648
+
+if package_installed musescore ;then
+  status "First removing musescore package with APT..."
+  sudo apt purge musescore -y --autoremove || exit 1
+fi
+
+enable_module fuse || exit 1
+
+wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version%.*}/MuseScore-Studio-${version}-armv7l.AppImage" || exit 1
+
+chmod +x "/tmp/MuseScore.AppImage"
+
+#Use built-in install procedure
+sudo /tmp/MuseScore.AppImage install || error "MuseScore.AppImage failed to run its own installation procedure. Please review errors above."
+#this moves itself to /usr/local/bin/MuseScore.AppImage
+
+#make terminal command
+sudo rm -f /usr/local/bin/mscore
+sudo ln -s /usr/local/bin/MuseScore.AppImage /usr/local/bin/mscore
+
+#remove "Portable" from menu button
+sudo sed -i 's/ Portable$//g' /usr/local/share/applications/org.musescore.MuseScore4portable.desktop
+# update timestamp of top level icon directory to signal icon cache to be refreshed
+sudo touch /usr/local/share/icons
+true #in case touch fails
