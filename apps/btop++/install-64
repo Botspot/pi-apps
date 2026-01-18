@@ -1,15 +1,15 @@
 #!/bin/bash
-version=1.4.5
+version=1.4.6
 
 install_packages make || exit 1
 
 cd /tmp
 rm -rf btop
-wget https://github.com/aristocratos/btop/releases/download/v${version}/btop-aarch64-linux-musl.tbz || error 'Failed to download "btop-aarch64-linux-musl.tbz"!'
-tar -xjf btop-aarch64-linux-musl.tbz || error 'Failed to decompress "btop-aarch64-linux-musl.tbz"!'
+wget https://github.com/aristocratos/btop/releases/download/v${version}/btop-aarch64-unknown-linux-musl.tbz || error 'Failed to download "btop-aarch64-unknown-linux-musl.tbz"!'
+tar -xjf btop-aarch64-unknown-linux-musl.tbz || error 'Failed to decompress "btop-aarch64-unknown-linux-musl.tbz"!'
 cd btop || error 'Could not enter btop directory'
 sudo make -B install || error 'Failed to install btop with "sudo make install"!'
-rm -rf /tmp/btop /tmp/btop-aarch64-linux-musl.tbz || sudo rm -rf /tmp/btop /tmp/btop-aarch64-linux-musl.tbz || error 'Failed to remove install directory!'
+rm -rf /tmp/btop /tmp/btop-aarch64-unknown-linux-musl.tbz || sudo rm -rf /tmp/btop /tmp/btop-aarch64-unknown-linux-musl.tbz || error 'Failed to remove install directory!'
 
 echo "[Desktop Entry]
 Name=btop++
