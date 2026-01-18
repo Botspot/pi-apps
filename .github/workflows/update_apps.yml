@@ -380,6 +380,9 @@ jobs:
 
           done
           true
+          echo "ALL_FAILED_APPS<<EOF" >> $GITHUB_ENV
+          echo "$ALL_FAILED_APPS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           echo "ALL_FAILED_APPS_ERROR_STRING<<EOF" >> $GITHUB_ENV
           echo "$error_string" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
