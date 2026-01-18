@@ -4,8 +4,8 @@ purge_packages || exit 1
 
 rm_external_repo "adoptium"
 
-echo "Deleting /opt/pycharm-community directory"
-sudo rm -rf /opt/pycharm-community || error "Failed to delete /opt/pycharm-community directory"
-sudo rm -f ~/.local/share/applications/jetbrains-pycharm-ce.desktop /usr/local/share/applications/jetbrains-pycharm-ce.desktop
+echo "Deleting pycharm directory"
+sudo rm -rf /opt/pycharm-community /opt/pycharm || error "Failed to delete pycharm directory"
+sudo rm -f ~/.local/share/applications/jetbrains-pycharm-ce.desktop /usr/local/share/applications/jetbrains-pycharm-ce.desktop /usr/local/share/applications/jetbrains-pycharm.desktop
 # cleanup files leftover from potential failed install
-rm -rf $HOME/pycharm-community.tar.gz $HOME/pty4j $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
+rm -rf $HOME/pycharm-community.tar.gz $HOME/pycharm.tar.gz $HOME/pty4j $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip

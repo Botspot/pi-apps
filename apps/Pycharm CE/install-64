@@ -1,27 +1,27 @@
 #!/bin/bash
 
-version=2025.2.4
+version=2025.3.1.1
 
 install_packages python3-pip python3-dev || exit 1
 
-wget https://download.jetbrains.com/python/pycharm-community-${version}-aarch64.tar.gz -O pycharm-community.tar.gz || error "Failed to download pycharm-community.tar.gz"
-status "Extracting pycharm-community.tar.gz to /opt"
-sudo rm -rf /opt/pycharm-community && sudo mkdir -p /opt/pycharm-community
-sudo tar xzf pycharm-community.tar.gz -C /opt/pycharm-community || error "Failed to extract pycharm-community.tar.gz"
-sudo mv /opt/pycharm-community/*/* /opt/pycharm-community/
-sudo chmod +x /opt/pycharm-community/bin/pycharm.sh
+wget https://download.jetbrains.com/python/pycharm-$version-aarch64.tar.gz -O pycharm.tar.gz || error "Failed to download pycharm.tar.gz"
+status "Extracting pycharm.tar.gz to /opt"
+sudo rm -rf /opt/pycharm && sudo mkdir -p /opt/pycharm
+sudo tar xzf pycharm.tar.gz -C /opt/pycharm || error "Failed to extract pycharm.tar.gz"
+sudo mv /opt/pycharm/*/* /opt/pycharm/
+sudo chmod +x /opt/pycharm/bin/pycharm.sh
 
 status "Creating desktop shortcut ..."
 echo "[Desktop Entry]
 Type=Application
-Name=PyCharm Community Edition
+Name=PyCharm
 Icon=$(dirname "$0")/icon-64.png
-Exec=/opt/pycharm-community/bin/pycharm.sh
+Exec=/opt/pycharm/bin/pycharm.sh
 Comment=Python IDE
 Categories=Development;IDE;Programming;
 Terminal=false
-StartupWMClass=jetbrains-pycharm-ce
-StartupNotify=true" | sudo tee /usr/local/share/applications/jetbrains-pycharm-ce.desktop
+StartupWMClass=jetbrains-pycharm
+StartupNotify=true" | sudo tee /usr/local/share/applications/jetbrains-pycharm.desktop
 
 #cleanup
-rm -rf $HOME/pycharm-community.tar.gz $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip
+sudo rm -rf $HOME/pycharm.tar.gz $HOME/fsnotifier-pycharm-rpi  $HOME/fsnotifier-pycharm-rpi.zip /usr/local/share/applications/jetbrains-pycharm-ce.desktop
