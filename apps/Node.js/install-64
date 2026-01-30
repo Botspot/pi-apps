@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version=v24.13.0
-version2=v0.40.3
+version2=v0.40.4
 
 if ! command -v curl >/dev/null ; then
   echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
