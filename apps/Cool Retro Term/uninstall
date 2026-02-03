@@ -1,8 +1,7 @@
 #!/bin/bash
 rm -rf ~/.cache/cool-retro-term
-rm -rf ~/cool-retro-term
+rm -rf ~/cool-retro-term ~/.local/share/cool-retro-term
 rm -f ~/.local/share/applications/crt.desktop
+sudo rm -f /usr/share/icons/hicolor/*/apps/cool-retro-term.png /usr/share/applications/cool-retro-term.desktop /usr/bin/cool-retro-term
 
 purge_packages || error "Dependencies failed to uninstall"
-
-rm -rf ~/.local/share/cool-retro-term ~/cool-retro-term

@@ -6,29 +6,21 @@ install_packages build-essential qmlscene qt5-qmake qtbase5-dev qtchooser qtdecl
   qml-module-qtquick-dialogs qml-module-qtquick-localstorage qml-module-qtquick-window2 qml-module-qt-labs-settings \
   qml-module-qt-labs-folderlistmodel || error "Failed to install dependencies"
 # install qt5-default if its availabe in apt (necessary on debian/ubuntu versions prior to bullseye/hirsute)
-package_available qt5-default
-if [[ $? == "0" ]]; then
+
+if package_available qt5-default ; then
   install_packages qt5-default || error "Failed to install dependencies"
 fi
-# Remove cool-retro-term folder first
-rm -rf cool-retro-term || sudo rm -rf cool-retro-term 
 
-# Get CRT from github
-git_clone --recursive https://github.com/Swordfish90/cool-retro-term || error "failed to clone repository!"
+# Get CRT version qt5 from github
+git_clone --recursive -b qt5 https://github.com/Swordfish90/cool-retro-term || error "failed to clone repository!"
 # Compile
 cd cool-retro-term || error "failed on cd step!"
 qmake || error "failed on qmake step!"
 make -j8 || error "failed on make step!"
-cp -rf qmltermwidget/src/qmldir qmltermwidget/lib/kb-layouts qmltermwidget/lib/color-schemes qmltermwidget/src/QMLTermScrollbar.qml qmltermwidget/QMLTermWidget
+sudo make install || error "failed to sudo make install!"
+cd ..
+rm -rf ./cool-retro-term
 
-echo "[Desktop Entry]
-Comment=Use the command line the old way
-Exec=$HOME/cool-retro-term/cool-retro-term
-GenericName=Terminal emulator
-Icon=$HOME/cool-retro-term/app/icons/64x64/cool-retro-term.png
-Name=Cool Retro Term
-Categories=GTK;System;TerminalEmulator;
-StartupNotify=true
-Terminal=false
-Type=Application
-Keywords=shell;prompt;command;commandline;console;command line;execute;" > ~/.local/share/applications/crt.desktop
+#refresh icon caches
+sudo update-icon-caches /usr/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
