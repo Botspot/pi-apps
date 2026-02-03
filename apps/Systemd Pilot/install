@@ -1,4 +1,8 @@
 #!/bin/bash
 
 version=3.0.0
-install_packages https://github.com/mfat/systemd-pilot/releases/download/v3.0/systemd-pilot_${version}-1_all.deb || exit 1
+wget https://github.com/mfat/systemd-pilot/releases/download/v3.0/systemd-pilot_${version}-1_all.deb -O /tmp/systemd-pilot.deb || exit 1
+status "Patching deb file to install on Trixie..."
+patch_deb_sed /tmp/systemd-pilot.deb 's/policykit-1, pkexec$/policykit-1 | pkexec, policykit-1 | polkitd/g' || exit 1
+status_green Done
+install_packages /tmp/systemd-pilot.deb || exit 1
