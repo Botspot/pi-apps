@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=VARA%20Products/VARA%20HF%20v4.9.0%20%20setup.zip
+
 APPDIR="${HOME}"/.local/share/applications
 
 #Installing wine
@@ -14,11 +16,11 @@ BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
 
 #Downloading VARA HF
 VARAHFDIR=/tmp/VARAHF
-mkdir "${VARAHFDIR}" 2>/dev/null
-wget -q -r -l1 -np -nd "https://downloads.winlink.org/VARA%20Products" -A "VARA HF*setup.zip" -P "${VARAHFDIR}" || error 'Failed to download VARA HF Installer from winlink.org'
+mkdir -p "${VARAHFDIR}"
+wget "https://downloads.winlink.org/$version" -O "${VARAHFDIR}/VARA-setup.zip" || error 'Failed to download VARA HF Installer from winlink.org'
 
 #Extracting VARA HF installer archives
-unzip -o "${VARAHFDIR}/VARA HF*setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
+unzip -o "${VARAHFDIR}/VARA-setup.zip" -d "${VARAHFDIR}" || error 'Failed to unzip VARA HF archive'
 VARAINSTALLEREXE=$(find "${VARAHFDIR}" -type f -iname "*setup*.exe")
 
 #Manually installing VARA HF program files
