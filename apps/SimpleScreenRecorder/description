@@ -1,4 +1,7 @@
 Feature-rich screen recorder for X11 and OpenGL
+NOTE: THIS WILL NOT WORK on Wayland desktops! For that, go try out the Botspot Screen Recorder app.
+
+
 Simple Screen Recorder is, despite its name, an actually feature-rich screen recorder. The name reflects the fact that it is simple to use unlike many other free screen recording applications available. It can be easily configured to start recording from an intuitive wizard-like interface.
 
 It can record the entire screen or part of it directly.  The recording can be paused and resumed at any time. Many different file formats and codecs are supported. To perform an X11 recording, all it takes is selecting an area on the root window with the mouse, choosing an output file and pressing record, either by using the mouse or using a hotkey.
