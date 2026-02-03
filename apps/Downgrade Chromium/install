@@ -130,22 +130,7 @@ for filename in ${filenames[*]} ;do
   if dpkg-deb -I "$filename" | grep -q 'Depends:.*libraspberrypi0' ;then
     #this package needs to be patched to not depend on libraspberrypi0
     status "Patching $(basename "$filename") package to not depend on libraspberrypi0..."
-    rm -rf "$filename"-repack
-    mkdir "$filename"-repack
-    
-    #extract the package
-    status -n 'Extracting... '
-    dpkg-deb -R "$filename" "$filename"-repack || error "Failed to extract deb"
-    rm "$filename"
-    status_green Done
-    
-    #remove libraspberrypi0 dependency
-    sed -i 's/, libraspberrypi0//g ; s/libraspberrypi0//g' "$filename"-repack/DEBIAN/control
-    
-    #repack as a deb
-    status "Repackaging..."
-    dpkg-deb -b "$filename"-repack "$filename" || error "Failed to repack deb"
-    rm -rf "$filename"-repack
+    patch_deb_sed "$filename" 's/, libraspberrypi0//g ; s/libraspberrypi0//g'
     status_green Done
   fi
 done
@@ -188,7 +173,11 @@ if [ "$simulate" != yes ];then
 fi
 
 if [ "$version" -le 88 ] && [ "$(get_codename)" == 'bullseye' ];then
-  status "Fixing seccomp errors for Chromium $version on Bullseye."
+  status "Fixing seccomp errors for Chromium $version on Bullseye..."
+  echo "Creating an override file at /etc/chromium-browser/customizations/01-disable-seccomp"
+  echo 'CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --disable-seccomp-filter-sandbox"' | sudo tee /etc/chromium-browser/customizations/01-disable-seccomp
+elif [ "$version" -le 92 ] && [ "$(get_codename)" == 'trixie' ];then
+  status "Fixing seccomp errors for Chromium $version on Trixie..."
   echo "Creating an override file at /etc/chromium-browser/customizations/01-disable-seccomp"
   echo 'CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --disable-seccomp-filter-sandbox"' | sudo tee /etc/chromium-browser/customizations/01-disable-seccomp
 fi
