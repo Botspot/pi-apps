@@ -1,0 +1,14 @@
+Suggests which package to install if command not found
+This makes the terminal much easier to use. If you try to run a command that does not exist, this will either suggest the right package to install, or try to suggest similar names if no exact matches are found. This tool is so helpful that it comes by default on Ubuntu, but not Pi OS for whatever reason.
+
+It changes this:
+    $ filezilla
+    bash: filezilla: command not found
+To this:
+    $ filezilla
+    Command 'filezilla' not found, but can be installed with:
+    sudo apt install filezilla
+
+IMPORTANT: After installation, if it seems to do nothing, run this command:
+sudo update-command-not-found
+Then open a new terminal and try running a program that is not installed.
