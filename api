@@ -3621,6 +3621,10 @@ enable_module() { #Permanent equivalent to modprobe, this will load the module o
   # this check is not foolproof on all kernels so some may still have the module builtin and fail the below check
   if [[ "$(modinfo --filename "$module")" == "(builtin)" ]]; then
     return 0
+  elif [ "$module" == binder_linux ] && grep ' binder$' /proc/devices ;then
+    #workaround for binder_linux not showing as '(builtin)' for some reason on 6.18, even though it's there.
+    #see https://github.com/raspberrypi/linux/issues/7219
+    return 0
   fi
 
   #load the module now if not already loaded
