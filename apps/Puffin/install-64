@@ -4,5 +4,14 @@
 # https://github.com/ZhymabekRoman/Puffin-Browser-on-Linux/issues/2
 
 warning "Puffin is a pretty bad browser. Please be sure to read the Pi-Apps descripton for this app to see why. If you use Puffin a lot, try to find a different browser that works for you."
-install_packages https://download.puffinbrowser.com/repo/pool/stable/arm64/puffin-internet-terminal-demo_8.2.4.705_arm64.deb || exit 1
+
+wget https://download.puffinbrowser.com/repo/pool/stable/arm64/puffin-internet-terminal-demo_8.2.4.705_arm64.deb -O /tmp/puffin.deb || exit 1
+status "Repackaging deb to work around libgdk-pixbuf2.0-0 issue..."
+cd /tmp
+dpkg-deb -R /tmp/puffin.deb puffin-fix
+sed -i 's/libgdk-pixbuf2\.0-0/libgdk-pixbuf2.0-0 | libgdk-pixbuf-2.0-0/g' puffin-fix/DEBIAN/control
+dpkg-deb -b puffin-fix puffin.deb
+rm -r puffin-fix
+status_green "Finished repackaging deb"
+install_packages $PWD/puffin.deb || exit 1
 warning "Puffin is a pretty bad browser. Please be sure to read the Pi-Apps descripton for this app to see why. If you use Puffin a lot, try to find a different browser that works for you."
