@@ -1040,6 +1040,9 @@ patch_deb_sed() { #with the $1 deb package, apply the $2 sed string to the deb's
   elif [ -f "$workdir/control.tar.xz" ]; then
     rm -f "$workdir/control.tar.xz"
     (cd "$workdir" && tar --owner=0 --group=0 -cJf "$workdir/control.tar.xz" -C "$workdir" ./*) || error "patch_deb_sed(): Repacking new control tar failed"
+  elif [ -f "$workdir/control.tar.zst" ]; then
+    rm -f "$workdir/control.tar.zst"
+    (cd "$workdir" && tar --owner=0 --group=0 --zstd -cf "$workdir/control.tar.zst" -C "$workdir" ./*) || error "patch_deb_sed(): Repacking new control tar failed"
   else
     error "Somehow neither control.tar.xz nor control.tar.gz exist in $workdir."
   fi
