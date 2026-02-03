@@ -999,6 +999,60 @@ adoptium_installer() {
   fi
 }
 
+patch_deb_sed() { #with the $1 deb package, apply the $2 sed string to the deb's control file, then repackage the deb
+  local deb="$1"
+  local sed_string="$2"
+  if [ -z "$deb" ];then
+    error "patch_deb_sed(): deb file must be specified as first argument."
+  elif [ ! -f "$deb" ];then
+    error "patch_deb_sed(): deb file '$deb' does not exist!"
+  elif [ -z "$sed_string" ];then
+    error "patch_deb_sed(): sed string must be provided as second argument"
+  fi
+  
+  local workdir="/tmp/patch-$(basename "$deb" | sed 's/\.deb$//g')"
+  rm -rf "$workdir"
+  mkdir -p "$workdir"
+  
+  #this is much faster than using dpkg-deb to repackage the deb, as we avoid touching data.tar
+  #however in case we ever encounter an edge case, here's the dpkg-deb method:
+  #dpkg-deb -R "$deb" "$workdir"
+  #sed -i "$sed_string" "$workdir"/DEBIAN/control
+  #dpkg-deb --root-owner-group -b "$workdir" "$deb"
+  
+  #extract only the control tarball from the ar archive to save time.
+  #ar ignores full paths, so we have to symlink the deb to the folder where we want extraction to take place.
+  ln -s "$deb" "$workdir/$(basename "$deb")"
+  (cd "$workdir/" && ar x "$(basename "$deb")" $(ar t "$deb" | grep 'control.tar')) || error "patch_deb_sed(): Extracting control file failed"
+  rm -f "$workdir/$(basename "$deb")" #remove the symlink
+  
+  #extract that to get the control file and all other files inside the workdir
+  tar -xf "$workdir"/control.tar.* -C "$workdir" || error "patch_deb_sed(): Failed to extract control.tar.*"
+  
+  #make the requested changes
+  sed -i "$sed_string" "$workdir"/control || error "patch_deb_sed(): sed failed to make the requested changes to the control file"
+  
+  #repack the control tarball with the new control file
+  #using "." ensures relative paths, --exclude ensures we don't archive the archive itself
+  if [ -f "$workdir/control.tar.gz" ]; then
+    rm -f "$workdir/control.tar.gz"
+    (cd "$workdir" && tar --owner=0 --group=0 -czf "$workdir/control.tar.gz" -C "$workdir" ./*) || error "patch_deb_sed(): Repacking new control tar failed"
+  elif [ -f "$workdir/control.tar.xz" ]; then
+    rm -f "$workdir/control.tar.xz"
+    (cd "$workdir" && tar --owner=0 --group=0 -cJf "$workdir/control.tar.xz" -C "$workdir" ./*) || error "patch_deb_sed(): Repacking new control tar failed"
+  else
+    error "Somehow neither control.tar.xz nor control.tar.gz exist in $workdir."
+  fi
+  #ar ignores full paths, so we have to symlink the deb to the folder where we want extraction to take place.
+  ln -s "$deb" "$workdir/$(basename "$deb")"
+  #swap the control.tar back into the .deb.
+  (cd "$workdir" && ar r "$(basename "$deb")" control.tar.*) || error "patch_deb_sed(): Swapping in new control tar failed"
+  
+  rm -rf "$workdir"
+}
+#end of apt functions
+
+#pipx functions
 pipx_install() {
   # install pipx keeping in mind distro issues
   # pipx < 0.16.0 is compatible with 3.6 <= python3 < 3.9
@@ -1027,6 +1081,7 @@ pipx_install() {
 pipx_uninstall() {
   sudo PIPX_HOME=/usr/local/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall "$@" || error "Failed to uninstall $* with pipx"
 }
+#end pipx functions
 
 remove_deprecated_app() { # prompts a user to uninstall a deprecated pi-apps application and then removes the application folder if it exists
   local app="$1" # on app name
@@ -1085,6 +1140,7 @@ Would you like to uninstall it now or leave it installed? You will NOT be able t
   return 0
 }
 
+#terminal-manage functions
 terminal_manage() { # wrapper for the original terminal_manage function to terminal_mange_multi
   action="$1"
   app="$2" #one app name
@@ -1115,7 +1171,7 @@ terminal_manage_multi() { #function to install/uninstall/update/refresh apps or 
     fi
   fi
 }
-#end of apt functions
+#end terminal-manage functions
 
 #flatpak functions
 flatpak_install() { #install an app using flatpak
