@@ -1,0 +1,16 @@
+Beautiful and powerful task manager
+
+Features:
+   * Monitor overall or per-thread CPU usage
+   * See system process, thread, and handle count, uptime, clock speed (base and current), cache sizes
+   * Monitor RAM and Swap usage
+   * See a breakdown how the memory is being used by the system
+   * Monitor Disk utilization and transfer rates
+   * Monitor network utilization and transfer speeds
+   * See network interface information such as network card name, connection type (Wi-Fi or Ethernet), wireless speeds and frequency, hardware address, IP address
+   * Monitor system fans (even the pi5's active cooler)
+   * See a breakdown of resource usage by app and process
+   * Supports a minified summary view for simple monitoring
+   * Use hardware accelerated rendering for all the graphs in an effort to reduce CPU and overall resource usage
+   * Uses GTK4 and Libadwaita
+   * Written in Rust
