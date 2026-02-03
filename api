@@ -2805,12 +2805,19 @@ For solutions, see: https://askubuntu.com/a/59517")
     error_type="system"
   fi
   
+  if grep -q "/usr/bin/sudo: Operation not permitted" <(echo "$errors") ;then
+    error_caption+=("Process could not complete because your sudo command is incorrectly set up.
+The error was: /usr/bin/sudo: Operation not permitted
+Most likely you messed up the file permissions of this file. Good luck fixing that.")
+    error_type="system"
+  fi
+  
   if grep -qF "cpp.o: file not recognized: file truncated" <(echo "$errors") ;then
     error_caption+=("Compiling failed. Try again, but please reach out to Pi-Apps developers for help if this same error keeps occurring.")
     error_type="system"
   fi
   
-  if grep -q "tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;\|This doesn't look like a squashfs image\.\|unexpected end of file or stream" <(echo "$errors") ;then
+  if grep -q "tar: .* Wrote only .* of .* bytes\|tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;\|This doesn't look like a squashfs image\.\|unexpected end of file or stream" <(echo "$errors") ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
