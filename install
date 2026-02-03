@@ -100,7 +100,7 @@ if [ ! -f ~/.local/share/applications/pi-apps.desktop ];then
   echo "Creating menu button..."
 fi
 mkdir -p ~/.local/share/applications
-if [ -f /etc/xdg/menus/lxde-pi-applications.menu ];then #If on PiOS, place launcher in Accessories as it has always been there and is more intuitive there
+if [ -f /etc/xdg/menus/lxde-pi-applications.menu ] || [ -f /etc/xdg/menus/rpd-applications.menu ];then #If on PiOS, place launcher in Accessories as it has always been there and is more intuitive there
 echo "[Desktop Entry]
 Name=Pi-Apps
 Comment=Raspberry Pi App Store for open source projects
