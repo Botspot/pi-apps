@@ -6,3 +6,4 @@ status "Patching deb file to install on Trixie..."
 patch_deb_sed /tmp/systemd-pilot.deb 's/policykit-1, pkexec$/policykit-1 | pkexec, policykit-1 | polkitd/g' || exit 1
 status_green Done
 install_packages /tmp/systemd-pilot.deb || exit 1
+rm -f /tmp/systemd-pilot.deb
