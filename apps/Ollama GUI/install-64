@@ -21,7 +21,7 @@ else
   sudo install -o0 -g0 -m755 -d /usr/local/bin
   sudo install -o0 -g0 -m755 -d "/usr/local"
   status "Downloading Linux arm64 bundle"
-  wget -O- "https://ollama.com/download/ollama-linux-arm64.tgz" | sudo tar -xzf - -C "/usr/local"
+  wget -qO- "https://ollama.com/download/ollama-linux-arm64.tgz" | sudo tar -xzf - -C "/usr/local"
   
   sudo touch "$version_checker_file"
 fi

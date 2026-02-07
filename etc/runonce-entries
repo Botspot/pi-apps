@@ -63,7 +63,7 @@ EOF
 runonce <<"EOF"
   if [[ -f /usr/share/keyrings/steam.gpg ]] && [[ "$(sha1sum /usr/share/keyrings/steam.gpg)" == f8d3c165d2e45083c4d0bf775608c46f479f2443* ]];then
     status "Patching steam GPG key..."
-    wget -O- https://repo.steampowered.com/steam/archive/stable/steam.gpg | sudo_popup tee /usr/share/keyrings/steam.gpg >/dev/null
+    wget -qO- https://repo.steampowered.com/steam/archive/stable/steam.gpg | sudo_popup tee /usr/share/keyrings/steam.gpg >/dev/null
     #sha1sum should now be 4534753e1b86196ccbe11feffe3ed99b22fbf50a
   fi
 EOF
