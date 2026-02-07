@@ -33,6 +33,13 @@ echo "Installing steam_latest.deb"
 # the steam_latest.deb pointed to 1.0.0.81 until very recently
 install_packages https://repo.steampowered.com/steam/archive/stable/steam-launcher_1.0.0.81_all.deb || exit 1
 
+#patch steam signing key to fix debian trixie warning: Policy rejected non-revocation signature (PositiveCertification) requiring second pre-image resistance   because: SHA1 is not considered secure since 2026-02-01T00:00:00Z
+if [[ "$(sha1sum /usr/share/keyrings/steam.gpg)" == f8d3c165d2e45083c4d0bf775608c46f479f2443* ]];then
+  status "Patching steam GPG key..."
+  wget -O- https://repo.steampowered.com/steam/archive/stable/steam.gpg | sudo tee /usr/share/keyrings/steam.gpg > /dev/null
+  #sha1sum should now be 4534753e1b86196ccbe11feffe3ed99b22fbf50a
+fi
+
 #check if terminal choice was changed after steam was installed
 if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
   #restore previous choice
