@@ -59,6 +59,15 @@ runonce <<"EOF"
   fi
 EOF
 
+#patch steam signing key to fix debian trixie warning: Policy rejected non-revocation signature (PositiveCertification) requiring second pre-image resistance   because: SHA1 is not considered secure since 2026-02-01T00:00:00Z
+runonce <<"EOF"
+  if [[ -f /usr/share/keyrings/steam.gpg ]] && [[ "$(sha1sum /usr/share/keyrings/steam.gpg)" == f8d3c165d2e45083c4d0bf775608c46f479f2443* ]];then
+    status "Patching steam GPG key..."
+    wget -O- https://repo.steampowered.com/steam/archive/stable/steam.gpg | sudo_popup tee /usr/share/keyrings/steam.gpg >/dev/null
+    #sha1sum should now be 4534753e1b86196ccbe11feffe3ed99b22fbf50a
+  fi
+EOF
+
 # remove deprecated apps (only when running in a visible terminal)
 case $(ps -o stat= -p $$) in
   *+*) # Running in foreground
