@@ -118,7 +118,11 @@ while [ "$(waydroid prop get sys.boot_completed 2>/dev/null)" != "1" ];do
   sleep 1
   i=$((i+1))
   if [ "$i" -ge 10 ] && ! waydroid status | grep -q "^Session:.*RUNNING$" ;then
-    error "Waydroid session failed to start in 10 seconds!\nOutput from running sudo /usr/lib/waydroid/data/scripts/waydroid-net.sh start:\n$(sudo /usr/lib/waydroid/data/scripts/waydroid-net.sh start 2>&1)"
+    error "Waydroid session failed to start in 10 seconds!
+Output from running sudo /usr/lib/waydroid/data/scripts/waydroid-net.sh start:
+$(sudo /usr/lib/waydroid/data/scripts/waydroid-net.sh start 2>&1)
+Today's contents of /var/lib/waydroid/waydroid.log:
+$(grep "$(date '+%d %b %Y')" /var/lib/waydroid/waydroid.log)"
   fi
 done
 status_green Done
