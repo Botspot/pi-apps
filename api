@@ -2775,6 +2775,11 @@ If you are overclocking, try reverting to stock clocks. Additionally, check your
     error_type="internet"
   fi
   
+  if grep -q "Can't load uri https://flathub\.org/repo/flathub\.flatpakrepo: Server returned status 503\|error: Unable to load summary from remote flathub: " <(echo "$errors") ;then
+    error_caption+=("Flatpak servers seem to be down right now. Please wait a few minutes, then click the Retry button.")
+    error_type="internet"
+  fi
+  
   if grep -q "The TLS connection was non-properly terminated\.\|Can't load uri .* Unacceptable TLS certificate" <(echo "$errors") ;then
     error_caption+=("Your system seems to be having trouble with TLS connections.
 
