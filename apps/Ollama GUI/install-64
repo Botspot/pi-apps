@@ -8,7 +8,7 @@ install_packages python3-tk python3-ttkthemes || exit 1
 TEMP_DIR=$(mktemp -d)
 
 #avoid removing and re-downloading ollama on any future script updates, unless we need to, in which case bump the version file
-version_checker_file="/usr/local/lib/ollama/pi-apps-v1"
+version_checker_file="/usr/local/lib/ollama/pi-apps-v2"
 if [ -f "$version_checker_file" ]; then
   true #don't touch ollama installation
 else
