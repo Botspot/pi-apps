@@ -7,6 +7,8 @@ purge_packages || exit 1
 sudo rm -f /lib/udev/rules.d/60-steam-*.rules || error "Failed to remove /lib/udev/rules.d/60-steam-*.rules"
 sudo rm -rf /usr/local/bin/steam /usr/local/share/applications/steam.desktop /usr/share/applications/steam.desktop ~/Desktop/steam.desktop || error "Failed to remove steam files and folders"
 
+killall -9 steam steamwebhelper 2>/dev/null
+
 if [[ "$1" != "update" ]];then
   # remove game downloads, saves, and cached files
   sudo rm -rf ~/.steam ~/.local/share/Steam
