@@ -1,0 +1,6 @@
+#!/bin/bash
+
+version=4.2.0
+
+# Install some packages that are necessary to run this app - no need for "error", as the install_packages function already handles errors.
+install_packages https://github.com/chrismaltby/gb-studio/releases/download/v${version}/gb-studio-linux-arm64-debian.deb || exit 1
