@@ -72,7 +72,10 @@ rm -rf ~/.local/share/Steam/ubuntu12_32/crashhandler.so /tmp/bootstraplinux_ubun
 # move official steam.desktop file to /usr/local and edit it (move it so users ignoring the reboot warning cannot find the wrong launcher)
 # we can't edit the official steam.desktop file since this will get overwritten on a steam update (steam adds its own apt repo)
 # if a matching name .desktop file is found in /usr/local/share/applications it takes priority over /usr/share/applications
-sudo mv -f /usr/share/applications/steam.desktop /usr/local/share/applications/steam.desktop
+if [ ! -f /usr/local/share/applications/steam.desktop ];then
+  #fix issue where running this install script twice would create a self-referencing symlink and overwrite the actual text file
+  sudo mv -f /usr/share/applications/steam.desktop /usr/local/share/applications/steam.desktop
+fi
 sudo sed -i 's:Exec=/usr/bin/steam:Exec=/usr/local/bin/steam:' /usr/local/share/applications/steam.desktop
 #symlink to original location to prevent first-run steam exit when file is missing, and to prevent /usr/local/share in PATH from being a hard requirement (Chances are the user will reboot before steam.deb gets an update)
 sudo ln -s /usr/local/share/applications/steam.desktop /usr/share/applications/steam.desktop
