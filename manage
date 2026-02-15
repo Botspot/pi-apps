@@ -753,7 +753,9 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     #check for internet connection
     errors="$(command wget --spider https://github.com 2>&1)"
     if [ $? != 0 ];then
-      error "No internet connection! (github.com failed to respond)\nErrors:\n$errors"
+      if ! command wget --spider https://google.com &>/dev/null ;then
+        error "No internet connection! (github.com failed to respond)\nErrors:\n$errors"
+      fi
     fi
   fi
   
