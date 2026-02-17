@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo rm -rf /usr/local/share/applications/gtk-pipe-viewer.desktop /usr/local/share/icons/hicolor/64x64/apps/gtk-pipe-viewer.png /usr/local/bin/gtk-pipe-viewer /usr/local/bin/pipe-viewer \
-  /usr/local/man/man3/WWW::PipeViewer* /usr/local/share/perl/*/WWW/PipeViewer /usr/local/share/perl/*/auto/share/dist/WWW-PipeViewer
+  /usr/local/man/man3/WWW::PipeViewer* /usr/local/share/perl/*/WWW/PipeViewer /usr/local/share/perl/*/auto/share/dist/WWW-PipeViewer ~/.local/share/applications/gtk-pipe-viewer.desktop
 
 #Allow packages required by this app to be uninstalled
 purge_packages || exit 1

@@ -54,3 +54,6 @@ sudo sed -i 's/{--really-quiet/{--window-maximized --really-quiet/g' /usr/local/
 #change default config to use 1080p videos maximum resolution
 sudo sed -i 's/resolution    => '\''best'\'',/resolution    => 1080,/g' /usr/local/bin/pipe-viewer
 sudo sed -i 's/resolution       => '\''best'\'',/resolution       => 1080,/g' /usr/local/bin/gtk-pipe-viewer
+
+#make local desktop launcher that uses pi-apps api to update yt-dlp on every launch
+sed 's|Exec=.*|Exec=bash -c "'${DIRECTORY}'/etc/terminal-run "\\\""app='\''YouTube Player'\'' '${DIRECTORY}'/api pipx_install yt-dlp"\\\"" '\''Updating yt-dlp...'\'' ; gtk-pipe-viewer"|g' /usr/local/share/applications/gtk-pipe-viewer.desktop > ~/.local/share/applications/gtk-pipe-viewer.desktop
