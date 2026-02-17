@@ -2800,6 +2800,12 @@ Here are some suggested mitigations for your bad internet connection: https://st
     error_type="internet"
   fi
   
+  if grep -q "dnsmasq: failed to create listening socket for .*: Address already in use" "$logfile" ;then
+    error_caption+=("It seems some other service on your system is binding ports 53 or 67. This could be some other Docker or PiHole service running on your device.
+If you are reading this, WE WANT YOUR HELP. Reach out on Github or Discord. We believe Waydroid can be patched to avoid this issue, but we need someone who has encountered this issue first-hand.")
+    error_type="unknown"
+  fi
+  
   if grep -q "modprobe: FATAL: Module .* not found in directory" "$logfile" ;then
     error_caption+=("Something is wrong with the kernel modules. Try rebooting if your kernel was upgraded.
 
