@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sudo rm -rf ~/RPiPlay
+sudo rm -f /usr/local/bin/rpiplay || error "Failed to remove /usr/local/bin/rpiplay binary."
+sudo rm -f /usr/local/bin/startrpiplay || error "Failed to remove /usr/local/bin/startrpiplay script."
+
+purge_packages || exit 1
