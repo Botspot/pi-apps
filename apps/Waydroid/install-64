@@ -128,14 +128,21 @@ done
 status_green Done
 
 if [ "$init_google" == yes ];then
-  id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" | awk -F'|' '{print $2}')"
-  if [ -z "$id" ];then
-    sleep 30 #giving it time sometimes helps
-    id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" | awk -F'|' '{print $2}')"
-    if [ -z "$id" ];then
-      error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above. Raw output was '$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'")'"
+  id=''
+  i=0
+  while [ -z "$id" ];do
+    id="$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" 2>/dev/null | awk -F'|' '{print $2}')"
+    if [ ! -z "$id" ];then
+      break
+    elif [ $((i%6)) == 2 ];then
+      warning "Android has booted, but it's taking longer than usual for the Lineage OS image to get assigned a android_id from Google's servers. Make sure you are connected to the Internet. Will keep trying... (attempt $i of 90)"
+    elif [ "$i" == 90 ];then
+      error "Failed to get android_id from the Lineage OS image. Perhaps it did not initialize fully? Please refer to errors above. Raw output was '$(sudo waydroid shell -- sh -c "sqlite3 /data/data/*/*/gservices.db 'select * from main where name = \"android_id\";'" 2>&1)'"
     fi
-  fi
+    sleep 10
+    i=$((i+1))
+  done
+  #id is now set beyond this point
   x-www-browser 'https://www.google.com/android/uncertified' &
   
   echo "$id" | yad "${yadflags[@]}" --text='A browser should have opened <a href="https://www.google.com/android/uncertified">google.com/android/uncertified</a>.'$'\n''Paste this Android ID into the box, then click Register:' \
