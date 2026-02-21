@@ -1,0 +1,11 @@
+#!/bin/bash
+
+sudo rm -rf $HOME/.cache/antigravity-48bit-workaround /etc/apt/sources.list.d/antigravity.list /etc/apt/keyrings/antigravity-repo-key.gpg || error 'Failed to remove the GPG key.'
+
+purge_packages || exit 1
+
+#only delete /usr/share/antigravity/resources/antigravity-48bit-workaround that contains our compiled linux kernel if this isn't an update-reinstall
+if ! [ "$1" == update ];then
+  #dpkg won't remove this directory, it will say "dpkg: warning: while removing antigravity, directory '/usr/share/antigravity/resources' not empty so not removed"
+  sudo rm -rf /usr/share/antigravity
+fi

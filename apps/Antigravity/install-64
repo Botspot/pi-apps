@@ -1,0 +1,180 @@
+#!/bin/bash
+
+sudo modprobe kvm || true
+if [ ! -e /dev/kvm ];then
+  error "Unfortunately, your system is not compatible with this app. Your kernel is missing the KVM module. Please switch to a kernel that has this feature, or ask for help."
+fi
+
+status -n "Adding the Google Antigravity repository..."
+
+# Create the keyrings directory
+sudo mkdir -p /etc/apt/keyrings || error 'Failed to create keyrings directory.'
+
+# Download and de-armor the GPG key
+curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | \
+  sudo gpg --dearmor --yes -o /etc/apt/keyrings/antigravity-repo-key.gpg \
+  || error 'Error downloading the GPG key.'
+
+# Add the repository source to sources.list.d
+echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | \
+  sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null \
+  || error 'Error adding the repository source.'
+
+status_green Done
+
+warning "In order to run Antigravity's language server on a kernel without 48bit address space, we're setting up an emulated environment to run just this component. Please be patient."
+
+install_packages qemu-system-arm antigravity git bc bison flex libssl-dev make gcc libelf-dev || exit 1
+
+#fixes error when running /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm on any kernel with a 39bit address space: (all pi kernels except for the pi5's 16k pagesize kernel)
+#third_party/tcmalloc/internal/system_allocator.h:589] MmapAligned() failed - unable to allocate with tag (hint=0x2e6680000000, size=1073741824, alignment=1073741824) - is something limiting address placement?
+#third_party/tcmalloc/internal/system_allocator.h:596] Note: the allocation may have failed because TCMalloc assumes a 48-bit virtual address space size; you may need to rebuild TCMalloc with TCMALLOC_ADDRESS_BITS defined to your system's virtual address space size
+#third_party/tcmalloc/arena.cc:60] CHECK in Alloc: FATAL ERROR: Out of memory trying to allocate internal tcmalloc data (bytes=131072, object-size=16384); is something preventing mmap from succeeding (sandbox, VSS limitations)?
+
+#we have to run the binary under a compatible 48bit kernel, using kvm.
+#Then plumb its stdin, stdout, network communication, socket files, and a fifo, all back to the host OS.
+#this was beyond my human capability to figure out, and only possible because of ai. (pretty ironic, given the app's purpose) 
+
+if [ ! -f "/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-kernel-image" ];then
+  cd /tmp
+  status "Cloning Linux kernel source..."
+  git clone --depth=1 https://github.com/torvalds/linux.git -b v6.6 linux-kvm || error "failed to clone linux kernel source"
+  cd linux-kvm
+
+  #Generate the standard ARM64 config, then strip it down for a KVM guest
+  make ARCH=arm64 defconfig || error "command failed: make ARCH=arm64 defconfig"
+  make ARCH=arm64 kvm_guest.config || error "command failed: make ARCH=arm64 kvm_guest.config"
+
+  #Inject our custom hardware and virtualization overrides
+  # Force 48-bit memory (and explicitly disable 39-bit)
+  ./scripts/config -e CONFIG_ARM64_VA_BITS_48 -d CONFIG_ARM64_VA_BITS_39 || error "command failed: ./scripts/config 1"
+  ./scripts/config -e CONFIG_ARM64_4K_PAGES || error "command failed: ./scripts/config 2"
+  # Enable 9p Filesystem support (required for the -fsdev host root mount)
+  ./scripts/config -e CONFIG_NET_9P -e CONFIG_NET_9P_VIRTIO -e CONFIG_9P_FS -e CONFIG_9P_FS_POSIX_ACL || error "command failed: ./scripts/config 3"
+  # Enable Virtio PCI and Network drivers (required for QEMU hostfwd networking)
+  ./scripts/config -e CONFIG_VIRTIO_PCI -e CONFIG_VIRTIO_NET || error "command failed: ./scripts/config 4"
+  # Apply the changes cleanly and fix any broken dependencies
+  make ARCH=arm64 olddefconfig || error "command failed: make ARCH=arm64 olddefconfig"
+
+  # Compile ONLY the raw uncompressed kernel Image (using all available CPU cores)
+  status "Compiling kernel... This could take over 20 minutes."
+  nice make ARCH=arm64 -j$(nproc) Image || error "failed to compile custom linux kernel"
+  status_green Done
+
+  status "Moving compiled kernel to permanent storage..."
+  sudo rm -rf "/usr/share/antigravity/resources/antigravity-48bit-workaround"
+  sudo mkdir -p "/usr/share/antigravity/resources/antigravity-48bit-workaround"
+  sudo mv -f arch/arm64/boot/Image "/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-kernel-image" || error "Failed to move linux kernel to /usr/share/antigravity/resources/antigravity-48bit-workaround"
+  cd $HOME
+  rm -rf /tmp/linux-kvm
+fi
+
+#move problematic language server binary
+sudo mv -f /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm /usr/share/antigravity/resources/antigravity-48bit-workaround
+
+#make outer script that acts as language_server_linux_arm
+cat <<"EOF" | sudo tee /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh >/dev/null
+#!/bin/bash
+
+LOG_DIR="$HOME/.cache/antigravity-48bit-workaround"
+mkdir -p "$LOG_DIR"
+
+KERNEL="/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-kernel-image"
+GUEST_INIT="/usr/share/antigravity/resources/antigravity-48bit-workaround/guest_wrapper.sh"
+LOGFILE="$LOG_DIR/host.log"
+
+PORT=$((10000 + RANDOM % 10000))
+PIPE_PORT=$((PORT + 1))
+HOST_TIME=$(date +%s)
+
+#forward all environment variables to guest script
+export -p > "$LOG_DIR/lsp_env.sh"
+
+# Forward the Unix Pipe
+PIPE_PATH=$(echo "$@" | sed -n 's/.*--parent_pipe_path \([^ ]*\).*/\1/p')
+if [ -n "$PIPE_PATH" ]; then
+  socat TCP-LISTEN:$PIPE_PORT,bind=127.0.0.1,reuseaddr,fork UNIX-CONNECT:"$PIPE_PATH" 2>/dev/null &
+  SOCAT_PIPE=$!
+fi
+
+# Route host 4210x to guest 5210x to bypass loopback isolation
+HOSTFWD="hostfwd=tcp::42100-:52100,hostfwd=tcp::42101-:52101"
+
+# Boot QEMU with variables cleanly passed to the guest
+# We remove the --random_port variable so that it consistently uses 52100 and 52101
+qemu-system-aarch64 \
+  -machine virt,gic-version=max -cpu host -enable-kvm -m 1024 -smp 4 \
+  -no-reboot \
+  -kernel "$KERNEL" \
+  -fsdev local,security_model=none,id=fsdev0,path=/ \
+  -device virtio-9p-pci,fsdev=fsdev0,mount_tag=hostroot \
+  -netdev user,id=net0,$HOSTFWD \
+  -device virtio-net-pci,netdev=net0 \
+  -display none -serial null -monitor none \
+  -append "quiet loglevel=0 rw ip=dhcp panic=-1 root=hostroot rootfstype=9p rootflags=trans=virtio,version=9p2000.L HOME=$HOME USER=$USER LOG_DIR=$LOG_DIR PORT=$PORT PIPE_PORT=$PIPE_PORT HOST_TIME=$HOST_TIME init=$GUEST_INIT -- $(echo $* | sed 's/--random_port //g')" > "$LOGFILE" 2>&1 &
+QEMU_PID=$!
+
+# Ruthless cleanup to prevent zombie ports on IDE exit
+trap "pkill -P $$ 2>/dev/null; kill $QEMU_PID $SOCAT_PIPE 2>/dev/null" EXIT
+
+# The Main LSP Stream
+socat STDIO TCP-LISTEN:$PORT,bind=127.0.0.1,reuseaddr
+
+wait $QEMU_PID
+EOF
+
+#make inner script that runs inside of qemu and finally runs language_server_linux_arm
+cat <<"EOF" | sudo tee /usr/share/antigravity/resources/antigravity-48bit-workaround/guest_wrapper.sh >/dev/null
+#!/bin/bash
+
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+TARGET_BIN="/usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_linux_arm"
+
+# Isolate /tmp and fix DNS
+mount -t tmpfs tmpfs /tmp
+echo "nameserver 8.8.8.8" > /tmp/resolv.conf
+echo "nameserver 1.1.1.1" >> /tmp/resolv.conf
+mount --bind /tmp/resolv.conf /etc/resolv.conf
+
+# LOG_DIR is passed dynamically from the host kernel parameters
+source "$LOG_DIR/lsp_env.sh"
+
+date -s "@$HOST_TIME" > /dev/null
+
+HOST_IP="10.0.2.2" #qemu default
+
+# Map the internal pipe out to the host
+PIPE_PATH=$(echo "$@" | sed -n 's/.*--parent_pipe_path \([^ ]*\).*/\1/p')
+if [ -n "$PIPE_PATH" ] && [ -n "$PIPE_PORT" ]; then
+  socat UNIX-LISTEN:"$PIPE_PATH",fork TCP:$HOST_IP:$PIPE_PORT 2>/dev/null &
+fi
+
+# Map the extension server out to the host IDE
+EXT_PORT=$(echo "$@" | sed -n 's/.*--extension_server_port \([^ ]*\).*/\1/p')
+if [ -n "$EXT_PORT" ]; then
+  socat TCP-LISTEN:$EXT_PORT,bind=127.0.0.1,fork TCP:$HOST_IP:$EXT_PORT 2>/dev/null &
+fi
+
+# Bridge incoming QEMU traffic directly to the Go binary's localhost bindings
+socat TCP-LISTEN:52100,fork TCP:127.0.0.1:42100 2>/dev/null &
+socat TCP-LISTEN:52101,fork TCP:127.0.0.1:42101 2>/dev/null &
+
+# Wait for host socket
+echo -n "waiting for host socket /dev/tcp/$HOST_IP/$PORT..." >"$LOG_DIR/vm-stderr.log"
+while ! exec 3<>/dev/tcp/$HOST_IP/$PORT 2>/dev/null; do
+  sleep 0.1
+done
+echo "done" >>"$LOG_DIR/vm-stderr.log"
+
+# Execute directly through the file descriptors. No heavy I/O intercepting.
+cat <&3 | "$TARGET_BIN" "$@" 2>>"$LOG_DIR/vm-stderr.log" >&3
+echo "exit code was ${PIPESTATUS[1]}" >>"$LOG_DIR/vm-stderr.log"
+
+#once this script ends, -no-reboot and panic=-1 causes the outer qemu process and host script to exit
+exit 0
+EOF
+
+#link to where antigravity expects it, and make these scripts executable
+sudo ln -s /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm || error "failed to make symbolic link!"
+sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh
+sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/guest_wrapper.sh
