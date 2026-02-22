@@ -3,6 +3,13 @@
 version=v24.13.1
 version2=v0.40.4
 
+if [ -f ~/.npmrc ];then
+  warning "You had a ~/.npmrc file, which causes problems with nvm. Moving it to ~/.npmrc.backup"
+  mv -n ~/.npmrc ~/.npmrc.backup
+  rm -f ~/.npmrc
+  sleep 10
+fi
+
 if ! command -v curl >/dev/null ; then
   echo -e "\033[0;31mcurl: command not found. Installing now...\e[39m"
   install_packages curl || exit 1
