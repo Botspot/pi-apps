@@ -2887,7 +2887,7 @@ Most likely you messed up the file permissions of this file. Good luck fixing th
     error_type="system"
   fi
   
-  if grep -q "tar: .* Wrote only .* of .* bytes\|tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;\|This doesn't look like a squashfs image\.\|unexpected end of file or stream\|End-of-central-directory signature not found" "$logfile" ;then
+  if grep -q "tar: .* Wrote only .* of .* bytes\|tar: Unexpected EOF in archive\|xz: (stdin): Unexpected end of input\|xz: (stdin): Compressed data is corrupt\|xz: (stdin): File format not recognized\|gzip: stdin: invalid compressed data\-\-length error\|gzip: stdin: invalid compressed data\-\-crc error\|corrupted filesystem tarfile in package archive: invalid tar header size field (Invalid argument)\|member 'data.tar': internal gzip read error: '<fd:4>: incorrect data check\|error inflating zlib stream;\|This doesn't look like a squashfs image\.\|unexpected end of file or stream\|End-of-central-directory signature not found\|fatal: serious inflate inconsistency" "$logfile" ;then
     error_caption+=("Extraction failed. Most likely this was a corrupted download, so please try again.
 
 If this problem continues occurring, please reach out to the Pi-Apps developers for help.")
@@ -2963,7 +2963,7 @@ If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/34
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\.\|Delta requires .* GB free space, but only .* available" "$logfile";then
+  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\.\|Delta requires .* GB free space, but only .* available\|err:setupapi:install_fake_dll failed to write to .* (error=0)" "$logfile" && [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((1024*1024*1024)) ];then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
