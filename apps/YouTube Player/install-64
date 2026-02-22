@@ -19,6 +19,10 @@ npm install -g deno || error "NPM failed to install deno, which is necessary for
 
 install_packages mpv perl-base libwww-perl liblwp-protocol-https-perl libdata-dump-perl libjson-perl libmodule-build-perl libgtk3-perl libfile-sharedir-perl libterm-readline-gnu-perl libjson-xs-perl libunicode-linebreak-perl libtext-charwidth-perl libparallel-forkmanager-perl || exit 1
 
+#workaround https://github.com/Perl-Toolchain-Gang/ExtUtils-MakeMaker/issues/480
+sudo mkdir -p $(readlink -f /usr/local/man)/man1
+sudo mkdir -p $(readlink -f /usr/local/man)/man3
+
 cd /tmp
 sudo rm -rf /tmp/pipe-viewer
 git_clone https://github.com/trizen/pipe-viewer || error 'Failed to clone repository!'
