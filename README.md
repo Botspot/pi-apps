@@ -59,7 +59,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 
 ### Supported systems:
 #### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2 v1.2/3/Zero 2 W/4/5)
-- <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit/64-bit) (Bookworm/Trixie): <span style="color:var(--success-dark);">fully supported</span>
+- <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit Bookworm/64-bit Bookworm/64-bit Trixie): <span style="color:var(--success-dark);">fully supported</span>
 - <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/Noble): <span style="color:var(--success-dark);">fully supported</span>
 #### Nintendo Switch <img src=https://pi-apps.io/img/other-icons/switch-icon.svg height="14">
 - <img src=https://pi-apps.io/img/other-icons/switchroot-icon.png height="14"> [**Switchroot L4T Ubuntu Noble (24.04)**](https://wiki.switchroot.org/wiki/linux/l4t-ubuntu-noble-installation-guide): <span style="color:var(--success-dark);">fully supported</span>
@@ -74,6 +74,8 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 - <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [Ubuntu Jammy/Noble](https://ubuntu.com/download/desktop) (Official Releases from Canonical **ONLY**): <span style="color:var(--warn-dark);">Not actively tested but all available apps should work</span>
 
 ### Unsupported systems:
+- 32-bit ARM operating systems. We've stopped supporting Trixie 32-bit due to how many apps depend on 32-bit packages that Debian [renamed](https://wiki.debian.org/ReleaseGoals/64bit-time) to mitigate yk2038.
+  - Bookworm 32-bit is still supported until EOL.
 - Raspberry Pi Pico: <span style="color:var(--danger-dark);">These devices are microcontrollers and cannot run linux.
 - All **UNOFFICIAL** Debian and Ubuntu based releases (unless mentioned above): <span style="color:var(--danger-dark);">Expect many apps to have issues.</span>
   - Examples: **Orange Pi OS**, <img src="https://pi-apps.io/img/other-icons/pop-os.svg" height="14"> [**Pop_OS!**](https://pop.system76.com/), **Kali Linux**, and **ChromeOS Crostini** Debian Container

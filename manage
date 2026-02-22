@@ -788,8 +788,8 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
     sleep 1
     echo -e "\e[103m\e[30mThe ability to send error reports has been disabled.\e[39m\e[49m" | tee -a "$logfile"
     sleep 1
-    echo -e "\e[103m\e[30mWaiting 10 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m" | tee -a "$logfile"
-    sleep 10
+    echo -e "\e[103m\e[30mWaiting 5 seconds... (To cancel, press Ctrl+C or close this terminal)\e[39m\e[49m" | tee -a "$logfile"
+    sleep 5
   fi
   
   #if this app has scripts, determine which script to run

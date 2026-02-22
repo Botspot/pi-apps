@@ -3370,6 +3370,9 @@ All apt based application installs will fail. Unless you have a backup of your /
   elif [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((500*1024*1024)) ];then
     echo "Your system drive has less than 500MB of free space. Watch out for "\""disk full"\"" errors."
     return 1
+  elif [ $arch == 32 ] && [ "$__os_codename" != bookworm ] && [ "$__os_codename" != buster ];then
+    echo "Your system is 32-bit. Starting with Debian Trixie, many apps on Pi-Apps won't work on it due to yk2038 mitigations. Pi-Apps is supporting 64-bit only going forward."
+    return 1
   else
     return 0
   fi
