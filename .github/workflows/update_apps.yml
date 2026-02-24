@@ -144,11 +144,9 @@ jobs:
     outputs:
       FAILED_UPDATE_APPS_bookworm_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bookworm_armhf || '' }}
       FAILED_UPDATE_APPS_bookworm_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_bookworm_arm64 || '' }}
-      FAILED_UPDATE_APPS_trixie_armhf: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_trixie_armhf || '' }}
       FAILED_UPDATE_APPS_trixie_arm64: ${{ steps.failed.outputs.FAILED_UPDATE_APPS_trixie_arm64 || '' }}
       UPDATED_APPS_bookworm_armhf: ${{ steps.updated.outputs.UPDATED_APPS_bookworm_armhf || '' }}
       UPDATED_APPS_bookworm_arm64: ${{ steps.updated.outputs.UPDATED_APPS_bookworm_arm64 || '' }}
-      UPDATED_APPS_trixie_armhf: ${{ steps.updated.outputs.UPDATED_APPS_trixie_armhf || '' }}
       UPDATED_APPS_trixie_arm64: ${{ steps.updated.outputs.UPDATED_APPS_trixie_arm64 || '' }}
     steps:
       # restore GITHUB_WORKSPACE
@@ -163,14 +161,14 @@ jobs:
           cd $GITHUB_WORKSPACE
 
       - name: Replace secret reference with contents
-        if: ${{ matrix.image == 'RPIOS_TRIXIE_URL' || matrix.image == 'RPIOS_TRIXIE_ARMHF_URL' }}
+        if: ${{ matrix.image == 'RPIOS_TRIXIE_URL' }}
         run: |
           image_url=${{ secrets[matrix.image] }}
           echo "::add-mask::$image_url"
           echo "image_url=$image_url" >> "$GITHUB_ENV"
 
       - name: Replace non-secret reference with contents
-        if: ${{ matrix.image != 'RPIOS_TRIXIE_URL' && matrix.image != 'RPIOS_TRIXIE_ARMHF_URL' }}
+        if: ${{ matrix.image != 'RPIOS_TRIXIE_URL' }}
         run: |
           image_url=${{ matrix.image }}
           echo "image_url=$image_url" >> "$GITHUB_ENV"
@@ -311,7 +309,7 @@ jobs:
 
       - name: Revert failed apps and generate list
         run: |
-          ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}"
+          ALL_FAILED_APPS="${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_armhf}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}"$'\n'"${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}"
           ALL_FAILED_APPS="$(echo "$ALL_FAILED_APPS" | sort -u | awk NF)"
           error_string=""
           IFS=$'\n'
@@ -328,10 +326,6 @@ jobs:
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_bookworm_arm64}}" | grep -q "^$app-"; then
               error_string+="bookworm arm64, "
               arm64_fail=1
-            fi
-            if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_armhf}}" | grep -q "^$app-"; then
-              error_string+="trixie armhf, "
-              armhf_fail=1
             fi
             if echo "${{needs.test-updated-apps.outputs.FAILED_UPDATE_APPS_trixie_arm64}}" | grep -q "^$app-"; then
               error_string+="trixie arm64, "
