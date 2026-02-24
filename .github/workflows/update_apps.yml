@@ -137,10 +137,6 @@ jobs:
             image: https://downloads.raspberrypi.com/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2025-10-02/2025-10-01-raspios-bookworm-arm64.img.xz
             cache: yes
           - os: trixie
-            arch: armhf
-            image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2025-10-02/2025-10-01-raspios-trixie-armhf.img.xz
-            cache: yes
-          - os: trixie
             arch: arm64
             image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2025-10-02/2025-10-01-raspios-trixie-arm64.img.xz
             cache: yes
