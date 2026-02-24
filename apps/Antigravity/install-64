@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version='antigravity_1.18.4-1771638096_arm64_f096532b9c0bc65a62dc53ed2bb5ff66.deb'
+
 sudo modprobe kvm || true
 if [ ! -e /dev/kvm ];then
   error "Unfortunately, your system is not compatible with this app. Your kernel is missing the KVM module. Please switch to a kernel that has this feature, or ask for help."
@@ -178,3 +180,7 @@ EOF
 sudo ln -s /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm || error "failed to make symbolic link!"
 sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh
 sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/guest_wrapper.sh
+
+#now that antigravity is installed, prevent it from updating itself with apt, as this would break our language server wrapper.
+#pi-apps will handle updates instead
+sudo rm -f /etc/apt/sources.list.d/antigravity.list
