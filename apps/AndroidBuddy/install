@@ -3,7 +3,7 @@
 #remove old droidbuddy app from user gazlene that used to be installed by this app
 sudo rm -rf /opt/droidbuddy /usr/share/applications/androidbuddy.desktop
 
-install_packages adb gvfs-backends rustc cargo
+install_packages adb gvfs-backends rustc cargo || exit 1
 
 "${DIRECTORY}/manage" install-if-not-installed Scrcpy || exit 1
 #Remove scrcpy menu button
