@@ -384,7 +384,7 @@ jobs:
             # - BlockBench-arm64: 4.7.4 -> 4.8.0
             # BlockBench-arm64
             #                     | change '^' to '- '
-            grep -ve "$(echo "$1" | sed 's/^/- /g')"
+            grep -ve "$(echo "$1" | sed 's/^/- /g ; s/^- $/')"
             true
           }
           ALL_UPDATED_APPS="${{needs.get-latest-app-versions.outputs.UPDATED_APPS}}"
