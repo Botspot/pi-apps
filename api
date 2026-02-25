@@ -2963,7 +2963,7 @@ If this issue keeps happening, see: https://github.com/flatpak/flatpak/issues/34
     error_type="system"
   fi
   
-  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\.\|Delta requires .* GB free space, but only .* available\|err:setupapi:install_fake_dll failed to write to .* (error=0)\|fatal: sha1 file '.*' write error\. Out of diskspace" "$logfile" && [ "$(df -a / -B 1 --output=avail | tail -1 | tr -d ' ')" -lt $((1024*1024*1024)) ];then
+  if grep -q "You don't have enough free space in\|No space left on device\|Not enough disk space to complete this operation\|Out of diskspace\|Cannot write to .* (Success)\.\|Delta requires .* GB free space, but only .* available\|err:setupapi:install_fake_dll failed to write to .* (error=0)\|fatal: sha1 file '.*' write error\. Out of diskspace" "$logfile" ;then
     error_caption+=("Your system has insufficient disk space.
 
 Please free up some space, then try again.")
