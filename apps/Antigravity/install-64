@@ -26,7 +26,7 @@ status_green Done
 
 warning "In order to run Antigravity's language server on a kernel without 48bit address space, we're setting up an emulated environment to run just this component. Please be patient."
 
-install_packages qemu-system-arm antigravity git bc bison flex libssl-dev make gcc libelf-dev || exit 1
+install_packages qemu-system-arm antigravity git bc bison flex libssl-dev make gcc libelf-dev socat || exit 1
 
 #fixes error when running /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm on any kernel with a 39bit address space: (all pi kernels except for the pi5's 16k pagesize kernel)
 #third_party/tcmalloc/internal/system_allocator.h:589] MmapAligned() failed - unable to allocate with tag (hint=0x2e6680000000, size=1073741824, alignment=1073741824) - is something limiting address placement?
