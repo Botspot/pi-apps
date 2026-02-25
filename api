@@ -3030,6 +3030,15 @@ You need to do as it says and unmount any VeraCrypt volumes first. Rebooting mig
     error_type="system"
   fi
   
+  if grep -qF "$HOME/bin/dpkg-deb: cannot execute binary file: Exec format error" "$logfile";then
+    error_caption+=("Error encountered: '$HOME/bin/dpkg-deb: cannot execute binary file: Exec format error'
+You need to delete whatever sort of dpkg-deb binary you added to ~/bin before apt or pi-apps will work correctly.
+Right now the file type is:
+$(file $HOME/bin/dpkg-deb)
+From the output above, most likely this file is not compatible with ARM.")
+    error_type="system"
+  fi
+  
   #Individual scripts can self-diagnose by outputting "User error: ", followed by the diagnosis.
   #In this case we do not allow sending the error report to Pi-Apps
   if grep -q "^User error: " "$logfile" ;then
