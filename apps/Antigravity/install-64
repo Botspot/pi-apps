@@ -72,7 +72,17 @@ if [ ! -f "/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-k
 fi
 
 #move problematic language server binary
-sudo mv -f /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm /usr/share/antigravity/resources/antigravity-48bit-workaround
+if [ ! -h /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm ];then
+  #only do this if it's the actual binary, not the symbolic link created from a previous install
+  sudo mv -f /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm /usr/share/antigravity/resources/antigravity-48bit-workaround
+elif [ -h /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm ] && [ -h /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_linux_arm ];then
+  #workaround error caused before this if statement was added, whereby the binary was deleted and the symbolic link is now in both places
+  status "Working around a bug caused by an earlier version of this script..."
+  sudo rm -f /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_linux_arm
+  sudo apt update
+  sudo apt install --reinstall antigravity -y || error "User error: Tried to work around an edge case caused by an earlier script version, and for whatever reason, apt failed to reinstall antigravity. Please uninstall Antigravity and install it again from Pi-Apps manually."
+  sudo mv -f /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm /usr/share/antigravity/resources/antigravity-48bit-workaround
+fi
 
 #make outer script that acts as language_server_linux_arm
 cat <<"EOF" | sudo tee /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh >/dev/null
@@ -88,6 +98,9 @@ LOGFILE="$LOG_DIR/host.log"
 PORT=$((10000 + RANDOM % 10000))
 PIPE_PORT=$((PORT + 1))
 HOST_TIME=$(date +%s)
+
+#kill any previous qemu run by this script (usually exits but if the language server failed to start, it won't stop qemu)
+ps aux | grep qemu-system-aarch64 | grep 'tcp::42101-:52101' | awk '{print $2}' | xargs kill &>/dev/null
 
 #forward all environment variables to guest script
 export -p > "$LOG_DIR/lsp_env.sh"
@@ -177,7 +190,7 @@ exit 0
 EOF
 
 #link to where antigravity expects it, and make these scripts executable
-sudo ln -s /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm || error "failed to make symbolic link!"
+sudo ln -sf /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh /usr/share/antigravity/resources/app/extensions/antigravity/bin/language_server_linux_arm || error "failed to make symbolic link!"
 sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/language_server_wrapper.sh
 sudo chmod +x /usr/share/antigravity/resources/antigravity-48bit-workaround/guest_wrapper.sh
 
