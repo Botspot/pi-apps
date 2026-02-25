@@ -64,7 +64,7 @@ jobs:
           }
 
           function validate_url(){
-            if command wget --timeout=5 -q --spider "$1"; then
+            if command wget --timeout=5 -q --spider "$1" || curl -s -f -r 0-0 -o /dev/null "$1" ; then
               return 0
             else
               return 1
