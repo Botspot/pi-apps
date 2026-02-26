@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=9.2.1
+version=9.3.0
 
 install_packages https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_arm64.deb || exit 1
 
