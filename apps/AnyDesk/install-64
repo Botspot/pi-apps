@@ -1,0 +1,12 @@
+#!/bin/bash
+
+sudo wget https://keys.anydesk.com/repos/DEB-GPG-KEY -qO /etc/apt/keyrings/keys.anydesk.com.asc || error "Failed to download gpg key!"
+sudo chmod a+r /etc/apt/keyrings/keys.anydesk.com.asc
+
+# Add the AnyDesk apt repository
+echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/keys.anydesk.com.asc] https://deb.anydesk.com all main" | sudo tee /etc/apt/sources.list.d/anydesk-stable.list > /dev/null
+
+if ! (install_packages anydesk) ;then
+  sudo rm -f /etc/apt/sources.list.d/anydesk-stable.list /etc/apt/keyrings/keys.anydesk.com.asc
+  exit 1
+fi

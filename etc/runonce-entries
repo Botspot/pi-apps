@@ -104,7 +104,6 @@ For the mods that are not included in any existing modpack, simply install them 
   remove_deprecated_app "piKiss" "" "This application developer is unwilling to fix and remove scripts that break users installs. It is unsafe to install piKiss scripts."
   remove_deprecated_app "Pale Moon" "" "The Pale Moon Debian/Ubuntu packager (Steve Pusser) has stopped building and removed all builds of Pale Moon as of May 2024. We have no choice but to remove this application from Pi-Apps."
   remove_deprecated_app "eDEX-UI" "" "The upstream developer has ceased development of this application since 2021. There are many unresolved issues that prevent basic usage of the application."
-  [ $__os_codename != buster ] && [ $__os_codename != bullseye ] && remove_deprecated_app "AnyDesk" "" "AnyDesk has not been updated in years and does not work on modern distros like yours."
   remove_deprecated_app "Snap Store" "32" "Ubuntu (the creators and maintainers of the snap ecosystem) deprecated and removed armhf support from the Snap Store in October 2023.
 You can install the Snap Store from Pi-Apps on a 64bit OS."
   remove_deprecated_app "BalenaEtcher" "32" "The latest version of BalenaEtcher relies on libraries that are not available on ARM 32bit Linux.

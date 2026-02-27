@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+purge_packages || exit 1
+
+sudo rm -f /etc/apt/sources.list.d/anydesk-stable.list /etc/apt/keyrings/keys.anydesk.com.asc
