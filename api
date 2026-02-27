@@ -1014,6 +1014,8 @@ patch_deb_sed() { #with the $1 deb package, apply the $2 sed string to the deb's
   rm -rf "$workdir"
   mkdir -p "$workdir"
   
+  status -n "Patching control file in $deb... "
+  
   #this is much faster than using dpkg-deb to repackage the deb, as we avoid touching data.tar
   #however in case we ever encounter an edge case, here's the dpkg-deb method:
   #dpkg-deb -R "$deb" "$workdir"
@@ -1052,6 +1054,8 @@ patch_deb_sed() { #with the $1 deb package, apply the $2 sed string to the deb's
   (cd "$workdir" && ar r "$(basename "$deb")" control.tar.*) || error "patch_deb_sed(): Swapping in new control tar failed"
   
   rm -rf "$workdir"
+  
+  status_green Done
 }
 #end of apt functions
 
