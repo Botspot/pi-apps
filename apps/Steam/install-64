@@ -28,17 +28,10 @@ fi
 #prevent lxterm dependency from becoming default terminal
 default_terminal="$(readlink -f /usr/bin/x-terminal-emulator)"
 
-echo "Installing steam_latest.deb"
-# hardcode 1.0.0.81 which is the newest version that still uses the `all` dpkg architecture definition which allows steam to be installed on any architecture system without jumping through dpkg hoops
-# the steam_latest.deb pointed to 1.0.0.81 until very recently
-install_packages https://repo.steampowered.com/steam/archive/stable/steam-launcher_1.0.0.81_all.deb || exit 1
-
-#patch steam signing key to fix debian trixie warning: Policy rejected non-revocation signature (PositiveCertification) requiring second pre-image resistance   because: SHA1 is not considered secure since 2026-02-01T00:00:00Z
-if [[ "$(sha1sum /usr/share/keyrings/steam.gpg)" == f8d3c165d2e45083c4d0bf775608c46f479f2443* ]];then
-  status "Patching steam GPG key..."
-  wget -qO- https://repo.steampowered.com/steam/archive/stable/steam.gpg | sudo tee /usr/share/keyrings/steam.gpg > /dev/null
-  #sha1sum should now be 4534753e1b86196ccbe11feffe3ed99b22fbf50a
-fi
+#use latest steam deb and simply patch the control file to use the `all` dpkg architecture definition
+wget https://repo.steampowered.com/steam/archive/stable/steam_latest.deb -O /tmp/steam_latest.deb || exit 1
+patch_deb_sed /tmp/steam_latest.deb 's/Architecture: amd64/Architecture: all/g' || exit 1
+install_packages /tmp/steam_latest.deb || exit 1
 
 #check if terminal choice was changed after steam was installed
 if [ ! -z "$default_terminal" ] && [ "$(readlink -f /usr/bin/x-terminal-emulator)" != "$default_terminal" ];then
@@ -54,13 +47,14 @@ export STEAM_RUNTIME=1
 export DBUS_FATAL_WARNINGS=0
 BOX64_LOG=1 BOX86_LOG=1 BOX64_TRACE_FILE=stderr BOX86_TRACE_FILE=stderr BOX64_EMULATED_LIBS=libmpg123.so.0 /usr/lib/steam/bin_steam.sh -no-cef-sandbox steam://open/minigameslist "$@"
 
-rm -f /home/${USER}/Desktop/steam.desktop' | sudo tee /usr/local/bin/steam || error "Failed to create steam launch script"
+rm -f /home/${USER}/Desktop/steam.desktop' | sudo tee /usr/local/bin/steam >/dev/null || error "Failed to create steam launch script"
 
 # set execution bit
 sudo chmod +x /usr/local/bin/steam
 
 #remove crashhandler.so from archive that is extracted to ~/.local/share/Steam/ubuntu12_32/crashhandler.so
 #fixes first launch error
+status -n "Patching bootstraplinux_ubuntu12_32.tar.xz to fix launch crash... "
 rm -rf /tmp/bootstraplinux_ubuntu12_32
 mkdir -p /tmp/bootstraplinux_ubuntu12_32 || error "failed to make temp folder /tmp/bootstraplinux_ubuntu12_32"
 tar -xf '/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz' -C /tmp/bootstraplinux_ubuntu12_32 || error "failed to extract bootstraplinux_ubuntu12_32.tar.xz"
@@ -68,6 +62,7 @@ rm -f /tmp/bootstraplinux_ubuntu12_32/ubuntu12_32/crashhandler.so || error "fail
 #overwrite the archive (changes will be overwritten on steam.deb update, but this is only needed once for first setup to not fail)
 sudo tar -cJf '/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz' -C /tmp/bootstraplinux_ubuntu12_32 . || error "failed to compress new bootstraplinux_ubuntu12_32.tar.xz"
 rm -rf ~/.local/share/Steam/ubuntu12_32/crashhandler.so /tmp/bootstraplinux_ubuntu12_32 #remove it in case it already exists
+status_green "Done"
 
 # move official steam.desktop file to /usr/local and edit it (move it so users ignoring the reboot warning cannot find the wrong launcher)
 # we can't edit the official steam.desktop file since this will get overwritten on a steam update (steam adds its own apt repo)
