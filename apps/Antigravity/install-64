@@ -1,9 +1,9 @@
 #!/bin/bash
 
-version='antigravity_1.18.4-1771638096_arm64_f096532b9c0bc65a62dc53ed2bb5ff66.deb'
+version='antigravity_1.19.6-1772152278_arm64_f3cf3811643cf91127edc038a2b4257d.deb'
 
 sudo modprobe kvm || true
-if [ ! -e /dev/kvm ];then
+if [ ! -e /dev/kvm ] && [ "$GITHUB_ACTIONS" != "true" ];then
   error "Unfortunately, your system is not compatible with this app. Your kernel is missing the KVM module. Please switch to a kernel that has this feature, or ask for help."
 fi
 
@@ -40,6 +40,7 @@ install_packages qemu-system-arm antigravity git bc bison flex libssl-dev make g
 if [ ! -f "/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-kernel-image" ];then
   cd /tmp
   status "Cloning Linux kernel source..."
+  rm -rf ./linux-kvm
   git clone --depth=1 https://github.com/torvalds/linux.git -b v6.6 linux-kvm || error "failed to clone linux kernel source"
   cd linux-kvm
 
