@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Install required packages using Pi-Apps function
+install_packages git build-essential make gcc libncurses-dev mpv
+
+cd /tmp
+
+git_clone https://github.com/lalo-space/shellbeats || exit 1
+cd shellbeats
+
+# Compile the program
+make || error "Failed to compile shellbeats with 'make'"
+
+#installs: install -m 755 shellbeats /usr/local/bin/
+sudo make install || error "Failed to install shellbeats with 'sudo make install'"
+
+#make local gui launcher
+echo "[Desktop Entry]
+Name=Shellbeats
+GenericName=Terminal YouTube Music Player
+Comment=Terminal YouTube Music Player
+Exec=${DIRECTORY}/etc/terminal-run shellbeats 'Shellbeats'
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=AudioVideo;GTK;" > ~/.local/share/applications/shellbeats.desktop
+
+#directory unneeded now
+rm -rf ./shellbeats
