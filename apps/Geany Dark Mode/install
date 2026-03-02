@@ -4,23 +4,26 @@ if ! package_installed geany; then
   error "User error: Geany is not installed, these themes are useless to you."
 fi
 
+cd /tmp
+
 #get theme files
 git_clone --depth 1 https://github.com/geany/geany-themes || exit 1
 
+#make "Botspot dark" theme, based on Spyder Dark theme
+sed 's/\[theme_info\]/#slight edits to Spyder Dark made by @Botspot to improve contrast\n\n[theme_info]/g ;
+  s/^name=Spyder Dark/name=Botspot Dark/g ;
+  s/#131926/#080A10/g ;
+  s/#2b2b43/#131926/g ;
+  s/#c80000/#ff2910/g' ./geany-themes/colorschemes/spyder-dark.conf > ./geany-themes/colorschemes/botspot-dark.conf || error "Failed to create botspot-dark remix theme"
+
 #copy theme files
 mkdir -p ~/.config/geany/colorschemes
-sudo cp -a ~/geany-themes/colorschemes/. /usr/share/geany/colorschemes || error "Failed to copy colorschemes to /usr/share/geany/colorschemes"
-
-#An earlier version of this script saved the colorschemes in ~/.config/geany. Remove those now.
-IFS=$'\n'
-files="$(cd ~/geany-themes/colorschemes ; ls)"
-for file in $files ;do
-  rm -f ~/".config/geany/colorschemes/$file"
-done
+sudo mkdir -p /usr/share/geany/colorschemes
+sudo cp -a ./geany-themes/colorschemes/. /usr/share/geany/colorschemes || error "Failed to copy colorschemes to /usr/share/geany/colorschemes"
 
 #Wait for any geany processes to stop before writing config file
 if pidof geany >/dev/null ;then
-  echo -e "\nUnable to change Geany's config file because Geany is running.\nPlease close Geany."
+  warning "Unable to change Geany's config file because Geany is running.\nPlease close Geany."
   
   while pidof geany >/dev/null ;do
     sleep 1
@@ -29,24 +32,25 @@ if pidof geany >/dev/null ;then
   echo
 fi
 
-#Make geany use spyder-dark color scheme
+#Make geany use botspot-dark color scheme
 if [ -s ~/.config/geany/geany.conf ];then
-  sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
-  sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' ~/.config/geany/geany.conf
+  sed -i 's/^color_scheme=.*/color_scheme=botspot-dark.conf/g ; s/^color_scheme=$/color_scheme=botspot-dark.conf/g' ~/.config/geany/geany.conf
 else
-  echo -e '[geany]\ncolor_scheme=spyder-dark.conf' > ~/.config/geany/geany.conf
+  echo -e '[geany]\ncolor_scheme=botspot-dark.conf' > ~/.config/geany/geany.conf
 fi
 
 #Also change root geany.conf too
 if [ -s /root/.config/geany/geany.conf ];then
-  sudo sed -i 's/color_scheme=.*/color_scheme=spyder-dark.conf/g' /root/.config/geany/geany.conf
-  sudo sed -i 's/^color_scheme=$/color_scheme=spyder-dark.conf/g' /root/.config/geany/geany.conf
+  sudo sed -i 's/^color_scheme=.*/color_scheme=botspot-dark.conf/g ; s/^color_scheme=$/color_scheme=botspot-dark.conf/g' /root/.config/geany/geany.conf
 else
   sudo mkdir -p /root/.config/geany
-  echo -e '[geany]\ncolor_scheme=spyder-dark.conf' | sudo tee /root/.config/geany/geany.conf >/dev/null
+  echo -e '[geany]\ncolor_scheme=botspot-dark.conf' | sudo tee /root/.config/geany/geany.conf >/dev/null
 fi
 
 #tell user where to change theme
-status "Added $(ls ~/geany-themes/colorschemes/ | wc -l) themes.\nYou can change the theme by navigating to View -> Editor -> Change Color Scheme in Geany."
+status "Added $(ls /tmp/geany-themes/colorschemes/ | wc -l) themes.\nIn Geany, you can change the theme in View -> Change Color Scheme."
 
-rm -rf ~/geany-themes
+#record which themes we installed, to only remove them during uninstall
+ls /tmp/geany-themes/colorschemes | sudo tee /usr/share/geany/colorschemes/pi-apps-installed-themes.txt >/dev/null
+
+rm -rf /tmp/geany-themes
