@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Stop on first error
+set -e
+
+# 1. Install dependencies from Pi-Apps and APT
+# This is the line you added, now correctly placed at the beginning.
+# It will ask Pi-Apps to install Scrcpy if it's not already installed.
+"${DIRECTORY}/manage" install-if-not-installed Scrcpy || exit 1
+
+# Install other necessary system packages
+sudo apt-get install -y python3-pip git python3-venv
+
+# 2. Clone the repository and build the app
+APP_NAME="yascrcpy"
+TEMP_DIR=$(mktemp -d)
+
+# Clone the source code
+git clone --depth 1 "https://github.com/gabreek/qt-yascrcpygui.git" "${TEMP_DIR}"
+
+# Change into the temp directory
+cd "${TEMP_DIR}"
+
+# Create a virtual environment and install Python packages
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install pyinstaller
+
+# Build the executable
+pyinstaller main.spec
+deactivate
+
+# 3. Install the application files
+# Copy the built program to a system-wide location
+sudo cp "dist/${APP_NAME}" "/usr/local/bin/${APP_NAME}"
+
+# Copy the icon
+sudo cp "gui/icon.png" "/usr/share/pixmaps/${APP_NAME}.png"
+
+# Create the Start Menu shortcut
+sudo tee "/usr/share/applications/${APP_NAME}.desktop" >/dev/null <<EOF
+[Desktop Entry]
+Version=1.0
+Name=yaScrcpy GUI
+Comment=A Qt-based GUI for scrcpy and Winlator
+Exec=${APP_NAME}
+Icon=/usr/share/pixmaps/${APP_NAME}.png
+Terminal=false
+Type=Application
+Categories=Utility;System;
+EOF
+
+# 4. Clean up temporary files
+rm -rf "${TEMP_DIR}"
+
+echo "Installation complete! Find 'yaScrcpy GUI' in your Start Menu."
