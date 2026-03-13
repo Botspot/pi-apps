@@ -4154,6 +4154,11 @@ fi
 # this path will automatically be added on next boot if a binary is placed in it by a pi-apps script
 [[ "$PATH" != */usr/local/bin* ]] && export PATH="/usr/local/bin:$PATH"
 
+#Ensure /usr/sbin is in PATH to fix https://github.com/Botspot/bvm/issues/180
+if [[ ":$PATH:" != *":/usr/sbin:"* ]]; then
+  export PATH+=":/usr/sbin"
+fi
+
 #if this script is being run standalone, run the specified function
 if [[ "$0" == */api ]];then
   "$@"
