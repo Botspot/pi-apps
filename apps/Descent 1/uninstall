@@ -1,4 +1,5 @@
 #!/bin/bash
-rm -fr ~/.d1x-rebirth
-rm ~/.local/share/applications/d1x-rebirth.desktop
+status "Purging game data..."
+sudo rm -rf ~/.d1x-rebirth /opt/d1x-rebirth ~/.local/share/applications/d1x-rebirth.desktop /usr/local/share/applications/d1x-rebirth.desktop /usr/local/bin/d1x-rebirth
+status "Purging no longer required packages..."
 purge_packages || exit 1
