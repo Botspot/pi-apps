@@ -1,0 +1,89 @@
+#!/bin/bash
+
+version=1.1.7
+
+status "Purging old installation if found..."
+sudo rm -rf  ~/.local/share/applications/fheroes2.desktop /usr/local/share/applications/fheroes2.desktop
+
+status "Installing dependencies..."
+install_packages g++ gettext libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0 || exit 1
+
+status "Moving game data from old install if it exists..."
+
+# Migration steps from old install
+SOURCE_FOLDER="~/.fheroes2"
+DEST_FOLDER="/opt/fheroes2"
+
+# Check if the source folder exists
+if [ -d "$SOURCE_FOLDER" ]; then
+    echo "Game asset source folder found: $SOURCE_FOLDER"
+    
+    # Create destination folder if it doesn't exist
+    sudo mkdir -p "$DEST_FOLDER"
+
+    if [ -d "$SOURCE_FOLDER/data" ]; then
+        if [ -d "$DEST_FOLDER/data" ]; then
+            echo "Game data already exists at the new location, skipping move."
+            MISSING_GAME_DATA=false
+        else
+            echo "Moving game data to $DEST_FOLDER"
+            mv "$SOURCE_FOLDER/data" "$DEST_FOLDER/"
+            MISSING_GAME_DATA=false
+        fi
+    else
+        echo "Game data does not exist in $SOURCE_FOLDER, assuming non existing game data"
+        MISSING_GAME_DATA=true
+    fi
+else
+    echo "Source folder does not exist: $SOURCE_FOLDER, assuming non existing game data"
+    MISSING_GAME_DATA=true
+fi
+
+git_clone https://github.com/ihhub/fheroes2 -b $version
+cd fheroes2
+
+# If any game data were to be missing, delete the broken data (if found) and download a shareware version of the data
+if $MISSING_GAME_DATA; then
+    rm -rf $SOURCE_FOLDER
+    chmod +x ./script/demo/download_demo_version.sh 
+    ./script/demo/download_demo_version.sh || error "Error downloading shareware data!"
+else 
+   echo "Game data seems to be already moved, deleting old game data directories if it exists..."
+   rm -rf $SOURCE_FOLDER
+fi
+
+status "Compiling Heroes 2 engine ..."
+make -j$(nproc) || error "Failed compiling Heroes 2 game engine!"
+sudo mkdir -p /opt/fheroes2 /opt/fheroes2/files /opt/fheroes2/files/lang
+sudo cp ./fheroes2 /opt/fheroes2/fheroes2 || error "Failed copying Heroes 2 game engine!"
+
+if $MISSING_GAME_DATA; then
+    sudo cp -r ./files/data /opt/fheroes2/files/data || error "Failed copying Heroes 2 game resources!"
+else 
+   echo "Skipping shareware data copy, since data already exists"
+fi
+
+sudo cp -r ./files/lang/*.mo /opt/fheroes2/files/lang || error "Failed copying Heroes 2 game resources!"
+sudo cp "$(dirname "$0")/icon-64.png" /opt/fheroes2 || error "Failed to copy Heroes 2 icon to /opt/fheroes2!" 
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+cd /opt/fheroes2
+./fheroes2 "$@"' | sudo tee /usr/local/bin/fheroes2 >/dev/null
+sudo chmod +x /usr/local/bin/fheroes2
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Free Heroes 2
+Comment=Fheroes2 source port of Heroes of Might and Magic II
+Exec=/opt/fheroes2/fheroes2
+Icon=/opt/fheroes2/icon-64.png
+Terminal=true
+Type=Application
+Categories=Game;
+StartupNotify=false" | sudo tee /usr/local/share/applications/fheroes2.desktop >/dev/null
+
+status "Cleaning up..."
+rm -rf ~/fheroes2

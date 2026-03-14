@@ -1,5 +1,5 @@
 #!/bin/bash
-"${DIRECTORY}/manage" install-if-not-installed 'Wine (x86)' || error "Wine is required to run Lego Digital Designer but it failed to install!"
+"${DIRECTORY}/manage" install-if-not-installed 'Wine (x64)' || error "Wine is required to run Lego Digital Designer but it failed to install!"
 
 rm -f ~/setupldd-pc-4_3_11.exe
 
