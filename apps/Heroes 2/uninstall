@@ -1,6 +1,5 @@
 #!/bin/bash
 status "Purging game data..." 
-sudo rm -rf ~/.fheroes2 ~/.local/share/applications/fheroes2.desktop /opt/fheroes2
-/usr/local/share/applications/fheroes2.desktop /usr/local/bin/fheroes2
+sudo rm -rf ~/.fheroes2 ~/.local/share/applications/fheroes2.desktop /opt/fheroes2 /usr/local/share/applications/fheroes2.desktop /usr/local/bin/fheroes2
 status "Purging no longer required packages..."
 purge_packages || exit 1

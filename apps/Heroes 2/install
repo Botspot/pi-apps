@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.1.7
+version=1.1.14
 
 status "Purging old installation if found..."
 sudo rm -rf  ~/.local/share/applications/fheroes2.desktop /usr/local/share/applications/fheroes2.desktop
