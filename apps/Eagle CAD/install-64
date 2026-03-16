@@ -4,17 +4,18 @@
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
-if [ ! -d $HOME/eagle-9.6.2 ];then
-  rm -rf $HOME/eagle-9.6.2
-  status -n "Downloading Eagle 9.6.2... "
-  wget https://trial2.autodesk.com/NET17SWDLD/2017/EGLPRM/ESD/Autodesk_EAGLE_9.6.2_English_Linux_64bit.tar.gz -O eagle.tar.gz || error "Failed to download Eagle!"
-  
-  status -n "Extracting..."
-  sudo mkdir -p /opt/eagle-9.6.2
-  sudo tar -xvzf eagle.tar.gz -C /opt/eagle-9.6.2 || error "Failed to extract Eagle!"
-  rm -f eagle.tar.gz
-  status_green Done
-fi
+rm -rf $HOME/eagle-9.6.2 #remove old folder location
+status -n "Downloading Eagle 9.6.2... "
+wget https://trial2.autodesk.com/NET17SWDLD/2017/EGLPRM/ESD/Autodesk_EAGLE_9.6.2_English_Linux_64bit.tar.gz -O /tmp/eagle.tar.gz || error "Failed to download Eagle!"
+
+status -n "Extracting..."
+sudo rm -rf /opt/eagle-9.6.2
+sudo mkdir -p /opt/eagle-9.6.2
+sudo tar -xvzf /tmp/eagle.tar.gz -C /opt || error "Failed to extract Eagle!"
+sudo chmod 755 -R /opt/eagle-9.6.2
+rm -f /tmp/eagle.tar.gz
+status_green Done
+
 mkdir -p $HOME/eagle &>/dev/null
 
 #make it runnable from a terminal
