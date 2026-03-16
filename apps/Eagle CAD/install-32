@@ -7,17 +7,14 @@ install_packages libssl1.0.2 || install_packages libssl1.0.0 || exit 1
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
-if [ ! -d $HOME/eagle-7.7.0 ];then
-  rm -rf $HOME/eagle-7.7.0
-  status -n "Downloading Eagle 7.7.0... "
-  # use archive since original link goes to a 403 error
-  wget https://web.archive.org/web/20180411033813if_/http://web.cadsoft.de/ftp/eagle/program/7.7/eagle-lin32-7.7.0.run -O eagle.run || error "Failed to download Eagle!"
-  
-  status -n "Extracting... "
-  sudo bash ./eagle.run /opt/eagle-7.7.0 >/dev/null || error "Failed to run eagle.run!"
-  rm -f ./eagle.run
-  status_green Done
-fi
+status -n "Downloading Eagle 7.7.0... "
+# use archive since original link goes to a 403 error
+wget https://web.archive.org/web/20180411033813if_/http://web.cadsoft.de/ftp/eagle/program/7.7/eagle-lin32-7.7.0.run -O eagle.run || error "Failed to download Eagle!"
+
+status -n "Extracting... "
+sudo bash ./eagle.run /opt/eagle-7.7.0 >/dev/null || error "Failed to run eagle.run!"
+rm -f ./eagle.run
+status_green Done
 mkdir -p $HOME/eagle &>/dev/null
 
 #make it runnable from a terminal
