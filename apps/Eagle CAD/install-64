@@ -4,7 +4,6 @@
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
-rm -rf $HOME/eagle-9.6.2 #remove old folder location
 status -n "Downloading Eagle 9.6.2... "
 wget https://trial2.autodesk.com/NET17SWDLD/2017/EGLPRM/ESD/Autodesk_EAGLE_9.6.2_English_Linux_64bit.tar.gz -O /tmp/eagle.tar.gz || error "Failed to download Eagle!"
 
