@@ -10,7 +10,7 @@ if [ ! -d $HOME/eagle-9.6.2 ];then
   wget https://trial2.autodesk.com/NET17SWDLD/2017/EGLPRM/ESD/Autodesk_EAGLE_9.6.2_English_Linux_64bit.tar.gz -O eagle.tar.gz || error "Failed to download Eagle!"
   
   status -n "Extracting..."
-  mkdir eagle-9.6.2
+  sudo mkdir -p /opt/eagle-9.6.2
   sudo tar -xvzf eagle.tar.gz -C /opt/eagle-9.6.2 || error "Failed to extract Eagle!"
   rm -f eagle.tar.gz
   status_green Done
