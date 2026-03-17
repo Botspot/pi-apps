@@ -32,4 +32,9 @@ wget -O "${APPIMAGE}" "${url}" || error 'Failed to download AppImage'
 chmod +x "${APPIMAGE}"
 
 # Make Desktop File
-"${APPIMAGE}" --install-desktop-entry || error 'Failed to create desktop entry'
+if ! "${APPIMAGE}" --install-desktop-entry ;then
+  #try to avoid weird "text file busy error"
+  sync
+  sleep 2
+  "${APPIMAGE}" --install-desktop-entry || error 'Failed to create desktop entry'
+fi
