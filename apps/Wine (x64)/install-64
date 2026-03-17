@@ -65,7 +65,7 @@ less_tar() { #format tar verbose output to refresh same line with the next extra
 }
 
 # Download wine to /opt
-wget https://github.com/pi-apps-go/files/releases/download/large-files/wine-${version}.tar.gz -O /tmp/wine-${version}.tar.gz || error 'Failed to download wine!'
+wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wine-${version}.tar.gz -O /tmp/wine-${version}.tar.gz || error 'Failed to download wine!'
 status "Extracting: /tmp/wine-${version}.tar.gz"
 sudo tar -xvf /tmp/wine-${version}.tar.gz -C /opt | less_tar
 [ ${PIPESTATUS[0]} != 0 ] && error 'Failed to extract wine!'
