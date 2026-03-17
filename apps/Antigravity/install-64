@@ -40,7 +40,7 @@ install_packages qemu-system-arm antigravity git bc bison flex libssl-dev make g
 if [ ! -f "/usr/share/antigravity/resources/antigravity-48bit-workaround/linux-kernel-image" ];then
   cd /tmp
   status "Cloning Linux kernel source..."
-  rm -rf ./linux-kvm
+  rm -rf ./linux-kvm || sudo rm -rf ./linux-kvm
   git clone --depth=1 https://github.com/torvalds/linux.git -b v6.6 linux-kvm || error "failed to clone linux kernel source"
   cd linux-kvm
 
