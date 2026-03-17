@@ -1,0 +1,91 @@
+#!/bin/bash
+echo '                         __________'
+echo '__________/ DXX-Rebirth /'
+
+status "Installing required dependencies..."
+install_packages scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0 libphysfs-dev libphysfs1 libglu1-mesa || exit 1
+
+# Migration steps from old install
+SOURCE_FOLDER="~/.d2x-rebirth"
+DEST_FOLDER="/opt/d2x-rebirth"
+
+# Check if the source folder exists
+if [ -d "$SOURCE_FOLDER" ]; then
+    echo "Game asset source folder found: $SOURCE_FOLDER"
+    
+    # Create destination folder if it doesn't exist
+    sudo mkdir -p "$DEST_FOLDER"
+
+    if [ -d "$SOURCE_FOLDER/descent2.hog" ]; then
+        if [ -d "$DEST_FOLDER/descent2.hog" ]; then
+            echo "Game data already exists at the new location, skipping move."
+            MISSING_GAME_DATA=false
+        else
+            echo "Moving game data to $DEST_FOLDER"
+            mv "$SOURCE_FOLDER/data" "$DEST_FOLDER/"
+            MISSING_GAME_DATA=false
+        fi
+    else
+        echo "Game data does not exist in $SOURCE_FOLDER, assuming non existing game data"
+        MISSING_GAME_DATA=true
+    fi
+else
+    echo "Source folder does not exist: $SOURCE_FOLDER, assuming non existing game data"
+    MISSING_GAME_DATA=true
+fi
+
+# If any game data were to be missing, delete the broken data (if found) and download a shareware version of the data
+if $MISSING_GAME_DATA; then
+    rm -rf $SOURCE_FOLDER
+    sudo mkdir -p /opt/d2x-rebirth
+    wget -q --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip || error "failed to download game content!"
+    sudo unzip descent2-pc-demo.zip -d /opt/d2x-rebirth
+    rm descent2-pc-demo.zip
+else
+   echo "Game data seems to be already moved, deleting old game data directories if it exists..."
+   rm -rf $SOURCE_FOLDER
+fi
+
+# rename existing files to lower case
+cd /opt/d2x-rebirth
+for i in $( ls | grep [A-Z] ); do sudo mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
+cd ~/
+
+sudo wget -N -q --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa -O /opt/d2x-rebirth/d2xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
+
+git_clone https://github.com/dxx-rebirth/dxx-rebirth
+cd dxx-rebirth
+scons sdl2=1 sdlmixer=1 d2x=1 -j$(nproc) || error "Failed to compile Descent 2 game engine!"
+sudo cp ./build/d2x-rebirth/d2x-rebirth /opt/d2x-rebirth/d2x-rebirth
+sudo cp "$(dirname "$0")/icon-64.png" /opt/d2x-rebirth/icon-64.png || error "Failed to copy Descent 2 icon to /opt/d2x-rebirth!" 
+
+# add symlinks, needed for game to work using demo files
+# sudo ln -s descent2.ham d2demo.ham
+# sudo ln -s descent2.pig d2demo.pig
+# sudo ln -s descent2.hog d2demo.hog
+
+echo "ResolutionX=640
+ResolutionY=480
+WindowMode=1" | sudo tee /opt/d2x-rebirth/descent.cfg
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+cd /opt/d2x-rebirth
+./d2x-rebirth -hogdir /opt/d2x-rebirth "$@"' | sudo tee /usr/local/bin/d2x-rebirth >/dev/null
+sudo chmod +x /usr/local/bin/d2x-rebirth
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Descent 2
+Comment=DXX-Rebirth source port of Descent 2: Counterstrike from 1996...
+Exec=/opt/d2x-rebirth/d2x-rebirth -hogdir /opt/d2x-rebirth
+Icon=/opt/d2x-rebirth/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;ActionGame;
+StartupNotify=false" | sudo tee /usr/local/share/applications/d2x-rebirth.desktop >/dev/null
+
+status "Cleaning up..."
+rm -rf ~/dxx-rebirth

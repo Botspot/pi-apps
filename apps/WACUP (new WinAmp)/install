@@ -1,0 +1,18 @@
+#!/bin/bash
+
+case "$arch" in
+  "64") "${DIRECTORY}/manage" install-if-not-installed 'Wine (x64)' || error "Exiting now, as Wine failed to install." ;;
+  "32") "${DIRECTORY}/manage" install-if-not-installed 'Wine (x86)' || error "Exiting now, as Wine failed to install." ;;
+  *) error "arch variable is not set, cannot continue" ;;
+esac
+
+rm -f ~/wacup.exe
+
+case "$arch" in
+  "64") wget https://getwacup.com/preview_x64/WACUP_Preview_v1_99_47_23960_x64.exe -O wacup.exe || error "Failed to download WACUP!" ;;
+  "32") wget https://getwacup.com/preview/WACUP_Preview_v1_99_47_23960_x86.exe -O wacup.exe || error "Failed to download WACUP!" ;;
+  *) error "arch variable is not set, cannot continue" ;;
+esac
+
+wine ~/wacup.exe || error "Wine failed to run wacup.exe!"
+rm -f ~/wacup.exe ~/Desktop/WACUP.lnk

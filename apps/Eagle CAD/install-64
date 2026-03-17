@@ -1,40 +1,34 @@
 #!/bin/bash
 
-"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box86 failed to install somehow!"
-
-
-#An older version of libssl is required to run the old version of QT in Eagle.
-#install_packages libssl1.0.2 '|' libssl1.0.0 || exit 1
-#box64 provides /usr/lib/box64-x86_64-linux-gnu/libssl.so.1.0.0
+"${DIRECTORY}/manage" install-if-not-installed Box64 || error "Box64 failed to install somehow!"
 
 sudo rm -rf /usr/local/bin/eagle ~/.local/share/applications/eagle.desktop &>/dev/null
 
-if [ ! -d $HOME/eagle-7.7.0 ];then
-  rm -rf $HOME/eagle-7.7.0
-  status -n "Downloading Eagle 7.7.0... "
-  #Acquired from http://eagle.autodesk.com/eagle/software-versions/1
-  #wget http://eagle.autodesk.com/eagle/download-software/3 -O eagle.run || error "Failed to download Eagle!"
-  wget https://web.archive.org/web/20180411033813/http://web.cadsoft.de/ftp/eagle/program/7.7/eagle-lin64-7.7.0.run -O eagle.run || error "Failed to download Eagle!"
-  
-  status -n "Extracting... "
-  bash ./eagle.run $HOME >/dev/null || error "Failed to run eagle.run!"
-  rm -f ./eagle.run
-  status_green Done
-fi
+status -n "Downloading Eagle 9.6.2... "
+wget https://trial2.autodesk.com/NET17SWDLD/2017/EGLPRM/ESD/Autodesk_EAGLE_9.6.2_English_Linux_64bit.tar.gz -O /tmp/eagle.tar.gz || error "Failed to download Eagle!"
+
+status -n "Extracting..."
+sudo rm -rf /opt/eagle-9.6.2
+sudo mkdir -p /opt/eagle-9.6.2
+sudo tar -xvzf /tmp/eagle.tar.gz -C /opt || error "Failed to extract Eagle!"
+sudo chmod 755 -R /opt/eagle-9.6.2
+rm -f /tmp/eagle.tar.gz
+status_green Done
+
 mkdir -p $HOME/eagle &>/dev/null
 
 #make it runnable from a terminal
-sudo ln -s $HOME/eagle-7.7.0/bin/eagle /usr/local/bin/eagle
+sudo ln -s /opt/eagle-9.6.2/eagle /usr/local/bin/eagle
 
 status -n "Creating menu button... "
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
-Version=7.7.0
+Version=9.6.2
 Type=Application
 Terminal=false
-Icon=$HOME/eagle-7.7.0/bin/icons/Epf.svg
+Icon=/opt/eagle-9.6.2/bin/icons/Epf.svg
 Name=Eagle
-Exec=box86 eagle %f
+Exec=box64 eagle %f
 Comment=Design Circuit Boards with Eagle CAD
 MimeType=application/brd;
 Categories=Development;Electronics;" | sudo tee /usr/share/applications/eagle.desktop >/dev/null
@@ -52,7 +46,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 sudo update-mime-database /usr/share/mime
 
 #File icon
-sudo cp ~/eagle-7.7.0/bin/eagle-logo.png /usr/share/icons/eagle.png
+sudo cp /opt/eagle-9.6.2/bin/eagle-logo.png /usr/share/icons/eagle.png
 sudo update-icon-caches /usr/share/icons/*
 
 status_green Done

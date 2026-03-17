@@ -1,0 +1,82 @@
+#!/bin/bash
+echo '                         __________'
+echo '__________/ DXX-Rebirth /'
+
+status "Installing required dependencies..."
+install_packages scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0 libphysfs-dev libphysfs1 libglu1-mesa || exit 1
+
+# Migration steps from old install
+SOURCE_FOLDER="~/.d1x-rebirth"
+DEST_FOLDER="/opt/d1x-rebirth"
+
+# Check if the source folder exists
+if [ -d "$SOURCE_FOLDER" ]; then
+    echo "Game asset source folder found: $SOURCE_FOLDER"
+    
+    # Create destination folder if it doesn't exist
+    sudo mkdir -p "$DEST_FOLDER"
+
+    if [ -d "$SOURCE_FOLDER/descent.hog" ]; then
+        if [ -d "$DEST_FOLDER/descent.hog" ]; then
+            echo "Game data already exists at the new location, skipping move."
+            MISSING_GAME_DATA=false
+        else
+            echo "Moving game data to $DEST_FOLDER"
+            mv "$SOURCE_FOLDER/data" "$DEST_FOLDER/"
+            MISSING_GAME_DATA=false
+        fi
+    else
+        echo "Game data does not exist in $SOURCE_FOLDER, assuming non existing game data"
+        MISSING_GAME_DATA=true
+    fi
+else
+    echo "Source folder does not exist: $SOURCE_FOLDER, assuming non existing game data"
+    MISSING_GAME_DATA=true
+fi
+
+# If any game data were to be missing, delete the broken data (if found) and download a shareware version of the data
+if $MISSING_GAME_DATA; then
+    rm -rf $SOURCE_FOLDER
+    sudo mkdir -p /opt/d1x-rebirth
+    wget -q --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent-pc-shareware.zip || error "failed to download game content!"
+    sudo unzip descent-pc-shareware.zip -d /opt/d1x-rebirth
+    rm descent-pc-shareware.zip
+else
+   echo "Game data seems to be already moved, deleting old game data directories if it exists..."
+   rm -rf $SOURCE_FOLDER
+fi
+
+sudo wget -N -q --show-progress https://web.archive.org/web/20230702124034if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa --output-file /opt/d1x-rebirth/d1xr-hires.dxa || error "failed to download hires pack!"
+sudo wget -N -q --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa --output-file /opt/d1x-rebirth/d1xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
+
+git_clone https://github.com/dxx-rebirth/dxx-rebirth
+cd dxx-rebirth
+scons sdl2=1 sdlmixer=1 d1x=1 -j$(nproc) || error "Failed to compile Descent 1 game engine!"
+sudo cp ./build/d1x-rebirth/d1x-rebirth /opt/d1x-rebirth/d1x-rebirth
+sudo cp "$(dirname "$0")/icon-64.png" /opt/d1x-rebirth/icon-64.png || error "Failed to copy Descent 1 icon to /opt/d1x-rebirth!" 
+
+echo "ResolutionX=640
+ResolutionY=480
+WindowMode=1" | sudo tee /opt/d1x-rebirth/descent.cfg
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+cd /opt/d1x-rebirth
+./d1x-rebirth -hogdir /opt/d1x-rebirth "$@"' | sudo tee /usr/local/bin/d1x-rebirth >/dev/null
+sudo chmod +x /usr/local/bin/d1x-rebirth
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Descent 1
+Comment=DXX-Rebirth source port of Descent: First Strike from 1995...
+Exec=/opt/d1x-rebirth/d1x-rebirth -hogdir /opt/d1x-rebirth
+Icon=/opt/d1x-rebirth/icon-64.png
+Terminal=false
+Type=Application
+Categories=Game;ActionGame;
+StartupNotify=false" | sudo tee /usr/local/share/applications/d1x-rebirth.desktop >/dev/null
+
+status "Cleaning up..."
+rm -rf ~/dxx-rebirth

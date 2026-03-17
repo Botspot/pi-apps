@@ -1,0 +1,43 @@
+#!/bin/bash
+status "purging any old Bongo Cam instances if found..."
+sudo rm -rf ~/bongocat-armv7l-* ~/bongocam ~/bongocat-osu /opt/bongocam ~/.local/share/applications/bongocam.desktop /usr/local/bin/bongo /usr/local/share/applications/bongocam.desktop
+
+# Get dependencies
+status "Installing requried dependencies..."
+install_packages g++ libsfml-dev libsdl2-dev libxdo-dev libx11-dev x11-xserver-utils || exit 1
+# Download and compile Bongo Cam from source
+git_clone https://github.com/kuroni/bongocat-osu
+status "Compiling Bongo Cam..."
+cd bongocat-osu
+mv Makefile.linux Makefile
+make -j$(nproc)
+
+#Install
+sudo mkdir /opt/bongocam
+sudo cp "$(dirname "$0")/icon-64.png" /opt/bongocam/icon-64.png || error "Failed to copy icon!"
+sudo cp ./bin/bongo /opt/bongocam/bongo || error "Failed to copy Bongo Cam binary!"
+sudo cp -r ./font /opt/bongocam/font || error "Failed to copy Bongo Cam resources!"
+sudo cp -r ./img /opt/bongocam/img || error "Failed to Bongo Cam resources!"
+
+# Make command asociations
+status "Making terminal command..."
+echo '#!/bin/bash
+cd /opt/bongocam
+./bongo "$@"' | sudo tee /usr/local/bin/bongo >/dev/null
+sudo chmod +x /usr/local/bin/bongo
+
+# Make menu launcher
+status "Making menu launcher..."
+echo "[Desktop Entry]
+Name=Bongo Cam
+Comment=Cute bongo cat app
+Icon=/opt/bongocam/icon-64.png
+Exec=/opt/bongocam/bongo
+Path=/opt/bongocam
+Type=Application
+Encoding=UTF-8
+Terminal=false
+Categories=AudioVideo;" | sudo tee /usr/local/share/applications/bongocam.desktop >/dev/null
+
+status "Cleaning up..."
+rm -rf ~/bongocam

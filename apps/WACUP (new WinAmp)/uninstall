@@ -1,7 +1,7 @@
 #!/bin/bash
 echo -e "\e[30m\e[107mClick Yes to uninstall WACUP\e[0m"
 
-BOX86_NOBANNER=1 wine ~/'.wine/drive_c/Program Files/WACUP/UninstWACUP.exe'
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 wine ~/'.wine/drive_c/Program Files/WACUP/UninstallWACUP.exe' || error "Something went wrong while uninstalling WACUP!"
 
 while ps aux | grep -v grep | grep wine | grep -q 'WACUP' ;do
   sleep 1

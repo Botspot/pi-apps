@@ -1,6 +1,9 @@
 #!/bin/bash
 
+status "Checking if any Bongo Cam instances are active..."
+
 killall bongo &>/dev/null && echo "Closing Bongo Cam before uninstalling..."
 
 purge_packages || exit 1
-rm -rf ~/bongocam/ ~/.local/share/applications/bongocam.desktop
+
+sudo rm -rf ~/bongocat-armv7l-* ~/bongocam /opt/bongocam ~/.local/share/applications/bongocam.desktop /usr/local/bin/bongo ~/bongocat-osu /usr/local/share/applications/bongocam.desktop
