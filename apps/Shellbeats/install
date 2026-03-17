@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install required packages using Pi-Apps function
-install_packages git build-essential make gcc libncurses-dev mpv
+install_packages git build-essential make gcc libncurses-dev mpv libcurl4-openssl-dev libcjson-dev
 
 cd /tmp
 
