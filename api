@@ -2979,6 +2979,13 @@ Please free up some space, then try again.")
     error_type="system"
   fi
   
+  if grep -q "error: unable to write" "$logfile" && grep -q "Updating files: " "$logfile" && grep -q "warning: Clone succeeded, but checkout failed." "$logfile";then
+    error_caption+=("Unable to git clone a repository because your system has insufficient disk space.
+
+Please free up some space, then try again.")
+    error_type="system"
+  fi
+  
   if grep -q ": line .*: $HOME/\.config/autostart/.*\.desktop: Permission denied" "$logfile";then
     error_caption+=("Failed to create an autostart entry because the folder is owned by user $(stat -c "%U" ~/.config/autostart)!
 Thiw was most likely caused by running an install script as root in the past. Don't do that.
