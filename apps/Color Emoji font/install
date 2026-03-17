@@ -4,7 +4,7 @@ wget -O /tmp/NotoColorEmoji.ttf https://github.com/googlefonts/noto-emoji/raw/ma
 sudo mkdir -p /usr/local/share/fonts || error "Failed to create /usr/local/share/fonts folder!"
 sudo mv /tmp/NotoColorEmoji.ttf /usr/local/share/fonts
 
-fc-cache -f || error "Failed to run fc-cache!"
+fc-cache -f || sudo fc-cache -fv || error "Failed to run fc-cache!"
 
 #get large support for other symbols like the ones used in pi-apps terminal logo
 install_packages fonts-noto-core || exit 1
