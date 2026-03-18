@@ -2942,6 +2942,16 @@ See: https://forums.raspberrypi.com/viewtopic.php?t=275994")
     error_type="system"
   fi
   
+  if grep -q 'E: LZ4F: /var/lib/apt/lists/.*\.lz4 Unexpected end of file' "$logfile" ;then
+    error_caption+=('APT reported a corrupted repo list file.
+This was most likely caused by an unexpected power loss, poor quality Internet connection, or other rare glitch.
+
+You can try resolving it by running these 2 commands:
+sudo rm -rf /var/lib/apt
+sudo apt update')
+    error_type="system"
+  fi
+  
   if grep -qF "Structure needs cleaning" "$logfile" ;then
     error_caption+=("You have encountered the dreaded "\""Structure needs cleaning"\"" error. This indicates file-corruption caused by improperly shutting down your computer. You are lucky your computer booted at all.
 
