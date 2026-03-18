@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Load NVM so we can access the 'npm' command
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+echo "Removing Gemini CLI..."
+
+# Uninstall the global npm package
+if command -v npm &> /dev/null; then
+    npm uninstall -g @google/gemini-cli
+    echo "NPM package removed."
+else
+    echo "NPM not found, skipping package removal."
+fi
+
+# Optional: Keep NVM and Node 20 as they might be used by other apps.
+# Pi-Apps usually recommends only removing the specific app files.
+
+echo "Gemini CLI has been uninstalled."

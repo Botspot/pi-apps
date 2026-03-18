@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# --- 1. Sudo & Root Check ---
+# Ensure sudo is present if we aren't already root
+if ! command -v sudo &> /dev/null && [ "$(id -u)" -ne 0 ]; then
+    echo "Sudo not found. Attempting to install..."
+    apt-get update && apt-get install -y sudo
+fi
+
+# Define the privilege variable
+if [ "$(id -u)" -ne 0 ]; then
+    SUDO="sudo"
+else
+    SUDO=""
+fi
+
+# --- 2. System Dependencies ---
+$SUDO apt-get update
+$SUDO apt-get install -y python3-pip curl git
+
+# --- 3. Node.js Environment (NVM) ---
+# NVM doesn't play well with 'source ~/.bashrc' in scripts. 
+# We manually export the variables to ensure 'nvm' is available immediately.
+export NVM_DIR="$HOME/.nvm"
+if [ ! -d "$NVM_DIR" ]; then
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+fi
+
+# Load NVM into this specific shell session
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+nvm install 20
+nvm use 20
+nvm alias default 20
+
+# --- 4. Gemini CLI Installation ---
+npm install -g @google/gemini-cli
+
+echo "Installation successful! Restart your terminal or run 'source ~/.bashrc' to start using gemini-chat."
