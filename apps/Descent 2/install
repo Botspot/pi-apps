@@ -38,7 +38,7 @@ fi
 if $MISSING_GAME_DATA; then
     rm -rf $SOURCE_FOLDER
     sudo mkdir -p /opt/d2x-rebirth
-    wget -q --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip || error "failed to download game content!"
+    wget --show-progress https://web.archive.org/web/20221208193117if_/https://www.dxx-rebirth.com/download/dxx/content/descent2-pc-demo.zip -O $PWD/descent2-pc-demo.zip || error "failed to download game content!"
     sudo unzip descent2-pc-demo.zip -d /opt/d2x-rebirth
     rm descent2-pc-demo.zip
 else
@@ -51,9 +51,9 @@ cd /opt/d2x-rebirth
 for i in $( ls | grep [A-Z] ); do sudo mv -f $i `echo $i | tr 'A-Z' 'a-z'`; done
 cd ~/
 
-sudo wget -N -q --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa -O /opt/d2x-rebirth/d2xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
+sudo wget -N --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa -O /opt/d2x-rebirth/d2xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
 
-git_clone https://github.com/dxx-rebirth/dxx-rebirth
+git_clone https://github.com/dxx-rebirth/dxx-rebirth || exit 1
 cd dxx-rebirth
 scons sdl2=1 sdlmixer=1 d2x=1 -j$(nproc) || error "Failed to compile Descent 2 game engine!"
 sudo cp ./build/d2x-rebirth/d2x-rebirth /opt/d2x-rebirth/d2x-rebirth
