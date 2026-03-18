@@ -3,7 +3,7 @@ echo '                         __________'
 echo '__________/ DXX-Rebirth /'
 
 status "Installing required dependencies..."
-install_packages scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0 libphysfs-dev libphysfs1 libglu1-mesa || exit 1
+install_packages scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libphysfs-dev libglu1-mesa-dev libgl1-mesa-dev || exit 1
 
 # Migration steps from old install
 SOURCE_FOLDER="~/.d1x-rebirth"
@@ -46,8 +46,8 @@ else
    rm -rf $SOURCE_FOLDER
 fi
 
-sudo wget -N --show-progress https://web.archive.org/web/20230702124034if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa -O /opt/d1x-rebirth/d1xr-hires.dxa || error "failed to download hires pack!"
-sudo wget -N --show-progress https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa -O /opt/d1x-rebirth/d1xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
+sudo wget https://web.archive.org/web/20230702124034if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-hires.dxa -O /opt/d1x-rebirth/d1xr-hires.dxa || error "failed to download hires pack!"
+sudo wget https://web.archive.org/web/20221208193318if_/https://www.dxx-rebirth.com/download/dxx/res/d1xr-sc55-music.dxa -O /opt/d1x-rebirth/d1xr-sc55-music.dxa  || error "failed to download ogg soundtrack!"
 
 git_clone https://github.com/dxx-rebirth/dxx-rebirth || exit 1
 cd dxx-rebirth
