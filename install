@@ -38,9 +38,9 @@ package_available_installer() { #determine if the specified package-name exists 
 }
 
 if package_available_installer software-properties-common ; then
-  dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+  dependencies='yad curl wget aria2 lsb-release software-properties-common apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2 zstd'
 else
-  dependencies='yad curl wget aria2 lsb-release apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2'
+  dependencies='yad curl wget aria2 lsb-release apt-utils apt-transport-https gnupg imagemagick bc librsvg2-bin locales shellcheck git wmctrl xdotool x11-utils rsync unzip debsums libgtk3-perl bzip2 zstd'
 fi
 
 if ! dpkg -s $dependencies &>/dev/null ;then
