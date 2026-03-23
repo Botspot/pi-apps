@@ -11,6 +11,9 @@ git_clone https://github.com/Jack477/CommanderPi || error "failed to download re
 cd CommanderPi || error "failed to enter repository!"
 # make sure start.sh is executable
 chmod +x src/start.sh
+
+#make desktop file
+mkdir -p ~/Desktop
 sudo python3 c_desktop.py $USER || error "Could not install commanderpi!"
 sudo chown $USER:$USER ~/Desktop/commanderpi.desktop
 chmod +x ~/Desktop/commanderpi.desktop
