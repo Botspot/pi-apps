@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#disable waydroid repo so it can't update and undo the nftables change (pi-apps handles updates now)
+version=waydroid_1.6.2_all.deb
+
 #set yadflags so userinput_func and other dialog windows can use it (arrays are not exported to subprocesses)
 yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png")
 
@@ -73,7 +76,7 @@ fi
 enable_module binder_linux
 
 if ! grep -q ' binder$' /proc/devices ;then
-  error "User error (reporting allowed): Could not enable the binder kernel module. Please find a way to get it configured on your device. This may require a kernel recompilation, or if on Ubuntu, additional kernel modules may need to be installed with something like: apt install linux-modules-extra-raspi"
+  error "User error (reporting allowed): Could not enable the binder kernel module. Please find a way to get it configured on your device. This may require a kernel recompilation, or if on Ubuntu, additional kernel modules may need to be installed with something like: sudo apt install linux-modules-extra-raspi"
 fi
 
 if [ ! -f /var/lib/waydroid/images/vendor.img ];then
@@ -93,7 +96,13 @@ fi
 sudo curl -Sf https://repo.waydro.id/waydroid.gpg --output /usr/share/keyrings/waydroid.gpg || error "Failed to download waydroid.gpg to keyrings directory!"
 echo "deb [signed-by=/usr/share/keyrings/waydroid.gpg] https://repo.waydro.id/ $(get_codename) main" | sudo tee /etc/apt/sources.list.d/waydroid.list >/dev/null
 
-install_packages waydroid || exit 1
+install_packages waydroid nftables || exit 1
+
+#enable nftables in waydroid script
+sudo sed -i 's/^LXC_USE_NFT="false"/LXC_USE_NFT="true"/g' /usr/lib/waydroid/data/scripts/waydroid-net.sh
+
+#disable waydroid repo so it can't update and undo the nftables change (pi-apps handles updates now)
+sudo rm /etc/apt/sources.list.d/waydroid.list
 
 if [ "$init_google" == yes ];then
   sudo waydroid --details-to-stdout init -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor -s GAPPS || sudo waydroid init -s GAPPS || error "Waydroid failed to initialize"
@@ -181,6 +190,7 @@ Categories=X-WayDroid-App;
 X-Purism-FormFactor=Workstation;Mobile;" | sudo tee /usr/share/applications/stop-waydroid.desktop >/dev/null
 
 #ensure the Waydroid menu launcher is not hidden for no good reason https://github.com/waydroid/waydroid/issues/1407
+sudo cp -n /usr/share/applications/Waydroid.desktop ~/.local/share/applications/Waydroid.desktop
 sed -i 's/NoDisplay=true/NoDisplay=false/g' ~/.local/share/applications/Waydroid.desktop
 #lock the file to prevent waydroid from hiding it again
 sudo chmod -w ~/.local/share/applications/Waydroid.desktop
