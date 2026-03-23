@@ -20,9 +20,13 @@ enable_module squashfs || exit 1
 # install the core snap which obtains the latest snapd
 sudo snap install core || error "Snapd was unable to install core"
 
-echo "Output of 'snap version':"
-snap version
-sudo snap install snap-store || error "Unable to install snap store"
+echo "Output of 'snap version': $(snap version)"
+if ! sudo snap install snap-store ;then
+  #try to fix one error report that was sent in
+  warning "snap-store installation failed; trying once more after running 'sudo snap set system experimental.user-daemons=true'"
+  sudo snap set system experimental.user-daemons=true
+  sudo snap install snap-store || error "Unable to install snap store"
+fi
 
 # correct orphaned directory from older script 
 sudo rm -rf /usr/share/applications/snap

@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo rm -rf /var/snap/snap-store /usr/share/applications/snapd-temporary
+
 if command -v snap >/dev/null ;then
   sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd\noutput from running snap changes:\n$(snap changes 2>&1)"
 
@@ -9,5 +9,7 @@ sudo apt purge snapd\e[39m
 "
   
 else
-  echo "Warning: attempting to uninstall snap store but the snap command is not found. This script is exiting with 'success', as obviously nothing is installed."
+  warning "Attempting to uninstall snap store but the snap command is not found. This script is exiting with 'success', as obviously nothing is installed."
 fi
+sudo rm -rf /var/snap/snap-store /usr/share/applications/snapd-temporary
+true
