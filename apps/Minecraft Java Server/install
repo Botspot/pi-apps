@@ -25,26 +25,26 @@ server_category="$output"
 
 case "$server_category" in
   "Fabric")
-    available_versions=$(curl -s https://meta.fabricmc.net/v2/versions/game | jq -r '.[] | select( .stable == true ) | .version')
+    available_versions=$(wget -O- https://meta.fabricmc.net/v2/versions/game | jq -r '.[] | select( .stable == true ) | .version')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    loader_version=$(curl -s https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
-    installer_verison=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
+    loader_version=$(wget -O- https://meta.fabricmc.net/v2/versions/loader/$server_version | jq -r 'first( .[] | .loader | .version )')
+    installer_verison=$(wget -O- https://meta.fabricmc.net/v2/versions/installer | jq -r 'first( .[] | .version )')
     server_jar="fabric-server-mc.$server_version-loader.$loader_version-launcher.$installer_verison.jar"
     wget -O "$server_jar" "https://meta.fabricmc.net/v2/versions/loader/$server_version/$loader_version/$installer_verison/server/jar" || exit 1
     ;;
   "Forge")
     # remove versions without an "installer" form
-    available_versions=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'del((."1.1", ."1.2.3", ."1.2.4", ."1.2.5", ."1.3.2", ."1.4.0", ."1.4.1", ."1.4.2", ."1.4.3", ."1.4.4", ."1.4.5", ."1.4.6", ."1.4.7", ."1.5", ."1.5.1", ."1.5.2", ."1.6.1", ."1.6.2", ."1.6.3")) | keys_unsorted | reverse | .[]')
+    available_versions=$(wget -O- https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r 'del((."1.1", ."1.2.3", ."1.2.4", ."1.2.5", ."1.3.2", ."1.4.0", ."1.4.1", ."1.4.2", ."1.4.3", ."1.4.4", ."1.4.5", ."1.4.6", ."1.4.7", ."1.5", ."1.5.1", ."1.5.2", ."1.6.1", ."1.6.2", ."1.6.3")) | keys_unsorted | reverse | .[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    installer_version=$(curl -s https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
+    installer_version=$(wget -O- https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json | jq -r '.'\"$server_version\"' | [last] | .[]')
 
     # example file formats
     # https://maven.minecraftforge.net/net/minecraftforge/forge/1.18.1-39.0.63/forge-1.18.1-39.0.63-installer.jar
@@ -55,37 +55,37 @@ case "$server_category" in
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
   "Paper")
-    available_versions=$(curl -s https://api.papermc.io/v2/projects/paper/ | jq -r '.versions | .[]')
+    available_versions=$(wget -O- https://api.papermc.io/v2/projects/paper/ | jq -r '.versions | .[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_info=$(curl -s https://api.papermc.io/v2/projects/paper/versions/$server_version/builds | jq -r '.builds | [last]')
+    version_info=$(wget -O- https://api.papermc.io/v2/projects/paper/versions/$server_version/builds | jq -r '.builds | [last]')
     server_jar="$(echo "$version_info" | jq -r '.[].downloads.application.name')"
     wget -O "$server_jar" "https://api.papermc.io/v2/projects/paper/versions/$server_version/builds/$(echo "$version_info" | jq -r '.[].build')/downloads/$server_jar" || exit 1
     ;;
   "Purpur")
-    available_versions=$(curl -s https://api.purpurmc.org/v2/purpur/ | jq -r '.versions | .[]')
+    available_versions=$(wget -O- https://api.purpurmc.org/v2/purpur/ | jq -r '.versions | .[]')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    build_version=$(curl -s https://api.purpurmc.org/v2/purpur/$server_version/ | jq -r '.builds.latest')
+    build_version=$(wget -O- https://api.purpurmc.org/v2/purpur/$server_version/ | jq -r '.builds.latest')
     server_jar="purpur-$server_version-$build_version.jar"
     wget -O "$server_jar" "https://api.purpurmc.org/v2/purpur/$server_version/$build_version/download" || exit 1
     ;;
   "Vanilla")
-    available_versions=$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .type == "release" ) | .id')
+    available_versions=$(wget -O- https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .type == "release" ) | .id')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_json="$(curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .id == "'$server_version'" ) | .url')"
+    version_json="$(wget -O- https://piston-meta.mojang.com/mc/game/version_manifest_v2.json | jq -r '.versions | .[] | select ( .id == "'$server_version'" ) | .url')"
     server_jar="minecraft_server.$server_version.jar"
-    wget -O "$server_jar" "$(curl -s "$version_json" | jq -r '.downloads.server.url')" || exit 1
+    wget -O "$server_jar" "$(wget -O- "$version_json" | jq -r '.downloads.server.url')" || exit 1
     ;;
   *)
     error "You did not choose an option, exiting the script."
