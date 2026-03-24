@@ -15,3 +15,6 @@ rm -f "${APPIMAGE}"
 # Cleanup Old Versions
 rm -f "${HOME}/.local/share/applications/${OLD_ID}.desktop"
 rm -f "${BIN}/${OLD_ID}.AppImage"
+
+#remove old and unused apt repo and keyring which caused problems for a user https://github.com/Botspot/pi-apps/issues/2927#issuecomment-4119171159
+sudo rm -f /etc/apt/sources.list.d/minecraft-pi-reborn.list /etc/apt/keyrings/minecraft-pi-reborn.asc
