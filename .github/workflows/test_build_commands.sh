@@ -165,11 +165,21 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
     PR="$import"
   fi
   
-  #repobranch='https://github.com/cycool29/pi-apps/tree/msteams'
-  repobranch="$(wget -qO- "$PR" | grep -x 'from' --after 2 | tr '<> ' '\n' | grep 'title="' | sed 's/title="//g' | sed 's/"$//g' | head -n1)"
+  # Fetch the JSON and extract the source repo URL and branch name
+  repobranch=$(curl -s "https://api.github.com/repos/$owner/$repo/pulls/$pr_number" | jq -r '
+    if .head.repo != null then 
+      "\(.head.repo.html_url)/tree/\(.head.ref)" 
+    elif .message != null then
+      "API Error: \(.message)"
+    else 
+      "Error: Could not retrieve PR data" 
+    end
+  ')
   
   if [ -z "$repobranch" ];then
     error "No PR was found that mentions a branch."
+  elif [[ "$repobranch" == *'Error: '* ]];then
+    error "Failed to determine target repo and branch due to github api error"
   else
     echo "repobranch: $repobranch"
   fi
@@ -177,8 +187,8 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   #Take a combined repo/branch url and separate it.
   #example value of repobranch: https://github.com/cycool29/pi-apps/tree/msteams
   
-  repo="$(echo "$repobranch" | awk -F: '{print $1}')" #value: cycool29/pi-apps
-  branch="$(basename "$repobranch" | awk -F: '{print $2}')" #value: msteams
+  repo="$(echo "$repobranch" | sed 's/.*github.com\///g ; s/\/tree\/.*//g')" #value: cycool29/pi-apps
+  branch="$(echo "$repobranch" | sed 's/.*\/tree\///g')" #value: msteams
   username="$(dirname "$repo" | sed 's+^/++g')" #value: cycool29
   
   #make a temporary directory and enter it
