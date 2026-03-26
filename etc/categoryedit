@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$DIRECTORY" ]; then
-  DIRECTORY="$(readlink -f "$(dirname "$(dirname "$0")")")"
+  DIRECTORY="$(dirname "$(dirname "$(readlink -f "$0")")")"
 fi
 
 function error {
@@ -114,6 +114,7 @@ $category
 "
   done
   LIST="${LIST::-1}"
+  LIST="${LIST//[&]/&amp;}"
   
   categories="$(echo -e "$LIST" | yad --class Pi-Apps-Settings --name "Pi-Apps Settings" --center --title='Category editor' --height=400 \
     --list --text="Changes saved to: $(echo "${DIRECTORY}/data/category-overrides" | sed "s+$HOME+~+g")" --editable --editable-cols=3 --multiple --dclick-action=true --print-all \
@@ -128,7 +129,7 @@ $category
   if [ "$button" == 0 ];then
     #save
     #remove first and last characters from each line --- and '(null)' messaged from yad --- and sort it alphabetically
-    categories="$(echo "$categories" | sed 's/.$//; s/^.//' | sed "s/(null)//g" | sort)"
+    categories="$(echo "$categories" | sed 's/\&amp\;/\&/g' | sed 's/.$//; s/^.//' | sed "s/(null)//g" | sort)"
     break #exit the loo to save the changes
     
   elif [ "$button" == 2 ];then
