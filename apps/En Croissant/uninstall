@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 sudo rm -f /usr/local/bin/en-croissant
 sudo rm -f /usr/local/share/icons/en-croissant.png
 
