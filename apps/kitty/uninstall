@@ -9,12 +9,20 @@ fi
 
 sudo rm -rf "$INSTALL_DIR" || error "Failed to remove $INSTALL_DIR"
 
-sudo rm -f /usr/local/bin/kitty || true
-sudo rm -f /usr/local/bin/kitten || true
+sudo rm -f /usr/local/bin/kitty
+sudo rm -f /usr/local/bin/kitten
 
-rm -f ~/.local/share/applications/kitty.desktop || true
-rm -f ~/.local/share/applications/kitty-open.desktop || true
+sudo rm -f /usr/local/share/applications/kitty.desktop
+sudo rm -f /usr/local/share/applications/kitty-open.desktop
 
-purge_packages || exit 1
+#remove manpages
+sudo rm -f /usr/local/share/man/man1/kitten* /usr/local/share/man/man1/kitty* /usr/local/share/man/man5/kitty*
 
-echo "Kitty has been removed. You may need to log out and back in."
+#remove docs
+sudo rm -rf /usr/local/share/doc/kitty 
+
+#remove terminfo
+sudo rm -f /usr/local/share/terminfo/x/xterm-kitty
+
+#remove icons
+sudo rm -f /usr/local/share/icons/hicolor/256x256/apps/kitty.png /usr/local/share/icons/hicolor/scalable/apps/kitty.svg
