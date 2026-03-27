@@ -1,0 +1,56 @@
+#!/bin/bash
+
+version="0.46.2"
+
+INSTALL_DIR="/opt/kitty"
+TMP_DIR="$(mktemp -d)"
+
+URL="https://github.com/kovidgoyal/kitty/releases/download/v${version}/kitty-${version}-arm64.txz"
+
+echo "Downloading kitty v$version..."
+wget -O "$TMP_DIR/kitty.txz" "$URL" || error "Failed to download kitty"
+
+mkdir -p "$TMP_DIR/extract" || error "Failed to create temp extract dir"
+tar -C "$TMP_DIR/extract" -xJf "$TMP_DIR/kitty.txz" || error "Failed to extract kitty archive"
+
+echo "Installing to $INSTALL_DIR..."
+sudo rm -rf "$INSTALL_DIR" || error "Failed to remove old install"
+sudo mkdir -p "$INSTALL_DIR" || error "Failed to create install dir"
+sudo cp -r "$TMP_DIR/extract"/. "$INSTALL_DIR" || error "Failed to copy files"
+
+rm -rf "$TMP_DIR"
+
+sudo ln -sf "$INSTALL_DIR/bin/kitty" /usr/local/bin/kitty || error "Failed to link kitty"
+sudo ln -sf "$INSTALL_DIR/bin/kitten" /usr/local/bin/kitten || error "Failed to link kitten"
+
+sudo mkdir -p /usr/local/share/applications || error "Failed to create applications directory"
+sudo mkdir -p /usr/local/share/icons || error "Failed to create applications directory"
+
+#copy launchers
+sudo cp -r "$INSTALL_DIR/share/applications" /usr/local/share || error "Failed to copy folder with kitty.desktop"
+
+#copy icons
+sudo cp -r "$INSTALL_DIR/share/icons" /usr/local/share || error "Failed to copy folder with kitty icons"
+
+#update icon caches to make this icon works immediately
+sudo update-icon-caches /usr/local/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#copy docs, man, terminfo
+sudo cp -r "$INSTALL_DIR/share/doc" /usr/local/share #who cares if this fails
+sudo cp -r "$INSTALL_DIR/share/man" /usr/local/share #who cares if this fails
+sudo cp -r "$INSTALL_DIR/share/terminfo" /usr/local/share #who cares if this fails
+
+output=""
+userinput_func \
+"Do you want to set kitty as your default terminal?" \
+"No, do not change anything." \
+"Yes, set as default terminal system-wide (recommended)."
+
+if [ "$output" == "Yes, set as default terminal system-wide (recommended)." ];then
+  sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/kitty 50 \
+    || error "Failed to register terminal"
+
+  sudo update-alternatives --set x-terminal-emulator /usr/local/bin/kitty \
+    || error "Failed to set default terminal"
+fi
