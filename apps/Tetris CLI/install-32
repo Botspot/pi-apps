@@ -1,4 +1,10 @@
 #!/bin/bash
 
 install_packages https://github.com/Pi-Apps-Coders/files/raw/main/tetris-cli_2.0-1_armhf.deb || exit 1
-sudo ln -s /usr/games/tetris/tetris /usr/local/bin/tetris-cli
+
+sudo tee /usr/local/bin/tetris-cli > /dev/null << 'EOF'
+#!/bin/bash
+exec /usr/games/tetris/tetris "$@"
+EOF
+
+sudo chmod +x /usr/local/bin/tetris-cli
