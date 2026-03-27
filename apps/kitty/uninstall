@@ -1,0 +1,20 @@
+#!/bin/bash
+
+INSTALL_DIR="/opt/kitty"
+
+if update-alternatives --query x-terminal-emulator 2>/dev/null | grep -q "/usr/local/bin/kitty"; then
+  sudo update-alternatives --remove x-terminal-emulator /usr/local/bin/kitty \
+    || error "Failed to remove kitty from alternatives"
+fi
+
+sudo rm -rf "$INSTALL_DIR" || error "Failed to remove $INSTALL_DIR"
+
+sudo rm -f /usr/local/bin/kitty || true
+sudo rm -f /usr/local/bin/kitten || true
+
+rm -f ~/.local/share/applications/kitty.desktop || true
+rm -f ~/.local/share/applications/kitty-open.desktop || true
+
+purge_packages || exit 1
+
+echo "Kitty has been removed. You may need to log out and back in."

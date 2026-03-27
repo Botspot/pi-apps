@@ -1,0 +1,55 @@
+#!/bin/bash
+
+version="0.46.2"
+
+INSTALL_DIR="/opt/kitty"
+TMP_DIR="$(mktemp -d)"
+
+ARCH="arm64"
+URL="https://github.com/kovidgoyal/kitty/releases/download/v${version}/kitty-${version}-${ARCH}.txz"
+
+echo "Downloading kitty v$version..."
+wget -O "$TMP_DIR/kitty.txz" "$URL" || error "Failed to download kitty"
+
+mkdir -p "$TMP_DIR/extract" || error "Failed to create temp extract dir"
+tar -C "$TMP_DIR/extract" -xJf "$TMP_DIR/kitty.txz" || error "Failed to extract kitty archive"
+
+echo "Installing to $INSTALL_DIR..."
+sudo rm -rf "$INSTALL_DIR" || error "Failed to remove old install"
+sudo mkdir -p "$INSTALL_DIR" || error "Failed to create install dir"
+sudo cp -r "$TMP_DIR/extract"/. "$INSTALL_DIR" || error "Failed to copy files"
+
+rm -rf "$TMP_DIR"
+
+sudo ln -sf "$INSTALL_DIR/bin/kitty" /usr/local/bin/kitty || error "Failed to link kitty"
+sudo ln -sf "$INSTALL_DIR/bin/kitten" /usr/local/bin/kitten || error "Failed to link kitten"
+
+mkdir -p ~/.local/share/applications || error "Failed to create applications directory"
+
+cp "$INSTALL_DIR/share/applications/kitty.desktop" ~/.local/share/applications/ || error "Failed to copy kitty.desktop"
+cp "$INSTALL_DIR/share/applications/kitty-open.desktop" ~/.local/share/applications/ || error "Failed to copy kitty-open.desktop"
+
+sed -i "s|Exec=kitty|Exec=$INSTALL_DIR/bin/kitty|g" ~/.local/share/applications/kitty*.desktop || error "Failed to fix exec path"
+sed -i "s|Icon=kitty|Icon=$INSTALL_DIR/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty*.desktop || error "Failed to fix icon path"
+
+output=""
+userinput_func \
+"Do you want to set kitty as your default terminal?" \
+"No, do not change anything." \
+"Yes, set as default terminal system-wide (recommended)."
+
+case "${output:-}" in
+
+  "Yes, set as default terminal system-wide (recommended).")
+    sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/kitty 50 \
+      || error "Failed to register terminal"
+
+    sudo update-alternatives --set x-terminal-emulator /usr/local/bin/kitty \
+      || error "Failed to set default terminal"
+
+    ;;
+
+esac
+
+echo "Installation complete."
+echo "You may need to log out and back in for all changes to take effect."
