@@ -5,8 +5,7 @@ version="0.46.2"
 INSTALL_DIR="/opt/kitty"
 TMP_DIR="$(mktemp -d)"
 
-ARCH="arm64"
-URL="https://github.com/kovidgoyal/kitty/releases/download/v${version}/kitty-${version}-${ARCH}.txz"
+URL="https://github.com/kovidgoyal/kitty/releases/download/v${version}/kitty-${version}-arm64.txz"
 
 echo "Downloading kitty v$version..."
 wget -O "$TMP_DIR/kitty.txz" "$URL" || error "Failed to download kitty"
@@ -24,13 +23,23 @@ rm -rf "$TMP_DIR"
 sudo ln -sf "$INSTALL_DIR/bin/kitty" /usr/local/bin/kitty || error "Failed to link kitty"
 sudo ln -sf "$INSTALL_DIR/bin/kitten" /usr/local/bin/kitten || error "Failed to link kitten"
 
-mkdir -p ~/.local/share/applications || error "Failed to create applications directory"
+sudo mkdir -p /usr/local/share/applications || error "Failed to create applications directory"
+sudo mkdir -p /usr/local/share/icons || error "Failed to create applications directory"
 
-cp "$INSTALL_DIR/share/applications/kitty.desktop" ~/.local/share/applications/ || error "Failed to copy kitty.desktop"
-cp "$INSTALL_DIR/share/applications/kitty-open.desktop" ~/.local/share/applications/ || error "Failed to copy kitty-open.desktop"
+#copy launchers
+sudo cp -r "$INSTALL_DIR/share/applications" /usr/local/share || error "Failed to copy folder with kitty.desktop"
 
-sed -i "s|Exec=kitty|Exec=$INSTALL_DIR/bin/kitty|g" ~/.local/share/applications/kitty*.desktop || error "Failed to fix exec path"
-sed -i "s|Icon=kitty|Icon=$INSTALL_DIR/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty*.desktop || error "Failed to fix icon path"
+#copy icons
+sudo cp -r "$INSTALL_DIR/share/icons" /usr/local/share || error "Failed to copy folder with kitty icons"
+
+#update icon caches to make this icon works immediately
+sudo update-icon-caches /usr/local/share/icons/*
+sudo xdg-icon-resource forceupdate --mode system
+
+#copy docs, man, terminfo
+sudo cp -r "$INSTALL_DIR/share/doc" /usr/local/share #who cares if this fails
+sudo cp -r "$INSTALL_DIR/share/man" /usr/local/share #who cares if this fails
+sudo cp -r "$INSTALL_DIR/share/terminfo" /usr/local/share #who cares if this fails
 
 output=""
 userinput_func \
@@ -38,18 +47,10 @@ userinput_func \
 "No, do not change anything." \
 "Yes, set as default terminal system-wide (recommended)."
 
-case "${output:-}" in
+if [ "$output" == "Yes, set as default terminal system-wide (recommended)." ];then
+  sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/kitty 50 \
+    || error "Failed to register terminal"
 
-  "Yes, set as default terminal system-wide (recommended).")
-    sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/kitty 50 \
-      || error "Failed to register terminal"
-
-    sudo update-alternatives --set x-terminal-emulator /usr/local/bin/kitty \
-      || error "Failed to set default terminal"
-
-    ;;
-
-esac
-
-echo "Installation complete."
-echo "You may need to log out and back in for all changes to take effect."
+  sudo update-alternatives --set x-terminal-emulator /usr/local/bin/kitty \
+    || error "Failed to set default terminal"
+fi
