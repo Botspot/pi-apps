@@ -47,19 +47,12 @@ npm install -g pnpm || error "NPM failed to install pnpm, which is necessary for
 
 status "Checking Rust compiler for compatibility"
 
-# simplified version checking
-if package_is_new_enough rustc 1.77.2; then
-  echo "Rust compiler available in the package repositories is new enough, installing from package repositories"
-  install_packages cargo rustc
-else
-  echo "Rust compiler is too old in available package repositories, installing latest version via rustup"
-  status "Installing newer Rust toolchain"
-  wget -O /tmp/rustup-init.sh https://sh.rustup.rs || error "Failed to download rust init script"
-  chmod +x /tmp/rustup-init.sh || error "Failed to make rust init script executable"
-  /tmp/rustup-init.sh -y || error "Failed to run rust init script"
-  . "$HOME/.cargo/env" || error "Failed to run source rust environment"
-  rm /tmp/rustup-init.sh
-fi
+status "Installing latest Rust version via rustup"
+wget -O /tmp/rustup-init.sh https://sh.rustup.rs || error "Failed to download rust init script"
+chmod +x /tmp/rustup-init.sh || error "Failed to make rust init script executable"
+/tmp/rustup-init.sh -y || error "Failed to run rust init script"
+. "$HOME/.cargo/env" || error "Failed to run source rust environment"
+rm /tmp/rustup-init.sh
 
 # ensure correct rust target
 rustup target add "$RUST_TARGET"
