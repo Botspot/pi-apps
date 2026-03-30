@@ -47,6 +47,8 @@ check_repo() { #download pi-apps repository to the update/pi-apps folder
     #keep trying until success
     while true;do
       rm -rf "${DIRECTORY}/update"
+      #git pull failed, so clear out the list of updatable files so that user doesn't get 100 errors for invalid app names if they try to update during this retry stage
+      rm -rf "${DIRECTORY}/data/update-status"
       mkdir -p "${DIRECTORY}/update" && cd "${DIRECTORY}/update" || error "failed to create and enter the update directory!"
       
       #clone the repository, and display an error message if it fails
@@ -58,6 +60,7 @@ check_repo() { #download pi-apps repository to the update/pi-apps folder
         sleep 60
       fi
     done
+    mkdir -p "${DIRECTORY}/data/update-status" #add back the folder we removed
   else
     echo "Done" 1>&2
   fi
