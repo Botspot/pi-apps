@@ -58,7 +58,7 @@ wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bas
 <img src="icons/screenshots/main%20window.png?raw=true" align="right" height="350px"/>
 
 ### Supported systems:
-#### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2 v1.2/3/Zero 2 W/4/5)
+#### Raspberry Pi <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> (2 v1.2/Zero 2 W/3/4/5)
 - <img src="https://pi-apps.io/img/other-icons/raspberrypi-icon.svg" height="14"> [**Raspberry Pi OS**](https://www.raspberrypi.com/software/operating-systems/) (32-bit Bookworm/64-bit Bookworm/64-bit Trixie): <span style="color:var(--success-dark);">fully supported</span>
 - <img src="https://pi-apps.io/img/other-icons/ubuntu-icon.svg" height="14"> [**Ubuntu**](https://ubuntu.com/download/raspberry-pi) (Jammy/Noble): <span style="color:var(--success-dark);">fully supported</span>
 #### Nintendo Switch <img src=https://pi-apps.io/img/other-icons/switch-icon.svg height="14">
