@@ -2,11 +2,11 @@
 
 install_packages dnsmasq tcpdump nftables yad || exit 1
 
-cd /tmp
-git_clone https://github.com/Botspot/ethernet-hotspot || error 'Failed to clone repository!'
 
 sudo rm -rf /opt/ethernet-hotspot /usr/local/bin/ethernet-hotspot || error "failed to first remove /opt/ethernet-hotspot"
-sudo mv -f /tmp/ethernet-hotspot /opt/ || error "failed to move repo /opt/ethernet-hotspot"
+
+cd /opt
+sudo git clone https://github.com/Botspot/ethernet-hotspot || error 'Failed to clone repository!'
 
 sudo mkdir -p /usr/local/bin/
 sudo rm -f /usr/local/bin/ethernet-hotspot
