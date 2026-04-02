@@ -1,0 +1,28 @@
+#!/bin/bash
+
+install_packages dnsmasq tcpdump nftables yad || exit 1
+
+cd /tmp
+git_clone https://github.com/Botspot/ethernet-hotspot || error 'Failed to clone repository!'
+
+sudo rm -rf /opt/ethernet-hotspot /usr/local/bin/ethernet-hotspot || error "failed to first remove /opt/ethernet-hotspot"
+sudo mv -f /tmp/ethernet-hotspot /opt/ || error "failed to move repo /opt/ethernet-hotspot"
+
+sudo mkdir -p /usr/local/bin/
+sudo rm -f /usr/local/bin/ethernet-hotspot
+sudo ln -s /opt/ethernet-hotspot/ethernet-hotspot /usr/local/bin/ethernet-hotspot || error "failed to create symlink /usr/local/bin/ethernet-hotspot"
+
+sudo mkdir -p /usr/local/share/icons/hicolor/64x64/apps/
+sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/ethernet-hotspot.png || error "failed to copy icon"
+sudo touch /usr/local/share/icons
+
+echo '[Desktop Entry]
+Type=Application
+Name=Ethernet Hotspot
+Comment=Share your WiFi connection with other devices, using an Ethernet cable
+Icon=ethernet-hotspot
+Exec=pkexec ethernet-hotspot
+Terminal=false
+Categories=System
+Keywords=Hotspot;WiFi
+StartupWMClass=wihotspot-gui;' | sudo tee /usr/share/applications/ethernet-hotspot.desktop >/dev/null || error "Failed to make menu button!"

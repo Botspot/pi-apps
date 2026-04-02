@@ -1,0 +1,8 @@
+Share your WiFi connection with other devices, using an Ethernet cable
+This is useful for when you only have one WiFi adapter, but you want multiple devices to use that one internet connection, without buying any additional hardware.
+With this script, I'm using a Raspberry Pi's built-in ethernet port to share its internet connection to other downstream devices.
+
+To connect multiple devices downstream, use an ethernet switch.
+
+To run: Menu -> Internet -> Ethernet Hotspot
+To run in a terminal: sudo ethernet-hotspot

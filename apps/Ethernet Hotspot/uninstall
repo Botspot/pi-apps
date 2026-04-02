@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo rm -rf /usr/local/bin/ethernet-hotspot /opt/ethernet-hotspot /usr/local/share/icons/hicolor/64x64/apps/ethernet-hotspot.png /usr/share/applications/ethernet-hotspot.desktop || error "Failed to remove all files!"
+
+purge_packages || exit 1
