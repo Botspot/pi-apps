@@ -665,7 +665,7 @@ $gman_message"
     fi
   fi
   
-  #deconstruct the pi-apps tmpdir here, as this manage mode is guaranteed to not run recursively (and here is unaffected by unexpected terminal closures)
+  #remove anything left behind in the pi-apps tmpdir here, as this manage mode is guaranteed to not run recursively, no root should be needed, and here is unaffected by unexpected terminal closures
   rm -rf /var/cache/pi-apps/* 2>/dev/null
   
   # if update, refresh, or update-file actions were run, then update the .git folder
