@@ -21,7 +21,7 @@ Type=Application
 Name=Ethernet Hotspot
 Comment=Share your WiFi connection with other devices, using an Ethernet cable
 Icon=ethernet-hotspot
-Exec=pkexec ethernet-hotspot
+Exec=bash -c "pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/local/bin/ethernet-hotspot"
 Terminal=false
 Categories=System
 Keywords=Hotspot;WiFi
