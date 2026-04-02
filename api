@@ -409,51 +409,51 @@ apt_update() { #run an apt update with error-checking and minimal output
   return 0
 }
 
-repo_add() { #add local packages to the /tmp/pi-apps-local-packages repository
-  #given local deb file(s), make a local apt repository in /tmp/pi-apps-local-packages
+repo_add() { #add local packages to the /var/cache/pi-apps/pi-apps-local-packages repository
+  #given local deb file(s), make a local apt repository in /var/cache/pi-apps/pi-apps-local-packages
   
   #see: https://unix.stackexchange.com/questions/87130/how-to-quickly-create-a-local-apt-repository-for-random-packages-using-a-debian
   #and: https://serverfault.com/questions/447457/use-apt-get-source-on-a-debian-repo-without-using-etc-apt-source-list
   #and: https://askubuntu.com/questions/382664/use-custom-directory-for-apt-get
   
-  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list
+  #use this flag for apt commands to use the local repository: -o Dir::Etc::SourceList=/var/cache/pi-apps/pi-apps-local-packages/source.list
   
   #ensure the repo-folder exists
-  mkdir -p /tmp/pi-apps-local-packages || error "repo_add(): failed to create folder /tmp/pi-apps-local-packages"
+  mkdir -p /var/cache/pi-apps/pi-apps-local-packages || error "repo_add(): failed to create folder /var/cache/pi-apps/pi-apps-local-packages"
   
   #move every mentioned deb file to it
   for file in "$@"; do
-    mv -f "$file" /tmp/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /tmp/pi-apps-local-packages"
+    mv -f "$file" /var/cache/pi-apps/pi-apps-local-packages || error "repo_add(): failed to move '$file' to the repository: /var/cache/pi-apps/pi-apps-local-packages"
   done
 }
 
 repo_refresh() { #index the pi-apps local apt repository
   
-  [ -d /tmp/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /tmp/pi-apps-local-packages"
+  [ -d /var/cache/pi-apps/pi-apps-local-packages ] || error "repo_update(): cannot index the repository - it's missing! /var/cache/pi-apps/pi-apps-local-packages"
   
   #index the repository by creating a Packages file
-  (cd /tmp/pi-apps-local-packages && apt-ftparchive packages . > Packages) || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages
+  (cd /var/cache/pi-apps/pi-apps-local-packages && apt-ftparchive packages . > Packages) || error "repo_update(): apt-ftparchive failed to index the repository: /var/cache/pi-apps/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   #Make sure the Packages file actually exists
-  [ -f /tmp/pi-apps-local-packages/Packages ] || error "repo_update(): apt-ftparchive failed to index the repository: /tmp/pi-apps-local-packages
+  [ -f /var/cache/pi-apps/pi-apps-local-packages/Packages ] || error "repo_update(): apt-ftparchive failed to index the repository: /var/cache/pi-apps/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   
   #by default, apt-ftparchive will generate lines like "Filename: ./package-name". This seemed to have caused one error-report, so we remove the "./" to hopefully solve the problem.
-  sed -i 's+^Filename: \./+Filename: +g' /tmp/pi-apps-local-packages/Packages
+  sed -i 's+^Filename: \./+Filename: +g' /var/cache/pi-apps/pi-apps-local-packages/Packages
   
   # set repo origin name to pi-apps-local-packages - see PR #1986
   echo 'APT::FTPArchive::Release {
 Origin "pi-apps-local-packages";
-};' > /tmp/pi-apps-local-packages/aptftp.conf
+};' > /var/cache/pi-apps/pi-apps-local-packages/aptftp.conf
   
   #hash the repository by creating a Release file
-  (cd /tmp/pi-apps-local-packages && apt-ftparchive -c=/tmp/pi-apps-local-packages/aptftp.conf release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /tmp/pi-apps-local-packages
+  (cd /var/cache/pi-apps/pi-apps-local-packages && apt-ftparchive -c=/var/cache/pi-apps/pi-apps-local-packages/aptftp.conf release . > Release) || error "repo_update(): apt-ftparchive failed to hash the repository: /var/cache/pi-apps/pi-apps-local-packages
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?"
   
   #create a source.list for the repository - add pi-apps-local-packages to the top, then add lines from /etc/apt/sources.list
-  rm -f /tmp/pi-apps-local-packages/source.list
-  echo "deb [trusted=yes] file:/tmp/pi-apps-local-packages/ ./" > /tmp/pi-apps-local-packages/source.list
-  cat /etc/apt/sources.list >> /tmp/pi-apps-local-packages/source.list
+  rm -f /var/cache/pi-apps/pi-apps-local-packages/source.list
+  echo "deb [trusted=yes] file:/var/cache/pi-apps/pi-apps-local-packages/ ./" > /var/cache/pi-apps/pi-apps-local-packages/source.list
+  cat /etc/apt/sources.list >> /var/cache/pi-apps/pi-apps-local-packages/source.list
   
   # remove pi-apps-local-packages priority if it exists
   [ -f /etc/apt/preferences.d/pi-apps-local-packages ] && sudo rm -f /etc/apt/preferences.d/pi-apps-local-packages
@@ -464,9 +464,9 @@ repo_rm() { #remove the local apt repository
   #wait for other operations to finish before continuing - hopefully this will solve cases when the pi-apps local repository was removed unexpectedly by a second process
   apt_lock_wait
   
-  rm -rf /tmp/pi-apps-local-packages || sudo rm -rf /tmp/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /tmp/pi-apps-local-packages"
+  rm -rf /var/cache/pi-apps/pi-apps-local-packages || sudo rm -rf /var/cache/pi-apps/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /var/cache/pi-apps/pi-apps-local-packages"
   
-  #Also remove broken symbolic link to /tmp/pi-apps-local-packages/./Packages
+  #Also remove broken symbolic link to /var/cache/pi-apps/pi-apps-local-packages/./Packages
   sudo rm -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages
 }
 
@@ -548,7 +548,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
       
       #status "Handling url: $package"
       
-      local filename="/tmp/$(basename "$(echo "$package" | sed 's+/download$++g')")"
+      local filename="/var/cache/pi-apps/$(basename "$(echo "$package" | sed 's+/download$++g')")"
       
       #add .deb extension if filename doesn't end with it.
       if [ "${filename: -4}" != ".deb" ]; then
@@ -629,7 +629,7 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #Initialize the pi-apps-local-packages repository
     repo_refresh || return 1
     #add this repository to flags to add to apt
-    apt_flags+=(-o 'Dir::Etc::SourceList=/tmp/pi-apps-local-packages/source.list')
+    apt_flags+=(-o 'Dir::Etc::SourceList=/var/cache/pi-apps/pi-apps-local-packages/source.list')
   fi
   
   status "Creating an empty apt-package to install the necessary apt packages..."
@@ -653,8 +653,8 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
     #this stores the comma-separated list of dependency packages. It removes duplicate entries.
     local depends="$(echo "$packages" | sed 's/,|/ |/g' | sed 's/|,/| /g' | tr ',' '\n' | sort -u -t' ' -k1,1 | tr '\n' ',' | sed 's/^,//g' | sed 's/,$//g' | sed 's/,/, /g' ; echo)"
     
-    rm -rf /tmp/$package_name /tmp/$package_name.deb
-    mkdir -p /tmp/$package_name/DEBIAN
+    rm -rf /var/cache/pi-apps/$package_name /var/cache/pi-apps/$package_name.deb
+    mkdir -p /var/cache/pi-apps/$package_name/DEBIAN
     echo "Maintainer: Pi-Apps team
 Name: $app
 Description: Dummy package created by pi-apps to install dependencies for the '$app' app
@@ -663,32 +663,32 @@ Architecture: all
 Priority: optional
 Section: custom
 Depends: $depends
-Package: $package_name" > /tmp/$package_name/DEBIAN/control
+Package: $package_name" > /var/cache/pi-apps/$package_name/DEBIAN/control
     
     #fix error report "dpkg-deb: error: control directory has bad permissions 700 (must be >=0755 and <=0775)"
     #The two zeros fix error report "dpkg-deb: error: control directory has bad permissions 2755 (must be >=0755 and <=0775)"
-    sudo chmod -R '00755' /tmp/$package_name
+    sudo chmod -R '00755' /var/cache/pi-apps/$package_name
     
     #display the finished "Depends: " line to the user
-    grep --color=never "^Depends: " /tmp/$package_name/DEBIAN/control
+    grep --color=never "^Depends: " /var/cache/pi-apps/$package_name/DEBIAN/control
   }
   
   #Skip installing the dummy deb if it is already installed and has an identical control file
-  if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat /tmp/$package_name/DEBIAN/control | sort)" ];then
+  if package_installed "$package_name" && [ "$(package_info "$package_name" | sort | grep -v '^Status: ')" == "$(cat /var/cache/pi-apps/$package_name/DEBIAN/control | sort)" ];then
     echo "$package_name is already installed and no changes would be made. Skipping..."
   else
     
     #Build .deb file for the dummy package
-    local output="$(dpkg-deb --build /tmp/$package_name 2>&1)"
-    if [ $? != 0 ] || [ ! -f /tmp/$package_name.deb ];then
+    local output="$(dpkg-deb --build /var/cache/pi-apps/$package_name 2>&1)"
+    if [ $? != 0 ] || [ ! -f /var/cache/pi-apps/$package_name.deb ];then
       echo ""
       echo "$output"
       error "install_packages(): failed to create dummy deb ${package_name}!"
     fi
     
     #Before apt update, check if local repo still exists
-    if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
-      error "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
+    if [ "$using_local_packages" == 1 ] && [ ! -f /var/cache/pi-apps/pi-apps-local-packages/Packages ];then
+      error "User error: Uh-oh, the /var/cache/pi-apps/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
     fi
     
     local i=0
@@ -701,7 +701,7 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       
       apt_lock_wait
       set -o pipefail
-      local output="$(sudo -E apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /tmp/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
+      local output="$(sudo -E apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades "${apt_flags[@]}" /var/cache/pi-apps/$package_name.deb 2>&1 | less_apt | tee /dev/stderr)"
       local exitcode=$?
       status "Apt finished."
       
@@ -724,11 +724,11 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
       echo -e "\e[91mFailed to install the packages!\e[39m"
       echo -e "The APT reported these errors:\n\e[91m$errors\e[39m"      
       #some error reports seem to indicate that package URLs aren't being properly downloaded. This output aims to solve the mystery.
-      if [ "$using_local_packages" == 1 ] && [ ! -f /tmp/pi-apps-local-packages/Packages ];then
-        echo "User error: Uh-oh, the /tmp/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
+      if [ "$using_local_packages" == 1 ] && [ ! -f /var/cache/pi-apps/pi-apps-local-packages/Packages ];then
+        echo "User error: Uh-oh, the /var/cache/pi-apps/pi-apps-local-packages folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
       elif [ "$using_local_packages" == 1 ] && ( echo "$output" | grep -q 'but it is not installable' || echo "$output" | grep -q 'but it is not going to be installed' || echo "$output" | grep -q "but .* is to be installed" ) ;then
         echo -e "\e[91mThe Pi-Apps Local Repository was being used, and a package seemed to not be available. Here's the Packages file:\e[39m"
-        cat /tmp/pi-apps-local-packages/Packages
+        cat /var/cache/pi-apps/pi-apps-local-packages/Packages
         echo -e "Attempting apt --dry-run installation of the problematic package(s) for debugging purposes:\n"
         ( echo "$output" | grep 'but it is not installable' || echo "$output" | grep 'but it is not going to be installed' || echo "$output" | grep "but .* is to be installed" ) | awk '{print $4}' | uniq | xargs sudo -E apt-get -o DPkg::Lock::Timeout=-1 install -fy --no-install-recommends --allow-downgrades --dry-run "${apt_flags[@]}"
         echo -e "Printing apt-cache policy output for debugging purposes:\n"
@@ -739,8 +739,8 @@ Package: $package_name" > /tmp/$package_name/DEBIAN/control
     fi
   fi
   
-  rm -f /tmp/$package_name.deb
-  rm -rf /tmp/$package_name
+  rm -f /var/cache/pi-apps/$package_name.deb
+  rm -rf /var/cache/pi-apps/$package_name
   
   #delete the local repository if it was used
   if [ "$using_local_packages" == 1 ];then
