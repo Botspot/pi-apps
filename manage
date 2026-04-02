@@ -665,6 +665,9 @@ $gman_message"
     fi
   fi
   
+  #remove anything left behind in the pi-apps tmpdir here, as this manage mode is guaranteed to not run recursively, no root should be needed, and here is unaffected by unexpected terminal closures
+  rm -rf /var/cache/pi-apps/* 2>/dev/null
+  
   # if update, refresh, or update-file actions were run, then update the .git folder
   if [ "$sourced_updater" == 1 ]; then
     update_git
@@ -841,6 +844,11 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   else
     export DEBIAN_FRONTEND=gnome
   fi
+  
+  #ensure /var/cache/pi-apps directory exists (don't empty it to avoid issues with recursive manage scripts)
+  sudo mkdir -p /var/cache/pi-apps #password prompt shown to user if necessary
+  sudo chmod 1777 /var/cache/pi-apps #same permissions as /tmp
+  
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
   
