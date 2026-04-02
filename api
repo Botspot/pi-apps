@@ -467,7 +467,7 @@ repo_rm() { #remove the local apt repository
   rm -rf /var/cache/pi-apps/pi-apps-local-packages || sudo rm -rf /var/cache/pi-apps/pi-apps-local-packages || error "repo_rm(): failed to remove the local repository: /var/cache/pi-apps/pi-apps-local-packages"
   
   #Also remove broken symbolic link to /var/cache/pi-apps/pi-apps-local-packages/./Packages
-  sudo rm -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages
+  sudo rm -f /var/lib/apt/lists/_var_cache_pi-apps_pi-apps-local-packages_._Packages
 }
 
 app_to_pkgname() { #given an app-name, convert it to a unique, valid package-name that starts with 'pi-apps-'
@@ -705,7 +705,7 @@ Package: $package_name" > /var/cache/pi-apps/$package_name/DEBIAN/control
       local exitcode=$?
       status "Apt finished."
       
-      if [ "$using_local_packages" == 1 ] && [ ! -f /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages ] && [ $i != 5 ];then
+      if [ "$using_local_packages" == 1 ] && [ ! -e /var/lib/apt/lists/_var_cache_pi-apps_pi-apps-local-packages_._Packages ] && [ $i != 5 ];then
         #another apt update process deleted apt's knowledge of the pi-apps local repo. Warn the user and try again, up to 5 tries.
         i=$((i+1))
         warning "Local packages failed to install because another apt update process erased apt's knowledge of the pi-apps local repository.\nTrying again... (attempt $i of 5)"
@@ -2118,7 +2118,7 @@ Perhaps this link would help: https://askubuntu.com/questions/939345/the-package
   fi
   
   #check for broken pi-apps-local-packages symlink
-  if grep -q "E: Could not open file /var/lib/apt/lists/_tmp_pi-apps-local-packages_._Packages" "$logfile" ;then
+  if grep -q "E: Could not open file /var/lib/apt/lists/_var_cache_pi-apps_pi-apps-local-packages_._Packages" "$logfile" ;then
     error_caption+=("APT reported the pi-apps-local-packages list as missing.
 
 The Pi-Apps developers have been receiving a few of these errors recently, but we can't figure out what the problem is without your help. Could you please reach out so we can solve this?")
