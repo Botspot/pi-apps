@@ -2,10 +2,10 @@
 
 version=5.5.0
 
-wget -O /tmp/Geekbench5.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
-tar -xf /tmp/Geekbench5.tar.gz -C /tmp || error "Failed to extract files!"
-rm -f /tmp/Geekbench5.tar.gz ./Geekbench5.tar.gz
-sudo mv -f /tmp/Geekbench-${version}-LinuxARMPreview /opt/geekbench5 || error "Failed to move source folder to /opt!"
+wget -O /var/cache/pi-apps/Geekbench5.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
+tar -xf /var/cache/pi-apps/Geekbench5.tar.gz -C /var/cache/pi-apps || error "Failed to extract files!"
+rm -f /var/cache/pi-apps/Geekbench5.tar.gz ./Geekbench5.tar.gz
+sudo mv -f /var/cache/pi-apps/Geekbench-${version}-LinuxARMPreview /opt/geekbench5 || error "Failed to move source folder to /opt!"
 
 # Remove deprecated folder/binary names
 sudo rm -rf /opt/geekbench /usr/local/bin/geekbench
