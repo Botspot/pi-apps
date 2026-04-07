@@ -1,0 +1,5 @@
+#!/bin/bash
+
+filepath="https://github.com/Wandtket/Media-Relay-Releases/releases/download/v1.1.3/MediaRelay.1.1.3.linux-arm.deb"
+
+install_packages "${filepath}" || exit 1
