@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=6.6.0
+version=6.7.0
 
 wget -O /var/cache/pi-apps/Geekbench6.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
 tar -xf /var/cache/pi-apps/Geekbench6.tar.gz -C /var/cache/pi-apps || error "Failed to extract files!"
