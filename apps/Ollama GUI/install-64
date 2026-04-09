@@ -30,6 +30,13 @@ else
 fi
 # Everything from this point onwards is optional.
 
+#remove ollama user to work around situation where /usr/share/ollama is missing but ollama user already exists, thereby skipping folder creation in the next step
+if [ ! -d /usr/share/ollama ];then
+  status "Removing ollama user to work around directory creation issue..."
+  sudo groupdel ollama
+  sudo userdel ollama
+fi
+
 if ! id ollama >/dev/null 2>&1; then
   status "Creating ollama user..."
   sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama

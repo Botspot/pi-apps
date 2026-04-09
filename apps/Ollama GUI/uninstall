@@ -9,6 +9,8 @@ if [ "$1" != "update" ];then
   sudo rm -rf /etc/systemd/system/ollama.service /usr/local/lib/ollama /usr/local/bin/ollama
   #ollama models stored here
   sudo rm -rf /usr/share/ollama
+  sudo groupdel ollama
+  sudo userdel ollama
 fi
 
 #Allow packages required by this app to be uninstalled
