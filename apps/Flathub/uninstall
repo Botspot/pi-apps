@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "=========================================="
+echo "WARNING!"
+echo "Uninstalling Flathub will remove ALL Flatpak apps on your system."
+echo "=========================================="
+echo ""
+read -r -p "Press Enter to continue or Ctrl+C to cancel..."
+
+flatpak uninstall --all
+flatpak remote-delete flathub
+flatpak uninstall --unused
+
+purge_packages || exit 1
+
+rm -rf ~/.local/share/flatpak
+sudo rm -rf /var/lib/flatpak
