@@ -1,3 +1,9 @@
 #!/bin/bash
 
-sudo rm -f /opt/OpenSCAD.AppImage /usr/local/bin/openscad ~/.local/share/applications/OpenSCAD.desktop /usr/share/mime/packages/openscad.xml /usr/share/applications/OpenSCAD.desktop /usr/share/icons/openscad.png
+if [ $arch == 32 ];then
+  #remove appimage installed by install-32
+  sudo rm -f /opt/OpenSCAD.AppImage /usr/local/bin/openscad ~/.local/share/applications/OpenSCAD.desktop /usr/share/mime/packages/openscad.xml /usr/share/applications/OpenSCAD.desktop /usr/share/icons/openscad.png
+else
+  #remove openscad-nightly pacckage
+  purge_packages || exit 1
+fi

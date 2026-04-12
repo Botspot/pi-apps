@@ -1,46 +1,18 @@
 #!/bin/bash
 
-enable_module fuse || exit 1
+wget -qO- https://files.openscad.org/OBS-Repository-Key.pub | sudo tee /etc/apt/trusted.gpg.d/obs-openscad-nightly.asc >/dev/null || error "Failed to get repo key"
 
-wget 'https://files.openscad.org/OpenSCAD-2021.01-aarch64.AppImage' -O /tmp/OpenSCAD.AppImage || error "Failed to download appimage!"
-sudo mv /tmp/OpenSCAD.AppImage /opt/OpenSCAD.AppImage
-sudo chmod +x /opt/OpenSCAD.AppImage || error "Failed to mark as executable!"
-
-#make terminal command
-sudo rm -f /usr/local/bin/openscad
-sudo ln -s /opt/OpenSCAD.AppImage /usr/local/bin/openscad || error "Failed to make /usr/local/bin/openscad terminal symlink!"
-
-status -n "Creating .scad mimetype... "
-echo '<?xml version="1.0" encoding="UTF-8"?>
-<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-   <mime-type type="application/x-openscad">
-     <comment>OpenSCAD Project</comment>
-     <glob pattern="*.scad"/>
-     <generic-icon name="openscad"/>
-   </mime-type>
-</mime-info>' | sudo tee /usr/share/mime/packages/openscad.xml >/dev/null
-sudo update-mime-database /usr/share/mime
-
-sudo cp "$(dirname "$0")/icon-64.png" /usr/share/icons/openscad.png
-sudo update-icon-caches /usr/share/icons/*
-status_green Done
-
-if ! grep -qF 'OpenSCAD.desktop' ~/.config/mimeapps.list ;then
-  status -n "Associating the .scad mimetype with OpenSCAD... "
-  echo "[Added Associations]
-application/x-openscad=OpenSCAD.desktop;" >> ~/.config/mimeapps.list
-  status_green Done
+if [ "$__os_codename" == bookworm ] || [ "$__os_codename" == buster ];then
+  sources_codename=Raspbian_12
+else
+  sources_codename=Raspbian_13
 fi
 
-status -n "Creating menu button... "
-echo "[Desktop Entry]
-Name=OpenSCAD
-Comment=The Programmer's Solid 3D CAD Modeler
-Exec=/opt/OpenSCAD.AppImage %f
-Icon=$(dirname $0)/icon-64.png
-Terminal=false
-Type=Application
-MimeType=application/x-openscad;
-Categories=Graphics;3DGraphics;Engineering;
-Keywords=3d;solid;geometry;csg;model;stl;
-StartupNotify=true" | sudo tee /usr/share/applications/OpenSCAD.desktop >/dev/null || error "Failed to create menu button!"
+echo "X-Repolib-Name: obs-openscad-nightly
+Types: deb
+Suites: ./
+URIs: https://download.opensuse.org/repositories/home:/t-paul/${sources_codename}/
+Architectures: arm64
+Signed-By: /etc/apt/trusted.gpg.d/obs-openscad-nightly.asc" | sudo tee /etc/apt/sources.list.d/obs-openscad-nightly.sources >/dev/null || error "Failed to write repo file"
+
+install_packages openscad-nightly
