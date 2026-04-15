@@ -5,9 +5,15 @@ install_packages https://github.com/flameshot-org/flameshot/releases/download/v$
 
 echo '#!/bin/bash
 
+#fix error on PiOS caused by XDG_CURRENT_DESKTOP=labwc:wlroots - Unable to detect desktop environment (GNOME? KDE? Sway? ...)
 if [[ "$XDG_CURRENT_DESKTOP" == *wlroots ]];then
   export XDG_CURRENT_DESKTOP=Sway
 fi
+
+# This forces the D-Bus daemon to adopt the fixed variable into its own environment dynamically.
+dbus-update-activation-environment --systemd XDG_CURRENT_DESKTOP
+
+# Now when Flameshot pings D-Bus to activate the daemon, D-Bus will spawn it with XDG_CURRENT_DESKTOP=Sway
 /usr/bin/flameshot "$@"
 ' | sudo tee /usr/local/bin/flameshot >/dev/null
 sudo chmod +x /usr/local/bin/flameshot
