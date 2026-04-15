@@ -12,7 +12,8 @@ if [ ! -z "$interface" ];then
 fi
 
 # Get dependencies
-install_packages conky || exit 1
+install_packages conky-all || exit 1
+
 #run conky this time
 conky &
 #make autostart entry to run it next time
