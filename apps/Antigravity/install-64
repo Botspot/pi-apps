@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=antigravity_1.22.2-1775164161_arm64_ebd1956bce022f57a34163370e557235.deb
+version=antigravity_1.23.2-1776332230_arm64_cdd44fd493c967bb35c13b3b2c49e726.deb
 
 sudo modprobe kvm || true
 if [ ! -e /dev/kvm ] && [ "$GITHUB_ACTIONS" != "true" ];then
