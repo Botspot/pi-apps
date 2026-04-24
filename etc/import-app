@@ -159,7 +159,7 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
   if [ -z "$repobranch" ];then
     error "No PR was found that mentions a branch."
   elif [[ "$repobranch" == *'Error: '* ]];then
-    error "Failed to determine target repo and branch due to github api error"
+    error "Failed to determine target repo and branch due to github api error. Full error: $repobranch"
   else
     echo "repobranch: $repobranch"
   fi
