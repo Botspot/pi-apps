@@ -1,0 +1,35 @@
+#!/bin/bash
+
+BIN=/usr/local/bin/en-croissant
+ICON=/usr/local/share/icons/en-croissant.png
+DESKTOP=$HOME/.local/share/applications/en-croissant.desktop
+
+install_packages \
+libgtk-3-0 \
+libwebkit2gtk-4.1-0 \
+libayatana-appindicator3-1 \
+librsvg2-2 \
+libxdo3 \
+libglib2.0-0 \
+libgdk-pixbuf-2.0-0 \
+libpango-1.0-0 \
+libatk1.0-0 \
+libcairo2 \
+libsoup-3.0-0 \
+libjavascriptcoregtk-4.1-0 || exit 1
+
+cd /tmp
+
+git clone https://github.com/ferranox/en-croissant-rpi || error "failed to download!"
+cd en-croissant-rpi
+
+sudo install arm64/en-croissant "$BIN" || error "failed to install binary!"
+
+sudo mkdir -p /usr/local/share/icons || error "failed to create icon directory!"
+sudo cp icon.png "$ICON" || error "failed to create icon!"
+
+mkdir -p "$HOME/.local/share/applications" || error "failed to create desktop entry directory!"
+cp en-croissant.desktop "$DESKTOP" || error "failed to create desktop directory!"
+chmod +x "$DESKTOP" || error "failed to make desktop entry executable!"
+
+rm -rf /tmp/en-croissant-rpi || error "failed to cleanup!"
