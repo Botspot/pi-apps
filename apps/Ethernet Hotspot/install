@@ -16,12 +16,25 @@ sudo mkdir -p /usr/local/share/icons/hicolor/64x64/apps/
 sudo cp "$(dirname "$0")/icon-64.png" /usr/local/share/icons/hicolor/64x64/apps/ethernet-hotspot.png || error "failed to copy icon"
 sudo touch /usr/local/share/icons
 
+# WORKAROUND: The "; true" at the end of the command is critical for Polkit.
+# In Pi OS Trixie, when launched from a menu or 'gio', the launcher process
+# detaches immediately, orphaning the bash process (PPID becomes 1).
+#
+# If bash sees only a single command, it uses an "exec optimization" to
+# replace itself with 'pkexec'. However, pkexec has a security check that
+# refuses to run if its parent is PID 1 ("Refusing to render service to
+# dead parents").
+#
+# By adding "; true", we force bash to stay alive as a parent process to
+# execute the second command, ensuring pkexec sees a valid parent and
+# allows the graphical authentication prompt to spawn.
+
 echo '[Desktop Entry]
 Type=Application
 Name=Ethernet Hotspot
 Comment=Share your WiFi connection with other devices, using an Ethernet cable
 Icon=ethernet-hotspot
-Exec=bash -c "pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/local/bin/ethernet-hotspot"
+Exec=bash -c "pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/local/bin/ethernet-hotspot; true"
 Terminal=false
 Categories=System
 Keywords=Hotspot;WiFi
