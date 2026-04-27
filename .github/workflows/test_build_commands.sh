@@ -165,6 +165,17 @@ elif [[ "$import" =~ ^[0-9]+$ ]] || [[ "$import" == *'://'*'/pull/'*[0-9] ]];the
     PR="$import"
   fi
   
+  # Extract the path from the URL (removes "https://github.com/")
+  path="${PR#*github.com/}"
+  
+  # Parse the owner, repo, type (pull), and pr_number
+  IFS='/' read -r owner repo type pr_number <<< "$path"
+  
+  # Simple validation
+  if [[ -z "$owner" || -z "$repo" || "$type" != "pull" || -z "$pr_number" ]]; then
+    error "Invalid GitHub PR URL"
+  fi
+  
   # Fetch the JSON and extract the source repo URL and branch name
   repobranch=$(curl -s "https://api.github.com/repos/$owner/$repo/pulls/$pr_number" | jq -r '
     if .head.repo != null then 
