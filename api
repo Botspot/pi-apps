@@ -3308,7 +3308,7 @@ is_supported_system() { #return 0 if system is supported, otherwise return 1
   local DEFAULT_REPOS="$(echo "$AVAILABLE_REPOS" | grep "raspbian.raspberrypi.org/raspbian\|archive.raspberrypi.org/debian\|\
 raspbian.raspberrypi.com/raspbian\|archive.raspberrypi.com/debian\|\
 debian.org/debian\|security.debian.org/\|\
-ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
+archive.ubuntu.com\|ports.ubuntu.com\|esm.ubuntu.com/apps/ubuntu\|esm.ubuntu.com/infra/ubuntu\|\
 repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
 deb-multimedia.org|\
 apt.pop-os.org\|\
