@@ -1,4 +1,15 @@
 #!/bin/bash
+
+# Ubuntu Resolute+/Forky+ specific problem:
+# Bongo Cam does not compile with SFML 3.x as there were breaking API changes that prevent compiling it on newer SFML
+# https://github.com/Botspot/pi-apps/issues/2924
+# For now check if the SFML version is too new, but as this app does not properly work on Wayland, this app should rather be removed from the repos altogether
+
+status "Checking SFML version before continuing..."
+if package_is_new_enough libsfml-dev 3.0.0; then
+	error "User error: SFML version on your system is too new (only works with 2.x), so unable to compile Bongo Cam"
+fi
+
 status "purging any old Bongo Cam instances if found..."
 sudo rm -rf ~/bongocat-armv7l-* ~/bongocam ~/bongocat-osu /opt/bongocam ~/.local/share/applications/bongocam.desktop /usr/local/bin/bongo /usr/local/share/applications/bongocam.desktop
 
