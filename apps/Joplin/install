@@ -1,0 +1,126 @@
+#!/bin/bash
+version=3.2.13
+free_space_required_mb=15000
+
+if [ $(df -m --output=avail ~ | tail -1) -lt "${free_space_required_mb}" ]
+then
+  error "Not enough free space to install Joplin (required: ${free_space_required_mb} MBs)"
+fi
+
+chroot_dir=~/joplin.build.chroot.$$
+
+chroot_cleanup() {
+  [ -z "${chroot_dir}" ] && return
+  status "Unmounting chroot.."
+  sudo umount "${chroot_dir}/proc" 2>/dev/null
+  sudo umount "${chroot_dir}/dev/pts" 2>/dev/null
+  status "Removing temporary build directory"
+  sudo rm -rf "${chroot_dir}"
+}
+trap chroot_cleanup EXIT INT TERM
+
+status "Installing debootstrap.."
+sudo apt install -y debootstrap || error "Failed to install debootstrap package."
+
+status "Configuring chroot.."
+mkdir -p "${chroot_dir}"
+
+if [ "${arch}" == 32 ]; then
+  deb_arch=armhf
+  deb_mirror=http://raspbian.mirror.constant.com/raspbian/
+else
+  deb_arch=arm64
+  deb_mirror=http://deb.debian.org/debian
+fi
+
+cd "${chroot_dir}"
+sudo debootstrap --variant=minbase --no-check-gpg --arch "${deb_arch}" bullseye "${chroot_dir}" "${deb_mirror}" || error "Failed to bootstrap."
+
+cat <<"HERE" | sudo tee "${chroot_dir}/install_dependencies.sh" >/dev/null
+#!/bin/bash
+set -e
+echo "Installing build dependencies.."
+apt-get update
+apt-get install -y ca-certificates curl gnupg
+
+echo "Adding repository.."
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+NODE_MAJOR=18
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+
+echo "Installing further dependencies.."
+apt-get update
+apt-get install -y nodejs git build-essential libnss3 libsecret-1-dev python rsync ruby-full jq
+
+# The included fpm does not work for arm, so we install system fpm instead.
+gem install --no-document fpm
+
+npm install --global yarn
+HERE
+
+cat <<HERE | sudo tee "${chroot_dir}/build.sh" >/dev/null
+#!/bin/bash
+# Cleanup existing Joplin folder, if it exists.
+set -e
+rm -rf joplin
+
+echo "Getting joplin from git.."
+git clone --depth 1 --branch v${version} https://github.com/laurent22/joplin.git
+cd joplin
+
+if [ "${arch}" == 32 ]; then
+  # Disable parallel cloning and set compression to minimum level to lessen memory demand
+  echo 'cloneConcurrency: 1' >> .yarnrc.yml
+  echo 'compressionLevel: 0' >> .yarnrc.yml
+fi
+
+echo "Build started"
+echo "Running yarn.."
+
+# This process can fail (probably due to the node process hitting the 32-bit memory limit), but it should resume where it left off on subsequent tries.
+# Yarn hangs without exiting sometimes, so we're forcing it to close after 5 minutes. After 2 attempts the packages should be installed.
+
+# set +e
+# timeout 5m yarn install
+# timeout 5m yarn install
+# set -e
+
+set +e
+yarn install
+yarn install
+set -e
+
+cd packages/app-desktop
+
+echo "Updating package.json so .deb package can be built.."
+jq '.author |= {"name": "Laurent Cozic", "email": "laurent@cozic.net"}' package.json > package_new.json
+jq '.build += {"deb": {"compression": "gz"}}' package_new.json > package.json
+jq '.name = "Joplin"' package.json > package_new.json
+mv package_new.json package.json
+
+# System fpm must be used as the provided fpm does not work on arm.
+export USE_SYSTEM_FPM=true
+
+echo "Running npx electron-builder to build a deb and AppImage package.."
+if [ "${arch}" == 32 ]; then
+  npx --yes electron-builder --armv7l --linux deb AppImage
+else
+  npx --yes electron-builder --arm64 --linux deb AppImage
+fi
+HERE
+
+status "Mounting chroot.."
+sudo mount -t proc proc "${chroot_dir}/proc" || error "Failed to mounted /proc inside chroot"
+sudo mount -t devpts devpts "${chroot_dir}/dev/pts" || error "Failed to mounted /dev/pts inside chroot"
+
+status "Installing dependencies.."
+sudo chmod 755 "${chroot_dir}/install_dependencies.sh" || error "Failed to set permissions on install_dependencies.sh"
+sudo chroot "${chroot_dir}" ./install_dependencies.sh || error "Failed to install dependencies"
+
+status "Building app inside chroot.."
+sudo chmod 755 "${chroot_dir}/build.sh" || error "Failed to set permissions on build.sh"
+sudo chroot "${chroot_dir}" ./build.sh || error "Failed to build the package"
+
+sudo chmod 777 "${chroot_dir}/joplin/packages/app-desktop/dist"
+install_packages joplin "${chroot_dir}/joplin/packages/app-desktop/dist/Joplin-${version}.deb" || error "Joplin failed to install"
