@@ -1,0 +1,19 @@
+#!/bin/bash
+# 1. Abhängigkeiten installieren
+sudo apt update
+sudo apt install -y surf
+
+# 2. Den Starter (.desktop Datei) erstellen
+# Damit erscheint "Verba" im Startmenü unter 'Internet'
+echo "[Desktop Entry]
+Name=Verba
+Comment=Social Media Plattform
+Exec=surf -K https://soc-verba.github.io/verba-soc/
+Icon=/opt/verba/icon.png
+Terminal=false
+Type=Application
+Categories=Network;" | sudo tee /usr/share/applications/verba.desktop
+
+# 3. Icon-Verzeichnis anlegen und Icon speichern
+sudo mkdir -p /opt/verba
+sudo wget -O /opt/verba/icon.png https://raw.githubusercontent.com/soc-verba/verba-soc/main/icon.png
