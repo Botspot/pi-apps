@@ -255,7 +255,9 @@ if ! grep -qxF "ExecStart=/usr/bin/zram.sh storage-off" /etc/systemd/system/zram
   #create a partition and mount it
   mkfs.ext4 -F -O ^has_journal,^metadata_csum,^orphan_file -b 4096 /dev/zram${storage_drive_num} >/dev/null
   mkdir -p /zram
-  mount -o discard /dev/zram${storage_drive_num} /zram
+  #-o discard seems to cause boot problem for some users. Can't reproduce. See https://github.com/Botspot/pi-apps/issues/2968
+  #mount -o discard /dev/zram${storage_drive_num} /zram
+  mount /dev/zram${storage_drive_num} /zram
   chmod -R 777 /zram #make writable for any user
   rmdir /zram/lost+found || true
 fi
