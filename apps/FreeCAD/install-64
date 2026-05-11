@@ -1,8 +1,8 @@
 #!/bin/bash
 
-version=1.0.2
+version=1.1.1
 
-wget -O /tmp/FreeCAD.AppImage "https://github.com/FreeCAD/FreeCAD/releases/download/${version}/FreeCAD_${version}-conda-Linux-aarch64-py311.AppImage" || exit 1
+wget -O /tmp/FreeCAD.AppImage "https://github.com/FreeCAD/FreeCAD/releases/download/${version}/FreeCAD_${version}-Linux-aarch64-py311.AppImage" || exit 1
 
 sudo mv -f /tmp/FreeCAD.AppImage /opt/FreeCAD.AppImage || error "Failed to move AppImage to /opt"
 
