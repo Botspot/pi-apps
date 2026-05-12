@@ -846,8 +846,8 @@ elif [ "$1" == 'install' ] || [ "$1" == 'uninstall' ];then
   fi
   
   #ensure /var/cache/pi-apps directory exists (don't empty it to avoid issues with recursive manage scripts)
-  sudo mkdir -p /var/cache/pi-apps #password prompt shown to user if necessary
-  sudo chmod 1777 /var/cache/pi-apps #same permissions as /tmp
+  sudo mkdir -p /var/cache/pi-apps &> >(tee -a "$logfile") #password prompt shown to user if necessary
+  sudo chmod 1777 /var/cache/pi-apps &> >(tee -a "$logfile") #same permissions as /tmp
   
   nice "${appscript[@]}" "$script_input" &> >(tee -a "$logfile")
   exitcode="${PIPESTATUS[0]}"
