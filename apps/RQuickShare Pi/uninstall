@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl --user stop rquickshare-pi-dev.service 2>/dev/null || true
+fi
+
+if command -v pkill >/dev/null 2>&1; then
+  pkill -x rquickshare-pi 2>/dev/null || true
+fi
+
+rm -f "$HOME/.config/autostart/RQuickShare Pi.desktop"
+rm -f "$HOME/.config/autostart/rquickshare-pi.desktop"
+
+purge_packages || exit 1
+
+status_green "RQuickShare Pi has been removed. User settings and received files were left untouched."

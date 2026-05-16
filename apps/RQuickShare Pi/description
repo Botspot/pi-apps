@@ -1,0 +1,9 @@
+Android Quick Share file sharing for Raspberry Pi OS ARM64.
+RQuickShare Pi lets a Raspberry Pi send and receive files with Android Quick Share devices on the local network.
+It runs as a desktop app with a tray icon, optional start-on-boot behavior, and Pi-focused Bluetooth/mDNS handling.
+This is an alpha release for Raspberry Pi OS 64-bit on ARM64.
+
+To run: Menu -> Accessories -> RQuickShare Pi
+To run in a terminal: rquickshare-pi
+
+Tip for Samsung phones: if the Pi does not appear, disable "Share with Apple devices" in Samsung Quick Share settings and try again.

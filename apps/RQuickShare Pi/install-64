@@ -1,0 +1,23 @@
+#!/bin/bash
+
+version="0.0.1-alpha"
+deb_url="https://github.com/EladBG-code/rquickshare-pi/releases/download/v${version}/RQuickShare.Pi_${version}_arm64.deb"
+
+case "$(dpkg --print-architecture 2>/dev/null)" in
+  arm64) ;;
+  *) error "RQuickShare Pi currently supports Raspberry Pi OS 64-bit on ARM64 only." ;;
+esac
+
+case "${__os_codename:-}" in
+  bookworm|trixie|"") ;;
+  *) warning "RQuickShare Pi is tested on Raspberry Pi OS 64-bit. This ${__os_codename} system may not have the required WebKitGTK packages." ;;
+esac
+
+install_packages bluez avahi-daemon "${deb_url}" || exit 1
+
+if command -v systemctl >/dev/null 2>&1; then
+  sudo systemctl enable --now bluetooth || warning "Could not enable the Bluetooth service automatically. Open the RQuickShare Pi wiki if Android discovery fails."
+  sudo systemctl enable --now avahi-daemon || warning "Could not enable the Avahi/mDNS service automatically. Open the RQuickShare Pi wiki if Android discovery fails."
+fi
+
+status_green "RQuickShare Pi is installed. Open it from the Accessories menu or the system tray."
