@@ -1,15 +1,11 @@
 #!/bin/bash
 
-if command -v systemctl >/dev/null 2>&1; then
-  systemctl --user stop rquickshare-pi-dev.service 2>/dev/null || true
-fi
-
 if command -v pkill >/dev/null 2>&1; then
   pkill -x rquickshare-pi 2>/dev/null || true
 fi
 
+# Created by the app after first launch when the Start on boot setting is enabled.
 rm -f "$HOME/.config/autostart/RQuickShare Pi.desktop"
-rm -f "$HOME/.config/autostart/rquickshare-pi.desktop"
 
 purge_packages || exit 1
 
