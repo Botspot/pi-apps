@@ -1,0 +1,33 @@
+#!/bin/bash
+
+version=0.9.0
+
+install_packages libvlc5 libvlccore9 libidn12 || error "Failed to install dependencies"
+
+case "$arch" in
+"64") filename="ShadowEngine-ASTC-linux-arm64.tar" ;;
+"32") filename="ShadowEngine-ASTC-linux-armv7.tar" ;;
+*) error "Failed to determine architecture, is your Pi-Apps configured correctly?" ;;
+esac
+
+mkdir -p ~/.ShadowEngine
+cd ~/.ShadowEngine || error "Failed to create Shadow Engine directory"
+
+wget "https://github.com/ShadowEngineTeam/FNF-Shadow-Engine/releases/download/${version}/${filename}" || error "Failed to download Shadow Engine"
+
+tar -xf ./"$filename" || error "Failed to extract Shadow Engine"
+rm -f ./"$filename"
+
+if [ -f "ShadowEngine" ]; then
+  chmod +x ShadowEngine
+fi
+
+mkdir -p ~/.local/share/applications
+echo "[Desktop Entry]
+Type=Application
+Exec=$HOME/.ShadowEngine/ShadowEngine
+Hidden=false
+NoDisplay=false
+Name=Friday Night Funkin' Shadow Engine
+Icon=$(dirname "$0")/icon-64.png
+Categories=Game" > ~/.local/share/applications/fnf-shadow-engine.desktop
