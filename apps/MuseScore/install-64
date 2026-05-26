@@ -9,7 +9,13 @@ fi
 
 enable_module fuse || exit 1
 
-wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version%.*}/MuseScore-Studio-${version}-aarch64.AppImage" || exit 1
+#only use latest qt6 appimage on trixie or later (fixes https://github.com/Botspot/pi-apps/issues/2979)
+if package_is_new_enough libc6 2.41 ;then
+  wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v${version%.*}/MuseScore-Studio-${version}-aarch64.AppImage" || exit 1
+else
+  warning "Downloading older MuseScore version 4.5.2 because newer versions cannot run on your $(get_codename) OS."
+  wget -O "/tmp/MuseScore.AppImage" "https://github.com/musescore/MuseScore/releases/download/v4.5.2/MuseScore-Studio-4.5.2.251150648-aarch64.AppImage" || exit 1
+fi
 
 chmod +x "/tmp/MuseScore.AppImage"
 
@@ -25,4 +31,5 @@ sudo ln -s /usr/local/bin/MuseScore.AppImage /usr/local/bin/mscore
 sudo sed -i 's/ Portable$//g' /usr/local/share/applications/org.musescore.MuseScore4portable.desktop
 # update timestamp of top level icon directory to signal icon cache to be refreshed
 sudo touch /usr/local/share/icons
+sudo touch /usr/local/share/applications #refresh the name changed by sed above
 true #in case touch fails
