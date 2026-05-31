@@ -3,6 +3,6 @@ A shareware FM modem for amateur radio messaging.
 VARA modems require a messaging app (such as Pat, Winlink Express, VarAC, or VARAChat), an amateur radio transceiver, and cables to connect audio and PTT control from your Pi to the transceiver.
 
 Run from Menu: Menu -> Accessories -> VARA FM
-Run from Terminal: wine "C:\VARAFM\VARA FM.exe"
+Run from Terminal: wine "C:\VARAFM\VARAFM.exe"
 
 This app runs with the help of Box86/Box64 and Wine.
