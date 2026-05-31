@@ -1,0 +1,9 @@
+A ham radio messaging client for the Winlink radio email network.
+
+Winlink Express (formerly RMS Express) is the standard Windows client for sending and receiving email over amateur radio, with or without an internet connection. It works with software modems such as VARA FM, VARA HF, and ARDOP.
+
+Winlink Express requires a software modem (such as VARA FM or VARA HF), an amateur radio transceiver, and cables to connect audio and PTT control from your Pi to the transceiver.
+
+Run from Menu: Menu -> Accessories -> Winlink Express
+
+This app runs with the help of Box86/Box64 and Wine.

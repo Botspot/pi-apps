@@ -1,0 +1,70 @@
+#!/bin/bash
+
+LATEST=$(wget -qO- "https://downloads.winlink.org/User%20Programs/" \
+  | grep -oP 'Winlink_Express_install_[\d-]+\.zip' \
+  | sort -V | tail -1)
+
+APPDIR="${HOME}"/.local/share/applications/Winlink
+
+#Installing wine
+if [ $arch == 32 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x86)' || error 'Failed to install wine'
+elif [ $arch == 64 ]; then
+  "$DIRECTORY/manage" install-if-not-installed 'Wine (x64)' || error 'Failed to install wine'
+fi
+
+#Installing the dependency used to run the silent installer headlessly
+install_packages xvfb || error 'Failed to install xvfb'
+
+#Configuring wineprefix (skip if a VARA modem already set it up)
+_prefix="${WINEPREFIX:-$HOME/.wine}"
+if find "$_prefix/drive_c" -iname "VARA*.exe" 2>/dev/null | grep -q .; then
+    echo "VARA already installed in $_prefix  skipping winetricks setup."
+else
+    BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
+fi
+
+#Downloading Winlink Express
+WINLINKDIR=/tmp/WINLINK
+mkdir -p "${WINLINKDIR}"
+wget "https://downloads.winlink.org/User%20Programs/$LATEST" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
+
+#Extracting Winlink Express installer archive
+unzip -o "${WINLINKDIR}/Winlink-setup.zip" -d "${WINLINKDIR}" || error 'Failed to unzip Winlink Express archive'
+WINLINKINSTALLEREXE=$(find "${WINLINKDIR}" -type f -iname "*install.exe")
+
+# finding your default wineprefix directory
+if [ -z "${WINEPREFIX}" ]; then
+    PREFIXDIR="${HOME}"/.wine
+else
+    PREFIXDIR="${WINEPREFIX}"
+fi
+
+# Run the Inno Setup installer directly via wine
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 \
+    WINEPREFIX="$PREFIXDIR" WINEDEBUG=-all \
+    xvfb-run --auto-servernum \
+    wine "$WINLINKINSTALLEREXE" /VERYSILENT /NORESTART 2>/dev/null \
+    || error 'Failed to install Winlink Express'
+
+# Removing tmp files
+rm -rf "${WINLINKDIR}"
+
+#Adding the user to the USB dialout group so that they can access radio USB CAT control later if needed
+sudo usermod -a -G dialout $USER
+
+#Creating Desktop Entry
+mkdir -p "${APPDIR}"
+echo "[Desktop Entry]
+Name=Winlink Express
+GenericName=Winlink Express
+Comment=Winlink Express is a shareware ham radio messaging client for software modems like VARA FM/HF and others
+Exec=env WINEPREFIX=\"${PREFIXDIR}\" WINEDEBUG=-all wine \"${PREFIXDIR}/drive_c/RMS Express/RMS Express.exe\"
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=false
+Type=Application
+StartupWMClass=rms express.exe
+Categories=Network;HamRadio;Utility;" > "${APPDIR}"/winlink.desktop || error 'Failed to create menu button!'
+
+true

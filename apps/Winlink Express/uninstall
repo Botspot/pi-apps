@@ -1,0 +1,22 @@
+#!/bin/bash
+
+APPDIR="${HOME}"/.local/share/applications/Winlink
+
+#Finding your default wineprefix directory
+if [ -z "${WINEPREFIX}" ]; then
+    PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
+else
+    PREFIXDIR="${WINEPREFIX}" #if "WINEPREFIX=" envvar was previously set, wineprefix location is "$WINEPREFIX"
+fi
+
+#Removing program files
+# NOTE: the shared wineprefix and winetricks components (vb6run, pdh_nt4) are left intact
+# because VARA FM/HF and other messaging apps may still depend on them.
+rm -rf "${PREFIXDIR}/drive_c/RMS Express" 2>/dev/null || warning 'Could not remove Winlink Express program files. If you moved it within Wine or made a custom wineprefix, you might have to remove it manually.'
+
+#Removing wine's auto-generated start menu entry
+rm -rf "${APPDIR%/Winlink}/wine/Programs/Winlink Express" 2>/dev/null
+
+#Removing Desktop Entry
+rm "${APPDIR}/winlink.desktop" 2>/dev/null || warning 'Could not remove menu button. You might need to do this manually if you moved it.'
+rmdir "${APPDIR}" 2>/dev/null || true #delete directory if empty, prevent error code
