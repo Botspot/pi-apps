@@ -57,7 +57,7 @@ Terminal=false
 StartupNotify=false
 Type=Application
 StartupWMClass=vara.exe
-Categories=Utility;" > "${APPDIR}"/VARA/varahf.desktop || error 'Failed to create menu button!'
+Categories=Utility;Network;HamRadio;" > "${APPDIR}"/VARA/varahf.desktop || error 'Failed to create menu button!'
 sudo rm -rf "${APPDIR}"/wine/Programs/VARA # remove wine's auto-generated VARA HF program icon from the start menu
 
 true
