@@ -1,0 +1,3 @@
+#!/bin/bash
+
+flatpak_install org.azahar_emu.Azahar || error "Failed to install Azahar from Flatpak!"
