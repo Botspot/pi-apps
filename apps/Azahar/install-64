@@ -1,0 +1,17 @@
+#!/bin/bash
+
+install_packages flatpak || exit 1
+
+flatpak_install org.azahar_emu.Azahar || error "Failed to install Azahar from Flatpak!"
+
+if [[ "$1" != "update" ]]; then
+  yad --title="Azahar Performance Warning" \
+        --center \
+        --fixed \
+        --image=dialog-warning \
+        --button=OK \
+        --text="IMPORTANT: Disable hardware shaders for playable performance.
+
+In Azahar:
+Azahar Menu → Emulation → Configure → Graphics → Advanced → Turn OFF 'Enable hardware shader'"
+fi
