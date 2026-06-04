@@ -1,0 +1,5 @@
+#!/bin/bash
+
+flatpak_uninstall io.github.nozwock.Packet || exit 1
+
+purge_packages || exit 1

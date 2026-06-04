@@ -1,0 +1,10 @@
+Azahar is an open-source 3DS emulator project based on Citra.
+
+It was created from the merging of PabloMK7's Citra fork and the Lime3DS project, both of which emerged shortly after Citra was taken down.
+The goal of this project is to be the de-facto platform for future development.
+
+IMPORTANT: You have to disable hardware shaders for playable performance:
+Azahar Menu -> Emulation -> Configure -> Graphics -> Advanced -> Turn OFF `Enable hardware shader`
+
+To run from menu: Games -> Azahar
+To run from terminal: flatpak run org.azahar_emu.Azahar
