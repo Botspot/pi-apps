@@ -1,3 +1,5 @@
 #!/bin/bash
 
 flatpak_uninstall org.azahar_emu.Azahar || error "Failed to uninstall Azahar from Flatpak!"
+
+purge_packages || exit 1
