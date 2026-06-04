@@ -1,8 +1,6 @@
 #!/bin/bash
 
-LATEST=$(wget -qO- "https://downloads.winlink.org/User%20Programs/" \
-  | grep -oP 'Winlink_Express_install_[\d-]+\.zip' \
-  | sort -V | tail -1)
+version=User%20Programs/Winlink_Express_install_1-8-1-0.zip
 
 APPDIR="${HOME}"/.local/share/applications/Winlink
 
@@ -27,7 +25,7 @@ fi
 #Downloading Winlink Express
 WINLINKDIR=/tmp/WINLINK
 mkdir -p "${WINLINKDIR}"
-wget "https://downloads.winlink.org/User%20Programs/$LATEST" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
+wget "https://downloads.winlink.org/$version" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
 
 #Extracting Winlink Express installer archive
 unzip -o "${WINLINKDIR}/Winlink-setup.zip" -d "${WINLINKDIR}" || error 'Failed to unzip Winlink Express archive'
