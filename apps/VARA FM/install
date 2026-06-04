@@ -1,10 +1,6 @@
 #!/bin/bash
 
-#Finding the latest VARA FM version from the winlink.org directory listing
-version=$(wget -qO- "https://downloads.winlink.org/VARA%20Products/" \
-  | grep -oP 'VARA%20FM%20v[\d.]+%20+setup\.zip' \
-  | sort -V | tail -1)
-[ -n "$version" ] || error 'Failed to find the latest VARA FM version on winlink.org'
+version=VARA%20Products/VARA%20FM%20v4.4.0%20setup.zip
 
 APPDIR="${HOME}"/.local/share/applications
 
@@ -21,7 +17,7 @@ BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
 #Downloading VARA FM
 VARAFMDIR=/tmp/VARAFM
 mkdir -p "${VARAFMDIR}"
-wget "https://downloads.winlink.org/VARA%20Products/$version" -O "${VARAFMDIR}/VARAFM-setup.zip" || error 'Failed to download VARA FM Installer from winlink.org'
+wget "https://downloads.winlink.org/$version" -O "${VARAFMDIR}/VARAFM-setup.zip" || error 'Failed to download VARA FM Installer from winlink.org'
 
 #Extracting VARA FM installer archives
 unzip -o "${VARAFMDIR}/VARAFM-setup.zip" -d "${VARAFMDIR}" || error 'Failed to unzip VARA FM archive'
