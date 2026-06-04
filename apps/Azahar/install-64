@@ -1,5 +1,7 @@
 #!/bin/bash
 
+install_packages flatpak || exit 1
+
 flatpak_install org.azahar_emu.Azahar || error "Failed to install Azahar from Flatpak!"
 
 if [[ "$1" != "update" ]]; then
