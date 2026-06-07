@@ -1,4 +1,6 @@
 #!/bin/bash
 
+purge_packages || exit 1
+
 rm -rf ~/.ShadowEngine
 rm -f ~/.local/share/applications/fnf-shadow-engine.desktop
