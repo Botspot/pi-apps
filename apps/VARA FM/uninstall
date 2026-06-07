@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#remove installed packages
+purge_packages || exit 1
+
 APPDIR="${HOME}"/.local/share/applications
 
 #Finding your default wineprefix directory
