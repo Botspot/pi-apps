@@ -1,0 +1,19 @@
+#!/bin/bash
+
+source colors 2>/dev/null
+
+status_update "Entferne FlightGear Flight Simulator..."
+apt purge flightgear flightgear-data flightgear-models -y || error "Fehler beim Entfernen von FlightGear."
+
+status_update "Entferne Abhängigkeiten..."
+apt purge libboost-all-dev libopenscenegraph-dev liburiparser-dev libplib-dev joystick jstest-gtk -y || error "Fehler beim Entfernen der Abhängigkeiten."
+
+status_update "Räume ungenutzte Pakete auf..."
+apt autoremove --purge -y
+
+status_update "Räume Benutzerkonfiguration auf..."
+rm -rf ~/.fgfs 2>/dev/null
+rm -f ~/flightgear-launcher.sh 2>/dev/null
+
+status_update "FlightGear Flight Simulator wurde erfolgreich entfernt!"
+echo "Deinstallation abgeschlossen."
