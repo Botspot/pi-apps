@@ -1,0 +1,18 @@
+#!/bin/bash
+
+source colors 2>/dev/null
+
+status_update "Aktualisiere Paketquellen..."
+apt update || error "Fehler beim Aktualisieren der Paketquellen."
+
+status_update "Installiere FlightGear Flight Simulator..."
+apt install flightgear flightgear-data flightgear-models -y || error "Fehler bei der Installation von FlightGear."
+
+status_update "Installiere zusätzliche Abhängigkeiten..."
+apt install libboost-all-dev libopenscenegraph-dev liburiparser-dev libplib-dev -y || error "Fehler bei der Installation von Abhängigkeiten."
+
+status_update "Installiere Joystick-Unterstützung..."
+apt install joystick jstest-gtk -y || error "Fehler bei der Installation der Joystick-Unterstützung."
+
+status_update "FlightGear Flight Simulator wurde erfolgreich installiert!"
+echo "Installation abgeschlossen. Starten Sie FlightGear mit: fgfs"
