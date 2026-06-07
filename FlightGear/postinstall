@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source colors 2>/dev/null
+
+status_update "Konfiguriere FlightGear nach der Installation..."
+
+DESKTOP_FILE="/usr/share/applications/org.flightgear.FlightGear.desktop"
+if [ -f "$DESKTOP_FILE" ]; then
+  cp "$DESKTOP_FILE" /home/$USER/Desktop/
+  chown $USER:$USER /home/$USER/Desktop/*.desktop
+  chmod +x /home/$USER/Desktop/*.desktop
+  status_update "Desktop-Verknüpfung wurde erstellt."
+else
+  cat <<EOF > /home/$USER/Desktop/flightgear.desktop
+[Desktop Entry]
+Name=FlightGear
+Comment=Flugsimulator
+Exec=/usr/games/fgfs
+Icon=flightgear
+Terminal=false
+Type=Application
+Categories=Game;Simulation;
+EOF
+  chown $USER:$USER /home/$USER/Desktop/flightgear.desktop
+  chmod +x /home/$USER/Desktop/flightgear.desktop
+fi
+
+update-desktop-database 2>/dev/null
+
+status_update "Installation erfolgreich abgeschlossen!"
