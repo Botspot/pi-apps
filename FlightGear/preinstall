@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source colors 2>/dev/null
+
+status_update "Überprüfe Systemvoraussetzungen für FlightGear..."
+
+if ! grep -q "Raspberry Pi 5" /proc/device-tree/model; then
+  echo -e "${yellow}Warnung: FlightGear benötigt viel Leistung. Ein Raspberry Pi 5 wird dringend empfohlen.${rc}"
+fi
+
+FREE_SPACE=$(df -m / | awk 'NR==2 {print $4}')
+
+if [ "$FREE_SPACE" -lt 3000 ]; then
+  error "Nicht genügend freier Speicherplatz! FlightGear benötigt mindestens 3 GB freien Speicher. Du hast nur noch ${FREE_SPACE} MB frei."
+fi
+
+status_update "Systemprüfung erfolgreich bestanden."
