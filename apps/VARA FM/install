@@ -25,7 +25,7 @@ VARAINSTALLEREXE=$(find "${VARAFMDIR}" -type f -iname "*setup*.exe")
 
 #Manually installing VARA FM program files
 # extracting program files from VARA FM installer
-install_packages innoextract libsdl2-2.0-0 libxkbregistry0
+install_packages innoextract libsdl2-2.0-0 libxkbregistry0 || exit 1
 innoextract -d "${VARAFMDIR}" "${VARAINSTALLEREXE}" || error 'Failed to extract program files from VARA FM installer'
 # finding your default wineprefix directory
 if [ -z "${WINEPREFIX}" ]; then
