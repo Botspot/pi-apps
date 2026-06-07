@@ -37,7 +37,32 @@ fi
 mkdir "${PREFIXDIR}/drive_c/VARAFM" 2>/dev/null #VARAFM folder with old settings might already exist
 cp -r "${VARAFMDIR}"/app/* "${PREFIXDIR}"/drive_c/VARAFM/ || error 'Could not copy VARA program files to your wineprefix' #will not overwrite old settings
 # registering VB6 OCX and DLL files with your wineprefix
-BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARAFM/OCX/*.*[A-Z] /s || error 'Could not register VARA FM VB6 libraries with your wineprefix' # the lower-case OCX/DLL files don't have built-in register/unregister functions. Wine also already has an emulated psapi.dll that works fine.
+# NOTE: on 64-bit (new-WoW64) wine the only regsvr32 is 64-bit and cannot load these 32-bit OCX
+# ('Failed to load DLL'), so this step fails on arm64/Wine (x64). That is non-fatal: the VB6
+# controls VARA needs were already registered by 'winetricks vb6run' above, and the app files are
+# already in place. So warn instead of aborting the whole install.
+BOX86_NOBANNER=1 BOX64_NOBANNER=1 WINEDEBUG=-all wine regsvr32 "${PREFIXDIR}"/drive_c/VARAFM/OCX/*.*[A-Z] /s || warning 'VARA FM OCX self-registration skipped (64-bit regsvr32 cannot load 32-bit OCX; winetricks vb6run already registered the VB6 controls).'
+
+#Configuring box64 dynarec for VARA FM (ARM64 / box64)
+# VARA FM is multi-threaded. box64's default weak memory model races VARA's threads and corrupts
+# its callsign validator, so MYCALL always returns "WRONG" and NOTHING connects via RMS Express or
+# Pat (VERSION works, so the TCP link looks fine - it's the command handling that's broken). The
+# two flags below are the MINIMAL set that fixes it - both STRONGMEM and SAFEFLAGS are required
+# (STRONGMEM 1/2/3 all work; 2 chosen). IMPORTANT: do NOT add more box64 flags here
+# (BIGBLOCK/CALLRET/FASTNAN/FASTROUND/X87DOUBLE) - they are not needed for the fix AND they break
+# VARA's VB6 GUI (windows become unclickable, even the X/close button stops working). Written to
+# ~/.box64rc so they apply whenever VARAFM.exe runs (incl. when RMS Express / Pat auto-launch it).
+if command -v box64 >/dev/null 2>&1; then
+  if ! grep -q '^\[VARAFM\.exe\]' "${HOME}/.box64rc" 2>/dev/null; then
+    cat >> "${HOME}/.box64rc" <<'BOX64RC'
+
+[VARAFM.exe]
+BOX64_DYNAREC_STRONGMEM=2
+BOX64_DYNAREC_SAFEFLAGS=2
+BOX64RC
+    status 'Added [VARAFM.exe] box64 dynarec flags to ~/.box64rc (required for VARA to work on ARM64).'
+  fi
+fi
 
 #Removing tmp files
 rm -rf "${VARAFMDIR}"
