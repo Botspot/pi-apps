@@ -63,6 +63,6 @@ Terminal=false
 StartupNotify=false
 Type=Application
 StartupWMClass=rms express.exe
-Categories=Network;HamRadio;Utility;" > "${APPDIR}"/winlink.desktop || error 'Failed to create menu button!'
+Categories=Utility;" > "${APPDIR}"/winlink.desktop || error 'Failed to create menu button!'
 
 true
