@@ -82,7 +82,7 @@ Terminal=false
 StartupNotify=false
 Type=Application
 StartupWMClass=varafm.exe
-Categories=Network;HamRadio;Utility;" > "${APPDIR}"/VARA/varafm.desktop || error 'Failed to create menu button!'
+Categories=Utility;" > "${APPDIR}"/VARA/varafm.desktop || error 'Failed to create menu button!'
 sudo rm -rf "${APPDIR}/wine/Programs/VARA FM" # remove wine's auto-generated VARA FM program icon from the start menu
 
 true
