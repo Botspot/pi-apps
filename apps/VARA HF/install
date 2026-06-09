@@ -25,7 +25,7 @@ VARAINSTALLEREXE=$(find "${VARAHFDIR}" -type f -iname "*setup*.exe")
 
 #Manually installing VARA HF program files
 # extracting program files from VARA HF installer
-install_packages innoextract
+install_packages innoextract || exit 1
 innoextract -d "${VARAHFDIR}" "${VARAINSTALLEREXE}" || error 'Failed to extract program files from VARA HF installer'
 # finding your default wineprefix directory
 if [ -z "${WINEPREFIX}" ]; then
