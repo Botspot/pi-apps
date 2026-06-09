@@ -2,6 +2,8 @@
 
 APPDIR="${HOME}"/.local/share/applications/Winlink
 
+purge_packages || exit 1
+
 #Finding your default wineprefix directory
 if [ -z "${WINEPREFIX}" ]; then
     PREFIXDIR="${HOME}"/.wine #if "WINEPREFIX=" envvar is unset or set to empty string, wineprefix location is "~/.wine"
