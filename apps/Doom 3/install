@@ -2,6 +2,9 @@
 
 version=1.5.4
 
+if [ "$GITHUB_ACTIONS" == "true" ]; then
+choice=Download_Demo
+else
 while true; do
   read -p  "Do you have the doom3 game files? The demo mode will be installed if you answer No. [Y/n]" yn
   case $yn in
@@ -10,6 +13,7 @@ while true; do
       * ) echo "Please answer yes or no.";;
   esac
 done
+fi
 
 #Installing dependencies
 install_packages libfontconfig-dev automake libtool libfreeimage-dev \
