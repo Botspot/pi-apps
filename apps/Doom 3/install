@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.5.4
+version=1.5.5
 
 if [ "$GITHUB_ACTIONS" == "true" ]; then
 choice=Download_Demo
