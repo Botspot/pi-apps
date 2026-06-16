@@ -104,14 +104,15 @@ done
 server_jar=$(echo ${server_jar})
 
 if [ -z "$server_version" ]; then
-  # tell user to choose java 8, 17, or 21
+  # tell user to choose java 8, 17, 21, or 25
   description="In order to run Minecraft, the game requires a specific version of Java.\
   \nPlease choose below which version of java the server of your choice should run with.\
-  \nJava versions can be 8, 17, or 21.\
+  \nJava versions can be 8, 17, 21, or 25.\
   \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
   \nMinecraft 1.17-1.20 should use java 17.\
-  \nMinecraft 1.21+ should use java 21."
-  table=("Java 21" "Java 17" "Java 8")
+  \nMinecraft 1.21-1.21.11 should use java 21.\
+  \nMinecraft 26.1+ should use java 25."
+  table=("Java 25" "Java 21" "Java 17" "Java 8")
   userinput_func "$description" "${table[@]}"
   java_selection="$output"
 else
@@ -119,11 +120,15 @@ else
   # choose the appropriate version of java based on that
   # version <= 1.16.5 java 8
   # 1.17 <= version < 1.21 java 17
-  # version >= 1.21 java 21
+  # 1.21 <= version < 26.1 java 21
+  # version >= 26.1 java 25
   function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
   if [ $(version $server_version) -le $(version "1.16.5") ]; then
     echo "Using Java 8 by default"
     java_selection="Java 8"
+  elif [ $(version $server_version) -ge $(version "26.1") ]; then
+    echo "Using Java 25 by default"
+    java_selection="Java 25"
   elif [ $(version $server_version) -ge $(version "1.21") ]; then
     echo "Using Java 21 by default"
     java_selection="Java 21"
@@ -134,11 +139,12 @@ else
     description="WARNING: We don't know how you got here... your version $server_version does not seem to be a normal minecraft format.\
     \n\nIn order to run Minecraft, the game requires a specific version of Java.\
     \nPlease choose below which version of java the server of your choice should run with.\
-    \nJava versions can be 8, 17, or 21.\
+    \nJava versions can be 8, 17, 21, or 25.\
     \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
     \nMinecraft 1.17-1.20 should use java 17.\
-    \nMinecraft 1.21+ should use java 21."
-    table=("Java 21" "Java 17" "Java 8")
+    \nMinecraft 1.21-1.21.11 should use java 21.\
+    \nMinecraft 26.1+ should use java 25."
+    table=("Java 25" "Java 21" "Java 17" "Java 8")
     userinput_func "$description" "${table[@]}"
     java_selection="$output"
   fi
@@ -147,10 +153,10 @@ fi
 install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
-  "Java 21")
+  "Java 21"|"Java 25")
     case "$arch" in
       "32")
-        error "User error: Java 21 is not available for your platform from Adoptium. All 32-bit based architectures are being deprecated and removed by Java. Please use a 64-bit OS. Exiting the script."
+        error "User error: Java 21+ is not available for your platform from Adoptium. All 32-bit based architectures are being deprecated and removed by Java. Please use a 64-bit OS. Exiting the script."
         ;;
       *)
         adoptium_installer || exit 1
@@ -193,6 +199,14 @@ case "$java_selection" in
       error "Java 21 is not available for your platform from Adoptium. Exiting the script."
     fi
     java_location="/usr/lib/jvm/temurin-21-jre-$dpkg_arch/bin/java"
+    ;;
+  "Java 25")
+    if package_available temurin-25-jre ;then
+      install_packages temurin-25-jre || exit 1
+    else
+      error "Java 25 is not available for your platform from Adoptium. Exiting the script."
+    fi
+    java_location="/usr/lib/jvm/temurin-25-jre-$dpkg_arch/bin/java"
     ;;
 esac
 
