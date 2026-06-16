@@ -101,6 +101,10 @@ install_packages waydroid nftables || exit 1
 #enable nftables in waydroid script
 sudo sed -i 's/^LXC_USE_NFT="false"/LXC_USE_NFT="true"/g' /usr/lib/waydroid/data/scripts/waydroid-net.sh
 
+#ensure dnsmasq cannot interfere with waydroid
+echo 'bind-interfaces
+except-interface=waydroid0' | sudo tee /etc/dnsmasq.d/waydroid.conf
+
 #disable waydroid repo so it can't update and undo the nftables change (pi-apps handles updates now)
 sudo rm /etc/apt/sources.list.d/waydroid.list
 
@@ -109,13 +113,6 @@ if [ "$init_google" == yes ];then
 elif [ "$init_google" == no ];then
   sudo waydroid --details-to-stdout init -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor -s VANILLA || sudo waydroid init -s VANILLA || error "Waydroid failed to initialize"
 fi
-
-#fix for wayfire compositor
-waydroid prop set persist.waydroid.multi_windows true || error "Waydroid failed to set persist.waydroid.multi_windows config option, most likely something else is wrong."
-
-#allow waydroid direct usb access to things like game controllers
-waydroid prop set persist.waydroid.udev true
-waydroid prop set persist.waydroid.uevent true
 
 waydroid session stop
 waydroid session start &
@@ -135,6 +132,13 @@ $(grep "$(date '+%d %b %Y')" /var/lib/waydroid/waydroid.log)"
   fi
 done
 status_green Done
+
+#fix for wayfire compositor (prop set seems to need to run after waydroid session start, see https://forums.raspberrypi.com/viewtopic.php?p=2379548#p2379548)
+waydroid prop set persist.waydroid.multi_windows true || error "Waydroid failed to set persist.waydroid.multi_windows config option, most likely something else is wrong."
+
+#allow waydroid direct usb access to things like game controllers
+waydroid prop set persist.waydroid.udev true
+waydroid prop set persist.waydroid.uevent true
 
 if [ "$init_google" == yes ];then
   id=''
