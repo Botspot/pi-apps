@@ -19,7 +19,7 @@ mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
 description="What type of Minecraft server\ndo you want to run?"
-table=("Vanilla" "Fabric" "Forge" "Paper" "Purpur")
+table=("Vanilla" "Fabric" "Forge" "Paper" "Folia" "Purpur")
 userinput_func "$description" "${table[@]}"
 server_category="$output"
 
@@ -62,6 +62,17 @@ case "$server_category" in
     server_version="$output"
     status "Selected $server_category version $server_version"
     version_info=$(wget -O- https://fill.papermc.io/v3/projects/paper/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
+    server_jar="$(echo "$version_info" | jq -r '.name')"
+    wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
+    ;;
+  "Folia")
+    available_versions=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions | jq -r '.versions.[].version.id')
+    description="What version of $server_category do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    status "Selected $server_category version $server_version"
+    version_info=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
     server_jar="$(echo "$version_info" | jq -r '.name')"
     wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
     ;;
@@ -214,7 +225,7 @@ jvm_test="1"
 jvm_args=""
 while [[ $jvm_test != 0 ]]; do
   # userinput jvm_args
-  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA defaut list is prepopulated in the text box below.\n\nThe most inportant arguments -XmxXXXXM -XmsXXXXM are at the beginning and define how much ram for your server to use.\nHint, use your keyboard Home key to see the start of this list" --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments -Xmx and -Xms are at the beginning and define the max RAM and initial RAM, respectively.\nHint, use your keyboard Home key to see the start of this list, or the End key to see the end." --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
   $java_location $jvm_args -version
   jvm_test="$?"
   if [[ $jvm_test != 0 ]]; then
