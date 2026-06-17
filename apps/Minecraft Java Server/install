@@ -15,8 +15,23 @@ fi
 # add jq to use in script
 install_packages jq || exit 1
 
-mkdir -p "$HOME/Minecraft-Java-Server"
-cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
+# using the mcserdir.txt file or creating  it
+mkdir -p "$HOME/Documents"
+cd "$HOME/Documents" || error "Could not enter Documents folder."
+if [ -f "mcserdir.txt" ];then
+  # read mcserdir.txt
+  directory=$(cat "mcserdir.txt")
+  # make sure the user wants to install the server in the saved directory, as mcserdir.txt persists on uninstall
+  text="Using the $directory directory.\nIf you would like to use a different directory,\nexit the script and delete the $HOME/Documents/mcserdir.txt file."
+  userinput_func "$text" "Continue with the $directory directory"
+else
+  # allow user to select directory
+  directory=$(yad --center --wrap --text "Choose directory:\nDefault is $directory.\nMake sure it ends with Minecraft-Java-Server if you don't want it to fail." --entry --entry-text="$directory" --button="Submit":0)
+  # store directory in $HOME/Documents so it can be used later
+  echo "$directory" > mcserdir.txt
+fi
+mkdir -p "$directory" || error "$directory is invalid or privileged."
+cd "$directory" || error "Could not enter $directory folder."
 
 description="What type of Minecraft server\ndo you want to run?"
 table=("Vanilla" "Fabric" "Forge" "Paper" "Folia" "Purpur")
@@ -105,7 +120,7 @@ esac
 
 while [[ ! -a $(echo ${server_jar}) ]]; do
   description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
-  \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
+  \nAdd your ${server_jar} file to the folder opened $directory and press OK.\
   \n\nYou have not added a ${server_jar}."
   table=("OK")
   userinput_func "$description" "${table[@]}"
@@ -225,7 +240,7 @@ jvm_test="1"
 jvm_args=""
 while [[ $jvm_test != 0 ]]; do
   # userinput jvm_args
-  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments -Xmx and -Xms are at the beginning and define the max RAM and initial RAM, respectively.\nHint, use your keyboard Home key to see the start of this list, or the End key to see the end." --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments, -Xmx and -Xms, are at the beginning and define the max RAM and initial RAM, respectively.\nYou should specify a value slightly less than your total RAM in bytes, kilobytes(k), megabytes(m), or gigabytes(g).\nHint, use your keyboard Home key to see the start of this list." --entry --entry-text="-Xmx1200m -Xms1200m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
   $java_location $jvm_args -version
   jvm_test="$?"
   if [[ $jvm_test != 0 ]]; then
@@ -237,7 +252,7 @@ done
 if [[ "$server_category" == "Forge" ]]; then
   # run the server installer
   rm -f start-server.sh
-  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
+  $java_location -jar $directory/${server_jar} --installServer || error "Failed to install forge server"
   rm -f ${server_jar}
 
   # forge has MANY ways to launch depending on the version
@@ -267,10 +282,10 @@ if [[ "$server_category" == "Forge" ]]; then
 fi
 
 if [ -n "$server_jar" ]; then
-  sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
+  sh -c "cat > $directory/start-server.sh << _EOF_
 #!/bin/bash
 echo 'Minecraft Server starting'
-$java_location $jvm_args -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
+$java_location $jvm_args -jar $directory/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
 echo 'Minecraft Server has stopped'
 sleep 3
 _EOF_"
@@ -288,7 +303,7 @@ tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
 Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ \$? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
-Path=$HOME/Minecraft-Java-Server
+Path=$directory
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application
 Categories=Game
@@ -301,10 +316,10 @@ sleep_location=$(which sleep)
 sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
 [Service]
 RemainAfterExit=yes
-WorkingDirectory=$HOME/Minecraft-Java-Server
+WorkingDirectory=$directory
 User=$USER
 # Start Screen, Java, and Minecraft
-ExecStart=$screen_location -S Minecraft_Server -U -d -m $HOME/Minecraft-Java-Server/start-server.sh
+ExecStart=$screen_location -S Minecraft_Server -U -d -m $directory/start-server.sh
 # Tell Minecraft to gracefully stop.
 # Ending Minecraft will terminate Java
 # systemd will kill Screen after the 10-second delay. No explicit kill for Screen needed
