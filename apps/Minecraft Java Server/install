@@ -313,7 +313,8 @@ EOF
 screen_location=$(which screen)
 sleep_location=$(which sleep)
 
-sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
+# this is equivalent to using tee "/etc/systemd/system/minecraft-server.service" and then systemctl daemon-reload
+sudo systemctl edit --stdin --full --force "/etc/systemd/system/minecraft-server.service" <<EOF
 [Service]
 RemainAfterExit=yes
 WorkingDirectory=$directory
@@ -332,10 +333,6 @@ WantedBy=multi-user.target
 EOF
 echo
 
-# update services
-sudo systemctl daemon-reload
-sudo systemctl disable minecraft-server
-
 status "Your IP address is one of the following: 
 $(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 status "The IP address is used to play on your local network
@@ -347,5 +344,5 @@ Attach to a server in the background with: screen -r Minecraft_Server
 Detach from a running server session with: CTRL+A then D
 To start from a terminal: sudo systemctl start minecraft-server
 To stop the server: sudo systemctl stop minecraft-server
-To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
+To start now, start on boot, and stop on shutdown: sudo systemctl enable --now minecraft-server
 "

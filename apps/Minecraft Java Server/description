@@ -7,7 +7,7 @@ Attach to a server in the background with: screen -r Minecraft_Server
 Detach from a running server session with: CTRL+A then D
 To start from a terminal: sudo systemctl start minecraft-server
 To stop the server: sudo systemctl stop minecraft-server
-To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
+To start now, start on boot, and stop on shutdown: sudo systemctl enable --now minecraft-server
 
 Refer to the start-server.sh file in your chosen directory if you need to add custom JVM arguements
 
