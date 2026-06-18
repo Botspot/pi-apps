@@ -4,17 +4,9 @@ shopt -s extglob
 
 #skip uninstallation if executed from an update
 if [[ "$1" != "update" ]];then
-  # If there's no mcserdir.txt file (old install or otherwise), use the default directory
-  directory=$HOME/Minecraft-Java-Server
-  mkdir -p "$HOME/Documents"
-  cd "$HOME/Documents" || error "Could not enter Documents folder."
-  if [ -f "mcserdir.txt" ];then
-    # read mcserdir.txt
-    directory=$(cat "mcserdir.txt")
-  fi
-  text="You chose to uninstall the Minecraft Java Server script.\nAll files within your $directory folder will be deleted except the worlds, mods, and versions subfolders.\nIf you would like to backup any other files/folders do that NOW before clicking the prompt."
+  text="You chose to uninstall the Minecraft Java Server script.\nAll files within your $HOME/Minecraft-Java-Server folder will be deleted except the worlds, mods, and versions subfolders.\nIf you would like to backup any other files/folders do that NOW before clicking the prompt."
   userinput_func "$text" "Ok, I have made any backups I wish, continue"
-  cd $directory && rm -rf !(world|mods|versions)
+  cd $HOME/Minecraft-Java-Server && rm -rf !(world|mods|versions)
   rm -rf $HOME/.local/share/applications/Minecraft-Java-Server.desktop || error "Failed to remove the desktop file"
   # disable server from starting on boot and stop
   sudo systemctl disable --now minecraft-server
