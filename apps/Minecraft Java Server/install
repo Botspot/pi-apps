@@ -314,7 +314,7 @@ screen_location=$(which screen)
 sleep_location=$(which sleep)
 
 # this is equivalent to using tee "/etc/systemd/system/minecraft-server.service" and then systemctl daemon-reload
-sudo systemctl edit --stdin --full --force "/etc/systemd/system/minecraft-server.service" <<EOF
+sudo systemctl edit --stdin --full --force minecraft-server <<EOF
 [Service]
 RemainAfterExit=yes
 WorkingDirectory=$directory
