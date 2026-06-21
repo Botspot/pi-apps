@@ -19,7 +19,7 @@ mkdir -p "$HOME/Minecraft-Java-Server"
 cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
 
 description="What type of Minecraft server\ndo you want to run?"
-table=("Vanilla" "Fabric" "Forge" "Paper" "Purpur")
+table=("Vanilla" "Fabric" "Forge" "Paper" "Folia" "Purpur")
 userinput_func "$description" "${table[@]}"
 server_category="$output"
 
@@ -55,15 +55,26 @@ case "$server_category" in
     wget -O "$server_jar" "https://maven.minecraftforge.net/net/minecraftforge/forge/$installer_version/forge-$installer_version-installer.jar" || exit 1
     ;;
   "Paper")
-    available_versions=$(wget -O- https://api.papermc.io/v2/projects/paper/ | jq -r '.versions | .[]')
+    available_versions=$(wget -O- https://fill.papermc.io/v3/projects/paper/versions | jq -r '.versions.[].version.id')
     description="What version of $server_category do you want to run?"
     table=($available_versions)
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_info=$(wget -O- https://api.papermc.io/v2/projects/paper/versions/$server_version/builds | jq -r '.builds | [last]')
-    server_jar="$(echo "$version_info" | jq -r '.[].downloads.application.name')"
-    wget -O "$server_jar" "https://api.papermc.io/v2/projects/paper/versions/$server_version/builds/$(echo "$version_info" | jq -r '.[].build')/downloads/$server_jar" || exit 1
+    version_info=$(wget -O- https://fill.papermc.io/v3/projects/paper/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
+    server_jar="$(echo "$version_info" | jq -r '.name')"
+    wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
+    ;;
+  "Folia")
+    available_versions=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions | jq -r '.versions.[].version.id')
+    description="What version of $server_category do you want to run?"
+    table=($available_versions)
+    userinput_func "$description" "${table[@]}"
+    server_version="$output"
+    status "Selected $server_category version $server_version"
+    version_info=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
+    server_jar="$(echo "$version_info" | jq -r '.name')"
+    wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
     ;;
   "Purpur")
     available_versions=$(wget -O- https://api.purpurmc.org/v2/purpur/ | jq -r '.versions | .[]')
@@ -104,14 +115,15 @@ done
 server_jar=$(echo ${server_jar})
 
 if [ -z "$server_version" ]; then
-  # tell user to choose java 8, 17, or 21
+  # tell user to choose java 8, 17, 21, or 25
   description="In order to run Minecraft, the game requires a specific version of Java.\
   \nPlease choose below which version of java the server of your choice should run with.\
-  \nJava versions can be 8, 17, or 21.\
+  \nJava versions can be 8, 17, 21, or 25.\
   \n\nAll versions of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
   \nMinecraft 1.17-1.20 should use java 17.\
-  \nMinecraft 1.21+ should use java 21."
-  table=("Java 21" "Java 17" "Java 8")
+  \nMinecraft 1.21-1.21.11 should use java 21.\
+  \nMinecraft 26.1+ should use java 25."
+  table=("Java 25" "Java 21" "Java 17" "Java 8")
   userinput_func "$description" "${table[@]}"
   java_selection="$output"
 else
@@ -119,11 +131,15 @@ else
   # choose the appropriate version of java based on that
   # version <= 1.16.5 java 8
   # 1.17 <= version < 1.21 java 17
-  # version >= 1.21 java 21
+  # 1.21 <= version < 26.1 java 21
+  # version >= 26.1 java 25
   function version { echo "$@" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'; }
   if [ $(version $server_version) -le $(version "1.16.5") ]; then
     echo "Using Java 8 by default"
     java_selection="Java 8"
+  elif [ $(version $server_version) -ge $(version "26.1") ]; then
+    echo "Using Java 25 by default"
+    java_selection="Java 25"
   elif [ $(version $server_version) -ge $(version "1.21") ]; then
     echo "Using Java 21 by default"
     java_selection="Java 21"
@@ -134,11 +150,12 @@ else
     description="WARNING: We don't know how you got here... your version $server_version does not seem to be a normal minecraft format.\
     \n\nIn order to run Minecraft, the game requires a specific version of Java.\
     \nPlease choose below which version of java the server of your choice should run with.\
-    \nJava versions can be 8, 17, or 21.\
+    \nJava versions can be 8, 17, 21, or 25.\
     \n\nAll version of Minecraft before and including Minecraft 1.16.5 should use Java 8.\
     \nMinecraft 1.17-1.20 should use java 17.\
-    \nMinecraft 1.21+ should use java 21."
-    table=("Java 21" "Java 17" "Java 8")
+    \nMinecraft 1.21-1.21.11 should use java 21.\
+    \nMinecraft 26.1+ should use java 25."
+    table=("Java 25" "Java 21" "Java 17" "Java 8")
     userinput_func "$description" "${table[@]}"
     java_selection="$output"
   fi
@@ -147,10 +164,10 @@ fi
 install_packages lsb-release wget gpg screen || exit 1
 
 case "$java_selection" in
-  "Java 21")
+  "Java 21"|"Java 25")
     case "$arch" in
       "32")
-        error "User error: Java 21 is not available for your platform from Adoptium. All 32-bit based architectures are being deprecated and removed by Java. Please use a 64-bit OS. Exiting the script."
+        error "User error: Java 21+ is not available for your platform from Adoptium. All 32-bit based architectures are being deprecated and removed by Java. Please use a 64-bit OS. Exiting the script."
         ;;
       *)
         adoptium_installer || exit 1
@@ -194,13 +211,21 @@ case "$java_selection" in
     fi
     java_location="/usr/lib/jvm/temurin-21-jre-$dpkg_arch/bin/java"
     ;;
+  "Java 25")
+    if package_available temurin-25-jre ;then
+      install_packages temurin-25-jre || exit 1
+    else
+      error "Java 25 is not available for your platform from Adoptium. Exiting the script."
+    fi
+    java_location="/usr/lib/jvm/temurin-25-jre-$dpkg_arch/bin/java"
+    ;;
 esac
 
 jvm_test="1"
 jvm_args=""
 while [[ $jvm_test != 0 ]]; do
   # userinput jvm_args
-  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA defaut list is prepopulated in the text box below.\n\nThe most inportant arguments -XmxXXXXM -XmsXXXXM are at the beginning and define how much ram for your server to use.\nHint, use your keyboard Home key to see the start of this list" --entry --entry-text="-Xmx1200M -Xms1200M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments, -Xmx and -Xms, are at the beginning and define the max RAM and initial RAM, respectively.\nYou should specify a value a quarter less than your total RAM in bytes, kilobytes(k), megabytes(m), or gigabytes(g).\nHint, use your keyboard Home key to see the start of this list." --entry --entry-text="-Xmx1200m -Xms1200m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
   $java_location $jvm_args -version
   jvm_test="$?"
   if [[ $jvm_test != 0 ]]; then
@@ -307,5 +332,5 @@ Attach to a server in the background with: screen -r Minecraft_Server
 Detach from a running server session with: CTRL+A then D
 To start from a terminal: sudo systemctl start minecraft-server
 To stop the server: sudo systemctl stop minecraft-server
-To start on automatically on boot and stop on shutdown: sudo systemctl enable minecraft-server
+To start now, start on boot, and stop on shutdown: sudo systemctl enable --now minecraft-server
 "
