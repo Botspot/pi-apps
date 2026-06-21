@@ -225,7 +225,7 @@ jvm_test="1"
 jvm_args=""
 while [[ $jvm_test != 0 ]]; do
   # userinput jvm_args
-  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments, -Xmx and -Xms, are at the beginning and define the max RAM and initial RAM, respectively.\nYou should specify a value slightly less than your total RAM in bytes, kilobytes(k), megabytes(m), or gigabytes(g).\nHint, use your keyboard Home key to see the start of this list." --entry --entry-text="-Xmx1200m -Xms1200m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
+  jvm_args=$(yad --center --wrap --text "Would you like to input any JVM Arguments?\nA default list is prepopulated in the text box below.\n\nThe most important arguments, -Xmx and -Xms, are at the beginning and define the max RAM and initial RAM, respectively.\nYou should specify a value a quarter less than your total RAM in bytes, kilobytes(k), megabytes(m), or gigabytes(g).\nHint, use your keyboard Home key to see the start of this list." --entry --entry-text="-Xmx1200m -Xms1200m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1" --button="Validate JVM Arguments":0)
   $java_location $jvm_args -version
   jvm_test="$?"
   if [[ $jvm_test != 0 ]]; then
@@ -298,8 +298,7 @@ EOF
 screen_location=$(which screen)
 sleep_location=$(which sleep)
 
-# this is equivalent to using tee "/etc/systemd/system/minecraft-server.service" and then systemctl daemon-reload
-sudo systemctl edit --stdin --full --force minecraft-server <<EOF
+sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
 [Service]
 RemainAfterExit=yes
 WorkingDirectory=$HOME/Minecraft-Java-Server
@@ -317,6 +316,10 @@ ExecStop=$sleep_location 10
 WantedBy=multi-user.target
 EOF
 echo
+
+# update services
+sudo systemctl daemon-reload
+sudo systemctl disable minecraft-server
 
 status "Your IP address is one of the following: 
 $(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
