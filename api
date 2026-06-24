@@ -2435,6 +2435,12 @@ Open an issue on Pi-Apps if all else fails, but we will probably tell you the sa
     error_type="system"
   fi
   
+  if grep -q "dpkg: error: cannot access archive '/var/cache/pi-apps.*': No such file or directory" ;then
+    error_caption+=("During app installation, local package(s) to install somehow got deleted before apt could finish.
+Most likely, you were running multiple Pi-Apps scripts at once, or installed something else before the previous terminal closed. Please try again. If this keeps happening let us know.")
+    error_type="system"
+  fi
+  
 #------------------------------------------
 #apt/dpkg issues above, package issues below
 #------------------------------------------
