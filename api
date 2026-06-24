@@ -2435,7 +2435,7 @@ Open an issue on Pi-Apps if all else fails, but we will probably tell you the sa
     error_type="system"
   fi
   
-  if grep -q "dpkg: error: cannot access archive '/var/cache/pi-apps.*': No such file or directory" ;then
+  if grep -q "dpkg: error: cannot access archive '/var/cache/pi-apps.*': No such file or directory" "$logfile" || grep -q "E: Could not open file /var/cache/pi-apps/pi-apps-.*.deb" "$logfile" ;then
     error_caption+=("During app installation, local package(s) to install somehow got deleted before apt could finish.
 Most likely, you were running multiple Pi-Apps scripts at once, or installed something else before the previous terminal closed. Please try again. If this keeps happening let us know.")
     error_type="system"
@@ -3077,6 +3077,23 @@ You need to delete whatever sort of dpkg-deb binary you added to ~/bin before ap
 Right now the file type is:
 $(file $HOME/bin/dpkg-deb)
 From the output above, most likely this file is not compatible with ARM.")
+    error_type="system"
+  fi
+  
+  if grep -qF "error: No installed refs found for " "$logfile";then
+    local flatpak_in_question=$(grep -F "error: No installed refs found for " "$logfile" | awk '{print $NF}' | tr -d '‘’"'\''')
+    
+    #put this info in the logfile too
+    echo "Output of 'flatpak list | grep -F $flatpak_in_question':" >> "$logfile_output"
+    flatpak list | grep -F $flatpak_in_question >> "$logfile_output"
+    error_caption+=("Flatpak seems to think $flatpak_in_question is not installed, but 'flatpak list' seems to think it is installed.
+Output of 'flatpak list | grep -F $flatpak_in_question':
+$(flatpak list | grep -F $flatpak_in_question)")
+    error_type="system"
+  fi
+  
+  if grep -qF "E: Can not write log (Is /dev/pts mounted?)" "$logfile";then
+    error_caption+=("APT failed because it could not write log to /dev/pts. This is likely an issue caused by running Pi-Apps inside of a virtualized container, or custom kernel. Hopefully you know how to fix this. Reach out for help if you do not think your setup should be causing this error.")
     error_type="system"
   fi
   
