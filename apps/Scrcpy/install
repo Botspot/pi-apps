@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=v3.3.4
+version=v4.0
 
 echo -e "==============\n"
 echo " · More info: run "\""scrcpy --help"\"" or visit https://github.com/Genymobile/scrcpy"
@@ -11,7 +11,13 @@ echo " · If you have issues, try to run the app a couple of times through Termi
 
 sudo rm -rf ~/scrcpy /usr/local/share/scrcpy ~/.local/share/applications/scrcpy.desktop
 
-install_packages adb android-sdk-platform-tools-common ffmpeg libsdl2-2.0-0 gcc git pkg-config meson ninja-build libsdl2-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libusb-1.0-0-dev || exit 1
+if package_available libsdl3-dev ;then
+  install_packages adb android-sdk-platform-tools-common ffmpeg libsdl3-0 gcc git pkg-config meson ninja-build libsdl3-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libswresample-dev libusb-1.0-0-dev libv4l-dev || exit 1
+else
+  #use last v3 version if on a distro without libsdl3
+  version=v3.3.4
+  install_packages adb android-sdk-platform-tools-common ffmpeg libsdl2-2.0-0 gcc git pkg-config meson ninja-build libsdl2-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libusb-1.0-0 libusb-1.0-0-dev || exit 1
+fi
 
 hash -r
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
@@ -31,10 +37,6 @@ status_green Done
 cd /tmp
 git_clone https://github.com/Genymobile/scrcpy -b ${version} || error "Failed to download repo!"
 cd scrcpy
-
-# fixme: upstream v2.3 release does not build. upstream has not made a new release but fixed in master
-wget https://github.com/Genymobile/scrcpy/commit/4135c411af419f4f86dc9ec9301c88012d616c49.patch
-git apply 4135c411af419f4f86dc9ec9301c88012d616c49.patch
 
 status "Downloading prebuilt scrcpy-server that gets pushed to the android device"
 wget https://github.com/Genymobile/scrcpy/releases/download/${version}/scrcpy-server-${version} -O scrcpy-server || error "Failed to download scrcpy-server prebuilt!"
