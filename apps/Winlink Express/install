@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=User%20Programs/Winlink_Express_install_1-8-1-0.zip
+version=User%20Programs/Winlink_Express_install_1-8-2-0.zip
 
 APPDIR="${HOME}"/.local/share/applications/Winlink
 
@@ -23,7 +23,7 @@ else
 fi
 
 #Downloading Winlink Express
-WINLINKDIR=/tmp/WINLINK
+WINLINKDIR=/var/cache/pi-apps/WINLINK
 mkdir -p "${WINLINKDIR}"
 wget "https://downloads.winlink.org/$version" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
 
