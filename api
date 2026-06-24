@@ -564,7 +564,12 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
         fi
         warning "Package download failed. (Attempt $i of 3)"
       done
-      [ -f "$filename" ] || error "install_packages(): Downloaded package does not exist! ($filename)"
+      
+      if [ ! -f "$filename" ] && [ ! -f /var/cache/pi-apps ];then
+        error "User error: Uh-oh, the /var/cache/pi-apps folder went missing while installing packages.\nThis usually happens if you try to install several apps at the same time in multiple terminals."
+      elif [ ! -f "$filename" ];then
+        error "install_packages(): Downloaded package does not exist! ($filename)"
+      fi
       
       #determine the package name, package version, and architecture from the file
       local dpkg_deb_output="$(dpkg-deb -I "$filename")"
