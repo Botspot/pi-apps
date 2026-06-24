@@ -1,5 +1,0 @@
-#!/bin/bash
-
-pipx_uninstall quartz-browser || exit 1
-purge_packages || exit 1
-sudo rm -f /usr/local/share/applications/quartz-browser.desktop /usr/local/share/icons/quartz-browser.png

@@ -122,6 +122,8 @@ You can install Renoise (Demo) from Pi-Apps on a 64bit OS."
   remove_deprecated_app "Chiaki" "" "This is being removed after over a year of request for community maintenance. See https://github.com/Botspot/pi-apps/issues/2664 for details."
   remove_deprecated_app "Minecraft Bedrock" "32" "The latest version of the Minecraft Bedrock Linux Launcher is not available ARM 32bit Linux and all previous versions that supported it no longer function.
 You can install Minecraft Bedrock from Pi-Apps on a 64bit OS."
+  remove_deprecated_app "Quartz" "" "Quartz Browser seems unmaintained, and does not work on newer operating systems due to python3-pyqt5.qtwebkit not being available due to security concerns."
+  remove_deprecated_app "Remarkable" "" "Remarkable seems unmaintained, and does not work on newer operating systems due to python3-pyqt5.qtwebkit not being available due to security concerns."
   true
 EOF
   ;;
