@@ -1,6 +1,13 @@
 #!/bin/bash
 
 if command -v snap >/dev/null ;then
+  #check if snap-store installation is in progress, and if so, cancel it to prevent its removal from failing
+  if snap changes 2>&1 | grep -q 'Doing.*Install "snap-store"' ;then
+    snap_task_num="$(snap changes 2>&1 | grep -q 'Doing.*Install "snap-store"' | awk '{print $1}' | tail -1)"
+    warning "It seems that Snap is currently trying to install the Snap Store. Attempting to abort this process, so that the Snap Store can be uninstalled.\nRunning command: sudo snap abort $snap_task_num"
+    sudo snap abort $snap_task_num
+  fi
+  
   sudo snap remove snap-store || error "The snap command failed to uninstall snap-store\nPerhaps running this command would fix it?\nsudo apt install --reinstall snapd\noutput from running snap changes:\n$(snap changes 2>&1)"
 
 echo -e "\e[93mNote: To prevent removing user data, uninstalling the Snap Store app does not uninstall the snapd package!\nTo completely remove everything snap-related, run this command:
@@ -9,7 +16,7 @@ sudo apt purge snapd\e[39m
 "
   
 else
-  warning "Attempting to uninstall snap store but the snap command is not found. This script is exiting with 'success', as obviously nothing is installed."
+  warning "Attempting to uninstall snap store but the snap command is not found. This script is exiting with 'success', as it seems Snap Store is not installed."
 fi
 sudo rm -rf /var/snap/snap-store /usr/share/applications/snapd-temporary
 true
