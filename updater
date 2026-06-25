@@ -37,6 +37,7 @@ check_repo() { #download pi-apps repository to the update/pi-apps folder
   #if the updater script exists in update folder, then just git pull to save time
   if [ -s "${DIRECTORY}/update/pi-apps/updater" ];then
     cd "${DIRECTORY}/update/pi-apps"
+    git restore . #abandon changes to tracked files (prevent any changes from persisting)
     git pull -q 1>&2 || rm -rf "${DIRECTORY}/update"
   fi | grep -v "Already up to date." 1>&2
   
