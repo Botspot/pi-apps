@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.9.5
+version=2.9.6
 
 install_packages git mesa-utils || exit 1
 
