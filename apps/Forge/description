@@ -1,0 +1,12 @@
+Forge is a "Rules Engine" for the most popular card game Magic: the Gathering.
+
+Forge creates a unique experience by combining an enormous card library with some RPG elements in Quest mode (comparable to the 'Shandalar', the late 90's PC Game) and Planar Conquest on the mobile version. 
+Forge also includes a Graphical Map Based game mode called "Adventure Mode", which is more akin to 'Shandalar.' (Only in Mobile UI version)
+
+Start Forge with Desktop UI: Menu -> Games -> MTG Forge
+Start Forge with Mobile  UI: Menu -> Games -> MTG Forge Adventure
+Start with Desktop UI in terminal: ~/.local/share/mtg-forge/forge.sh
+Start with Mobile  UI in terminal: ~/.local/share/mtg-forge/forge-mobile.sh
+Start Simulation mode in terminal: ~/.local/share/mtg-forge/forge.sh sim
+
+Forge is open source software released under the GNU Public License and not related in any way with Wizards of the Coast.
