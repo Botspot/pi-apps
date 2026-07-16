@@ -5,6 +5,12 @@ function error {
   exit 1
 }
 
+#avoid changing current directory before determining DIRECTORY.
+# this broke installation to custom folder if running install script with relative paths
+#  if pi-apps is already downloaded to ~/.pi-apps, and PWD=.pi-apps, and this script is run as ./install instead of ~/.pi-apps/install:
+#   cd $HOME would later cause DIRECTORY check to fail and trigger fresh download to ~/pi-apps
+#    However cd $HOME is necessary to prevent error: shell-init: error retrieving current directory: getcwd: cannot access parent directories: No such file or directory
+DIRECTORY="$(readlink -f "$(dirname "$0")")"
 cd "$HOME"
 
 #ensure non-root
@@ -51,7 +57,6 @@ fi
 sudo rm -f /usr/share/applications/yad-icon-browser.desktop
 
 #download pi-apps if folder missing
-DIRECTORY="$(readlink -f "$(dirname "$0")")"
 if [ -z "$DIRECTORY" ] || [ "$DIRECTORY" == "$HOME" ] || [ "$DIRECTORY" == bash ] || [ ! -f "${DIRECTORY}/api" ] || [ ! -f "${DIRECTORY}/gui" ];then
   DIRECTORY="$HOME/pi-apps"
 fi
