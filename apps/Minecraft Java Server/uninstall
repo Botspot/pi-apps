@@ -2,19 +2,83 @@
 
 shopt -s extglob
 
-#skip uninstallation if executed from an update
-if [[ "$1" != "update" ]];then
-  text="You chose to uninstall the Minecraft Java Server script.\nAll files within your $HOME/Minecraft-Java-Server folder will be deleted except the worlds, mods, and versions subfolders.\nIf you would like to backup any other files/folders do that NOW before clicking the prompt."
+SERVICE_NAME="minecraft-server"
+SCREEN_NAME="Minecraft_Server"
+SERVER_FOLDER_NAME="Minecraft-Java-Server"
+DESKTOP_FILE="$HOME/.local/share/applications/Minecraft-Java-Server.desktop"
+CONFIG_DIR="$HOME/.config/minecraft-java-server"
+CONFIG_FILE="$CONFIG_DIR/server_dir"
+DEFAULT_SERVER_DIR="$HOME/$SERVER_FOLDER_NAME"
+
+get_server_dir() {
+  if [ -f "$CONFIG_FILE" ]; then
+    head -n 1 "$CONFIG_FILE"
+    return
+  fi
+
+  if systemctl cat "$SERVICE_NAME.service" >/dev/null 2>&1; then
+    systemctl cat "$SERVICE_NAME.service" 2>/dev/null | sed -n 's/^WorkingDirectory=//p' | tail -n 1
+    return
+  fi
+
+  if [ -f "$DESKTOP_FILE" ]; then
+    sed -n 's/^Path=//p' "$DESKTOP_FILE" | tail -n 1
+    return
+  fi
+
+  echo "$DEFAULT_SERVER_DIR"
+}
+
+# skip uninstallation if executed from an update
+if [[ "$1" != "update" ]]; then
+  server_dir="$(get_server_dir)"
+
+  if [ -z "$server_dir" ]; then
+    server_dir="$DEFAULT_SERVER_DIR"
+  fi
+
+  text="You chose to uninstall the Minecraft Java Server script.
+
+The detected server folder is:
+$server_dir
+
+Files within this folder will be deleted except the world, world_nether, world_the_end, mods, plugins, and versions subfolders.
+
+If you would like to backup any other files/folders do that NOW before clicking the prompt."
   userinput_func "$text" "Ok, I have made any backups I wish, continue"
-  cd $HOME/Minecraft-Java-Server && rm -rf !(world|mods|versions)
-  rm -rf $HOME/.local/share/applications/Minecraft-Java-Server.desktop || error "Failed to remove the desktop file"
+
   # disable server from starting on boot and stop
-  sudo systemctl disable --now minecraft-server
-  
+  sudo systemctl disable --now "$SERVICE_NAME" 2>/dev/null || true
+
+  # make sure any leftover screen session is closed
+  screen -S "$SCREEN_NAME" -X quit 2>/dev/null || true
+
   # remove the systemd service
-  sudo rm -f /etc/systemd/system/minecraft-server.service
+  sudo rm -f "/etc/systemd/system/$SERVICE_NAME.service"
   sudo systemctl daemon-reload
-  
+
+  rm -f "$DESKTOP_FILE" || error "Failed to remove the desktop file"
+
+  if [ -d "$server_dir" ]; then
+    find "$server_dir" -mindepth 1 -maxdepth 1 -print0 | while IFS= read -r -d '' item; do
+      base="$(basename "$item")"
+      case "$base" in
+        world|world_nether|world_the_end|mods|plugins|versions)
+          echo "Preserving: $item"
+          ;;
+        *)
+          echo "Removing: $item"
+          rm -rf -- "$item" 2>/dev/null || sudo rm -rf -- "$item"
+          ;;
+      esac
+    done
+  else
+    echo "Server folder not found: $server_dir"
+  fi
+
+  rm -f "$CONFIG_FILE"
+  rmdir "$CONFIG_DIR" 2>/dev/null || true
+
   purge_packages || error "Dependencies failed to uninstall"
   rm_external_repo "adoptium"
   remove_repofile_if_unused /etc/apt/sources.list.d/adoptopenjdk.list

@@ -1,9 +1,49 @@
 #!/bin/bash
 
+# Pi-Apps style installer for Minecraft Java Server with custom server directory support.
+# Default server folder: $HOME/Minecraft-Java-Server
+# Service name: minecraft-server
+# Screen session: Minecraft_Server
+# Desktop launcher: Minecraft Java Server
+
 status "This script helps you setup a Minecraft-Java-Server (for any version)."
 
-#allow user to skip installation if executed from an update
-if [[ "$1" == "update" ]];then
+SERVICE_NAME="minecraft-server"
+SCREEN_NAME="Minecraft_Server"
+SERVER_FOLDER_NAME="Minecraft-Java-Server"
+DESKTOP_FILE="$HOME/.local/share/applications/Minecraft-Java-Server.desktop"
+CONFIG_DIR="$HOME/.config/minecraft-java-server"
+CONFIG_FILE="$CONFIG_DIR/server_dir"
+DEFAULT_SERVER_DIR="$HOME/$SERVER_FOLDER_NAME"
+
+
+ensure_server_dir() {
+  # Create the server folder. External drives under /media sometimes need sudo for
+  # folder creation, but the Minecraft server still needs the regular user to be
+  # able to write inside the final folder.
+
+  # check if folder exists and is writable
+  if [ -w ${server_dir%/*} ]; then
+    mkdir -p "$server_dir" 2>/dev/null || error "Could not create server directory: $server_dir"
+  else
+    sudo mkdir -p "$server_dir" 2>/dev/null || error "Could not create server directory: $server_dir"
+    # Best effort ownership/permissions. On exFAT these may be ignored, because
+    # ownership comes from mount options, but this helps on ext4 and normal folders.
+    sudo chown "$USER":"$USER" "$server_dir" 2>/dev/null || true
+    sudo chmod 775 "$server_dir" 2>/dev/null || true
+    touch "$server_dir/.write-test" 2>/dev/null || error "The chosen server directory exists, but is not writable by $USER:
+$server_dir
+
+Try this outside Pi-Apps:
+touch \"$server_dir/test-write.txt\"
+
+If that fails too, the path/drive is mounted without write access for $USER."
+    rm -f "$server_dir/.write-test"
+  fi
+}
+
+# allow user to skip installation if executed from an update
+if [[ "$1" == "update" ]]; then
   description="The Minecraft Java Server script was executed as part of an update to improve platform support.\nWould you like to check for newer versions of Minecraft to upgrade your server to or exit now?"
   userinput_func "$description" "Yes, check for newer Minecraft versions and upgrade my install" "No, leave my install alone and exit now"
   if [ "$output" == "No, leave my install alone and exit now" ]; then
@@ -15,13 +55,115 @@ fi
 # add jq to use in script
 install_packages jq || exit 1
 
-mkdir -p "$HOME/Minecraft-Java-Server"
-cd "$HOME/Minecraft-Java-Server" || error "Could not enter Minecraft-Java-Server folder."
+choose_server_directory() {
+  # On update, reuse the previously chosen directory when possible.
+  if [[ "$1" == "update" ]] && [ -f "$CONFIG_FILE" ]; then
+    server_dir="$(head -n 1 "$CONFIG_FILE")"
+    if [ -n "$server_dir" ]; then
+      status "Using existing Minecraft server folder:\n$server_dir"
+      ensure_server_dir
+      return
+    fi
+  fi
+
+  description="Where do you want your Minecraft Java Server files to live?\n\nThis installer defaults to:\n$DEFAULT_SERVER_DIR\n\nYou can also choose an already-mounted drive path, such as /media/$USER/MySSD/$SERVER_FOLDER_NAME.\n\nThe selected folder will be used for server files, start-server.sh, the desktop launcher, and the systemd service."
+
+  table=("Home folder: $DEFAULT_SERVER_DIR")
+
+  # Add currently mounted user media drives, if any. This does not permanently mount them.
+  if [ -d "/media/$USER" ]; then
+    while IFS= read -r mount_dir; do
+      [ -d "$mount_dir" ] || continue
+      candidate="$mount_dir/$SERVER_FOLDER_NAME"
+      table+=("Mounted drive: $candidate")
+    done < <(find "/media/$USER" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+  fi
+
+  table+=("Custom path")
+
+  userinput_func "$description" "${table[@]}"
+  selected_choice="$output"
+
+  case "$selected_choice" in
+    "Home folder: "*)
+      server_dir="$DEFAULT_SERVER_DIR"
+      ;;
+    "Mounted drive: "*)
+      server_dir="${selected_choice#Mounted drive: }"
+      ;;
+    "Custom path")
+      server_dir=$(yad --center --wrap \
+        --text "Enter the full path where the Minecraft server should be installed.\n\nExamples:\n$HOME/$SERVER_FOLDER_NAME\n/media/$USER/MySSD/$SERVER_FOLDER_NAME\n\nAvoid spaces in the path." \
+        --entry \
+        --entry-text "$DEFAULT_SERVER_DIR" \
+        --button="Use this path":0)
+      ;;
+    *)
+      server_dir="$DEFAULT_SERVER_DIR"
+      ;;
+  esac
+
+  if [ -z "$server_dir" ]; then
+    error "No server directory was selected. Exiting."
+  fi
+
+  # Expand leading ~ if user typed it.
+  server_dir="${server_dir/#\~/$HOME}"
+
+  # Normalize path if readlink supports -m.
+  if command -v readlink >/dev/null 2>&1; then
+    server_dir="$(readlink -m "$server_dir")"
+  fi
+
+  # Keep this simple and safe for systemd paths.
+  if [[ "$server_dir" =~ [[:space:]] ]]; then
+    error "The chosen path contains spaces:\n$server_dir\n\nPlease choose a path without spaces."
+  fi
+
+
+  ensure_server_dir
+
+  mkdir -p "$CONFIG_DIR"
+  printf '%s\n' "$server_dir" > "$CONFIG_FILE"
+
+  status "Minecraft server files will be installed in:\n$server_dir"
+}
+
+choose_server_directory "$1"
+
+ensure_server_dir
+cd "$server_dir" || error "Could not enter Minecraft server folder."
 
 description="What type of Minecraft server\ndo you want to run?"
 table=("Vanilla" "Fabric" "Forge" "Paper" "Folia" "Purpur")
 userinput_func "$description" "${table[@]}"
 server_category="$output"
+
+# Helper for PaperMC Fill v3 downloads.
+# PaperMC documents Fill v3 at fill.papermc.io and recommends stable builds.
+download_fill_project() {
+  PROJECT="$1"
+  VERSION="$2"
+  builds_response=$(wget -O- "https://fill.papermc.io/v3/projects/${PROJECT}/versions/${VERSION}/builds") || error "Could not fetch $PROJECT builds for $VERSION."
+
+  # Prefer the newest STABLE build. If none exists, fall back to the newest build so Folia/experimental projects can still be tested.
+  build_json=$(echo "$builds_response" | jq -c '([.[] | select(.channel == "STABLE")] | last) // (last)')
+
+  if [ -z "$build_json" ] || [ "$build_json" = "null" ]; then
+    error "No $PROJECT build was found for version $VERSION."
+  fi
+
+  server_jar="$(echo "$build_json" | jq -r '.downloads."server:default".name')"
+  download_url="$(echo "$build_json" | jq -r '.downloads."server:default".url')"
+  channel="$(echo "$build_json" | jq -r '.channel // "unknown"')"
+
+  if [ -z "$server_jar" ] || [ "$server_jar" = "null" ] || [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
+    error "Could not determine $PROJECT server jar or download URL for $VERSION."
+  fi
+
+  status "Selected $PROJECT $VERSION build channel: $channel"
+  wget -O "$server_jar" "$download_url" || exit 1
+}
 
 case "$server_category" in
   "Fabric")
@@ -61,9 +203,7 @@ case "$server_category" in
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_info=$(wget -O- https://fill.papermc.io/v3/projects/paper/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
-    server_jar="$(echo "$version_info" | jq -r '.name')"
-    wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
+    download_fill_project "paper" "$server_version"
     ;;
   "Folia")
     available_versions=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions | jq -r '.versions.[].version.id')
@@ -72,9 +212,7 @@ case "$server_category" in
     userinput_func "$description" "${table[@]}"
     server_version="$output"
     status "Selected $server_category version $server_version"
-    version_info=$(wget -O- https://fill.papermc.io/v3/projects/folia/versions/$server_version/builds/latest | jq -r '.downloads."server:default"')
-    server_jar="$(echo "$version_info" | jq -r '.name')"
-    wget -O "$server_jar" "$(echo "$version_info" | jq -r '.url')" || exit 1
+    download_fill_project "folia" "$server_version"
     ;;
   "Purpur")
     available_versions=$(wget -O- https://api.purpurmc.org/v2/purpur/ | jq -r '.versions | .[]')
@@ -103,9 +241,9 @@ case "$server_category" in
     ;;
 esac
 
-while [[ ! -a $(echo ${server_jar}) ]]; do
+while [[ ! -a "$server_jar" ]]; do
   description="Please use the website which has opened to download your chosen version of the Minecraft Java Server.\
-  \nAdd your ${server_jar} file to the folder opened $HOME/Minecraft-Java-Server and press OK.\
+  \nAdd your ${server_jar} file to the folder opened $server_dir and press OK.\
   \n\nYou have not added a ${server_jar}."
   table=("OK")
   userinput_func "$description" "${table[@]}"
@@ -206,10 +344,10 @@ case "$java_selection" in
   "Java 21")
     if package_available temurin-21-jre ;then
       install_packages temurin-21-jre || exit 1
+      java_location="/usr/lib/jvm/temurin-21-jre-$dpkg_arch/bin/java"
     else
       error "Java 21 is not available for your platform from Adoptium. Exiting the script."
     fi
-    java_location="/usr/lib/jvm/temurin-21-jre-$dpkg_arch/bin/java"
     ;;
   "Java 25")
     if package_available temurin-25-jre ;then
@@ -237,13 +375,10 @@ done
 if [[ "$server_category" == "Forge" ]]; then
   # run the server installer
   rm -f start-server.sh
-  $java_location -jar $HOME/Minecraft-Java-Server/${server_jar} --installServer || error "Failed to install forge server"
+  $java_location -jar "$server_dir/${server_jar}" --installServer || error "Failed to install forge server"
   rm -f ${server_jar}
 
   # forge has MANY ways to launch depending on the version
-  # for some reason they like re-inventing the wheel and doing things differently than everyone else
-  # the below covers all the ways I have seen from 1.6.4 - 1.18.1
-  # its possible I missed an obscure format that was only used once... please create an issue if that is the case
   if [[ -f "minecraftforge-universal-$installer_version.jar" ]]; then
     server_jar="minecraftforge-universal-$installer_version.jar"
   elif [[ -f "forge-$installer_version-universal.jar" ]]; then
@@ -254,7 +389,6 @@ if [[ "$server_category" == "Forge" ]]; then
     server_jar="forge-$installer_version.jar"
   elif [[ -f "run.sh" ]]; then
     # set server_jar to empty to skip start-server.sh universal script creation
-    # this is the most up to date forge launch format where their own run.sh file is provided
     server_jar=""
     sed -i "s:java:${java_location}:g" run.sh
     sed -i 's:"$@":nogui:g' run.sh
@@ -267,60 +401,70 @@ if [[ "$server_category" == "Forge" ]]; then
 fi
 
 if [ -n "$server_jar" ]; then
-  sh -c "cat > $HOME/Minecraft-Java-Server/start-server.sh << _EOF_
+  cat > "$server_dir/start-server.sh" <<EOF
 #!/bin/bash
 echo 'Minecraft Server starting'
-$java_location $jvm_args -jar $HOME/Minecraft-Java-Server/${server_jar} nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
+cd "$server_dir" || exit 1
+"$java_location" $jvm_args -jar "$server_dir/${server_jar}" nogui || (echo -e '\e[91mMinecraft Server has crashed or could not start\e[0m'; sleep 10)
 echo 'Minecraft Server has stopped'
 sleep 3
-_EOF_"
-  chmod +x start-server.sh
+EOF
+  chmod +x "$server_dir/start-server.sh"
 fi
 
 # sign eula without starting server
-echo "eula=true" > eula.txt
+echo "eula=true" > "$server_dir/eula.txt"
 
 # make mods directory
-mkdir mods
+mkdir -p "$server_dir/mods"
 
 mkdir -p "$HOME/.local/share/applications"
-tee "$HOME/.local/share/applications/Minecraft-Java-Server.desktop" <<EOF
+tee "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
 Name=Minecraft Java Server
-Exec=bash -c "sudo systemctl start minecraft-server; sleep 3; screen -r Minecraft_Server; if [ \$? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart minecraft-server; sleep 5; screen -r Minecraft_Server; fi"
-Path=$HOME/Minecraft-Java-Server
+Exec=bash -c "sudo systemctl start $SERVICE_NAME; sleep 3; screen -r $SCREEN_NAME; if [ \$? == 1 ]; then echo 'The minecraft server has exited without the service stopping, restarting the service for you'; sudo systemctl restart $SERVICE_NAME; sleep 5; screen -r $SCREEN_NAME; fi"
+Path=$server_dir
 Icon=${DIRECTORY}/apps/Minecraft Java Server/icon-64.png
 Type=Application
 Categories=Game
 Terminal=true
 EOF
+
 # used for absolute executable path (necessary on some OSes)
 screen_location=$(which screen)
 sleep_location=$(which sleep)
 
-sudo tee "/etc/systemd/system/minecraft-server.service" <<EOF
+sudo tee "/etc/systemd/system/$SERVICE_NAME.service" <<EOF
+[Unit]
+Description=Minecraft Java Server
+RequiresMountsFor=$server_dir
+After=network.target
+
 [Service]
 RemainAfterExit=yes
-WorkingDirectory=$HOME/Minecraft-Java-Server
+WorkingDirectory=$server_dir
 User=$USER
 # Start Screen, Java, and Minecraft
-ExecStart=$screen_location -S Minecraft_Server -U -d -m $HOME/Minecraft-Java-Server/start-server.sh
+ExecStart=$screen_location -S $SCREEN_NAME -U -d -m $server_dir/start-server.sh
 # Tell Minecraft to gracefully stop.
 # Ending Minecraft will terminate Java
 # systemd will kill Screen after the 10-second delay. No explicit kill for Screen needed
-ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "say SERVER SHUTTING DOWN. Saving map..."\015'
-ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "save-all"\015'
-ExecStop=$screen_location -p 0 -S Minecraft_Server -X eval 'stuff "stop"\015'
+ExecStop=$screen_location -p 0 -S $SCREEN_NAME -X eval 'stuff "say SERVER SHUTTING DOWN. Saving map..."\015'
+ExecStop=$screen_location -p 0 -S $SCREEN_NAME -X eval 'stuff "save-all"\015'
+ExecStop=$screen_location -p 0 -S $SCREEN_NAME -X eval 'stuff "stop"\015'
 ExecStop=$sleep_location 10
+
 [Install]
 WantedBy=multi-user.target
 EOF
+
 echo
 
 # update services
 sudo systemctl daemon-reload
-sudo systemctl disable minecraft-server
+sudo systemctl disable "$SERVICE_NAME"
 
+status "Your Minecraft server folder is:\n$server_dir"
 status "Your IP address is one of the following: 
 $(hostname -I | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 status "The IP address is used to play on your local network
@@ -328,9 +472,9 @@ status "The IP address is used to play on your local network
 echo
 status_green "You might want to copy this down:
 To run: Menu -> Games -> Minecraft Java Server
-Attach to a server in the background with: screen -r Minecraft_Server
+Attach to a server in the background with: screen -r $SCREEN_NAME
 Detach from a running server session with: CTRL+A then D
-To start from a terminal: sudo systemctl start minecraft-server
-To stop the server: sudo systemctl stop minecraft-server
-To start now, start on boot, and stop on shutdown: sudo systemctl enable --now minecraft-server
+To start from a terminal: sudo systemctl start $SERVICE_NAME
+To stop the server: sudo systemctl stop $SERVICE_NAME
+To start now, start on boot, and stop on shutdown: sudo systemctl enable --now $SERVICE_NAME
 "
