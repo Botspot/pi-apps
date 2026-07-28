@@ -498,4 +498,11 @@ Defaults      env_keep += DEBIAN_FRONTEND
 _EOF_"
 EOF
 
+#fix chrome app adding repo, not adding gpg key, and not removing repo on uninstall
+runonce <<"EOF"
+  if [ -f /etc/apt/sources.list.d/google-chrome.sources ] && grep 'Signed-By: /usr/share/keyrings/google-chrome.gpg'' /etc/apt/sources.list.d/google-chrome.sources && [ ! -f /usr/share/keyrings/google-chrome.gpg ];then
+    sudo_popup rm -f /etc/apt/sources.list.d/google-chrome.sources
+  fi
+EOF
+
 true
