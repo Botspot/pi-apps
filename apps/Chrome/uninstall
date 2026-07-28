@@ -6,4 +6,4 @@ if [ "$1" != update ];then
   #google-chrome stays installed, probably similar to brave browser being recommended as x-www-browser causing it to not autoremove. Force removal.
   sudo apt purge -y 'google-chrome-*'
 fi
-sudo rm -f /etc/default/google-chrome
+sudo rm -f /etc/default/google-chrome /etc/apt/sources.list.d/google-chrome.sources /usr/share/keyrings/google-chrome.gpg

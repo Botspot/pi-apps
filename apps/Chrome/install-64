@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#get gpg key
+wget -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | sudo tee /usr/share/keyrings/google-chrome.gpg > /dev/null
+if [ "${PIPESTATUS[1]}" != 0 ];then
+  error "Failed to get google-chrome.gpg signing key"
+fi
+
 #add repo, modified to only allow arm64 architecture to prevent armhf error on multiarch
 echo 'X-Repolib-Name: Google Chrome
 Types: deb
