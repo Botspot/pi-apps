@@ -1,0 +1,7 @@
+Google Chrome browser - stable, beta, unstable, canary versions
+This is Google's official Chrome ARM Linux build. Our installer will offer the stable version, but you can also click the checkbox to install Beta, Unstable, and Canary versions if you prefer to run the latest version.
+
+Updates are not handled by Pi-Apps, but through normal apt package updates.
+
+Note: for privacy reasons, we recommend most users continue using Chromium builds. The Chromium build from Pi OS is open source and has minor performance tweaks and better default privacy settings. It also supports Widevine video playback and Google account sync, if you use the Better Chromium app from Pi-Apps.
+If you are not on Pi OS and want the Pi OS version of Chromium, go visit the Downgrade Chromium app on Pi-Apps.

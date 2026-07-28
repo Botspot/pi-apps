@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#Allow packages required by this app to be uninstalled
+if [ "$1" != update ];then
+  purge_packages || exit 1
+  #google-chrome stays installed, probably similar to brave browser being recommended as x-www-browser causing it to not autoremove. Force removal.
+  sudo apt purge -y 'google-chrome-*'
+fi
+sudo rm -f /etc/default/google-chrome

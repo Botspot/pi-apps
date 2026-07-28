@@ -1,0 +1,80 @@
+#!/bin/bash
+
+#add repo, modified to only allow arm64 architecture to prevent armhf error on multiarch
+echo 'X-Repolib-Name: Google Chrome
+Types: deb
+URIs: https://dl.google.com/linux/chrome-stable/deb/
+Suites: stable
+Components: main
+Architectures: arm64
+Signed-By: /usr/share/keyrings/google-chrome.gpg' | sudo tee /etc/apt/sources.list.d/google-chrome.sources >/dev/null
+
+#prevent chrome update from deleting the above fix to the repo
+echo 'repo_add_once=false' | sudo tee /etc/default/google-chrome >/dev/null
+
+if [ "$1" == update ];then
+  #if updating, the uninstall script did not uninstall chrome. Simply upgrade it with apt.
+  apt_update
+  to_upgrade=()
+  if package_installed google-chrome-stable ;then
+    to_upgrade+=(google-chrome-stable)
+  fi
+  if package_installed google-chrome-unstable ;then
+    to_upgrade+=(google-chrome-unstable)
+  fi
+  if package_installed google-chrome-canary ;then
+    to_upgrade+=(google-chrome-canary)
+  fi
+  if package_installed google-chrome-beta ;then
+    to_upgrade+=(google-chrome-beta)
+  fi
+  sudo apt install --only-upgrade "${to_upgrade[@]}"
+else
+  #ask user which chrome version they want
+  wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/chrome_beta.png -O /tmp/chrome_beta.png &
+  wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/chrome_dev.png -O /tmp/chrome_dev.png &
+  wget https://github.com/Pi-Apps-Coders/files/releases/download/large-files/chrome_canary.png -O /tmp/chrome_canary.png &
+  wait
+  
+  #determine reasonable initial checkbox state, based on which versions are installed now
+  package_installed google-chrome-stable && checkbox[0]=TRUE || checkbox[0]=FALSE
+  package_installed google-chrome-beta && checkbox[1]=TRUE || checkbox[1]=FALSE
+  package_installed google-chrome-unstable && checkbox[2]=TRUE || checkbox[2]=FALSE
+  package_installed google-chrome-canary && checkbox[3]=TRUE || checkbox[3]=FALSE
+  
+  #if none are installed now, then preselect the stable chrome version
+  if [ "${checkbox[*]}" == 'FALSE FALSE FALSE FALSE' ];then
+    checkbox[0]=TRUE
+  fi
+  
+  #yadflags array is unset in app install scripts
+  yadflags=(--class Pi-Apps --name "Pi-Apps" --window-icon="${DIRECTORY}/icons/logo.png" --separator='\n')
+  
+  output="$(echo -e "${checkbox[0]}\n$(dirname "$0")/icon-64.png\n<b>Chrome</b> (recommended)
+${checkbox[1]}\n/tmp/chrome_beta.png\nChrome Beta
+${checkbox[2]}\n/tmp/chrome_dev.png\nChrome Unstable
+${checkbox[3]}\n/tmp/chrome_canary.png\nChrome Canary" | yad "${yadflags[@]}" --title='Pi-Apps Chrome installer' --text='Choose Chrome version(s) to install:' \
+    --list --checklist --column=:CHK --column=:IMG --column=name --no-headers --dclick-action=true --print-column=3 \
+    --button=OK:0 --width=400 --height=350 --no-selection)"
+  
+  rm -f /tmp/chrome_beta.png /tmp/chrome_dev.png /tmp/chrome_canary.png
+  
+  to_install=()
+  if [[ "$output " == *'<b>Chrome</b> (recommended)'* ]];then
+    to_install+=(google-chrome-stable)
+  fi
+  if [[ "$output " == *'Chrome Beta'* ]];then
+    to_install+=(google-chrome-beta)
+  fi
+  if [[ "$output " == *'Chrome Unstable'* ]];then
+    to_install+=(google-chrome-unstable)
+  fi
+  if [[ "$output " == *'Chrome Canary'* ]];then
+    to_install+=(google-chrome-canary)
+  fi
+  
+  if [ -z "$to_install" ];then
+    error "User error: At least one Chrome version must be selected."
+  fi
+  install_packages "${to_install[@]}" || exit 1
+fi
