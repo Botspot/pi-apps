@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ "$(get_codename)" == bookworm ];then
-  install_packages http://http.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2025.1_all.deb || exit 1
+  install_packages https://deb.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2025.1_all.deb || exit 1
   if [ $arch == 32 ]; then
-    install_packages http://http.us.debian.org/debian/pool/main/g/glew/libglew2.2_2.2.0-4+b1_armhf.deb || exit 1
+    install_packages https://deb.debian.org/debian/pool/main/g/glew/libglew2.2_2.2.0-4+b1_armhf.deb || exit 1
   fi
   echo "deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware" | sudo tee /etc/apt/sources.list.d/bookworm-backports.list >/dev/null
   install_packages -t bookworm-backports kicad kicad-libraries || exit 1

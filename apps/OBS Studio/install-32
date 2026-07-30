@@ -43,7 +43,7 @@ if [ "$__os_codename" == "bullseye" ]; then
     fi
     # add debian keyring
     rm -f /tmp/debian-archive-keyring.deb
-    wget -qO /tmp/debian-archive-keyring.deb http://ftp.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2021.1.1+deb11u1_all.deb
+    wget -qO /tmp/debian-archive-keyring.deb https://deb.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2021.1.1+deb11u1_all.deb || error "Failed to download debian-archive-keyring!"
     apt_lock_wait
     sudo apt install -y /tmp/debian-archive-keyring.deb || error "Failed to install debian-archive-keyring"
     rm -f /tmp/debian-archive-keyring.deb
