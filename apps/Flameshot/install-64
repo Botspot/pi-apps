@@ -1,7 +1,6 @@
 #!/bin/bash
 
-version=12.1.0
-install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-10.arm64.deb || exit 1
+install_packages flameshot || exit 1
 
 echo '#!/bin/bash
 
