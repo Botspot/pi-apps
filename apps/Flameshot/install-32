@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version=12.1.0
-install_packages https://github.com/flameshot-org/flameshot/releases/download/v${version}/flameshot-${version}-1.debian-10.armhf.deb || exit 1
+# Install Flameshot from distro repositories (available on Debian 10+ / Ubuntu 18.04+)
+install_packages flameshot || exit 1
 
 echo '#!/bin/bash
 

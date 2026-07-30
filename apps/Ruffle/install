@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=nightly-2026-06-05
+version=nightly-2026-07-27
 
 # Purge any existing Ruffle instances if already found
 status "Purging any existing Ruffle copies and code if found"
@@ -10,50 +10,74 @@ if ! [ "$1" == update ];then
   sudo rm -rf /opt/ruffle
 fi
 
-status "Checking Rust compiler for compatibility"
-
-# simplified version checking
-if package_is_new_enough rustc 1.89.0; then echo "Rust compiler available in the package repositories is new enough, installing from package repositories" && rust_too_old=0; else echo "Rust compiler is too old in available package repositories, installing latest version via rustup" && rust_too_old=1; fi
-
-if [ "$rust_too_old" -eq "1" ]; then
-    echo "Installing newer Rust toolchain"
-    wget -O /tmp/rustup-init.sh https://sh.rustup.rs
-    sudo chmod +x /tmp/rustup-init.sh
-    /tmp/rustup-init.sh -y
-    . "$HOME/.cargo/env"
-    status "Installing dependencies without a Rust toolchain"
-    install_packages libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+# For 64-bit ARM, use pre-built binary (fast, reliable)
+if [ "$arch" == 64 ]; then
+  status "Downloading Ruffle pre-built binary for ARM64"
+  # Convert tag dashes to underscores for filename: nightly-2026-07-27 -> nightly-2026_07_27
+  filename_version="${version//-/_}"
+  wget "https://github.com/ruffle-rs/ruffle/releases/download/${version}/ruffle-${filename_version}-linux-aarch64.tar.gz" -O /tmp/ruffle.tar.gz || error "Failed to download Ruffle!"
+  
+  if [ "$1" == update ]; then
+    sudo tar xf /tmp/ruffle.tar.gz -C /opt/ruffle --strip-components=1 ruffle || error "Failed to extract Ruffle binary!"
+    rm -f /tmp/ruffle.tar.gz
+    status_green "Ruffle updated successfully"
+    exit 0
+  fi
+  
+  sudo mkdir -p /opt/ruffle || error "Failed to make Ruffle folder in /opt!"
+  sudo tar xf /tmp/ruffle.tar.gz -C /opt/ruffle --strip-components=1 || error "Failed to extract Ruffle!"
+  rm -f /tmp/ruffle.tar.gz
 else
-    echo "Rust too old variable is at 0, installing Rust toolchain and dependencies via distro's repositories"
-    install_packages cargo rustc libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+  # For 32-bit ARM, compile from source (no pre-built binary available)
+  status "Checking Rust compiler for compatibility"
+
+  # simplified version checking
+  if package_is_new_enough rustc 1.89.0; then echo "Rust compiler available in the package repositories is new enough, installing from package repositories" && rust_too_old=0; else echo "Rust compiler is too old in available package repositories, installing latest version via rustup" && rust_too_old=1; fi
+
+  if [ "$rust_too_old" -eq "1" ]; then
+      echo "Installing newer Rust toolchain"
+      wget -O /tmp/rustup-init.sh https://sh.rustup.rs
+      sudo chmod +x /tmp/rustup-init.sh
+      /tmp/rustup-init.sh -y
+      . "$HOME/.cargo/env"
+      status "Installing dependencies without a Rust toolchain"
+      install_packages libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+  else
+      echo "Rust too old variable is at 0, installing Rust toolchain and dependencies via distro's repositories"
+      install_packages cargo rustc libasound2-dev libxcb-shape0-dev libxcb-xfixes0-dev libgtk-3-dev libudev-dev libxcb-xinput-dev libxcb-xkb-dev libxcb-cursor-dev default-jre-headless cmake g++ || exit 1
+  fi
+
+  # Download Ruffle source code latest snapshot and compile it
+  status "Downloading Ruffle source code"
+  git_clone -b "$version" https://github.com/ruffle-rs/ruffle || error 'Failed to clone Ruffle repository!'
+
+  status "Compiling Ruffle, this will take a bit"
+  cd ~/ruffle
+  cargo build --release --package=ruffle_desktop -j$(nproc) || error "Failed to compile Ruffle!"
+  status_green "Compile success"
+
+  # Copy compiled build
+  status "Copying release to /opt/ruffle"
+  cd target/release 
+  mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
+  
+  # Only install back Ruffle binary if it's in update mode 
+  if [ "$1" == update ];then
+    sudo cp ruffle /opt/ruffle/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle/ruffle!"
+    status "Purging downloaded Ruffle source code version snapshot"
+    sudo rm -rf ~/ruffle
+    status_green "Ruffle updated successfully"
+    exit 0
+  fi
+  
+  sudo mkdir /opt/ruffle || error "Failed to make Ruffle folder in /opt!" 
+  sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!" 
 fi
 
-# Download Ruffle source code latest snapshot and compile it
-
-status "Downloading Ruffle source code"
-git_clone -b "$version" https://github.com/ruffle-rs/ruffle || error 'Failed to clone Ruffle repository!'
-
-status "Compiling Ruffle, this will take a bit"
-cd ~/ruffle
-cargo build --release --package=ruffle_desktop -j$(nproc) || error "Failed to compile Ruffle!"
-status_green "Compile success"
-
-# Copy compiled build
-status "Copying release to /opt/ruffle"
-cd target/release 
-mv ruffle_desktop ruffle || error "Failed to rename Ruffle binary!"
-# Only install back Ruffle binary if it's in update mode 
-if [ "$1" == update ];then
-  sudo cp ruffle /opt/ruffle/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle/ruffle!"
-  status "Purging downloaded Ruffle source code version snapshot"
-  sudo rm -rf ~/ruffle
-  exit 0
-fi
-sudo mkdir /opt/ruffle || error "Failed to make Ruffle folder in /opt!" 
-sudo cp ruffle /opt/ruffle || error "Failed to copy Ruffle binary to /opt/ruffle!" 
+# Copy app icon
 sudo cp "$(dirname "$0")/icon-64.png" /opt/ruffle || error "Failed to copy Ruffle icon to /opt/ruffle!" 
 
-# Make command asociations
+# Make terminal command
 status "Making terminal command..."
 echo '#!/bin/bash
 /opt/ruffle/ruffle "$@"' | sudo tee /usr/local/bin/ruffle >/dev/null
