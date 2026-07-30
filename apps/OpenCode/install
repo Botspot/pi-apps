@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ "$arch" == 32 ]; then
+  error "OpenCode doesn't support 32-bit ARM. You'll need a 64-bit OS."
+  exit 1
+fi
+
+install_packages curl ca-certificates || exit 1
+
+version=$(curl -sI "https://github.com/anomalyco/opencode/releases/latest" | grep -i "location:" | sed 's/.*\/v//;s/\r//')
+[ -z "$version" ] && version=1.18.10
+
+status "Downloading OpenCode v${version}..."
+wget "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-linux-arm64.tar.gz" -O /tmp/opencode.tar.gz || error "Failed to download OpenCode!"
+
+sudo mkdir -p /opt/opencode/bin || error "Failed to create /opt/opencode/bin!"
+
+if [ "$1" == update ]; then
+  sudo tar xf /tmp/opencode.tar.gz -C /opt/opencode/bin/ || error "Failed to extract OpenCode!"
+  rm -f /tmp/opencode.tar.gz
+  sudo chmod +x /opt/opencode/bin/opencode
+  status_green "OpenCode updated to v${version}"
+  exit 0
+fi
+
+sudo tar xf /tmp/opencode.tar.gz -C /opt/opencode/bin/ || error "Failed to extract OpenCode!"
+rm -f /tmp/opencode.tar.gz
+sudo chmod +x /opt/opencode/bin/opencode || error "Failed to make OpenCode executable!"
+
+sudo ln -sf /opt/opencode/bin/opencode /usr/local/bin/opencode || error "Failed to create OpenCode symlink!"
+
+sudo cp "$(dirname "$0")/icon-64.png" /opt/opencode/ || error "Failed to copy icon!"
+
+echo "[Desktop Entry]
+Type=Application
+Name=OpenCode
+Comment=AI coding agent CLI with 50+ provider support
+Exec=opencode
+Icon=/opt/opencode/icon-64.png
+Terminal=true
+Categories=Development;Programming;
+" | sudo tee /usr/share/applications/opencode.desktop >/dev/null
+
+status_green "OpenCode v${version} installed successfully!"
+status "Run 'opencode' in a terminal to start."
