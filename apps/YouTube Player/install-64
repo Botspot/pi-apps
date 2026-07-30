@@ -4,7 +4,7 @@
 pipx_install yt-dlp || error "pipx failed to install yt-dlp, which is needed for the YouTube Player app!"
 
 #yt-dlp needs deno to solve youtube js captchas (see https://github.com/yt-dlp/yt-dlp/wiki/EJS)
-"${DIRECTORY}/manage" install-if-not-installed 'Node.js' || error "Node.js is required for YouTube PlayerHTTPS File Server but it failed to install!"
+"${DIRECTORY}/manage" install-if-not-installed 'Node.js' || error "Node.js is required for YouTube Player but it failed to install!"
 
 #initialize npm
 export NVM_DIR="$HOME/.nvm"
@@ -44,7 +44,12 @@ sudo xdg-icon-resource forceupdate --mode system
 
 #copy menu launcher to a sensible location
 sudo mkdir -p /usr/local/share/applications
-sudo cp --no-preserve=all /usr/local/share/perl/*/auto/share/dist/WWW-PipeViewer/gtk-pipe-viewer.desktop /usr/local/share/applications
+desktop_file=$(find /usr/local/share/perl -path "*/WWW-PipeViewer/gtk-pipe-viewer.desktop" 2>/dev/null | head -1)
+if [ -n "$desktop_file" ]; then
+  sudo cp --no-preserve=all "$desktop_file" /usr/local/share/applications/ || error "Failed to copy desktop file!"
+else
+  error "Could not find gtk-pipe-viewer.desktop after installation!"
+fi
 
 #change its name in menu launcher and in app, to improve UX because nobody likes "gtk pipe viewer" name
 sudo sed -i 's/Name=GTK Pipe Viewer/Name=YouTube Player/g' /usr/local/share/applications/gtk-pipe-viewer.desktop
@@ -60,4 +65,9 @@ sudo sed -i 's/resolution    => '\''best'\'',/resolution    => 1080,/g' /usr/loc
 sudo sed -i 's/resolution       => '\''best'\'',/resolution       => 1080,/g' /usr/local/bin/gtk-pipe-viewer
 
 #make local desktop launcher that uses pi-apps api to update yt-dlp on every launch
-sed 's|Exec=.*|Exec=bash -c "'${DIRECTORY}'/etc/terminal-run "\\\""app='\''YouTube Player'\'' '${DIRECTORY}'/api pipx_install yt-dlp"\\\"" '\''Updating yt-dlp...'\'' ; gtk-pipe-viewer"|g' /usr/local/share/applications/gtk-pipe-viewer.desktop > ~/.local/share/applications/gtk-pipe-viewer.desktop
+mkdir -p ~/.local/share/applications
+if [ -f /usr/local/share/applications/gtk-pipe-viewer.desktop ]; then
+  sed 's|Exec=.*|Exec=bash -c "'${DIRECTORY}'/etc/terminal-run "\\\""app='\''YouTube Player'\'' '${DIRECTORY}'/api pipx_install yt-dlp"\\\"" '\''Updating yt-dlp...'\'' ; gtk-pipe-viewer"|g' /usr/local/share/applications/gtk-pipe-viewer.desktop > ~/.local/share/applications/gtk-pipe-viewer.desktop
+else
+  error "gtk-pipe-viewer.desktop not found in /usr/local/share/applications!"
+fi
