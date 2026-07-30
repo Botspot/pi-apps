@@ -1,4 +1,5 @@
 #!/bin/bash
 # Get dependencies
 install_packages yad systemd-container xserver-xephyr expect || exit 1
-wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+script=$(wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update) || error "Failed to download Pi Power Tools update script!"
+bash <<< "$script" || error "Pi Power Tools updater script failed!"
