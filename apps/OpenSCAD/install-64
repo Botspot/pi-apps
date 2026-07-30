@@ -15,4 +15,4 @@ URIs: https://download.opensuse.org/repositories/home:/t-paul/${sources_codename
 Architectures: arm64
 Signed-By: /etc/apt/trusted.gpg.d/obs-openscad-nightly.asc" | sudo tee /etc/apt/sources.list.d/obs-openscad-nightly.sources >/dev/null || error "Failed to write repo file"
 
-install_packages openscad-nightly || exit 1
+install_packages openscad-nightly
