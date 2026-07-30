@@ -2,7 +2,7 @@
 
 version=1.12.7
 
-install_packages libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libuuid1 libsecret-1-0 libappindicator3-1
+install_packages libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 xdg-utils libatspi2.0-0 libuuid1 libsecret-1-0 libappindicator3-1 || exit 1
 
 wget -O "/tmp/obsidian-${version}-arm64.tar.gz" "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}-arm64.tar.gz" || exit 1
 tar -xf "/tmp/obsidian-${version}-arm64.tar.gz" -C /tmp || error "Failed to extract!"
