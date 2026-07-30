@@ -1,14 +1,8 @@
 #!/bin/bash
 
-if [ "$arch" == 32 ]; then
-  error "OpenCode doesn't support 32-bit ARM. You'll need a 64-bit OS."
-  exit 1
-fi
-
 install_packages curl ca-certificates || exit 1
 
-version=$(curl -sI "https://github.com/anomalyco/opencode/releases/latest" | grep -i "location:" | sed 's/.*\/v//;s/\r//')
-[ -z "$version" ] && version=1.18.10
+version=1.18.10
 
 status "Downloading OpenCode v${version}..."
 wget "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-linux-arm64.tar.gz" -O /tmp/opencode.tar.gz || error "Failed to download OpenCode!"
