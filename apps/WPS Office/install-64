@@ -3,14 +3,14 @@
 if package_is_new_enough firejail 0.9.58 ;then
   firejail_package="firejail"
 else
-  firejail_package="http://ports.ubuntu.com/pool/universe/f/firejail/firejail_0.9.62-3ubuntu0.1_arm64.deb"
+  firejail_package="https://ports.ubuntu.com/pool/universe/f/firejail/firejail_0.9.62-3ubuntu0.1_arm64.deb"
 fi
 
 #install libwebp6 and libtiff5 to get PDF export working
 if package_available libwebp6 && package_available libtiff5 ;then
   install_packages "$firejail_package" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wps-office_11.1.0.11720_arm64.deb" libwebp6 libtiff5 ttf-mscorefonts-installer x11-utils wmctrl || exit 1
 else
-  install_packages "$firejail_package" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wps-office_11.1.0.11720_arm64.deb" ttf-mscorefonts-installer x11-utils wmctrl "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-2_arm64.deb" "http://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "http://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
+  install_packages "$firejail_package" "https://github.com/Pi-Apps-Coders/files/releases/download/large-files/wps-office_11.1.0.11720_arm64.deb" ttf-mscorefonts-installer x11-utils wmctrl "https://ftp.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-2_arm64.deb" "https://ftp.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.1-2.1+deb11u2_arm64.deb" "https://ftp.debian.org/debian/pool/main/t/tiff/libtiff5_4.2.0-1+deb11u5_arm64.deb" || exit 1
 fi
 
 #make icon symlinks that correspond to WM_CLASS so correct icon is set on Wayland (for main wps window only)
