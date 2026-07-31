@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Pi-Apps uninstall script for Pi Dashboard
+# Removes the app, virtual environment, and desktop shortcut.
+# Preserves the user database so settings/accounts survive a reinstall.
+
+set -e
+
+INSTALL_DIR="$HOME/Pi-Dashboard"
+
+# Back up the database before removing everything.
+if [ -f "$INSTALL_DIR/pi_dashboard.db" ]; then
+  echo "Backing up database to $HOME/pi_dashboard_backup.db …"
+  cp "$INSTALL_DIR/pi_dashboard.db" "$HOME/pi_dashboard_backup.db"
+  echo "Your user accounts and settings have been saved to ~/pi_dashboard_backup.db."
+  echo "If you reinstall, the database will be restored automatically."
+fi
+
+echo "Removing Pi Dashboard…"
+rm -rf "$INSTALL_DIR" || error "Failed to remove $INSTALL_DIR"
+
+# Remove desktop shortcuts.
+sudo rm -f /usr/share/applications/pi-dashboard.desktop 2>/dev/null || true
+rm -f "$HOME/.local/share/applications/pi-dashboard.desktop" 2>/dev/null || true
+
+echo ""
+echo "Pi Dashboard has been uninstalled."
+if [ -f "$HOME/pi_dashboard_backup.db" ]; then
+  echo "Your database backup is at: $HOME/pi_dashboard_backup.db"
+fi
+echo ""

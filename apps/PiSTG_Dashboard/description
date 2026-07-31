@@ -1,0 +1,15 @@
+PiSTG
+A clean, modern web dashboard for your Raspberry Pi — access it from any device on your local network.
+
+Features:
+- Live system monitoring: CPU usage, memory, CPU temperature, disk space, network traffic, and uptime with real-time graphs
+- Process manager: view all running processes live, search by name or PID, and stop any process (admin only)
+- File explorer: browse, download, upload, and delete files with per-user folder permissions
+- Multi-user with roles: admin can create users, assign folder access, and manage passwords
+- System alerts: get notified when CPU temperature, memory, or disk usage exceeds your thresholds
+- Theme customization: 5 built-in themes plus custom accent colors, saved per user
+- Mobile-friendly: responsive layout that works on phones, tablets, and desktops
+
+After installing, launch it from the desktop menu (System → Pi Dashboard) or run ~/Pi-Dashboard/launch.sh, then open http://<your-pi-ip>:5000 in any browser.
+
+Default login: admin / admin123 (change this immediately from the Profile page).
