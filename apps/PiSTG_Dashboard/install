@@ -14,7 +14,7 @@ if ! type error >/dev/null 2>&1; then
 fi
 
 INSTALL_DIR="$HOME/Pi-Dashboard"
-REPO_URL="${PI_DASHBOARD_REPO:-https://github.com/yourusername/pi-dashboard.git}"
+REPO_URL="${PI_DASHBOARD_REPO:-https://github.com/stghecker/raspberry-pi-interface-server}"
 BRANCH="${PI_DASHBOARD_BRANCH:-main}"
 
 # Run a command with root privileges if needed.
