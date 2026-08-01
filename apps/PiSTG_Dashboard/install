@@ -13,7 +13,7 @@ if ! type error >/dev/null 2>&1; then
   }
 fi
 
-INSTALL_DIR="$HOME/Pi-Dashboard"
+INSTALL_DIR="/opt/Pi-Dashboard"
 REPO_URL="${PI_DASHBOARD_REPO:-https://github.com/stghecker/raspberry-pi-interface-server}"
 BRANCH="${PI_DASHBOARD_BRANCH:-main}"
 
@@ -24,12 +24,11 @@ as_root() {
   elif command -v sudo >/dev/null 2>&1; then
     sudo "$@"
   else
-    # No sudo available — try directly (may fail on permission errors).
     "$@"
   fi
 }
 
-# Install system dependencies.
+# Install system dependencies (Fixed package names)
 echo "Checking system dependencies…"
 NEED_APT=0
 command -v python3 >/dev/null 2>&1 || NEED_APT=1
@@ -38,116 +37,76 @@ command -v pip3 >/dev/null 2>&1 || python3 -m pip --version >/dev/null 2>&1 || N
 
 if [ "$NEED_APT" -eq 1 ]; then
   if command -v install_packages >/dev/null 2>&1; then
-    install_packages python3 python3-venn python3-pip || error "Failed to install system dependencies!"
+    install_packages python3 python3-venv python3-pip || error "Failed to install system dependencies!"
   else
     as_root apt-get update -y || error "apt-get update failed!"
-    as_root apt-get install -y python3 python3-venn python3-pip || error "Failed to install python3, python3-venn, and python3-pip!"
+    as_root apt-get install -y python3 python3-venv python3-pip || error "Failed to install python3-venv packages!"
   fi
-else
-  echo "System dependencies already present."
 fi
 
-# Remove any previous installation (but preserve the database if it exists).
-DB_BACKUP=""
-if [ -f "$HOME/pi_dashboard_backup.db" ]; then
-  DB_BACKUP="$HOME/pi_dashboard_backup.db"
-elif [ -f /tmp/pi_dashboard_backup.db ]; then
-  DB_BACKUP="/tmp/pi_dashboard_backup.db"
-fi
-
-if [ -d "$INSTALL_DIR" ]; then
-  echo "Previous installation found at $INSTALL_DIR — removing old files (database will be preserved)."
-  if [ -f "$INSTALL_DIR/pi_dashboard.db" ]; then
-    cp "$INSTALL_DIR/pi_dashboard.db" /tmp/pi_dashboard_backup.db
-    DB_BACKUP="${DB_BACKUP:-/tmp/pi_dashboard_backup.db}"
-  fi
-  rm -rf "$INSTALL_DIR"
-fi
+# Set up safe structural location directory
+as_root mkdir -p "$INSTALL_DIR"
+as_root chown -R $(whoami):$(whoami) "$INSTALL_DIR"
 
 echo "Downloading Pi Dashboard…"
-if [ -n "$PI_DASHBOARD_LOCAL" ] && [ -d "$PI_DASHBOARD_LOCAL" ]; then
-  # Use a local directory (useful for development / testing).
-  cp -r "$PI_DASHBOARD_LOCAL" "$INSTALL_DIR"
-elif [ -d "$PI_DASHBOARD_REPO" ]; then
-  cp -r "$PI_DASHBOARD_REPO" "$INSTALL_DIR"
-else
-  git clone --depth 1 -b "$BRANCH" "$REPO_URL" "$INSTALL_DIR" || error "Failed to clone repository! Check your internet connection and that the URL is correct."
+if [ -d "$INSTALL_DIR/.git" ]; then
+  rm -rf "$INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
 fi
+git clone --depth 1 -b "$BRANCH" "$REPO_URL" "$INSTALL_DIR" || error "Failed to clone repository!"
 
-# Restore database backup if we had one.
-if [ -n "$DB_BACKUP" ] && [ -f "$DB_BACKUP" ]; then
-  cp "$DB_BACKUP" "$INSTALL_DIR/pi_dashboard.db"
-  echo "Previous database restored."
-fi
-
-cd "$INSTALL_DIR" || error "Cannot enter install directory $INSTALL_DIR!"
+cd "$INSTALL_DIR" || error "Cannot enter install directory!"
 
 echo "Creating Python virtual environment…"
-if python3 -m venv .venv 2>/dev/null; then
-  : # venv created successfully
-else
-  # Some systems (e.g. minimal Debian) don't have ensurepip.
-  # Create the venv without pip, then bootstrap pip manually.
-  echo "Standard venv creation unavailable — using fallback…"
-  python3 -m venv --without-pip .venv || error "Failed to create virtual environment!"
-  .venv/bin/python -m ensurepip --upgrade 2>/dev/null || \
-    .venv/bin/python <(curl -sS https://bootstrap.pypa.io/get-pip.py) || \
-    error "Failed to bootstrap pip in the virtual environment!"
-fi
+python3 -m venv .venv || error "Failed to create virtual environment!"
+.venv/bin/pip install --quiet --upgrade pip
 
 echo "Installing Python dependencies…"
-.venv/bin/pip install --quiet --upgrade pip
 .venv/bin/pip install --quiet -r requirements.txt || error "Failed to install Python dependencies!"
 
-# Create a desktop shortcut so the user can launch it from the menu.
-echo "Creating desktop menu entry…"
+# CREATE TRUE BACKGROUND SYSTEMD SERVICE
+echo "Registering background engine boot loader service…"
+as_root tee /etc/systemd/system/pi-dashboard.service >/dev/null <<EOF
+[Unit]
+Description=Pi Dashboard Local Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=$INSTALL_DIR/webserver
+ExecStart=$INSTALL_DIR/.venv/bin/python app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Activate background processes
+as_root systemctl daemon-reload
+as_root systemctl enable pi-dashboard.service
+as_root systemctl start pi-dashboard.service
+
+# Create an execution desktop helper shortcut link launcher configuration
+echo "Creating desktop menu launch link..."
 DESKTOP_CONTENT="[Desktop Entry]
 Name=Pi Dashboard
-GenericName=System Dashboard
-Comment=Web-based system dashboard for Raspberry Pi — monitor CPU, memory, temperature, disk, and manage files from any device on your network.
-Exec=bash -c 'cd \$HOME/Pi-Dashboard && .venv/bin/python app.py & sleep 1 && xdg-open http://localhost:5000'
+Comment=Open Pi Dashboard tracking portal monitor panel UI
+Exec=xdg-open http://localhost:5000
 Icon=utilities-system-monitor
 Terminal=false
 Type=Application
-Categories=System;Monitor;Network;
-Keywords=dashboard;monitor;system;pi;raspberry;
-StartupNotify=true"
+Categories=System;Monitor;Network;"
 
-SYSTEM_DESKTOP="/usr/share/applications/pi-dashboard.desktop"
 USER_DESKTOP="$HOME/.local/share/applications/pi-dashboard.desktop"
 mkdir -p "$HOME/.local/share/applications"
-
-# Try system-wide first, then fall back to user-level.
-if [ -w "/usr/share/applications" ] || [ "$(id -u)" -eq 0 ]; then
-  echo "$DESKTOP_CONTENT" > "$SYSTEM_DESKTOP"
-elif command -v sudo >/dev/null 2>&1; then
-  echo "$DESKTOP_CONTENT" | sudo tee "$SYSTEM_DESKTOP" >/dev/null
-fi
-# Always create a user-level copy too.
 echo "$DESKTOP_CONTENT" > "$USER_DESKTOP"
-
-# Create a convenient launcher script in the install directory.
-cat <<'LAUNCHER' > "$INSTALL_DIR/launch.sh"
-#!/bin/bash
-cd "$(dirname "$0")"
-.venv/bin/python app.py
-LAUNCHER
-chmod +x "$INSTALL_DIR/launch.sh"
 
 echo ""
 echo "==============================================="
 echo "  Pi Dashboard installed successfully!"
+echo "  Running actively as a true background service."
 echo ""
-echo "  To start it:"
-echo "    $HOME/Pi-Dashboard/launch.sh"
-echo ""
-echo "  Or use the desktop menu: System → Pi Dashboard"
-echo ""
-echo "  Then open a browser on any device on the same"
-echo "  network and go to:"
-echo "    http://<your-pi-ip>:5000"
-echo ""
-echo "  First login: admin / admin123"
-echo "  (Change the password from the Profile page!)"
+echo "  The server starts automatically on system boot."
+echo "  Access URL: http://$(hostname -I | awk '{print $1}'):5000"
 echo "==============================================="
-echo ""
