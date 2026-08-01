@@ -19,7 +19,11 @@ There's no build step or automated test suite — see "Validating changes" in [A
 
 ## Submitting
 
-Open a pull request against `master`. For new apps, you can also use the ["Submit a new app"](https://github.com/Botspot/pi-apps/issues/new?assignees=&labels=App+Request%2CZip%2FPR+included&template=app-submission.yml) issue template if you'd rather hand it off than open a PR yourself.
+Open a pull request against `master`. There's no PR template, so please include in the description:
+- Which systems (from [Supported systems](README.md#supported-systems)) you ran `test_build.yml` against, and a link to the run.
+- Which system(s) you actually ran the app on afterward — not just installed/uninstalled it — and what you did to best-effort-check the ones you couldn't.
+
+For new apps, you can also use the ["Submit a new app"](https://github.com/Botspot/pi-apps/issues/new?assignees=&labels=App+Request%2CZip%2FPR+included&template=app-submission.yml) issue template if you'd rather hand it off than open a PR yourself.
 
 Bug reports, general suggestions, and app requests each have their own template on the [issues page](https://github.com/Botspot/pi-apps/issues/new/choose).
 
