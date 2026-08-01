@@ -18,7 +18,8 @@ There is no build step and no automated test suite in the traditional sense. Val
   shellcheck "apps/<App Name>/install" "apps/<App Name>/uninstall"
   ```
   Only shellcheck errors (not warnings/info) fail CI — see the `sed` filter in that workflow for the exact severity cutoff.
-- **Live install/uninstall test** — `.github/workflows/test_build.yml` is a manually-dispatched workflow that boots a real OS image (PiOS Bullseye/Bookworm/Trixie, Ubuntu Noble, or Switchroot L4T) in a chroot runner and does `./manage install "<App>"` then `./manage uninstall "<App>"`. There's no local equivalent unless you actually have ARM hardware or a matching chroot — when changing an app script, reason carefully about correctness since you generally can't execute it in this dev environment (x86, non-Debian, or non-ARM).
+- **Live install/uninstall test — always run this for app-script changes, don't just reason about correctness.** `.github/workflows/test_build.yml` boots a real OS image in a chroot runner and does `./manage install "<App>"` then `./manage uninstall "<App>"`. It's manually dispatched and works from a fork: push your branch to your own fork and trigger it from the Actions tab (`test_build.yml` → "Run workflow") before considering any change to an app's `install`/`install-32`/`install-64`/`uninstall` script done. The currently-supported OS images (see Supported systems below) are pre-checked by default, so filling in the app name and running it as-is is normally all that's needed; unsupported/deprecated images (Bullseye, 32-bit Trixie) default off — leave them off unless you have a specific reason to test one.
+- **This CI only proves the app installs/uninstalls cleanly — it does not prove the app runs or works.** The chroot runner has no display/GPU, so it can't launch GUI apps or exercise real functionality. Before considering an app-script change (especially a new app) done, actually run the installed app on at least one real supported system you have physical/VM access to, and make a best-effort check (release notes, upstream changelog, reasoning about the change) for the supported systems you don't have access to.
 - File permissions matter: install/install-32/install-64/uninstall scripts must be mode 775 (enforced/auto-fixed by `.github/workflows/check_PR.yml`).
 
 ## Architecture
@@ -57,7 +58,11 @@ Category membership lives in `etc/categories` (global, kept in sync with upstrea
 
 ### Multi-target support
 
-The same codebase targets Raspberry Pi OS (Bullseye/Bookworm/Trixie), Ubuntu (Jammy/Noble) on Pi, Nvidia Jetson, and Nintendo Switch Switchroot L4T. Check existing apps for the idiom before adding new OS/arch-conditional logic.
+The same codebase targets Raspberry Pi OS, Ubuntu on Pi, Nvidia Jetson, and Nintendo Switch Switchroot L4T (see Supported systems below). Check existing apps for the idiom before adding new OS/arch-conditional logic.
+
+### Supported systems
+
+Fully supported: Raspberry Pi OS (32-bit Bookworm, 64-bit Bookworm, 64-bit Trixie) and Ubuntu Jammy/Noble on Raspberry Pi 2 v1.2+/Zero 2 W/3/4/5; Switchroot L4T Ubuntu Jammy/Noble on Nintendo Switch; Nvidia Jetpack 6 (Jammy)/7 (Noble) on Jetson. This list changes as distros age out (e.g. Bullseye and 32-bit Trixie have both been dropped) — check the "Supported systems"/"Unsupported systems" section of `README.md` for the current matrix, and `is_supported_system()` in `api` for the runtime enforcement logic.
 
 ### Automated app-version updates
 
