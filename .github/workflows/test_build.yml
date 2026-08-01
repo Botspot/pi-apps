@@ -23,14 +23,17 @@ on:
         description: 'Build on PiOS Bookworm 64bit'
         required: true
         type: boolean
+        default: true
       bookworm_32:
         description: 'Build on PiOS Bookworm 32bit'
         required: true
         type: boolean
+        default: true
       trixie_64:
         description: 'Build on PiOS Trixie 64bit'
         required: true
         type: boolean
+        default: true
       trixie_32:
         description: 'Build on PiOS Trixie 32bit'
         required: true
@@ -39,18 +42,22 @@ on:
         description: 'Build on Switchroot Ubuntu Jammy 64bit'
         required: true
         type: boolean
+        default: true
       l4t_noble_64:
         description: 'Build on Switchroot Ubuntu Noble 64bit'
         required: true
         type: boolean
+        default: true
       noble_64:
         description: 'Build on RPi Ubuntu Noble 64bit'
         required: true
         type: boolean
+        default: true
       resolute_64:
         description: 'Build on RPi Ubuntu Resolute 64bit'
         required: true
         type: boolean
+        default: true
 
 run-name: Testing ${{ inputs.name }}
 
