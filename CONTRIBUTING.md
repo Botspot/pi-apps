@@ -14,7 +14,8 @@ There's no build step or automated test suite — see "Validating changes" in [A
 
 1. Run `shellcheck` against anything you touched.
 2. If you changed an app's install/uninstall script, run the `test_build.yml` GitHub Actions workflow on your own fork (Actions tab → "Run workflow"). Currently-supported OS images (see [README.md](README.md#supported-systems)) are pre-checked by default, so you can usually just fill in the app name and run it as-is.
-3. Make sure install/install-32/install-64/uninstall scripts are executable (mode 775).
+3. That workflow only proves the app installs/uninstalls cleanly — the chroot runner has no display/GPU, so it can't confirm the app actually works. Actually run the installed app yourself on at least one real supported system you have access to, and make a best-effort check for the ones you don't.
+4. Make sure install/install-32/install-64/uninstall scripts are executable (mode 775).
 
 ## Submitting
 
