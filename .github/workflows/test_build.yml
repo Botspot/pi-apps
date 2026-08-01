@@ -3,31 +3,38 @@ name: Test_Build
 # Controls when the workflow will run
 on:
   # Allows you to run this workflow manually from the Actions tab
+  # Now supports a max of 25 inputs up from 10
+  #   https://github.blog/changelog/2025-12-04-actions-workflow-dispatch-workflows-now-support-25-inputs/
   workflow_dispatch:
     inputs:
       name:
         description: 'App Name, PR #, or zip URL'
         required: true
         default: ''
-      bullseye:
-        description: 'Build on PiOS Bullseye'
+      bullseye_64:
+        description: 'Build on PiOS Bullseye 64bit'
         required: true
         type: boolean
-      bookworm:
-        description: 'Build on PiOS Bookworm'
+      bullseye_32:
+        description: 'Build on PiOS Bullseye 32bit'
         required: true
         type: boolean
-      trixie:
-        description: 'Build on PiOS Trixie (Beta)'
+      bookworm_64:
+        description: 'Build on PiOS Bookworm 64bit'
         required: true
         type: boolean
-      architecture:
-        type: choice
-        description: 'For Bullseye/Bookworm, test on 32bit, 64bit, or Both if available'
-        options:
-        - Both
-        - 64bit
-        - 32bit
+      bookworm_32:
+        description: 'Build on PiOS Bookworm 32bit'
+        required: true
+        type: boolean
+      trixie_64:
+        description: 'Build on PiOS Trixie 64bit'
+        required: true
+        type: boolean
+      trixie_32:
+        description: 'Build on PiOS Trixie 32bit'
+        required: true
+        type: boolean
       l4t_jammy_64:
         description: 'Build on Switchroot Ubuntu Jammy 64bit'
         required: true
@@ -40,6 +47,10 @@ on:
         description: 'Build on RPi Ubuntu Noble 64bit'
         required: true
         type: boolean
+      resolute_64:
+        description: 'Build on RPi Ubuntu Resolute 64bit'
+        required: true
+        type: boolean
 
 run-name: Testing ${{ inputs.name }}
 
@@ -47,7 +58,7 @@ run-name: Testing ${{ inputs.name }}
 jobs:
   bullseye-32bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.bullseye && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
+    if: ${{ inputs.bullseye_32 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on bullseye armhf
@@ -67,13 +78,13 @@ jobs:
 
   bookworm-32bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.bookworm && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
+    if: ${{ inputs.bookworm_32 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on bookworm armhf
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2025-10-02/2025-10-01-raspios-bookworm-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2026-06-19/2026-06-18-raspios-bookworm-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -87,13 +98,13 @@ jobs:
 
   trixie-32bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.trixie && ( inputs.architecture == '32bit' || inputs.architecture == 'Both' ) }}
+    if: ${{ inputs.trixie_32 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on trixie armhf
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2025-10-02/2025-10-01-raspios-trixie-armhf.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2026-06-19/2026-06-18-raspios-trixie-armhf.img.xz
           bind_mount_repository: yes
           image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -107,7 +118,7 @@ jobs:
 
   bullseye-64bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.bullseye && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
+    if: ${{ inputs.bullseye_64 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on bullseye arm64
@@ -127,13 +138,13 @@ jobs:
 
   bookworm-64bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.bookworm && ( inputs.architecture == '64bit' || inputs.architecture == 'Both' ) }}
+    if: ${{ inputs.bookworm_64 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on bookworm arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2025-10-02/2025-10-01-raspios-bookworm-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_oldstable_arm64/images/raspios_oldstable_arm64-2026-06-19/2026-06-18-raspios-bookworm-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -147,13 +158,13 @@ jobs:
 
   trixie-64bit:
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.trixie }}
+    if: ${{ inputs.trixie_64 }}
     steps:
       - uses: actions/checkout@v4
       - name: Test installing app on trixie arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2025-10-02/2025-10-01-raspios-trixie-arm64.img.xz
+          base_image: https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64.img.xz
           bind_mount_repository: yes
           image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
@@ -173,7 +184,7 @@ jobs:
       - name: Test installing app on L4T jammy arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2025-08-16.7z
+          base_image: https://download.switchroot.org/ubuntu-jammy/theofficialgman-ubuntu-jammy-5.1.2-2026-05-13.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
@@ -195,7 +206,7 @@ jobs:
       - name: Test installing app on L4T noble arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://download.switchroot.org/ubuntu-noble/theofficialgman-kubuntu-noble-5.1.2-2025-08-16.7z
+          base_image: https://download.switchroot.org/ubuntu-noble/theofficialgman-kubuntu-noble-5.1.2-2026-05-13.7z
           # add special arguments for switchroot image format
           bootpartition:
           rootpartition: 1
@@ -217,7 +228,27 @@ jobs:
       - name: Test installing app on noble arm64
         uses: theofficialgman/chroot-runner-action@v0
         with:
-          base_image: https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.3-preinstalled-desktop-arm64+raspi.img.xz
+          base_image: https://cdimage.ubuntu.com/ubuntu/releases/24.04/release/ubuntu-24.04.4-preinstalled-desktop-arm64+raspi.img.xz
+          bind_mount_repository: yes
+          image_additional_mb: 20000
+          cpu_info: cpuinfo/raspberrypi_4b
+          copy_repository_path: /home/runner/pi-apps
+          export_github_env: yes
+          import_github_env: true
+          shell: /bin/bash
+          commands: |
+            export name="${{ inputs.name }}"
+            ./.github/workflows/test_build_commands.sh
+
+  resolute-64bit:
+    runs-on: ubuntu-24.04-arm
+    if: ${{ inputs.resolute_64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test installing app on resolute arm64
+        uses: theofficialgman/chroot-runner-action@v0
+        with:
+          base_image: https://cdimage.ubuntu.com/ubuntu/releases/26.04/release/ubuntu-26.04-preinstalled-desktop-arm64+raspi.img.xz
           bind_mount_repository: yes
           image_additional_mb: 20000
           cpu_info: cpuinfo/raspberrypi_4b
