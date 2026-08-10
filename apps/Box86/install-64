@@ -45,6 +45,14 @@ else
   if [[ "$ARMHF" != *"armhf"* ]]; then
     error "armhf architecture should be added by now, but it isn't!"
   fi
+  if apt_update ; then
+    status "apt update successful after adding armhf architecture"
+  else
+    warning "apt update failed after adding armhf architecture, removing armhf architecture to prevent leaving your system in a broken state..."
+    sudo dpkg --remove-architecture armhf
+    apt_update
+    error "apt update failed after adding armhf architecture. The armhf architecture has been removed. Please check that your distro supports arm64/armhf multiarch with your apt sources and try again."
+  fi
 fi
 
 if dpkg -l box86 &>/dev/null ;then
