@@ -404,7 +404,7 @@ apt_update() { #run an apt update with error-checking and minimal output
     
     #run some apt error diagnosis
     echo "$output"
-    exit 1
+    return 1
   fi
   return 0
 }
