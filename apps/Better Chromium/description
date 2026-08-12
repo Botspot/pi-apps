@@ -8,11 +8,11 @@ Features:
 - Dark mode for all websites
 - Change UI scale (make everything larger)
 - Tab Previews (hover your mouse over a tab to see the page contents)
-- Google Chrome Sync
+- Google Chrome Sync (PLEASE read instructions below)
 - Widevine DRM support (for protected media like Netflix or Spotify)
 - Performance Improvements (Faster loading and scrolling)
 - Reduce writes to the SD card (Uses RAM for cache)
 
 With the exception of Widevine, this script simply adds files to the /etc/chromium.d folder, most of which will add command-line flags to Chromium as it launches. Feel free to inspect the script to see how each of these features works.
 
-Note: To enable Google Chrome Sync, first enable it here, then go to Chromium's account profile settings, enable "Allow Chromium sign-in", relaunch the browser, then you can login to Google and synchronize bookmarks, history, passwords, etc.
+Note: To enable Google Chrome Sync, first enable it here, then go to chrome://settings/syncSetup, enable "Allow Chromium sign-in", relaunch the browser, then you can login to Google and synchronize bookmarks, history, passwords, etc.
