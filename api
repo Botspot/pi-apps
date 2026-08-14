@@ -1787,11 +1787,11 @@ app_search_gui() { #graphical interface to search for apps
       local category="$(grep '^'"$app"'|' <<<"$categories" | awk -F'|' '{print $2}')"
       
       echo "${DIRECTORY}/apps/${app}/icon-24.png
-$app
-$( (cat "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable") | head -n1)
+${app//[&]/&amp;}
+$( (sed 's/&/&amp;/g' "${DIRECTORY}/apps/${app}/description" || echo "Description unavailable") | head -n1)
 <small>in</small>
 ${DIRECTORY}/icons/categories/${category##*/}.png
-${category}"
+${category//[&]/&amp;}"
     done | \
     yad "${yadflags[@]}" --title="Results for "\""$query"\""" --width=310 --height=250 \
       --list --no-headers  --column=app:IMG --column=appname --column=tooltip:HD --column=in --column=category:IMG --column=categoryname \
