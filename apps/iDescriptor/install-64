@@ -1,0 +1,4 @@
+#!/bin/bash
+install_packages flatpak || exit 1
+
+flatpak_install io.github.idescriptor.iDescriptor || exit 1

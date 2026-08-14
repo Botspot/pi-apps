@@ -1,0 +1,15 @@
+Open-source management tool for iPads and iPhones
+This is a native Linux alternative to iTunes and macOS. Simply connect your iDevice using a USB cable (or wireless pairing) and start browsing files, installing apps, viewing the display, or more advanced actions like checking battery health.
+
+Features include:
+- iFuse Filesystem Mount: Mount the device's filesystem and use it as a regular drive for reading and writing files.
+- Wireless Gallery Import: Import photos wirelessly (requires the Shortcuts app on the iDevice).
+- App Store: Download and install apps directly from the Apple Store (requires Apple ID sign-in).
+- AirPlay / Live Screen: Cast your device screen to your computer.
+- Virtual Location: Simulate GPS locations on your iDevice.
+- Device Backups: Experimental support for backing up data from devices running iOS 13 and newer.
+- Hardware Info: Read detailed battery information and check the authenticity of connected USB cables.
+- SSH Terminal: Open a terminal on your jailbroken iDevice.
+
+To run: Menu -> Accessories -> iDescriptor
+To run in a terminal: flatpak run io.github.idescriptor.iDescriptor
