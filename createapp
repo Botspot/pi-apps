@@ -59,16 +59,31 @@ while true;do
   
   case $step in
     0) #Introduction
-      echo "Welcome to the Create App wizard!
-
-With a few simple steps, your project can take advantage of Pi-Apps' features and be displayed in the app-list.
-This wizard will save your work as you go." | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
+      read_guidelines() {
+        x-www-browser 'https://pi-apps.io/wiki/development/Creating-an-app/' || echo "read_guidelines: browser launch failed. Command run was 'x-www-browser https://pi-apps.io/wiki/development/Creating-an-app/'"
+      }
+      export -f read_guidelines
+      
+      echo "Want an app added to Pi-Apps? Start here.
+You can submit any app - it does not need to belong to you! Before spending effort submitting the app, please read our eligibility guidelines" | yad "${yadflags[@]}" --text-info --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --text="<a href="\""https://github.com/Botspot/pi-apps/wiki/Creating-an-app"\"">READ THIS TUTORIAL FIRST!!</a>" \
+        --text="<big><big>Welcome!</big></big>" \
         --title="Create App Wizard" --width=310 --height=300 \
+        --button='Read guidelines'!"${DIRECTORY}/icons/txt.png":"bash -c read_guidelines" \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":1 \
-        --button=Next!"${DIRECTORY}/icons/forward.png":0 || exit 0
-      step=$((step+1))
+        --button=Next!"${DIRECTORY}/icons/forward.png":0
+      button=$?
+      case $button in
+        0)
+          step=$((step+1))
+          ;;
+        2)
+          x-www-browser 'https://pi-apps.io/wiki/development/Creating-an-app/'
+          ;;
+        *)
+          exit 0
+          ;;
+      esac
       ;;
       
     1) #Choose name of app and its app-type
@@ -522,11 +537,22 @@ Here's a preview of the Details window:
       
     7) #All done
       echo "Your app is located at ${DIRECTORY}/apps/${name}
-To add your app to the Pi-Apps official repository, put that folder in a .ZIP file and open an issue on the Pi-Apps repository: https://github.com/Botspot/pi-apps/issues/new/choose" | yad "${yadflags[@]}" --text-info \
-        --text="Done!" \
+It has not yet been submitted to the official Pi-Apps project. To submit $name, you need to send it to us for review. We'll talk to you and help get it added if it's a good fit.
+We use github.com for this, with 2 options for app submissions:
+Option 1: (Do this if you are new to github) Put your app folder into a .ZIP file, open an issue, and upload the ZIP into the issue.
+  1.1: To make the ZIP file correctly, run this command in a terminal:
+  env -C '${DIRECTORY}/apps' zip -r $HOME/Downloads/${name}.zip ${name}
+  1.2: Then click this link to open an issue: https://github.com/Botspot/pi-apps/issues/new/choose
+  1.3: We'll inspect the zip, we'll likely ask some questions about the app and ask you to change the scripts or description, and if it looks good we'll add it to Pi-Apps.
+Option 2: (Do this if you are familiar with github, or are willing to learn) Open a Pull Request to submit your app.
+  2.1: Login to github, go to https://github.com/Botspot/pi-apps and make a fork of our repository.
+  2.2: Download your fork to this computer using the git clone command, making sure to not delete or overwrite your main pi-apps folder.
+  2.3: Copy this app folder to the fork, (Be sure to change the etc/categories file too!), and commit the changes.
+  2.4: Now go to your forked repo on github, and click the button to open a pull request on the official pi-apps repo." | yad "${yadflags[@]}" --text-info \
+        --text="<big><big>Done!</big></big>" \
         --fontname=12 --wrap --show-uri \
         --image="${DIRECTORY}/icons/in-progress.png" --image-on-top \
-        --title="Create App Wizard" --width=310 --height=400 \
+        --title="Create App Wizard" --width=700 --height=400 \
         --button=Previous!"${DIRECTORY}/icons/back.png":0 \
         --button=Close!"${DIRECTORY}/icons/exit.png":1 || exit 0
       step=$((step-1))
