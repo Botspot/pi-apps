@@ -41,6 +41,7 @@ echo "Removing these files:
   - ${folder}/apikeys
   - ${folder}/enable_sync
   - ${folder}/performance_improvements
+  - ${folder}/disable_keyring_prompt
   - ${folder}/reduce_writes"
 
 sudo rm -f "${folder}/zzzz_combine_values" \
@@ -53,6 +54,7 @@ sudo rm -f "${folder}/zzzz_combine_values" \
   "${folder}/apikeys" \
   "${folder}/enable_sync" \
   "${folder}/performance_improvements" \
+  "${folder}/disable_keyring_prompt" \
   "${folder}/reduce_writes"
 
 #Remove ~/.chromium-browser.init workaround for Snap/Flatpak Chromium

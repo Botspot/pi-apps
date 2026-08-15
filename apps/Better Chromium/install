@@ -182,8 +182,11 @@ eval "$(run-parts --list -- /etc/chromium.d | xargs cat)"
 EOF
 fi
 
-#remove deprecated tab previews customization file, not that it is the default on latest chromium
+#remove deprecated tab previews customization file, now that it is the default on latest chromium
 sudo rm -f "${folder}/tab_previews"
+
+#remove deprecated tab scrolling customization file, now that it is removed from latest chromium
+sudo rm -f "${folder}/tab_scrolling"
 
 #detect if dark mode is currently enabled by this tool
 if [ -f "${folder}/dark_mode" ];then
@@ -206,11 +209,11 @@ else
   ui_scale=1.00
 fi
 
-#detect if tab scrolling is enabled
-if [ -f "${folder}/tab_scrolling" ];then
-  tab_scrolling=TRUE
+#detect if disable keyring prompt is enabled
+if [ -f "${folder}/disable_keyring_prompt" ];then
+  disable_keyring_prompt=TRUE
 else
-  tab_scrolling=FALSE
+  disable_keyring_prompt=FALSE
 fi
 
 #detect if google sync is currently enabled by this tool
@@ -273,7 +276,7 @@ output="$(yad --center --form --width=410 --separator='\n' \
   --field="<a href="\""https://chrome.google.com/webstore/search/neon%20kingdom%20-tabs?_category=themes"\"">Click to see more themes</a>:LBL" '' \
   --field="UI Scale: (default 1)":NUM "${ui_scale}!0.25..4!0.05!2" \
   --field="New UI 2023":CHK "$chromerefresh2023" \
-  --field="Tab Scrolling":CHK "$tab_scrolling" \
+  --field="Disable keyring password prompt":CHK "$disable_keyring_prompt" \
   --field="Enable Google Sync":CHK "$google_sync" \
   --field="Performance Improvements":CHK "$performance_improvements" \
   --field="Reduce SD card writes":CHK "$reduce_writes" \
@@ -295,8 +298,8 @@ ui_scale="$(sed -n 4p <<<"$output")"
 echo "ui_scale: $ui_scale"
 chromerefresh2023="$(sed -n 5p <<<"$output")"
 echo "chromerefresh2023: $chromerefresh2023"
-tab_scrolling="$(sed -n 6p <<<"$output")"
-echo "tab_scrolling: $tab_scrolling"
+disable_keyring_prompt="$(sed -n 6p <<<"$output")"
+echo "disable_keyring_prompt: $disable_keyring_prompt"
 google_sync="$(sed -n 7p <<<"$output")"
 echo "google_sync: $google_sync"
 performance_improvements="$(sed -n 8p <<<"$output")"
@@ -310,18 +313,20 @@ echo
 #if user enabled reduce_writes or performance_improvements, and ZRAM is not installed, then recommend the More RAM app
 if [ ! -f /usr/bin/zram.sh ] && [ "$performance_improvements" == TRUE ] ;then
   
-  yad --center --width=410 --separator='\n' \
+  yad --center --width=410 --separator='\n' --timeout=30 --timeout-indicator=bottom \
   --title="Better Chromium" \
   --window-icon="$(dirname "$0")/icon-64.png" \
   --text="You've chosen to improve Chromium's performance by adding a few flags to it. Further improvement is possible by installing the <b>More RAM</b> app on Pi-Apps. This increases usable RAM while avoiding a swap file." \
   --button="Thanks for the tip - I'll check out <b>More RAM</b>.":0 &>/dev/null &
+  yadpid=$!
 elif [ ! -f /usr/bin/zram.sh ] && [ "$reduce_writes" == TRUE ] ;then
   
-  yad --center --width=410 --separator='\n' \
+  yad --center --width=410 --separator='\n' --timeout=30 --timeout-indicator=bottom \
   --title="Better Chromium" \
   --window-icon="$(dirname "$0")/icon-64.png" \
   --text="You've chosen to reduce writes to the SD card. Further improvement is possible by installing the <b>More RAM</b> app on Pi-Apps. This increases usable RAM while avoiding a swap file." \
   --button="Thanks for the tip - I'll check out <b>More RAM</b>.":0 &>/dev/null &
+  yadpid=$!
 fi
 
 #
@@ -437,20 +442,20 @@ else
   sudo rm -f "${folder}/chromerefresh2023"
 fi
 
-#Tab scrolling
-if [ "$tab_scrolling" == TRUE ];then
+#disable keyring prompt
+if [ "$disable_keyring_prompt" == TRUE ];then
   #I found this flag after experimenting with chrome://flags and chrome://version
-  echo "Adding --enable-features=ScrollableTabStrip:minTabWidth/140,TabScrollingButtonPosition:buttonPosition/2,kScrollableTabStripOverflow:tabScrollOverflow/2,kScrollableTabStripWithDragging:tabScrollWithDragMode/2 to ${folder}/tab_scrolling"
+  echo "Adding --password-store=basic to ${folder}/disable_keyring_prompt"
   
-  cat << EOF | sudo tee "${folder}/tab_scrolling" >/dev/null
-export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --enable-features=ScrollableTabStrip:minTabWidth/140,TabScrollingButtonPosition:buttonPosition/2,kScrollableTabStripOverflow:tabScrollOverflow/2,kScrollableTabStripWithDragging:tabScrollWithDragMode/2"
+  cat << EOF | sudo tee "${folder}/disable_keyring_prompt" >/dev/null
+export CHROMIUM_FLAGS="\$CHROMIUM_FLAGS --password-store=basic"
 EOF
 else
-  #tab_scrolling set to false - so remove the file
-  if [ -f "${folder}/tab_scrolling" ];then
-    status "Removing ${folder}/tab_scrolling"
+  #disable_keyring_prompt set to false - so remove the file
+  if [ -f "${folder}/disable_keyring_prompt" ];then
+    status "Removing ${folder}/disable_keyring_prompt"
   fi
-  sudo rm -f "${folder}/tab_scrolling"
+  sudo rm -f "${folder}/disable_keyring_prompt"
 fi
 
 #Google sync
@@ -592,5 +597,10 @@ fi
 
 if pgrep chromium >/dev/null || pgrep -f chromium-browser >/dev/null ;then
   status "Changes will take effect after you relaunch Chromium."
+fi
+
+#await user to read and close the notification dialog about more ram
+if [ ! -z "$yadpid" ];then
+  wait $yadpid
 fi
 true
