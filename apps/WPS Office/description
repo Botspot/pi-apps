@@ -9,7 +9,7 @@ To run in a terminal: it depends! Please read the information below.
 
 This app installs differently, depending on if you are using a 32-bit OS or a 64-bit OS.
 If you are using a 32-bit OS:
-- You will have to enable the 64-bit kernel. Don't worry, enabling it will not harm your OS - you probably won't even notice.
+- This only works on Raspberry Pi boards that support the 64-bit kernel.
 - A 64-bit Debian Bullseye chroot will be created. (/opt/wps-office-chroot)
 - The total installation will take 2.1GB of space.
 - To run in a terminal: schroot -c wps-office-chroot -- wps
