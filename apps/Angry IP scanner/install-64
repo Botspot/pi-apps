@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=3.9.3
+version=3.10.0
 adoptium_installer || exit 1
 # install temurin-17-jre first so that when apt looks for "Provides: java11-runtime" to satisfy ipscan dependencies it will be there
 install_packages temurin-17-jre libswt-cairo-gtk-4-jni libswt-gtk-4-java libswt-gtk-4-jni || exit 1
