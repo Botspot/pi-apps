@@ -33,6 +33,24 @@ debug() { #an echo command that only runs when debug mode is on
   [ "$pi_apps_debug" = true ] && echo "$1"
 }
 
+#### UUTILS IS RIDDLED WITH REGRESSIONS
+# https://bugs.launchpad.net/ubuntu/+source/rust-coreutils/+bug/2127885
+# https://github.com/Botspot/pi-apps/issues/2853
+
+if command -v gnusort &> /dev/null; then
+  sort() {
+    command gnusort "$@"
+  }
+  export -f sort
+fi
+
+if command -v gnucomm &> /dev/null; then
+  comm() {
+    command gnucomm "$@"
+  }
+  export -f comm
+fi
+
 generate_logo() { #display colorized Pi-Apps logo in terminal
   #ANSI color codes: https://misc.flogisoft.com/bash/tip_colors_and_formatting
   #Search for unicode characters: https://unicode-search.net - search for "block" and "quadrant"
