@@ -1,0 +1,356 @@
+#!/usr/bin/env bash
+
+# Install dependencies required by the application
+sudo apt-get update
+sudo apt-get install -y python3 python3-tk || exit 1
+
+# Download or write the script executable
+sudo cat << 'EOF' > /usr/local/bin/fan-controller
+#!/usr/bin/env bash
+
+# Preserve desktop environment variables for GUI rendering
+USER_DISPLAY="${DISPLAY:-:0}"
+USER_WAYLAND="${WAYLAND_DISPLAY}"
+USER_XDG="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+USER_XAUTH="${XAUTHORITY:-$HOME/.Xauthority}"
+
+# Request root privileges if running as standard user
+if [ "$EUID" -ne 0 ]; then
+    exec sudo --preserve-env=DISPLAY,WAYLAND_DISPLAY,XDG_RUNTIME_DIR,XAUTHORITY "$0" "$@"
+fi
+
+# Launch dashboard app
+python3 - << 'PYEOF'
+import tkinter as tk
+from tkinter import ttk
+import os
+import glob
+import time
+
+def find_fan_devices():
+    pwm_file = None
+    state_file = None
+    
+    for path in glob.glob("/sys/class/hwmon/hwmon*/pwm1"):
+        pwm_file = path
+        break
+        
+    for path in glob.glob("/sys/class/thermal/cooling_device*"):
+        try:
+            with open(os.path.join(path, "type"), "r") as f:
+                if "fan" in f.read().lower():
+                    state_file = os.path.join(path, "cur_state")
+                    break
+        except Exception:
+            pass
+
+    return pwm_file, state_file
+
+PWM_FILE, STATE_FILE = find_fan_devices()
+TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
+
+class UltimateFanGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Pi 5 Thermal Master Engine")
+        self.root.geometry("460x760")
+        self.root.configure(bg="#0B0E14")
+        self.root.resizable(False, False)
+
+        # State Variables
+        self.is_power_on = tk.BooleanVar(value=True)
+        self.is_auto_mode = tk.BooleanVar(value=True)
+        self.emergency_override = tk.BooleanVar(value=False)
+        self.current_level = 0
+        self.target_temp = 60
+        self.prev_idle = 0
+        self.prev_total = 0
+
+        # Master Outer Frame
+        master_frame = tk.Frame(root, bg="#0B0E14")
+        master_frame.pack(padx=16, pady=16, fill="both", expand=True)
+
+        # Header Module
+        header = tk.Frame(master_frame, bg="#161B22", bd=0, highlightthickness=1, highlightbackground="#30363D")
+        header.pack(fill="x", pady=(0, 10), ipady=4)
+
+        tk.Label(header, text="PI 5 THERMAL ENGINE", font=("Segoe UI", 9, "bold"), fg="#8B949E", bg="#161B22").pack(side="left", padx=15)
+        self.status_badge = tk.Label(header, text="● AUTO GOVERNOR", font=("Segoe UI", 8, "bold"), fg="#3FB950", bg="#161B22")
+        self.status_badge.pack(side="right", padx=15)
+
+        # Telemetry Display Module
+        telemetry_card = tk.Frame(master_frame, bg="#161B22", bd=0, highlightthickness=1, highlightbackground="#30363D")
+        telemetry_card.pack(fill="x", pady=5, ipadx=10, ipady=10)
+
+        self.temp_label = tk.Label(telemetry_card, text="-- °C", font=("Segoe UI", 44, "bold"), fg="#3FB950", bg="#161B22")
+        self.temp_label.pack(pady=(5, 0))
+
+        tk.Label(telemetry_card, text="CORE TELEMETRY MONITOR", font=("Segoe UI", 8, "bold"), fg="#484F58", bg="#161B22").pack()
+
+        # Dynamic Temp Gauge Bar
+        self.gauge = ttk.Progressbar(telemetry_card, length=380, mode='determinate', maximum=85)
+        self.gauge.pack(pady=(12, 8))
+
+        # Metrics Row (CPU Load + Uptime)
+        metrics_frame = tk.Frame(telemetry_card, bg="#161B22")
+        metrics_frame.pack(fill="x", padx=10, pady=(5, 0))
+
+        self.cpu_load_label = tk.Label(metrics_frame, text="CPU LOAD: 0.0%", font=("Segoe UI", 8, "bold"), fg="#8B949E", bg="#161B22")
+        self.cpu_load_label.pack(side="left")
+
+        self.uptime_label = tk.Label(metrics_frame, text="UPTIME: --", font=("Segoe UI", 8, "bold"), fg="#8B949E", bg="#161B22")
+        self.uptime_label.pack(side="right")
+
+        # Thermostat Control Deck
+        thermostat_card = tk.Frame(master_frame, bg="#161B22", bd=0, highlightthickness=1, highlightbackground="#30363D")
+        thermostat_card.pack(fill="x", pady=10, ipady=5)
+
+        # Plus Button (+)
+        self.plus_btn = tk.Button(
+            thermostat_card, text="▲  +", font=("Segoe UI", 16, "bold"),
+            bg="#21262D", fg="#484F58", activebackground="#30363D", activeforeground="#FFFFFF",
+            bd=0, relief="flat", cursor="hand2", state="disabled", command=self.increase_level
+        )
+        self.plus_btn.pack(fill="x", padx=15, pady=(10, 2))
+
+        # Level Number Core
+        level_box = tk.Frame(thermostat_card, bg="#0D1117", bd=1, highlightthickness=1, highlightbackground="#30363D")
+        level_box.pack(fill="x", padx=15, pady=5)
+
+        self.level_display = tk.Label(level_box, text="0", font=("Segoe UI", 42, "bold"), fg="#484F58", bg="#0D1117")
+        self.level_display.pack(pady=(2, 0))
+
+        self.rpm_estimate_label = tk.Label(level_box, text="ESTIMATED SPEED: 0 RPM", font=("Segoe UI", 8, "bold"), fg="#484F58", bg="#0D1117")
+        self.rpm_estimate_label.pack(pady=(0, 6))
+
+        # Minus Button (-)
+        self.minus_btn = tk.Button(
+            thermostat_card, text="▼  -", font=("Segoe UI", 16, "bold"),
+            bg="#21262D", fg="#484F58", activebackground="#30363D", activeforeground="#FFFFFF",
+            bd=0, relief="flat", cursor="hand2", state="disabled", command=self.decrease_level
+        )
+        self.minus_btn.pack(fill="x", padx=15, pady=(2, 10))
+
+        # Control Panel Grid
+        control_grid = tk.Frame(master_frame, bg="#0B0E14")
+        control_grid.pack(fill="x", pady=5)
+
+        self.power_btn = tk.Button(
+            control_grid, text="POWER: ON", font=("Segoe UI", 9, "bold"),
+            bg="#238636", fg="#FFFFFF", bd=0, relief="flat", cursor="hand2", height=2, command=self.toggle_power
+        )
+        self.power_btn.grid(row=0, column=0, padx=(0, 4), sticky="ew")
+
+        self.mode_btn = tk.Button(
+            control_grid, text="AUTO GOVERNOR", font=("Segoe UI", 9, "bold"),
+            bg="#1F6FEB", fg="#FFFFFF", bd=0, relief="flat", cursor="hand2", height=2, command=self.toggle_mode
+        )
+        self.mode_btn.grid(row=0, column=1, padx=(4, 4), sticky="ew")
+
+        self.turbo_btn = tk.Button(
+            control_grid, text="TURBO 100%", font=("Segoe UI", 9, "bold"),
+            bg="#21262D", fg="#8B949E", bd=0, relief="flat", cursor="hand2", height=2, command=self.toggle_turbo
+        )
+        self.turbo_btn.grid(row=0, column=2, padx=(4, 0), sticky="ew")
+
+        control_grid.grid_columnconfigure(0, weight=1)
+        control_grid.grid_columnconfigure(1, weight=1)
+        control_grid.grid_columnconfigure(2, weight=1)
+
+        # Target Temperature Limiter Frame
+        limiter_frame = tk.Frame(master_frame, bg="#161B22", bd=0, highlightthickness=1, highlightbackground="#30363D")
+        limiter_frame.pack(fill="x", pady=10, padx=0, ipady=5)
+
+        self.target_label = tk.Label(limiter_frame, text="TARGET TEMP LIMIT: 60 °C", font=("Segoe UI", 8, "bold"), fg="#8B949E", bg="#161B22")
+        self.target_label.pack(anchor="w", padx=15, pady=(5, 0))
+
+        self.target_slider = ttk.Scale(limiter_frame, from_=45, to=75, value=60, command=self.update_target_temp)
+        self.target_slider.pack(fill="x", padx=15, pady=(0, 5))
+
+        # Footer Status Banner
+        self.status_bar = tk.Label(master_frame, text="System Thermal Engine Operational", font=("Segoe UI", 9), fg="#3FB950", bg="#161B22", pady=8)
+        self.status_bar.pack(fill="x", side="bottom")
+
+        # Keyboard Shortcuts Binding
+        root.bind("<Up>", lambda e: self.increase_level())
+        root.bind("<Down>", lambda e: self.decrease_level())
+        root.bind("<space>", lambda e: self.toggle_power())
+
+        self.update_loop()
+
+    def update_target_temp(self, val):
+        self.target_temp = int(float(val))
+        self.target_label.config(text=f"TARGET TEMP LIMIT: {self.target_temp} °C")
+
+    def get_cpu_load(self):
+        try:
+            with open("/proc/stat", "r") as f:
+                fields = [float(x) for x in f.readline().split()[1:]]
+            idle, total = fields[3], sum(fields)
+            idle_delta = idle - self.prev_idle
+            total_delta = total - self.prev_total
+            self.prev_idle, self.prev_total = idle, total
+            if total_delta > 0:
+                return round((1.0 - idle_delta / total_delta) * 100, 1)
+        except Exception:
+            pass
+        return 0.0
+
+    def get_uptime(self):
+        try:
+            with open("/proc/uptime", "r") as f:
+                uptime_seconds = float(f.readline().split()[0])
+                m, s = divmod(int(uptime_seconds), 60)
+                h, m = divmod(m, 60)
+                return f"{h:02d}:{m:02d}:{s:02d}"
+        except Exception:
+            return "--"
+
+    def update_temperature_loop(self):
+        try:
+            with open(TEMP_FILE, "r") as f:
+                temp = round(int(f.read().strip()) / 1000.0, 1)
+                self.temp_label.config(text=f"{temp} °C")
+                self.gauge['value'] = temp
+
+                if temp < 48.0:
+                    color = "#58A6FF"
+                elif temp < self.target_temp:
+                    color = "#3FB950"
+                elif temp < 72.0:
+                    color = "#D29922"
+                else:
+                    color = "#F85149"
+
+                self.temp_label.config(fg=color)
+
+                if temp >= 78.0 and not self.emergency_override.get():
+                    self.status_bar.config(text="EMERGENCY OVERRIDE: High CPU Heat Detected!", fg="#F85149")
+                    self.apply_fan_level(4)
+        except Exception:
+            self.temp_label.config(text="-- °C", fg="#484F58")
+
+    def update_loop(self):
+        self.update_temperature_loop()
+        
+        cpu = self.get_cpu_load()
+        upt = self.get_uptime()
+        self.cpu_load_label.config(text=f"CPU LOAD: {cpu}%")
+        self.uptime_label.config(text=f"UPTIME: {upt}")
+
+        if self.is_power_on.get() and not self.is_auto_mode.get() and not self.emergency_override.get():
+            self.apply_fan_level(self.current_level)
+
+        self.root.after(1000, self.update_loop)
+
+    def apply_fan_level(self, level):
+        rpm_map = {0: "0 RPM", 1: "~2500 RPM", 2: "~4000 RPM", 3: "~6500 RPM", 4: "~8000+ RPM"}
+        pwm_map = {0: 0, 1: 64, 2: 128, 3: 192, 4: 255}
+        
+        self.rpm_estimate_label.config(text=f"ESTIMATED SPEED: {rpm_map.get(level, '0 RPM')}")
+
+        try:
+            if STATE_FILE and os.path.exists(STATE_FILE):
+                with open(STATE_FILE, "w") as f:
+                    f.write(str(level))
+            elif PWM_FILE and os.path.exists(PWM_FILE):
+                with open(PWM_FILE, "w") as f:
+                    f.write(str(pwm_map.get(level, 0)))
+        except Exception as e:
+            self.status_bar.config(text=f"Hardware Write Error: {e}", fg="#F85149")
+
+    def increase_level(self):
+        if self.is_power_on.get() and not self.is_auto_mode.get() and self.current_level < 4:
+            self.current_level += 1
+            self.update_thermostat_ui()
+
+    def decrease_level(self):
+        if self.is_power_on.get() and not self.is_auto_mode.get() and self.current_level > 0:
+            self.current_level -= 1
+            self.update_thermostat_ui()
+
+    def update_thermostat_ui(self):
+        self.level_display.config(text=str(self.current_level))
+        self.apply_fan_level(self.current_level)
+        self.status_bar.config(text=f"Manual Speed Output: Level {self.current_level}", fg="#D97706")
+
+    def toggle_power(self):
+        if self.is_power_on.get():
+            self.is_power_on.set(False)
+            self.power_btn.config(text="POWER: OFF", bg="#DA3633")
+            self.mode_btn.config(state="disabled", bg="#21262D")
+            self.turbo_btn.config(state="disabled", bg="#21262D")
+            self.disable_thermostat_controls()
+            self.status_badge.config(text="● POWER OFF", fg="#F85149")
+            self.status_bar.config(text="Status: Cooling Shutdown", fg="#F85149")
+            self.apply_fan_level(0)
+        else:
+            self.is_power_on.set(True)
+            self.power_btn.config(text="POWER: ON", bg="#238636")
+            self.mode_btn.config(state="normal", bg="#1F6FEB")
+            self.turbo_btn.config(state="normal", bg="#21262D")
+            self.status_badge.config(text="● AUTO GOVERNOR", fg="#3FB950")
+            if not self.is_auto_mode.get():
+                self.enable_thermostat_controls()
+                self.apply_fan_level(self.current_level)
+
+    def toggle_mode(self):
+        if self.is_auto_mode.get():
+            self.is_auto_mode.set(False)
+            self.emergency_override.set(False)
+            self.mode_btn.config(text="MANUAL MODE", bg="#D97706")
+            self.turbo_btn.config(bg="#21262D", fg="#8B949E")
+            self.enable_thermostat_controls()
+            self.status_badge.config(text="● MANUAL GOVERNOR", fg="#D97706")
+            self.apply_fan_level(self.current_level)
+        else:
+            self.is_auto_mode.set(True)
+            self.emergency_override.set(False)
+            self.mode_btn.config(text="AUTO GOVERNOR", bg="#1F6FEB")
+            self.turbo_btn.config(bg="#21262D", fg="#8B949E")
+            self.disable_thermostat_controls()
+            self.status_badge.config(text="● AUTO GOVERNOR", fg="#3FB950")
+            self.status_bar.config(text="System Automatic Governor Active", fg="#3FB950")
+
+    def toggle_turbo(self):
+        self.is_auto_mode.set(False)
+        self.emergency_override.set(True)
+        self.current_level = 4
+        self.level_display.config(text="4", fg="#F85149")
+        self.turbo_btn.config(bg="#DA3633", fg="#FFFFFF")
+        self.mode_btn.config(text="MANUAL MODE", bg="#D97706")
+        self.status_badge.config(text="● TURBO BOOST", fg="#F85149")
+        self.status_bar.config(text="Status: Extreme Cooling Active (100% PWM)", fg="#F85149")
+        self.apply_fan_level(4)
+
+    def enable_thermostat_controls(self):
+        self.plus_btn.config(state="normal", fg="#FFFFFF", bg="#30363D")
+        self.minus_btn.config(state="normal", fg="#FFFFFF", bg="#30363D")
+        self.level_display.config(fg="#D97706")
+
+    def disable_thermostat_controls(self):
+        self.plus_btn.config(state="disabled", fg="#484F58", bg="#21262D")
+        self.minus_btn.config(state="disabled", fg="#484F58", bg="#21262D")
+        self.level_display.config(fg="#484F58")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = UltimateFanGUI(root)
+    root.mainloop()
+PYEOF
+EOF
+
+# Make executable permissions
+sudo chmod +x /usr/local/bin/fan-controller
+
+# Create application menu launcher
+mkdir -p ~/.local/share/applications
+cat << 'DESKTOP' > ~/.local/share/applications/fan-controller.desktop
+[Desktop Entry]
+Name=Fan Controller
+Comment=Thermal engine and fan speed governor for Raspberry Pi 5
+Exec=fan-controller
+Terminal=false
+Type=Application
+Categories=System;
+DESKTOP
