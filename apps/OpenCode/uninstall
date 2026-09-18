@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sudo rm -f /usr/local/bin/opencode
+sudo rm -rf /opt/opencode
+sudo rm -f /usr/share/applications/opencode.desktop
+
+purge_packages || exit 1
