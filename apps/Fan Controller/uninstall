@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+sudo rm -f /usr/local/bin/fan-controller
+rm -f ~/.local/share/applications/fan-controller.desktop
