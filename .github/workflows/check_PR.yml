@@ -13,6 +13,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
+          # IMPORTANT: this is SAFE in this context because this workflow only runs chmod and pushes changes files to the PR
+          # this workflow cannot be used to execute arbitrary code from the PR
+          allow-unsafe-pr-checkout: true
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
       # Runs a set of commands using the runners shell
