@@ -61,6 +61,7 @@ jobs:
       - name: Check vital scripts for errors
         run: |
           cd $GITHUB_WORKSPACE
+          echo "this should not happen"
           sudo apt install shellcheck wget -y
           for file in api createapp gui install manage preload settings uninstall updater etc/preload-daemon etc/runonce-entries etc/terminal-run apps/*/install apps/*/install-32 apps/*/install-64 apps/*/uninstall; do
             if ! shellcheck "$file" --color=always | sed '0,/'$(echo -e "\033")'\[31m/!{q1}' ; then

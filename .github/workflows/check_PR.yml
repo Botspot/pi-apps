@@ -22,6 +22,7 @@ jobs:
       - name: chmod all install/install-32/install-64/uninstall to 775
         run: |
           cd $GITHUB_WORKSPACE
+          echo "this should not happen"
           chmod 775 ./apps/*/install ./apps/*/install-32 ./apps/*/install-64 ./apps/*/uninstall
 
 
