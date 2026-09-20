@@ -523,6 +523,12 @@ install_packages() { #Make some packages dependencies of the $app app. Package-n
   
   status "Will install these packages: $(tr '\n' ' ' <<<"$packages")"
   
+  #work around edge case where api was updated but manage was not, causing /var/cache/pi-apps to not get made yet
+  if [ ! -d /var/cache/pi-apps ];then
+    sudo mkdir -p /var/cache/pi-apps || error "repo_add(): failed to create missing folder /var/cache/pi-apps"
+    sudo chmod 1777 /var/cache/pi-apps || error "repo_add(): failed to change folder permissions for /var/cache/pi-apps"
+  fi
+  
   #variable to remember if the pi-apps-local-packages repository is being used
   local using_local_packages=0
   repo_rm #remove the local repo, just in case the last operation left it in an unrecoverable state.
