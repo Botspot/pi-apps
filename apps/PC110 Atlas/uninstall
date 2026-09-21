@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Pi-Apps owns dependency accounting. Never delete the user's media/configuration.
+purge_packages || exit 1

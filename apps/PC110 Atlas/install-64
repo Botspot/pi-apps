@@ -1,0 +1,23 @@
+#!/bin/bash
+
+version=1.0.1
+sha256=2890c907e7087532ff860c6aada02017913305e8701a13791936e8f80c053f5b
+
+# Pi-Apps supplies the OS architecture and codename through its api.
+[ "${arch:-}" = 64 ] || error 'PC110 Atlas requires a 64-bit ARM operating system.'
+case "${__os_codename:-}" in
+  bookworm|trixie|jammy|noble|resolute) ;;
+  *) error 'PC110 Atlas requires 64-bit Raspberry Pi OS/Debian Bookworm or Trixie, or Ubuntu 22.04/24.04/26.04 (Jammy/Noble/Resolute). No system changes were made.' ;;
+esac
+
+# Keep the temporary-file trap in a subshell so it cannot replace Pi-Apps traps.
+(
+  pc110_tmp="$(mktemp -d)" || error 'Could not create a download directory.'
+  trap 'rm -f -- "$pc110_tmp/pc110-atlas.deb"; rmdir -- "$pc110_tmp"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  wget -O "$pc110_tmp/pc110-atlas.deb" "https://github.com/ahmadexp/homebrew-pc110-atlas/releases/download/desktop-v${version}/pc110-atlas-${version}-linux-arm64.deb" || error 'Failed to download PC110 Atlas.'
+  printf '%s  %s\n' "$sha256" "$pc110_tmp/pc110-atlas.deb" | sha256sum --check --status - || error 'PC110 Atlas checksum mismatch. The package was not installed.'
+  install_packages "$pc110_tmp/pc110-atlas.deb" || exit 1
+)
