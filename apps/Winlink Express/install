@@ -25,7 +25,7 @@ fi
 #Downloading Winlink Express
 WINLINKDIR=/var/cache/pi-apps/WINLINK
 mkdir -p "${WINLINKDIR}"
-wget "https://downloads.winlink.org/$version" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
+wget --header="User-Agent: This download is a result of the Pi-Apps store. Please stop blocking us. Please contact us if you have any questions. https://github.com/Botspot/pi-apps/issues/new/choose" "https://downloads.winlink.org/$version" -O "${WINLINKDIR}/Winlink-setup.zip" || error 'Failed to download Winlink Express Installer from winlink.org'
 
 #Extracting Winlink Express installer archive
 unzip -o "${WINLINKDIR}/Winlink-setup.zip" -d "${WINLINKDIR}" || error 'Failed to unzip Winlink Express archive'

@@ -17,7 +17,7 @@ BOX86_NOBANNER=1 BOX64_NOBANNER=1 winetricks -q vb6run pdh_nt4 sound=alsa
 #Downloading VARA FM
 VARAFMDIR=/tmp/VARAFM
 mkdir -p "${VARAFMDIR}"
-wget "https://downloads.winlink.org/$version" -O "${VARAFMDIR}/VARAFM-setup.zip" || error 'Failed to download VARA FM Installer from winlink.org'
+wget --header="User-Agent: This download is a result of the Pi-Apps store. Please stop blocking us. Please contact us if you have any questions. https://github.com/Botspot/pi-apps/issues/new/choose" "https://downloads.winlink.org/$version" -O "${VARAFMDIR}/VARAFM-setup.zip" || error 'Failed to download VARA FM Installer from winlink.org'
 
 #Extracting VARA FM installer archives
 unzip -o "${VARAFMDIR}/VARAFM-setup.zip" -d "${VARAFMDIR}" || error 'Failed to unzip VARA FM archive'
