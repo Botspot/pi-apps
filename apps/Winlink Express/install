@@ -38,6 +38,11 @@ else
     PREFIXDIR="${WINEPREFIX}"
 fi
 
+#skip install with wine because github actions encountered exec format error
+if [ "$GITHUB_ACTIONS" == "true" ]; then
+  exit 0
+fi
+
 # Run the Inno Setup installer directly via wine
 BOX86_NOBANNER=1 BOX64_NOBANNER=1 \
     WINEPREFIX="$PREFIXDIR" WINEDEBUG=-all \
