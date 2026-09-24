@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status.
+set -euo pipefail
+
+# --- Configuration (must match the install script) ---
+readonly APP_NAME="yascrcpy"
+readonly BIN_PATH="/usr/local/bin/${APP_NAME}"
+readonly ICON_PATH="/usr/share/pixmaps/${APP_NAME}.png"
+readonly DESKTOP_FILE="/usr/share/applications/${APP_NAME}.desktop"
+
+# --- Helper Functions (from Pi-Apps) ---
+# status() { ... }
+
+# --- Main Execution ---
+main() {
+    status "Starting uninstallation of ${APP_NAME}..."
+
+    status "Removing application binary..."
+    sudo rm -f "${BIN_PATH}"
+
+    status "Removing application icon..."
+    sudo rm -f "${ICON_PATH}"
+
+    status "Removing application shortcut..."
+    sudo rm -f "${DESKTOP_FILE}"
+
+    status "Updating icon cache..."
+    # Use || true to prevent the script from failing on non-critical cache update errors
+    sudo update-icon-caches /usr/share/icons/* || true
+    sudo xdg-icon-resource forceupdate --mode system || true
+
+    # The dependencies (git, python3-pip, python3-venv) are common system packages
+    # and will not be removed to avoid breaking other applications.
+
+    status "Uninstallation of ${APP_NAME} completed successfully!"
+}
+
+# Run the main function
+main "$@"
