@@ -14,6 +14,17 @@ warning "When installing Better Chromium, you switched to PiOS chromium build. I
 'sudo apt purge libwidevinecdm0'
 fi
 
+# rpi ubuntu (25.10+) can use Raspberry Pi's chromium build from archive.raspberrypi.com
+if [ -f /etc/apt/sources.list.d/raspberrypi-chromium.sources ]; then
+warning "When installing Better Chromium, you switched to Raspberry Pi's chromium build. If you want to revert to the snap version, here's commands to do that:\n\n"\
+'~/pi-apps/api rm_external_repo "raspberrypi-chromium" "force"\n'\
+'~/pi-apps/api rm_external_repo "debian-trixie" "force"\n'\
+'~/pi-apps/api rm_external_repo "debian-trixie-security" "force"\n'\
+'sudo rm -f /etc/apt/preferences.d/raspberrypi-chromium\n'\
+'sudo apt purge chromium chromium-common chromium-l10n rpi-chromium-mods zenoty libjpeg62-turbo\n'\
+'sudo apt install chromium-browser -y'
+fi
+
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
   folder=/etc/chromium.d
