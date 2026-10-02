@@ -164,7 +164,7 @@ if [ -d /etc/chromium-browser/customizations ] && [ -d /etc/chromium.d ] && [ ! 
   status -n "There are two Chromium customization folders on your system: /etc/chromium.d and /etc/chromium-browser/customizations.\nCreating a symlink to keep both locations synchronized..."
   
   #Move any customization files from /etc/chromium-browser/customizations to /etc/chromium.d, without overwriting anything
-  sudo cp -nr /etc/chromium-browser/customizations /etc/chromium.d && \
+  sudo cp -nr /etc/chromium-browser/customizations/. /etc/chromium.d/ && \
   sudo rm -rf /etc/chromium-browser/customizations && \
   sudo ln -s /etc/chromium.d /etc/chromium-browser/customizations
   
