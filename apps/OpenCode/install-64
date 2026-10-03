@@ -20,17 +20,3 @@ sudo chmod +x /usr/local/bin/opencode
 
 # Clean up download
 rm -rf /tmp/opencode.tgz /tmp/package
-
-# Create a menu button that launches opencode in a terminal
-mkdir -p ~/.local/share/applications
-echo "[Desktop Entry]
-Name=OpenCode
-GenericName=AI Coding Agent
-Comment=Open source coding agent that runs in the terminal.
-Exec=${DIRECTORY}/etc/terminal-run opencode 'OpenCode'
-Icon=$(dirname "$0")/icon-64.png
-Terminal=false
-StartupNotify=true
-Type=Application
-Categories=Development;Utility;
-Keywords=ai;coding;agent;terminal;opencode;" > ~/.local/share/applications/opencode.desktop || error "Failed to create menu button!"
