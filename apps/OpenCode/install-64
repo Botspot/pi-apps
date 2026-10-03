@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # OpenCode - open source coding agent (https://opencode.ai)
-# ARM64-only: this is install-64, so Pi-Apps only offers it on 64-bit systems.
-# Installs the prebuilt linux-arm64 binary from the npm registry,
-# the same source used by the official installer at https://opencode.ai/v2/install
+# Installs the prebuilt linux-arm64 binary from the npm registry, the same source used by the official installer at https://opencode.ai/v2/install
 
 version=2.0.22
 
