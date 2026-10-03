@@ -1,0 +1,3 @@
+#!/bin/bash
+#uninstall
+purge_packages || exit 1

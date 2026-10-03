@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# OpenCode - open source coding agent (https://opencode.ai)
+# ARM64-only: this is install-64, so Pi-Apps only offers it on 64-bit systems.
+# Installs the prebuilt linux-arm64 binary from the npm registry,
+# the same source used by the official installer at https://opencode.ai/v2/install
+
+version=2.0.22
+
+# Download the prebuilt binary tarball (contains package/bin/opencode)
+rm -rf /tmp/opencode.tgz /tmp/package
+wget -O /tmp/opencode.tgz "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/cli-linux-arm64-${version}.tgz" || error "Failed to download OpenCode!"
+
+# Extract it
+tar -xzf /tmp/opencode.tgz -C /tmp || error "Failed to extract OpenCode!"
+
+# Install the binary system-wide so 'opencode' works in any terminal
+sudo mv /tmp/package/bin/opencode /usr/local/bin/opencode || error "Failed to install opencode to /usr/local/bin!"
+sudo chmod +x /usr/local/bin/opencode
+
+# Clean up download
+rm -rf /tmp/opencode.tgz /tmp/package
+
+# Create a menu button that launches opencode in a terminal
+mkdir -p ~/.local/share/applications
+echo "[Desktop Entry]
+Name=OpenCode
+GenericName=AI Coding Agent
+Comment=Open source coding agent that runs in the terminal.
+Exec=${DIRECTORY}/etc/terminal-run opencode 'OpenCode'
+Icon=$(dirname "$0")/icon-64.png
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Development;Utility;
+Keywords=ai;coding;agent;terminal;opencode;" > ~/.local/share/applications/opencode.desktop || error "Failed to create menu button!"
