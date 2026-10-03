@@ -3,5 +3,3 @@
 purge_packages || exit 1
 
 sudo rm -f /usr/local/bin/opencode
-
-# NOTE: user data/config (~/.config/opencode, ~/.local/share/opencode) is intentionally left behind, so uninstalling never deletes user work.
