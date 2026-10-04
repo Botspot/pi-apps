@@ -97,7 +97,17 @@ Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/de
         fi
       fi
       # add apparmor profile if needed
-      if sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
+      # Ubuntu 25.10+ (apparmor 5.0) ships /etc/apparmor.d/chromium, which already allows userns for /usr/lib/chromium-browser/chromium-browser.
+      # A second profile for the same binary makes apparmor apply neither ("conflicting profile attachments" in the kernel log),
+      # so chromium runs unconfined, cannot create its sandbox and only starts with --no-sandbox. Use the distro profile instead.
+      if [ -f /etc/apparmor.d/chromium ] && grep -q 'chromium{,-browser}' /etc/apparmor.d/chromium; then
+        # remove the profile that earlier versions of this script added
+        if [ -f /etc/apparmor.d/chromium-browser ] && grep -q 'only exists to give the' /etc/apparmor.d/chromium-browser; then
+          sudo apparmor_parser -R /etc/apparmor.d/chromium-browser 2>/dev/null
+          sudo rm -f /etc/apparmor.d/chromium-browser
+          sudo systemctl restart apparmor.service
+        fi
+      elif sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
         echo '# This profile allows everything and only exists to give the
 # application a name instead of having the label "unconfined"
 
