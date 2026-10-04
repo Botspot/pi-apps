@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Installs the prebuilt linux-aarch64 bundle from GitHub releases
+
+version=1.22.0
+
+# Download the release bundle (top-level folder 'zed.app' inside)
+rm -rf /tmp/zed.tar.gz /tmp/zed.app
+wget -O /tmp/zed.tar.gz "https://github.com/zed-industries/zed/releases/download/v${version}/zed-linux-aarch64.tar.gz" || error "Failed to download Zed!"
+
+# Extract it
+tar -xzf /tmp/zed.tar.gz -C /tmp || error "Failed to extract Zed!"
+
+# Install system-wide to /opt
+sudo rm -rf /opt/zed
+sudo mv /tmp/zed.app /opt/zed || error "Failed to install Zed to /opt/zed!"
+
+# Clean up download
+rm -f /tmp/zed.tar.gz
+
+# Link the terminal command (same binary the official installer links)
+sudo ln -sf /opt/zed/bin/zed /usr/local/bin/zed || error "Failed to link zed terminal command!"
+
+# Install the menu button, pointed at the system-wide location
+sudo cp /opt/zed/share/applications/dev.zed.Zed.desktop /usr/share/applications/dev.zed.Zed.desktop || error "Failed to install menu button!"
+sudo sed -i "s|^Exec=zed|Exec=/usr/local/bin/zed|" /usr/share/applications/dev.zed.Zed.desktop || error "Failed to fix menu button!"
+sudo sed -i "s|^Icon=zed|Icon=/opt/zed/share/icons/hicolor/512x512/apps/zed.png|" /usr/share/applications/dev.zed.Zed.desktop || error "Failed to fix menu button icon!"
