@@ -1,0 +1,86 @@
+#!/bin/bash
+version=1.19.3
+
+[ -z "$GOROOT" ] && GOROOT="$HOME/.go"
+[ -z "$GOPATH" ] && GOPATH="$HOME/go"
+
+case "$arch" in
+  "64")
+    PLATFORM="linux-arm64"
+    ;;
+  "32")
+    PLATFORM="linux-armv6l"
+    ;;
+  *)
+    error "arch variable is not set, can not continue"
+    ;;
+esac
+
+if [ -z "$PLATFORM" ]; then
+    echo "Your operating system is not supported by the script."
+    exit 1
+fi
+
+if [ -n "$($SHELL -c 'echo $ZSH_VERSION')" ]; then
+    shell_profile="$HOME/.zshrc"
+elif [ -n "$($SHELL -c 'echo $BASH_VERSION')" ]; then
+    shell_profile="$HOME/.bashrc"
+elif [ -n "$($SHELL -c 'echo $FISH_VERSION')" ]; then
+    shell="fish"
+    if [ -d "$XDG_CONFIG_HOME" ]; then
+        shell_profile="$XDG_CONFIG_HOME/fish/config.fish"
+    else
+        shell_profile="$HOME/.config/fish/config.fish"
+    fi
+fi
+
+if [ ! -z "$1" ]; then
+    echo "Unrecognized option: $1"
+    exit 1
+fi
+
+if [ -d "$GOROOT" ]; then
+    echo "The Go install directory ($GOROOT) already exists. Exiting."
+    exit 1
+fi
+
+PACKAGE_NAME="go$version.$PLATFORM.tar.gz"
+TEMP_DIRECTORY=$(mktemp -d)
+
+echo "Downloading $PACKAGE_NAME ..."
+wget https://storage.googleapis.com/golang/$PACKAGE_NAME -O "$TEMP_DIRECTORY/go.tar.gz" || error "Failed to download"
+
+if [ $? -ne 0 ]; then
+    echo "Download failed! Exiting."
+    exit 1
+fi
+
+echo "Extracting File..."
+mkdir -p "$GOROOT"
+
+tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz" || error "Failed to extract"
+
+echo "Configuring shell profile in: $shell_profile"
+touch "$shell_profile"
+if [ "$shell" == "fish" ]; then
+    {
+        echo '# GoLang'
+        echo "set GOROOT '${GOROOT}'"
+        echo "set GOPATH '$GOPATH'"
+        echo 'set PATH $GOPATH/bin $GOROOT/bin $PATH'
+    } >> "$shell_profile"
+else
+    {
+        echo '# GoLang'
+        echo "export GOROOT=${GOROOT}"
+        echo 'export PATH=$GOROOT/bin:$PATH'
+        echo "export GOPATH=$GOPATH"
+        echo 'export PATH=$GOPATH/bin:$PATH'
+    } >> "$shell_profile"
+fi
+
+mkdir -p "${GOPATH}/"{src,pkg,bin}
+echo -e "\nGo $version was installed into $GOROOT.\nMake sure to relogin into your shell or run:"
+echo -e "\n\tsource $shell_profile\n\nto update your environment variables."
+echo "Tip: Opening a new terminal window usually just works. :)"
+rm -f "$TEMP_DIRECTORY/go.tar.gz"
