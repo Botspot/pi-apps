@@ -3365,11 +3365,13 @@ repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
 deb-multimedia.org|\
 apt.pop-os.org\|\
 apt.armbian.com")"
-  # Better Chromium adds Raspberry Pi's and Debian's trixie repos on Raspberry Pi Ubuntu 25.10+ for Raspberry Pi's chromium build.
+  # Better Chromium adds Raspberry Pi's trixie repo and Debian's trixie-security repo on Raspberry Pi Ubuntu 25.10+ for Raspberry Pi's chromium build.
   # /etc/apt/preferences.d/raspberrypi-chromium pins them so that only chromium and libjpeg62-turbo can come from them, so while it exists they are not a FrankenDebian
+  # Debian's trixie main repo is not exempt: Better Chromium removes it right after installing libjpeg62-turbo, because even pinned it makes apt reinstall
+  # packages that Debian and Ubuntu build with the same version on every dist-upgrade. If it is still there, it should be reported.
   local PINNED_CHROMIUM_REPOS=""
   if [ "$__os_id" == Ubuntu ] && [ -f /etc/apt/preferences.d/raspberrypi-chromium ]; then
-    PINNED_CHROMIUM_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF) $(SOURCESENTRY)' | awk '{if ($4=="deb") print}' | grep ' /etc/apt/sources.list.d/\(raspberrypi-chromium\|debian-trixie\|debian-trixie-security\)\.sources:' | awk '{print $1" "$2" "$3}' | sort -u)"
+    PINNED_CHROMIUM_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF) $(SOURCESENTRY)' | awk '{if ($4=="deb") print}' | grep ' /etc/apt/sources.list.d/\(raspberrypi-chromium\|debian-trixie-security\)\.sources:' | awk '{print $1" "$2" "$3}' | sort -u)"
   fi
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
