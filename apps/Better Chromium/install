@@ -47,116 +47,23 @@ if [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
     output="Yes, install PiOS chromium"
   fi
   if [[ "$output" == "Yes"* ]]; then
-    if printf '%s\n' "25.10" "$__os_release" | sort -CV && [ "$(dpkg --print-architecture)" == arm64 ]; then
-      # rpi ubuntu 25.10+ arm64 can run Raspberry Pi's current chromium (its Debian 13 build), which gets security updates from archive.raspberrypi.com
-      # the pi-apps-coders mirror stops at chromium-browser 126, from before Raspberry Pi renamed the package to chromium
-      # its only dependency missing from ubuntu is libjpeg62-turbo (ubuntu's libjpeg62 lacks jpeg_crop_scanline/jpeg_skip_scanlines), so debian 13 is added for that one package
-      # debian's main archive is only there while libjpeg62-turbo installs: debian and ubuntu build thousands of packages with the same version, and with both
-      # archives present apt ties some installed ones (debsums, libgtk3-perl, python3-wadllib) to the blocked debian copy and reinstalls ubuntu's copy as a
-      # "downgrade" on every dist-upgrade. trixie-security stays for libjpeg62-turbo's security updates (DSAs); none of its package versions match ubuntu's.
-      # fixes that debian ships only in a point release would not arrive, but debian has never updated libjpeg-turbo in a stable release.
-      # widevine: on arm64 chromium downloads Google's Linux widevine through its component updater, so libwidevinecdm0 is not used
-      # libwidevinecdm0 is a ChromeOS build of widevine; paired with this chromium's Linux user agent, Netflix fails with error E100 (RPi-Distro/chromium#67)
-      package_installed chromium && rpi_chromium_was_installed=1 || rpi_chromium_was_installed=0
-      undo_rpi_chromium_repos() { # on a first install, take the new repos back out if switching fails
-        [ "$rpi_chromium_was_installed" == 1 ] && return 0
-        rm_external_repo "raspberrypi-chromium" "force"
-        rm_external_repo "debian-trixie" "force"
-        rm_external_repo "debian-trixie-security" "force"
-        sudo rm -f /etc/apt/preferences.d/raspberrypi-chromium
-      }
-      # pins first, so the repos below are never active without them
-      # only chromium comes from Raspberry Pi and only libjpeg62-turbo from debian, everything else keeps coming from ubuntu
-      # is_supported_system does not report the Raspberry Pi and trixie-security repos as a FrankenDebian while this file exists
-      echo 'Package: chromium chromium-common chromium-l10n chromium-driver chromium-shell rpi-chromium-mods zenoty
-Pin: origin archive.raspberrypi.com
-Pin-Priority: 990
+    # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
+    add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
+    # also disable chromium snap apt package from Ubuntu
+    if [[ "$pin_hide_widevine" == 0 ]]; then
+     echo 'Package: chromium-*
+Pin: release o=Pi-Apps-Coders chromium-debs
+Pin-Priority: 1000
 
-Package: *
-Pin: origin archive.raspberrypi.com
-Pin-Priority: -1
-
-Package: libjpeg62-turbo
-Pin: origin deb.debian.org
+Package: libwidevinecdm0
+Pin: release o=Pi-Apps-Coders chromium-debs
 Pin-Priority: 500
 
-Package: libjpeg62-turbo
-Pin: origin security.debian.org
-Pin-Priority: 500
-
-Package: *
-Pin: origin deb.debian.org
-Pin-Priority: -1
-
-Package: *
-Pin: origin security.debian.org
-Pin-Priority: -1
-
-Package: chromium*
+Package: chromium-*
 Pin: release o=Ubuntu*
-Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/raspberrypi-chromium >/dev/null
-      add_external_repo "raspberrypi-chromium" "https://archive.raspberrypi.com/debian/raspberrypi.gpg.key" "https://archive.raspberrypi.com/debian" "trixie" "main" || exit 1
-      add_external_repo "debian-trixie-security" "https://ftp-master.debian.org/keys/archive-key-13-security.asc" "https://security.debian.org/debian-security" "trixie-security" "main" || exit 1
-      # package_installed ignores the architecture, and an armhf libjpeg62-turbo does not satisfy arm64 chromium
-      if [ "$(dpkg-query -W -f='${db:Status-Status}' libjpeg62-turbo:arm64 2>/dev/null)" != installed ]; then
-        # added last, so nothing that can exit runs between adding it and the cleanup below; the trap takes it back out if the script ends early (error, Ctrl+C, closed terminal)
-        trap 'rm_external_repo "debian-trixie" "force"' EXIT
-        # trixie is signed by debian's newest archive keys and by the trixie Stable Release Key; the release key keeps signing it after the archive keys rotate
-        add_external_repo "debian-trixie" "https://ftp-master.debian.org/keys/release-13.asc" "https://deb.debian.org/debian" "trixie" "main" || exit 1
-      fi
-      if ! apt_update; then
-        undo_rpi_chromium_repos
-        error "Failed to update the package lists after adding Raspberry Pi's chromium repository!"
-      fi
-      apt_lock_wait
-      # replace chromium-browser 126 from the pi-apps-coders mirror, if installed
-      remove_list=()
-      for package in chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg chromium-codecs-ffmpeg-extra; do
-        if package_installed "$package"; then
-          remove_list+=("${package}-")
-        fi
-      done
-      # libwidevinecdm0 is no longer used by chromium; remove it unless another installed package depends on it (Brave can)
-      if package_installed libwidevinecdm0 && [ -z "$(apt-cache rdepends --installed --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances libwidevinecdm0 | tail -n +3 | sed 's/^[ |]*//' | grep -v '^chromium-browser')" ]; then
-        remove_list+=("libwidevinecdm0-")
-      fi
-      # never let the switch remove anything else, e.g. libjpeg62:armhf for box86 (libjpeg62-turbo conflicts with libjpeg62 on every architecture)
-      unexpected_removals="$(apt-get -s install chromium chromium-l10n rpi-chromium-mods "${remove_list[@]}" 2>/dev/null | awk '/^Remv /{print $2}' | grep -vxF -f <(printf '%s\n' "${remove_list[@]%-}" ""))"
-      if [ ! -z "$unexpected_removals" ]; then
-        undo_rpi_chromium_repos
-        error "User error: Switching to Raspberry Pi's chromium would also remove these packages:\n$unexpected_removals\nNothing was changed. Remove them yourself first if you no longer need them, or keep using your current chromium."
-      fi
-      sudo apt-get install chromium chromium-l10n rpi-chromium-mods "${remove_list[@]}" -y | less_apt
-      install_status="${PIPESTATUS[0]}"
-      # take debian's main archive back out, whether or not the install worked (see above); apt ignores its downloaded package lists from now on
-      rm_external_repo "debian-trixie" "force"
-      trap - EXIT
-      if [ "$install_status" == 0 ]; then
-        # the old mirror and its pin are no longer needed
-        rm_external_repo "pi-apps-coders-chromium" "force"
-        sudo rm -f /etc/apt/preferences.d/pi-apps-coders-chromium
-        status "Chromium downloads Google's Widevine (used by Netflix and other DRM sites) by itself shortly after its first start. To fetch it right away, open chrome://components and click 'Check for update' under Widevine Content Decryption Module."
-      else
-        undo_rpi_chromium_repos
-      fi
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
     else
-      # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
-      add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
-      # also disable chromium snap apt package from Ubuntu
-      if [[ "$pin_hide_widevine" == 0 ]]; then
-       echo 'Package: chromium-*
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: 1000
-
-Package: libwidevinecdm0
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: 500
-
-Package: chromium-*
-Pin: release o=Ubuntu*
-Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
-      else
-        echo 'Package: chromium-*
+      echo 'Package: chromium-*
 Pin: release o=Pi-Apps-Coders chromium-debs
 Pin-Priority: 1000
 
@@ -167,15 +74,13 @@ Pin-Priority: -1
 Package: chromium-*
 Pin: release o=Ubuntu*
 Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
-      fi
-      # regular apt installs will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
-      # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
-      apt_update
-      apt_lock_wait
-      sudo apt-get --allow-downgrades install chromium-browser -y | less_apt
-      install_status="${PIPESTATUS[0]}"
     fi
-    if [ "$install_status" == 0 ];then #PiOS chromium install successful
+    # regular apt installs will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
+    # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
+    apt_update
+    apt_lock_wait
+    sudo apt-get --allow-downgrades install chromium-browser -y | less_apt
+    if [ "${PIPESTATUS[0]}" == 0 ];then #chromium-browser install successful
       # remove snap chromium
       [ -d /snap/chromium ] && sudo snap remove chromium
       # remove flatpak chromium
@@ -218,8 +123,8 @@ profile chromium-browser /usr/lib/chromium-browser/chromium-browser flags=(uncon
 ' | sudo tee /etc/apparmor.d/chromium-browser >/dev/null
         sudo systemctl restart apparmor.service
       fi
-    else #PiOS chromium install unsuccessful
-      error "Failed to install PiOS chromium with apt-get!\nPlease install this app again, and either try using the Pi OS chromium browser again if you think it was a temporary error, or simply give up and use the chromium version provided by your distro. (fltapak or snap package)"
+    else #chromium-browser install unsuccessful
+      error "Failed to install chromium-browser package with apt-get!\nPlease install this app again, and either try using the Pi OS chromium browser again if you think it was a temporary error, or simply give up and use the chromium version provided by your distro. (fltapak or snap package)"
     fi
   fi
 fi

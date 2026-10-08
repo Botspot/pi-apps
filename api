@@ -3365,14 +3365,6 @@ repo.huaweicloud.com/debian\|repo.huaweicloud.com/ubuntu-ports\|\
 deb-multimedia.org|\
 apt.pop-os.org\|\
 apt.armbian.com")"
-  # Better Chromium adds Raspberry Pi's trixie repo and Debian's trixie-security repo on Raspberry Pi Ubuntu 25.10+ for Raspberry Pi's chromium build.
-  # /etc/apt/preferences.d/raspberrypi-chromium pins them so that only chromium and libjpeg62-turbo can come from them, so while it exists they are not a FrankenDebian
-  # Debian's trixie main repo is not exempt: Better Chromium removes it right after installing libjpeg62-turbo, because even pinned it makes apt reinstall
-  # packages that Debian and Ubuntu build with the same version on every dist-upgrade. If it is still there, it should be reported.
-  local PINNED_CHROMIUM_REPOS=""
-  if [ "$__os_id" == Ubuntu ] && [ -f /etc/apt/preferences.d/raspberrypi-chromium ]; then
-    PINNED_CHROMIUM_REPOS="$(apt-get indextargets --no-release-info --format '$(SITE) $(RELEASE) $(COMPONENT) $(TARGET_OF) $(SOURCESENTRY)' | awk '{if ($4=="deb") print}' | grep ' /etc/apt/sources.list.d/\(raspberrypi-chromium\|debian-trixie-security\)\.sources:' | awk '{print $1" "$2" "$3}' | sort -u)"
-  fi
   if uname -m | grep -qi 'x86\|i686\|i386'; then
     echo "Pi-Apps is not supported on x86 processors. Nearly all apps will fail. Consider switching to this x86 port of Pi-Apps: https://github.com/MCRaspRBX/pi-apps-x86"
     return 1
@@ -3415,7 +3407,7 @@ You must fix this problem before Pi-Apps can function correctly."
   elif [ "$(id -u)" == 0 ]; then
     echo "Pi-Apps is not designed to be run as root user."
     return 1
-  elif local frankendebian="$(echo "$DEFAULT_REPOS" | grep -v $__os_codename | grep -vxF -f <(echo "$PINNED_CHROMIUM_REPOS"))" && [[ "$__os_desc" != Parrot* ]] && [ ! -z "$frankendebian" ];then
+  elif local frankendebian="$(echo "$DEFAULT_REPOS" | grep -v $__os_codename)" && [[ "$__os_desc" != Parrot* ]] && [ ! -z "$frankendebian" ];then
     echo "Congratulations, Linux tinkerer, you broke your system. You have made your system a FrankenDebian.
 This website explains your mistake in more detail: https://wiki.debian.org/DontBreakDebian
 Your current reported release (${__os_codename^}) should not be combined with other releases.
