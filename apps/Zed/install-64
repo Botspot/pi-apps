@@ -2,7 +2,7 @@
 
 # Installs the prebuilt linux-aarch64 bundle from GitHub releases
 
-version=1.22.0
+version=1.23.2
 
 # Download the release bundle (top-level folder 'zed.app' inside)
 rm -rf /tmp/zed.tar.gz /tmp/zed.app
