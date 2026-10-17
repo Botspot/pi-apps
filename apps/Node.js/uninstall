@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# On update, keep nvm, node and all globally installed packages. The install script upgrades node in place.
+if [ "$1" == "update" ];then
+  exit 0
+fi
+
 export NVM_DIR="$HOME/.nvm"
 
 if [ -d "$NVM_DIR" ];then
