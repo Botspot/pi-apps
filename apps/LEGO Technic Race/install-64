@@ -1,0 +1,546 @@
+#!/bin/bash
+
+#LEGO Technic Race is an abandoned 2016 Unity game for Android. This script downloads the original APK, verifies its checksum, patches it
+#on THIS computer (nothing from LEGO is redistributed by Pi-Apps), signs it with a locally generated key, and installs it into Waydroid.
+#The patch fixes a crash that hangs the loading screen (the game's header parser breaks on today's web servers) and makes the Java launcher
+#activity the entry point, so the mouse and window titlebar keep working in Waydroid's multi-window mode.
+
+#got APK from https://www.apkmirror.com/apk/lego-system-as/lego-pull-back-racers-2-0/
+apk_url='https://web.archive.org/web/20261018090956/https://eb5e7388c3df147b74dd2379b7cf8323.r2.cloudflarestorage.com/downloadprod/wp-content/uploads/2016/07/5799d4721de6e/com.lego.technic.race_6.0.161-6_minAPI15%28armeabi-v7a%2Cx86%29%28nodpi%29_apkmirror.com.apk?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=72a5ba3a0b8a601e535d5525f12f8177%2F20261018%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261018T090645Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Signature=88fd8d8d0cd2de08edde286a3cefd5a8320bb60a59304aaeff0b8c1d279beae0'
+apk_sha256='5b00728831628d245af26f6f9e10cb353719c0969331a09dd70b805034429bcb'
+
+package=com.lego.technic.race
+keydir="$HOME/.local/share/pi-apps-technic-race"
+
+[ -z "$apk_url" ] && error "No download URL is set for the LEGO Technic Race APK yet. Edit apk_url in this script."
+
+"${DIRECTORY}/manage" install-if-not-installed Waydroid || error "Waydroid failed to install, so LEGO Technic Race cannot be installed."
+
+install_packages python3 apksigner default-jre-headless || exit 1
+
+#----------------------------------------------------------------------------------------------------------------------
+# Waydroid helpers. These run as the normal user: the Waydroid session belongs to the user, root cannot see it.
+#----------------------------------------------------------------------------------------------------------------------
+session_running() { #true if the user's Waydroid session is running
+  waydroid status 2>/dev/null | grep -q '^Session:.*RUNNING'
+}
+
+wait_for_boot() { #wait up to 2 minutes for Android to finish booting
+  for _ in $(seq 120); do
+    [ "$(waydroid prop get sys.boot_completed 2>/dev/null)" == 1 ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+start_session() { #start Waydroid in the background and wait for Android to boot
+  waydroid session start >/dev/null 2>&1 &
+  sleep 3
+  wait_for_boot || error "Waydroid did not finish booting within 2 minutes. Make sure Waydroid works on its own first (see its app description), then try again."
+}
+
+#----------------------------------------------------------------------------------------------------------------------
+# Download the original APK and check it is exactly the file this patch was written for
+#----------------------------------------------------------------------------------------------------------------------
+workdir=/var/cache/pi-apps/lego-technic-race
+rm -rf "$workdir"
+mkdir -p "$workdir" || error "Could not create $workdir"
+trap 'rm -rf "$workdir"' EXIT
+
+status "Downloading the original LEGO Technic Race APK..."
+wget -O "$workdir/original.apk" "$apk_url" || error "Failed to download the APK from $apk_url"
+
+status -n "Verifying checksum... "
+if ! echo "$apk_sha256  $workdir/original.apk" | sha256sum -c --status; then
+  error "The downloaded APK does not match the expected SHA-256 ($apk_sha256). Refusing to patch an unknown file."
+fi
+status_green Done
+
+#----------------------------------------------------------------------------------------------------------------------
+# Patch: written to a file, then run with python. Standard library only. Refuses to touch an unexpected build.
+#----------------------------------------------------------------------------------------------------------------------
+cat > "$workdir/patch_technic_race.py" <<'PYEOF'
+"""Fixes for LEGO Technic Race 6.0.161 on Waydroid:
+ 1. DownloadRequest.parseDownloadTime throws IndexOutOfRangeException with today's Cache-Control
+    headers, so the load screen hangs forever.
+ 2. The launcher activity is UnityPlayerNativeActivity, whose native input queue stops responding to
+    the mouse and the window titlebar. Make the Java UnityPlayerActivity the launcher instead.
+
+usage: patch_technic_race.py ORIGINAL.apk OUT-unsigned.apk   (then sign with apksigner)
+"""
+import hashlib
+import re
+import struct
+import sys
+
+
+class Asm:
+    def __init__(self, data):
+        self.d = data
+        pe = struct.unpack_from("<I", data, 0x3C)[0]
+        assert data[pe:pe + 4] == b"PE\0\0"
+        nsec, = struct.unpack_from("<H", data, pe + 6)
+        opt_size, = struct.unpack_from("<H", data, pe + 20)
+        opt = pe + 24
+        assert struct.unpack_from("<H", data, opt)[0] == 0x10B, "PE32 only"
+        cli_rva, _ = struct.unpack_from("<II", data, opt + 96 + 14 * 8)
+        sec = opt + opt_size
+        self.secs = []
+        for i in range(nsec):
+            _, vsize, vaddr, rsize, rptr = struct.unpack_from("<8sIIII", data, sec + i * 40)
+            self.secs.append((vaddr, max(vsize, rsize), rptr))
+        cli = self.off(cli_rva)
+        md_rva, _ = struct.unpack_from("<II", data, cli + 8)
+        md = self.off(md_rva)
+        assert struct.unpack_from("<I", data, md)[0] == 0x424A5342
+        vlen, = struct.unpack_from("<I", data, md + 12)
+        p = md + 16 + vlen
+        _, nstreams = struct.unpack_from("<HH", data, p)
+        p += 4
+        self.streams = {}
+        for _ in range(nstreams):
+            so, ss = struct.unpack_from("<II", data, p)
+            p += 8
+            end = data.index(b"\0", p)
+            name = data[p:end].decode()
+            p = (end + 4) & ~3
+            self.streams[name] = (md + so, ss)
+        self.parse_tables()
+
+    def off(self, rva):
+        for va, size, rp in self.secs:
+            if va <= rva < va + size:
+                return rva - va + rp
+        raise ValueError("rva %x" % rva)
+
+    def parse_tables(self):
+        d = self.d
+        t, _ = self.streams["#~"]
+        heap, = struct.unpack_from("<B", d, t + 6)
+        valid, = struct.unpack_from("<Q", d, t + 8)
+        p = t + 24
+        self.rows = {}
+        for i in range(64):
+            if valid >> i & 1:
+                self.rows[i], = struct.unpack_from("<I", d, p)
+                p += 4
+        sidx = 4 if heap & 1 else 2
+        gidx = 4 if heap & 2 else 2
+        bidx = 4 if heap & 4 else 2
+
+        def idx(*tables):
+            return 4 if max(self.rows.get(x, 0) for x in tables) >= 65536 else 2
+
+        def coded(bits, *tables):
+            return 4 if max(self.rows.get(x, 0) for x in tables) >= (1 << (16 - bits)) else 2
+
+        self.sidx, self.bidx = sidx, bidx
+        i_field, i_method = idx(4), idx(6)
+        sizes = {
+            0: 2 + sidx + 3 * gidx,
+            1: coded(2, 0, 0x1A, 0x23, 1) + 2 * sidx,
+            2: 4 + 2 * sidx + coded(2, 2, 1, 0x1B) + i_field + i_method,
+            3: i_field,
+            4: 2 + sidx + bidx,
+            5: i_method,
+            6: 4 + 2 + 2 + sidx + bidx + idx(8),
+        }
+        self.tstart = {}
+        for i in range(0, 7):
+            self.tstart[i] = p
+            p += sizes[i] * self.rows.get(i, 0)
+        self.sizes = sizes
+        self.i_field, self.i_method = i_field, i_method
+        self.tdef_coded = coded(2, 2, 1, 0x1B)
+
+    def string(self, i):
+        base, _ = self.streams["#Strings"]
+        s = base + i
+        return self.d[s:self.d.index(b"\0", s)].decode("utf-8", "replace")
+
+    def blob(self, i):
+        base, _ = self.streams["#Blob"]
+        p = base + i
+        b = self.d[p]
+        if b & 0x80 == 0:
+            n, p = b, p + 1
+        elif b & 0xC0 == 0x80:
+            n, p = ((b & 0x3F) << 8) | self.d[p + 1], p + 2
+        else:
+            n, p = struct.unpack_from(">I", self.d, p)[0] & 0x1FFFFFFF, p + 4
+        return self.d[p:p + n]
+
+    def rd(self, p, n):
+        return int.from_bytes(self.d[p:p + n], "little")
+
+    def types(self):
+        p0 = self.tstart[2]
+        sz = self.sizes[2]
+        for r in range(self.rows[2]):
+            p = p0 + r * sz + 4
+            name = self.string(self.rd(p, self.sidx))
+            ns = self.string(self.rd(p + self.sidx, self.sidx))
+            q = p + 2 * self.sidx + self.tdef_coded + self.i_field
+            mlist = self.rd(q, self.i_method)
+            yield r + 1, ns, name, mlist
+
+    def methods(self, tname):
+        tl = list(self.types())
+        nmeth = self.rows[6]
+        for n, (rid, ns, name, ml) in enumerate(tl):
+            if name != tname:
+                continue
+            end = tl[n + 1][3] if n + 1 < len(tl) else nmeth + 1
+            for m in range(ml, end):
+                p = self.tstart[6] + (m - 1) * self.sizes[6]
+                rva = self.rd(p, 4)
+                flags = self.rd(p + 6, 2)
+                mname = self.string(self.rd(p + 8, self.sidx))
+                sig = self.blob(self.rd(p + 8 + self.sidx, self.bidx))
+                yield m, mname, rva, flags, sig
+
+
+# ---------------------------------------------------------------- patcher
+import hashlib
+import sys
+import zipfile
+
+DLL = "assets/bin/Data/Managed/Assembly-CSharp.dll"
+TYPE, METHOD = "DownloadRequest", "parseDownloadTime"
+# original IL of DownloadRequest.parseDownloadTime in LEGO Technic Race 6.0.161
+# Replacement: the method's own "no Cache-Control header" path.
+#   this.f748 = default(TimeSpan); this.f740 = 0; this.f759 = true; return;
+NEW_IL = bytes.fromhex(
+    "027c48070004" "fe15" "61000001"   # ldarg.0; ldflda f748; initobj TimeSpan
+    "02167d40070004"                   # ldarg.0; ldc.i4.0; stfld f740
+    "02177d59070004"                   # ldarg.0; ldc.i4.1; stfld f759
+    "2a"                               # ret
+)
+EXPECTED_ORIG_SHA256 = "c391a3cc6364825e89d08de9a147c750f6dd8552241da81883a203515fc4e0de"
+
+
+def patch_dll(data):
+    a = Asm(data)
+    hits = [m for m in a.methods(TYPE) if m[1] == METHOD]
+    if len(hits) != 1:
+        raise SystemExit("%s.%s not found" % (TYPE, METHOD))
+    _, _, rva, _, sig = hits[0]
+    fo = a.off(rva)
+    flg, _maxstack, code_size = struct.unpack_from("<HHI", data, fo)
+    if flg & 3 != 3 or flg & 8:
+        raise SystemExit("unexpected method header 0x%x" % flg)
+    code = fo + 12
+    digest = hashlib.sha256(data[code:code + code_size]).hexdigest()
+    if digest != EXPECTED_ORIG_SHA256:
+        raise SystemExit("method body differs from the known 6.0.161 build (%s)" % digest)
+    assert len(NEW_IL) <= code_size
+    out = bytearray(data)
+    struct.pack_into("<I", out, fo + 4, len(NEW_IL))
+    out[code:code + code_size] = NEW_IL + b"\0" * (code_size - len(NEW_IL))
+    return bytes(out)
+
+
+def read_strings(data, off):
+    _, _, size, count, _, flags, str_start, _ = struct.unpack_from("<HHIIIIII", data, off)
+    offs = struct.unpack_from("<%dI" % count, data, off + 28)
+    base = off + str_start
+    utf8 = bool(flags & 0x100)
+    out = []
+    for o in offs:
+        p = base + o
+        if utf8:
+            n = data[p]
+            p += 2 if n & 0x80 else 1
+            n = data[p]
+            p += 2 if n & 0x80 else 1
+            end = data.index(b"\0", p)
+            out.append(data[p:end].decode("utf-8", "replace"))
+        else:
+            n = struct.unpack_from("<H", data, p)[0]
+            out.append(data[p + 2:p + 2 + n * 2].decode("utf-16-le", "replace"))
+    return out, size
+
+
+
+MANIFEST = "AndroidManifest.xml"
+JAVA_ACT = "com.unity3d.player.UnityPlayerActivity"
+NATIVE_ACT = "com.unity3d.player.UnityPlayerNativeActivity"
+
+
+def swap_launcher(data):
+    """Swap the android:name of the two player activities in a binary manifest, so the one that
+    carries the MAIN/LAUNCHER intent-filter (and its meta-data) is the Java activity."""
+    assert struct.unpack_from("<H", data, 0)[0] == 3, "not binary AXML"
+    strings, sp_size = read_strings(data, 8)
+    pos = 8 + sp_size
+    found = []  # (activity name, offset of android:name attribute value fields)
+    while pos < len(data):
+        ctype, _, csize = struct.unpack_from("<HHI", data, pos)
+        if ctype == 0x0102 and strings[struct.unpack_from("<I", data, pos + 20)[0]] == "activity":
+            n = struct.unpack_from("<H", data, pos + 28)[0]
+            for i in range(n):
+                a = pos + 36 + i * 20
+                aname = strings[struct.unpack_from("<I", data, a + 4)[0]]
+                raw = struct.unpack_from("<i", data, a + 8)[0]
+                if aname == "name" and raw != -1:
+                    found.append((strings[raw], a))
+        pos += csize
+    names = [f[0] for f in found]
+    if JAVA_ACT not in names or NATIVE_ACT not in names:
+        raise SystemExit("player activities not found in manifest: %r" % names)
+    (n1, a1), (n2, a2) = [f for f in found if f[0] in (JAVA_ACT, NATIVE_ACT)]
+    if n1 != JAVA_ACT or n2 != NATIVE_ACT:
+        raise SystemExit("manifest already swapped or unexpected order: %r" % names)
+    out = bytearray(data)
+    # swap rawValue (+8) and typedValue.data (+16), both are the string index
+    for off in (8, 16):
+        v1 = struct.unpack_from("<i", data, a1 + off)[0]
+        v2 = struct.unpack_from("<i", data, a2 + off)[0]
+        struct.pack_into("<i", out, a1 + off, v2)
+        struct.pack_into("<i", out, a2 + off, v1)
+    return bytes(out)
+
+
+THEME_NO_TITLEBAR = 0x01030006
+THEME_NO_TITLEBAR_FULLSCREEN = 0x01030007
+
+
+def add_activity_theme(data):
+    """Give the launcher activity android:theme=Theme.NoTitleBar.Fullscreen. The manifest only has a
+    (meaningless) android:theme on <manifest>; reuse that attribute's name/namespace indices."""
+    strings, sp_size = read_strings(data, 8)
+    pos = 8 + sp_size
+    proto = None
+    target = None
+    while pos < len(data):
+        ctype, _, csize = struct.unpack_from("<HHI", data, pos)
+        if ctype == 0x0102:
+            ename = strings[struct.unpack_from("<I", data, pos + 20)[0]]
+            n = struct.unpack_from("<H", data, pos + 28)[0]
+            attrs = [struct.unpack_from("<iiiHBBI", data, pos + 36 + i * 20) for i in range(n)]
+            if ename == "manifest":
+                for a in attrs:
+                    if strings[a[1]] == "theme" and a[5] == 0x01 and a[6] == THEME_NO_TITLEBAR:
+                        proto = a
+            if ename == "activity":
+                names = [strings[a[2]] for a in attrs if strings[a[1]] == "name" and a[2] != -1]
+                if names == [JAVA_ACT] and not any(strings[a[1]] == "theme" for a in attrs):
+                    if struct.unpack_from("<HHH", data, pos + 30) != (0, 0, 0):
+                        raise SystemExit("unexpected id/class/style index in activity element")
+                    target = (pos, csize)
+        pos += csize
+    if proto is None or target is None:
+        raise SystemExit("manifest layout not as expected; theme not added")
+    pos, csize = target
+    entry = struct.pack("<iiiHBBI", proto[0], proto[1], -1, 8, 0, 0x01, THEME_NO_TITLEBAR_FULLSCREEN)
+    out = bytearray(data[:pos + 36]) + entry + data[pos + 36:]   # theme sorts first (0x01010000)
+    struct.pack_into("<I", out, pos + 4, csize + 20)
+    struct.pack_into("<H", out, pos + 28, struct.unpack_from("<H", data, pos + 28)[0] + 1)
+    struct.pack_into("<I", out, 4, len(out))
+    return bytes(out)
+
+
+# Permissions the game never needs. Each one makes Android 6+ show a runtime prompt on first launch:
+# READ_PHONE_STATE = "make and manage phone calls", the *_EXTERNAL_STORAGE pair = "photos, media and files".
+# The game only writes to its own app-private folder, which needs no permission.
+# INTERNET must stay: without it Unity's WWW thread dies with an uncaught SecurityException.
+DROP_PERMISSIONS = (
+    "android.permission.READ_PHONE_STATE",
+    "android.permission.READ_EXTERNAL_STORAGE",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+)
+
+
+def remove_permissions(data, names=DROP_PERMISSIONS):
+    """Delete the <uses-permission> elements named in `names` from a binary manifest."""
+    strings, sp_size = read_strings(data, 8)
+    pos = 8 + sp_size
+    out = bytearray(data[:pos])
+    removed = []
+    skip_end = 0
+    while pos < len(data):
+        ctype, _, csize = struct.unpack_from("<HHI", data, pos)
+        if ctype == 0x0102 and strings[struct.unpack_from("<I", data, pos + 20)[0]] == "uses-permission":
+            n = struct.unpack_from("<H", data, pos + 28)[0]
+            pname = ""
+            for i in range(n):
+                a = pos + 36 + i * 20
+                raw = struct.unpack_from("<i", data, a + 8)[0]
+                if strings[struct.unpack_from("<I", data, a + 4)[0]] == "name" and raw != -1:
+                    pname = strings[raw]
+            if pname in names:
+                removed.append(pname)
+                skip_end += 1
+                pos += csize
+                continue
+        elif ctype == 0x0103 and skip_end and strings[struct.unpack_from("<I", data, pos + 20)[0]] == "uses-permission":
+            skip_end -= 1
+            pos += csize
+            continue
+        out += data[pos:pos + csize]
+        pos += csize
+    missing = set(names) - set(removed)
+    if missing or skip_end:
+        raise SystemExit("manifest does not match the expected build, permissions not found: %s" % sorted(missing))
+    struct.pack_into("<I", out, 4, len(out))
+    return bytes(out)
+
+
+def block_network(data):
+    """Stop DownloadRequest from ever using the network, so the game's config request (and anything else routed
+    through DownloadRequest) is served from the copy bundled in the APK (assets/2) or fails at once, as if offline.
+
+      download():            ignore doLocalDownload (the 'force a fresh download' flag), so a local or bundled copy is used first.
+                             Two 11-byte 'ldarg.0; ldfld doLocalDownload; brfalse' sequences become nops.
+      startRemoteDownload(): body starts with 'this.fail(); return;', so no WWW/Request object is ever created.
+    Other code that creates its own WWW objects (not through DownloadRequest) is not affected."""
+    a = Asm(data)
+    methods = {m[1]: m for m in a.methods(TYPE)}
+    out = bytearray(data)
+
+    def body_of(name, expect_sha):
+        _, _, rva, _, _ = methods[name]
+        fo = a.off(rva)
+        flg, _ms, size = struct.unpack_from("<HHI", data, fo)
+        if flg & 3 != 3:
+            raise SystemExit("unexpected method header for %s" % name)
+        code = fo + 12
+        if hashlib.sha256(data[code:code + size]).hexdigest() != expect_sha:
+            raise SystemExit("%s differs from the known 6.0.161 build, network block not applied" % name)
+        return code
+
+    code = body_of("download", "88354435d4ed4c7f38c92c2333bedf40c02cd5dd473d9d888b1974ffa0e87265")
+    for off in (0x30, 0x59):
+        seq = data[code + off:code + off + 11]
+        # ldarg.0; ldfld <doLocalDownload>; brfalse <+0x13>
+        if not (seq[0] == 0x02 and seq[1] == 0x7B and seq[6] == 0x39):
+            raise SystemExit("unexpected download() code, network block not applied")
+        out[code + off:code + off + 11] = b"\x00" * 11
+
+    code = body_of("startRemoteDownload", "cbed2e1317da95ac3f817f7cb472f6e878fc37a6fd8566b24e6bd1f1671d34cf")
+    fail_token = 0x06000000 | methods["fail"][0]
+    out[code:code + 7] = b"\x02\x28" + struct.pack("<I", fail_token) + b"\x2a"   # ldarg.0; call fail; ret
+    return bytes(out)
+
+
+CONFIG = "assets/2"
+CONFIG_SHA256 = "34e5dc323fcee985ca5f316423d29dc6fcff0c20aabf3016e9649caf8646025a"
+# service endpoints in the bundled config (LEGO ID and highscores). The privacy/cookie links are only opened by a user tap.
+DEAD_URL = "http://127.0.0.1:9/"   # nothing listens on the discard port; a request is refused on the spot
+BLOCK_TAGS = (
+    "legoidconfiguration", "legoiddeletedaccountsfeed", "legoidmyfriends", "legoidmyfriendswebpage", "legoidtoken",
+    "highscore-get", "highscore-leaderboard", "highscore-myleaderboard", "highscore-save", "token-get",
+)
+
+
+def neutralize_config(data):
+    """Point every service endpoint in the bundled config at a dead local address."""
+    if hashlib.sha256(data).hexdigest() != CONFIG_SHA256:
+        raise SystemExit("assets/2 differs from the known 6.0.161 build, config not changed")
+    text = data.decode("ascii")
+    for tag in BLOCK_TAGS:
+        text, n = re.subn(r"(<%s>)[^<]*(</%s>)" % (tag, tag), lambda m: m.group(1) + DEAD_URL + m.group(2), text)
+        if n != 1:
+            raise SystemExit("config element <%s> not found exactly once" % tag)
+    return text.encode("ascii")
+
+
+def patch_apk(src, dst, block=True):
+    with zipfile.ZipFile(src) as zi, zipfile.ZipFile(dst, "w") as zo:
+        for info in zi.infolist():
+            name = info.filename
+            if name.startswith("META-INF/"):
+                continue  # old signature is invalid after patching; re-sign afterwards
+            data = zi.read(name)
+            if name == DLL:
+                data = patch_dll(data)
+                if block:
+                    data = block_network(data)
+            elif name == CONFIG and block:
+                data = neutralize_config(data)
+            elif name == MANIFEST:
+                data = remove_permissions(add_activity_theme(swap_launcher(data)))
+            zo.writestr(info, data, compress_type=info.compress_type)
+
+
+if __name__ == "__main__":
+    args = [x for x in sys.argv[1:] if x != "--allow-network"]
+    if len(args) != 2:
+        raise SystemExit("usage: patch_technic_race.py ORIGINAL.apk OUT-unsigned.apk [--allow-network]")
+    patch_apk(args[0], args[1], block="--allow-network" not in sys.argv[1:])
+    print("patched; now sign with apksigner")
+PYEOF
+
+status -n "Patching the APK... "
+python3 -I "$workdir/patch_technic_race.py" "$workdir/original.apk" "$workdir/patched-unsigned.apk" >/dev/null \
+  || error "Patching the APK failed, please refer to errors above."
+status_green Done
+
+#----------------------------------------------------------------------------------------------------------------------
+# Sign with a per-user key. The uninstall script keeps this key during a Pi-Apps update, so the new APK has the same
+# signature and installs over the old one with the game's saved data intact.
+#----------------------------------------------------------------------------------------------------------------------
+mkdir -p "$keydir"
+chmod 700 "$keydir"
+if [ ! -f "$keydir/local.keystore" ]; then
+  status "Generating a local signing key..."
+  keytool -genkeypair -keystore "$keydir/local.keystore" -storepass pi-apps-local -keypass pi-apps-local \
+    -alias technicrace -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Pi-Apps local signing key" >/dev/null 2>&1 \
+    || error "Failed to generate a signing key."
+fi
+
+status -n "Signing the APK... "
+apksigner sign --ks "$keydir/local.keystore" --ks-pass pass:pi-apps-local --key-pass pass:pi-apps-local \
+  --out "$workdir/technic-race.apk" "$workdir/patched-unsigned.apk" || error "Failed to sign the APK."
+apksigner verify "$workdir/technic-race.apk" || error "The signed APK did not verify."
+status_green Done
+
+#----------------------------------------------------------------------------------------------------------------------
+# Install into Waydroid
+#----------------------------------------------------------------------------------------------------------------------
+started_session=0
+if ! session_running; then
+  status "Starting Waydroid, please wait..."
+  start_session
+  started_session=1
+fi
+
+#the game ships only 32-bit ARM native code
+if ! sudo waydroid shell -- getprop ro.product.cpu.abilist | grep -q armeabi-v7a; then
+  error "This Waydroid image cannot run 32-bit ARM apps (ro.product.cpu.abilist has no armeabi-v7a), and LEGO Technic Race has no 64-bit build."
+fi
+
+#This game only understands touch events, so Waydroid must translate the mouse into touch for it.
+#The prop is a comma-separated list of package names (91 characters max). Add ours without removing anyone else's.
+cur="$(waydroid prop get persist.waydroid.fake_touch 2>/dev/null)"
+case ",$cur," in
+  *",$package,"*|*",*,"*)
+    :  #already listed (or a wildcard already covers it)
+    ;;
+  *)
+    new="${cur:+$cur,}$package"
+    if [ "${#new}" -gt 91 ]; then
+      warning "persist.waydroid.fake_touch would exceed Waydroid's 91-character limit, so $package was NOT added. The mouse will not work in this game until you add it yourself."
+    else
+      status "Enabling mouse-to-touch input for $package in Waydroid..."
+      waydroid prop set persist.waydroid.fake_touch "$new" || error "Failed to set persist.waydroid.fake_touch"
+      #Waydroid only reads this prop at session start
+      waydroid session stop
+      sleep 3
+      start_session
+    fi
+    ;;
+esac
+
+status "Installing the app into Android..."
+#"waydroid app install" can print a failure and still exit 0, so check the app is really listed afterwards
+app_installed() { waydroid app list 2>/dev/null | grep -qx "packageName: $package"; }
+waydroid app install "$workdir/technic-race.apk"
+app_installed || waydroid app install "$workdir/technic-race.apk"
+app_installed || error "Android did not install $package. If an older copy signed with a different key is already installed, remove it inside Waydroid (Settings > Apps) and run this install again."
+
+if [ "$started_session" == 1 ];then
+  waydroid session stop
+fi
+status_green "Done. Launch it from the menu, or run: waydroid app launch $package"
+true

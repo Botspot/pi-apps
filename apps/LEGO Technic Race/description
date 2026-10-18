@@ -1,0 +1,17 @@
+Classic LEGO Technic Race (Pullback Racer) from 2016, running in Waydroid. A one-time local patch makes the abandoned game start and take mouse input.
+Requires Waydroid, which will be installed first if needed.
+
+To run:
+Menu -> Waydroid -> Race 2
+To run in a terminal: waydroid app launch com.lego.technic.race
+
+HOW IT WORKS: Pi-Apps downloads the original Android APK, checks its SHA-256, patches it on your computer, signs it with a local key, and installs it into Waydroid.
+ - The original game hangs on its loading screen because its code cannot parse today's web server headers. The patch changes that one function.
+ - The game's native launcher stops responding to the mouse and window titlebar in Waydroid's multi-window mode, so the patch makes the Java launcher the entry point.
+
+NOTE: this adds com.lego.technic.race to Waydroid's persist.waydroid.fake_touch list (mouse is treated as touch for this app only). Other apps are not affected, and uninstalling removes the entry.
+ - The game no longer downloads its configuration. It uses the copy bundled in the app, so it does not contact LEGO's servers for that. (Other network code in the game is not blocked.)
+ - Three permissions that only produced pop-ups (phone state, storage) are removed.
+
+NOTE: online features such as LEGO ID and leaderboards no longer exist, and the game does not need them.
+KNOWN QUIRK: if the Android titlebar covers part of the game, unmaximize and maximize the window once.
