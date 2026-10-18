@@ -228,42 +228,71 @@ status "Writing changes..."
 #add zzzz_combine_values script in all cases to combine --enable-features arguments
 echo "Creating workaround script at ${folder}/zzzz_combine_values"
 cat << "EOF" | sudo tee "${folder}/zzzz_combine_values" >/dev/null
+#!/bin/sh
 #This script combines multiple invocations of --enable-features and --disable-features into one argument so that Chromium does not ignore any.
 #Written by Botspot for the Pi-Apps Better Chromium script.
+#Fixed by Claude for POSIX compliance and safe space preservation in arguments.
 
-#Intercept chromium args and move them to CHROMIUM_FLAGS
-while [ $# -gt 0 ]; do
-  case "$1" in
-    #Avoid passing chromium-browser script args to chromium-browser binary
-    -h | --help | -help | --verbose | -g | --debug | --no-touch-pinch | --temp-profile | -- ) # Stop option prcessing
-      break ;;
-    * )
-      CHROMIUM_FLAGS="$CHROMIUM_FLAGS $1"
-      shift ;;
-  esac
-done
-
-IFS=' '
 enable=''
 disable=''
 new_flags=''
+
+# 1. Parse existing CHROMIUM_FLAGS (from other .d scripts)
 for word in $CHROMIUM_FLAGS ;do
-  if echo "$word" | grep -q '^--enable-features=' ;then
-    enable="${enable},$(echo "$word" | sed 's/^--enable-features=//g')"
-  elif echo "$word" | grep -q '^--disable-features=' ;then
-    disable="${disable},$(echo "$word" | sed 's/^--disable-features=//g')"
-  else
-    new_flags="$new_flags $word"
-  fi
+  case "$word" in
+    --enable-features=*)
+      enable="${enable},${word#--enable-features=}"
+      ;;
+    --disable-features=*)
+      disable="${disable},${word#--disable-features=}"
+      ;;
+    *)
+      new_flags="$new_flags $word"
+      ;;
+  esac
+done
+CHROMIUM_FLAGS="$new_flags"
+
+# 2. Parse user arguments securely without losing spaces
+arg_count=$#
+i=0
+while [ "$i" -lt "$arg_count" ]; do
+  arg="$1"
+  shift
+  case "$arg" in
+    -h | --help | -help | --verbose | -g | --debug | --no-touch-pinch | --temp-profile | -- )
+      # Put the argument back
+      set -- "$@" "$arg"
+      i=$((i + 1))
+      # Restore the rest of the arguments in the correct order
+      while [ "$i" -lt "$arg_count" ]; do
+        arg="$1"
+        shift
+        set -- "$@" "$arg"
+        i=$((i + 1))
+      done
+      break
+      ;;
+    --enable-features=*)
+      enable="${enable},${arg#--enable-features=}"
+      ;;
+    --disable-features=*)
+      disable="${disable},${arg#--disable-features=}"
+      ;;
+    *)
+      # Keep the argument safely in the positional list
+      set -- "$@" "$arg"
+      ;;
+  esac
+  i=$((i + 1))
 done
 
-#remove initial comma
-enable="$(echo "$enable" | sed 's/^,//g')"
-disable="$(echo "$disable" | sed 's/^,//g')"
+# Remove initial commas
+enable=$(echo "$enable" | sed 's/^,//g')
+disable=$(echo "$disable" | sed 's/^,//g')
 
-CHROMIUM_FLAGS="$new_flags"
-[ ! -z "$enable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --enable-features=$enable"
-[ ! -z "$disable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --disable-features=$disable"
+[ -n "$enable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --enable-features=$enable"
+[ -n "$disable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --disable-features=$disable"
 EOF
 
 #dark mode
