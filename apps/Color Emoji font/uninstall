@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo rm -f /usr/local/share/fonts/NotoColorEmoji.ttf || error "Failed to remove font file!"
+sudo rm -f /usr/local/share/fonts/Noto-3D-128.ttf || error "Failed to remove font file!"
 fc-cache -f || error "Failed to run fc-cache!"
 
 purge_packages || exit 1
