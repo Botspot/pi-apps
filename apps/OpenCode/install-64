@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Installs the prebuilt linux-arm64 binary from GitHub releases, the same source used by the official installer at https://opencode.ai/install
+
+version=1.18.34
+
+# Download the prebuilt binary tarball (contains a bare 'opencode' binary)
+rm -rf /tmp/opencode.tar.gz /tmp/opencode
+wget -O /tmp/opencode.tar.gz "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-linux-arm64.tar.gz" || error "Failed to download OpenCode!"
+
+# Extract it
+tar -xzf /tmp/opencode.tar.gz -C /tmp || error "Failed to extract OpenCode!"
+
+# Install the binary system-wide so 'opencode' works in any terminal
+sudo mv /tmp/opencode /usr/local/bin/opencode || error "Failed to install opencode to /usr/local/bin!"
+sudo chmod +x /usr/local/bin/opencode
+
+# Clean up download
+rm -rf /tmp/opencode.tar.gz /tmp/opencode
