@@ -1,0 +1,64 @@
+#!/bin/bash
+
+package=com.lego.technic.race
+keydir="$HOME/.local/share/pi-apps-technic-race"
+
+#During a Pi-Apps update, this old uninstall script runs before the new install script.
+#Keep the game installed in Android, its mouse-to-touch entry, and the signing key, so the new APK (signed with the
+#same key) installs over the old one and the game's saved data survives. Removing the key would make the new APK's
+#signature differ, and Android would then refuse the update unless the game and its data were removed first.
+if [ "$1" != update ];then
+  #Waydroid commands must be run as the normal user: the session belongs to the user, root cannot see it.
+  if command -v waydroid >/dev/null; then
+    started_session=0
+    if ! waydroid status 2>/dev/null | grep -q '^Session:.*RUNNING'; then
+      status "Starting Waydroid to remove the app, please wait..."
+      waydroid session start >/dev/null 2>&1 &
+      sleep 3
+      for _ in $(seq 120); do
+        [ "$(waydroid prop get sys.boot_completed 2>/dev/null)" == 1 ] && break
+        sleep 1
+      done
+      started_session=1
+    fi
+
+    if [ "$(waydroid prop get sys.boot_completed 2>/dev/null)" == 1 ]; then
+      #"waydroid app remove" can print a failure (for example "Failed with code: -3") and still exit 0, so check the real state instead
+      app_installed() { waydroid app list 2>/dev/null | grep -qx "packageName: $package"; }
+
+      if app_installed; then
+        waydroid app remove "$package"
+      fi
+      if app_installed; then
+        warning "waydroid app remove did not remove $package, trying the Android package manager directly..."
+        sudo waydroid shell -- pm uninstall "$package"
+      fi
+      if app_installed; then
+        #keep the fake_touch entry and the signing key: the app is still installed and still needs them
+        warning "Could not remove $package from Android. Remove it inside Waydroid (Settings > Apps) when convenient."
+        keep_key=1
+      fi
+
+      #take our package out of the mouse-to-touch list, leave every other entry alone
+      cur=''
+      [ "$keep_key" == 1 ] || cur="$(waydroid prop get persist.waydroid.fake_touch 2>/dev/null)"
+      case ",$cur," in
+        *",$package,"*)
+          new="$(printf '%s' "$cur" | tr ',' '\n' | grep -vxF "$package" | paste -sd, -)"
+          waydroid prop set persist.waydroid.fake_touch "$new"
+          ;;
+      esac
+    else
+      warning "Waydroid did not start, so $package could not be removed from Android automatically."
+    fi
+
+    if [ "$started_session" == 1 ];then
+      waydroid session stop
+    fi
+  fi
+
+  #the per-user signing key created by the install script
+  [ "$keep_key" == 1 ] || rm -rf "$keydir"
+fi
+
+purge_packages || exit 1

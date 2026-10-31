@@ -1,8 +1,8 @@
 #!/bin/bash
-wget -O /tmp/NotoColorEmoji.ttf https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf || error "Failed to download NotoColorEmoji.ttf!"
+wget -O /tmp/Noto-3D-128.ttf https://github.com/googlefonts/noto-emoji/raw/e20cbc2bbec1926686be9f9bee7d1d2cfa1fea0e/3D/fonts/Noto-3D-128.ttf?download= || error "Failed to download Noto-3D-128.ttf!"
 
 sudo mkdir -p /usr/local/share/fonts || error "Failed to create /usr/local/share/fonts folder!"
-sudo mv /tmp/NotoColorEmoji.ttf /usr/local/share/fonts
+sudo mv /tmp/Noto-3D-128.ttf /usr/local/share/fonts
 
 fc-cache -f || sudo fc-cache -fv || error "Failed to run fc-cache!"
 

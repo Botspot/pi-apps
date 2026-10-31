@@ -53,6 +53,9 @@ jobs:
         uses: actions/checkout@v4
         if: github.event_name == 'pull_request_target'
         with:
+          # IMPORTANT: this is SAFE in this context because this workflow only runs apt and shellcheck
+          # this workflow cannot be used to execute arbitrary code from the PR
+          allow-unsafe-pr-checkout: true
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Check vital scripts for errors

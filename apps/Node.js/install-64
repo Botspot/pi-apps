@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version=v24.21.0
-version2=v0.40.7
+version=v26.13.0
+version2=v0.40.8
 
 if [ -f ~/.npmrc ];then
   warning "You had a ~/.npmrc file, which causes problems with nvm. Moving it to ~/.npmrc.backup"
@@ -22,24 +22,56 @@ wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/${version2}/install.sh" 
 #remove original nvm stuff from bashrc
 sed -i '/NVM_DIR/d' ~/.bashrc
 # Create nvm initialisation script in another file for easier uninstallation
-# Credit: https://www.growingwiththeweb.com/2018/01/slow-nvm-init.html
-echo 'if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type -t __init_nvm)" = function ]; then
+# The default node version's bin directory is added to PATH directly, so every installed global package works in new shells
+# nvm itself is only loaded the first time the nvm command is used, to keep shell startup fast
+cat > ~/.node_bashrc <<'EOF'
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
   export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-  declare -a __node_commands=("nvm" "node" "npm" "yarn" "gulp" "grunt" "webpack")
-  function __init_nvm() {
-    for i in "${__node_commands[@]}"; do unalias $i; done
-    . "$NVM_DIR"/nvm.sh
-    unset __node_commands
-    unset -f __init_nvm
-  }
-  for i in "${__node_commands[@]}"; do alias $i="__init_nvm && "$i; done
-fi' > ~/.node_bashrc
-echo ". ~/.node_bashrc" >> ~/.bashrc
+  __nvm_default="$(cat "$NVM_DIR/alias/default" 2>/dev/null)"
+  if [ ! -d "$NVM_DIR/versions/node/$__nvm_default/bin" ]; then
+    __nvm_default="$(ls -1 "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -n1)"
+  fi
+  if [ -d "$NVM_DIR/versions/node/$__nvm_default/bin" ]; then
+    case ":$PATH:" in
+      *":$NVM_DIR/versions/node/$__nvm_default/bin:"*) ;;
+      *) export PATH="$NVM_DIR/versions/node/$__nvm_default/bin:$PATH" ;;
+    esac
+  fi
+  unset __nvm_default
+  if [ ! "$(type -t nvm)" = function ]; then
+    nvm() {
+      unset -f nvm
+      . "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+      nvm "$@"
+    }
+  fi
+fi
+EOF
+grep -qF ". ~/.node_bashrc" ~/.bashrc || echo ". ~/.node_bashrc" >> ~/.bashrc
 
 # One time use, since `source ~/.bashrc` not working
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # Install nodejs
-nvm install $version || error "Failed to install node.js with nvm!"
+
+# On update, keep the previously installed node version around so its global packages can be migrated
+old_version=""
+if [ "$1" == "update" ];then
+  old_version="$(nvm version default 2>/dev/null)"
+  [ "$old_version" == "N/A" ] && old_version=""
+fi
+
+if [ -n "$old_version" ] && [ "$old_version" != "$version" ];then
+  # Install the new version, reinstall all global packages from the old version, and update npm
+  nvm install $version --reinstall-packages-from="$old_version" --latest-npm || error "Failed to update node.js with nvm!"
+  nvm alias default $version || error "Failed to set $version as the default node.js version!"
+  nvm uninstall "$old_version" || warning "Failed to remove old node.js version $old_version"
+else
+  nvm install $version || error "Failed to install node.js with nvm!"
+  if [ "$1" == "update" ];then
+    # Same node version: still bring npm up to date
+    nvm install-latest-npm || warning "Failed to update npm"
+  fi
+fi

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+version=7.1.0
+
+wget -O /var/cache/pi-apps/Geekbench7.tar.gz https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz
+tar -xf /var/cache/pi-apps/Geekbench7.tar.gz -C /var/cache/pi-apps || error "Failed to extract files!"
+rm -f /var/cache/pi-apps/Geekbench7.tar.gz ./Geekbench7.tar.gz
+sudo mv -f /var/cache/pi-apps/Geekbench-${version}-LinuxARMPreview /opt/geekbench7 || error "Failed to move source folder to /opt!"
+
+# Create symbolic link
+sudo ln -sf /opt/geekbench7/geekbench_aarch64 /usr/local/bin/geekbench7 || error "Failed to create symbolic link to /usr/local/bin!"

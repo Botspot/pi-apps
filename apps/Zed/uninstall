@@ -1,0 +1,6 @@
+#!/bin/bash
+
+purge_packages || exit 1
+
+sudo rm -rf /opt/zed /usr/local/bin/zed /usr/share/applications/dev.zed.Zed.desktop
+

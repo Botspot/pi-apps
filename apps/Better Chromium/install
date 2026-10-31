@@ -3,121 +3,13 @@
 # obtain model
 get_model &>/dev/null
 
-ubuntu_pios_chromium_available=0
-if [[ "$model" == *"Raspberry Pi"* ]] && [[ "$__os_id" == Ubuntu ]] && printf '%s\n' "22.04" "$__os_release" | sort -CV; then
-  ubuntu_pios_chromium_available=1
-  # Ubuntu must be 22.10+ (GLIBC 2.36+) to be compatible with widevine
-  pin_hide_widevine=1
-  if printf '%s\n' "22.10" "$__os_release" | sort -CV; then
-    pin_hide_widevine=0
-  fi
-fi
-
 #determine if chromium is installed
 if command -v chromium >/dev/null || command -v chromium-browser >/dev/null || [ -d /snap/chromium ] || [ -d /var/lib/flatpak/app/org.chromium.Chromium ];then
   echo "Chromium is installed. Continuing..."
-# chromium is not installed but PiOS chromium could be installed
-elif [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
-  if [[ "$pin_hide_widevine" == 0 ]]; then
-    description="Chromium is not installed but the PiOS chromium browser is available and is faster and supports widevine. Install it?"
-  else
-    description="Chromium is not installed but the PiOS chromium browser is available and is faster. Install it?"
-  fi
-  userinput_func "$description" "Yes, install PiOS chromium" "No, exit Better Chromium now"
-  if [ "$output" == "No, exit Better Chromium now" ]; then
-    error "User error: Chromium is not installed and you choose not to install PiOS chromium! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
-  fi
 else
   error "User error: Chromium is not installed! Failed to find either a 'chromium' command or 'chromium-browser' command. If you are sure Chromium is installed, please reach out to Botspot for this to be fixed."
 fi
 
-#install PiOS chromium on Raspberry Pi Ubuntu
-if [[ "$ubuntu_pios_chromium_available" == 1 ]]; then
-  if [[ "$pin_hide_widevine" == 0 ]]; then
-    description="The PiOS chromium browser is faster and supports widevine. Install it?"
-  else
-    description="The PiOS chromium browser is faster. Install it?"
-  fi
-  if [ -d /snap/chromium ]; then
-    userinput_func "$description" "Yes, uninstall Ubuntu snap chromium and install PiOS chromium" "No, leave my Ubuntu snap chromium untouched"
-  elif [ -d /var/lib/flatpak/app/org.chromium.Chromium ]; then
-    userinput_func "$description" "Yes, uninstall flatpak chromium and install PiOS chromium" "No, leave my flatpak chromium untouched"
-  else
-    # do not prompt user again for installing PiOS chromium when they do not currently have the snap or flatpak installed
-    output="Yes, install PiOS chromium"
-  fi
-  if [[ "$output" == "Yes"* ]]; then
-    # rpi ubuntu (22.04+) use Pi OS packaged chromium for better hardware support
-    add_external_repo "pi-apps-coders-chromium" "https://github.com/Pi-Apps-Coders/chromium-debs/raw/main/KEY.gpg" "https://github.com/Pi-Apps-Coders/chromium-debs/releases/download/apt-release" "./" || exit 1
-    # also disable chromium snap apt package from Ubuntu
-    if [[ "$pin_hide_widevine" == 0 ]]; then
-     echo 'Package: chromium-*
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: 1000
-
-Package: libwidevinecdm0
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: 500
-
-Package: chromium-*
-Pin: release o=Ubuntu*
-Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
-    else
-      echo 'Package: chromium-*
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: 1000
-
-Package: libwidevinecdm0
-Pin: release o=Pi-Apps-Coders chromium-debs
-Pin-Priority: -1
-
-Package: chromium-*
-Pin: release o=Ubuntu*
-Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/pi-apps-coders-chromium >/dev/null
-    fi
-    # regular apt installs will not switch an already installed 1:1snap* package to a XXX chromium-browser package since this would constitute a downgrade
-    # the pin priorities added above will prevent Ubuntu repository chromium-browser packages from even showing or installing in the future but we still need to do the initial downgrade from 1:1snap* to the Pi OS version of chromium-browser
-    apt_update
-    apt_lock_wait
-    sudo apt-get --allow-downgrades install chromium-browser -y | less_apt
-    if [ "${PIPESTATUS[0]}" == 0 ];then #chromium-browser install successful
-      # remove snap chromium
-      [ -d /snap/chromium ] && sudo snap remove chromium
-      # remove flatpak chromium
-      [ -d /var/lib/flatpak/app/org.chromium.Chromium ] && sudo flatpak uninstall org.chromium.Chromium -y
-      # copy snap or flatpak chromium config over to ~/.config/chromium if it does not already exist
-      if [ ! -d ~/.config/chromium ]; then
-        mkdir -p ~/.config
-        if [ -d ~/snap/chromium/current/.config/chromium ]; then
-          cp -R ~/snap/chromium/current/.config/chromium ~/.config/
-        elif [ -d ~/snap/chromium/common/chromium ]; then
-          cp -R ~/snap/chromium/common/chromium ~/.config/
-        elif [ -d ~/.var/app/org.chromium.Chromium/config/chromium ]; then
-          cp -R ~/.var/app/org.chromium.Chromium/config/chromium ~/.config/
-        fi
-      fi
-      # add apparmor profile if needed
-      if sysctl kernel.apparmor_restrict_unprivileged_userns | grep -q 1 ; then
-        echo '# This profile allows everything and only exists to give the
-# application a name instead of having the label "unconfined"
-
-abi <abi/4.0>,
-include <tunables/global>
-
-profile chromium-browser /usr/lib/chromium-browser/chromium-browser flags=(unconfined) {
-  userns,
-
-  # Site-specific additions and overrides. See local/README for details.
-  include if exists <local/chromium-browser>
-}
-' | sudo tee /etc/apparmor.d/chromium-browser >/dev/null
-        sudo systemctl restart apparmor.service
-      fi
-    else #chromium-browser install unsuccessful
-      error "Failed to install chromium-browser package with apt-get!\nPlease install this app again, and either try using the Pi OS chromium browser again if you think it was a temporary error, or simply give up and use the chromium version provided by your distro. (fltapak or snap package)"
-    fi
-  fi
-fi
 
 #determine where the Chromium customizations folder is.
 if [ -d /etc/chromium.d ];then
@@ -154,7 +46,7 @@ if [ -d /etc/chromium-browser/customizations ] && [ -d /etc/chromium.d ] && [ ! 
   status -n "There are two Chromium customization folders on your system: /etc/chromium.d and /etc/chromium-browser/customizations.\nCreating a symlink to keep both locations synchronized..."
   
   #Move any customization files from /etc/chromium-browser/customizations to /etc/chromium.d, without overwriting anything
-  sudo cp -nr /etc/chromium-browser/customizations /etc/chromium.d && \
+  sudo cp -nr /etc/chromium-browser/customizations/. /etc/chromium.d/ && \
   sudo rm -rf /etc/chromium-browser/customizations && \
   sudo ln -s /etc/chromium.d /etc/chromium-browser/customizations
   
@@ -336,42 +228,71 @@ status "Writing changes..."
 #add zzzz_combine_values script in all cases to combine --enable-features arguments
 echo "Creating workaround script at ${folder}/zzzz_combine_values"
 cat << "EOF" | sudo tee "${folder}/zzzz_combine_values" >/dev/null
+#!/bin/sh
 #This script combines multiple invocations of --enable-features and --disable-features into one argument so that Chromium does not ignore any.
 #Written by Botspot for the Pi-Apps Better Chromium script.
+#Fixed by Claude for POSIX compliance and safe space preservation in arguments.
 
-#Intercept chromium args and move them to CHROMIUM_FLAGS
-while [ $# -gt 0 ]; do
-  case "$1" in
-    #Avoid passing chromium-browser script args to chromium-browser binary
-    -h | --help | -help | --verbose | -g | --debug | --no-touch-pinch | --temp-profile | -- ) # Stop option prcessing
-      break ;;
-    * )
-      CHROMIUM_FLAGS="$CHROMIUM_FLAGS $1"
-      shift ;;
-  esac
-done
-
-IFS=' '
 enable=''
 disable=''
 new_flags=''
+
+# 1. Parse existing CHROMIUM_FLAGS (from other .d scripts)
 for word in $CHROMIUM_FLAGS ;do
-  if echo "$word" | grep -q '^--enable-features=' ;then
-    enable="${enable},$(echo "$word" | sed 's/^--enable-features=//g')"
-  elif echo "$word" | grep -q '^--disable-features=' ;then
-    disable="${disable},$(echo "$word" | sed 's/^--disable-features=//g')"
-  else
-    new_flags="$new_flags $word"
-  fi
+  case "$word" in
+    --enable-features=*)
+      enable="${enable},${word#--enable-features=}"
+      ;;
+    --disable-features=*)
+      disable="${disable},${word#--disable-features=}"
+      ;;
+    *)
+      new_flags="$new_flags $word"
+      ;;
+  esac
+done
+CHROMIUM_FLAGS="$new_flags"
+
+# 2. Parse user arguments securely without losing spaces
+arg_count=$#
+i=0
+while [ "$i" -lt "$arg_count" ]; do
+  arg="$1"
+  shift
+  case "$arg" in
+    -h | --help | -help | --verbose | -g | --debug | --no-touch-pinch | --temp-profile | -- )
+      # Put the argument back
+      set -- "$@" "$arg"
+      i=$((i + 1))
+      # Restore the rest of the arguments in the correct order
+      while [ "$i" -lt "$arg_count" ]; do
+        arg="$1"
+        shift
+        set -- "$@" "$arg"
+        i=$((i + 1))
+      done
+      break
+      ;;
+    --enable-features=*)
+      enable="${enable},${arg#--enable-features=}"
+      ;;
+    --disable-features=*)
+      disable="${disable},${arg#--disable-features=}"
+      ;;
+    *)
+      # Keep the argument safely in the positional list
+      set -- "$@" "$arg"
+      ;;
+  esac
+  i=$((i + 1))
 done
 
-#remove initial comma
-enable="$(echo "$enable" | sed 's/^,//g')"
-disable="$(echo "$disable" | sed 's/^,//g')"
+# Remove initial commas
+enable=$(echo "$enable" | sed 's/^,//g')
+disable=$(echo "$disable" | sed 's/^,//g')
 
-CHROMIUM_FLAGS="$new_flags"
-[ ! -z "$enable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --enable-features=$enable"
-[ ! -z "$disable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --disable-features=$disable"
+[ -n "$enable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --enable-features=$enable"
+[ -n "$disable" ] && CHROMIUM_FLAGS="$CHROMIUM_FLAGS --disable-features=$disable"
 EOF
 
 #dark mode
