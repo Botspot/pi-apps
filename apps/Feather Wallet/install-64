@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=2.8.1
+version=2.9.1
 
 #installs libfuse2
 enable_module fuse || exit 1
