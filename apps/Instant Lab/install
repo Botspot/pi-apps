@@ -1,0 +1,58 @@
+#!/bin/bash
+
+APP_DIR="$HOME/.local/share/instant-lab"
+BIN_DIR="/usr/local/bin"
+DESKTOP_DIR="$HOME/.local/share/applications"
+
+install_packages git docker.io docker-compose || exit 1
+
+mkdir -p "$BIN_DIR" "$DESKTOP_DIR"
+
+git_clone \
+  https://github.com/swayan-basu/Instant_lab.git \
+  "$APP_DIR" || error "Failed to clone Instant Lab!"
+
+if [ ! -f "$APP_DIR/start_main.sh" ]; then
+  error "start_main.sh was not found!"
+  exit 1
+fi
+
+chmod +x "$APP_DIR/start_main.sh"
+
+if [ -d "$APP_DIR/scripts" ]; then
+  find "$APP_DIR/scripts" \
+    -type f \
+    -name '*.sh' \
+    -exec chmod +x {} +
+fi
+
+sudo tee "$BIN_DIR/instant-lab" >/dev/null <<EOF
+#!/usr/bin/env bash
+cd "$APP_DIR"
+exec bash "$APP_DIR/start_main.sh" "\$@"
+EOF
+
+sudo chmod +x "$BIN_DIR/instant-lab"
+
+cat > "$DESKTOP_DIR/instant-lab.desktop" <<EOF
+[Desktop Entry]
+Name=Instant Lab
+Comment=Docker-based cybersecurity training lab
+Exec=$BIN_DIR/instant-lab
+Terminal=true
+Type=Application
+Categories=Education;
+StartupNotify=true
+EOF
+
+chmod 644 "$DESKTOP_DIR/instant-lab.desktop"
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1 || true
+fi
+
+echo "Instant Lab installed."
+echo "Run from terminal: $BIN_DIR/instant-lab"
+echo "Docker Engine is required."
+
+exit 0
