@@ -1,0 +1,5 @@
+#!/bin/bash
+# Blogger Desktop Kaldırma Betiği
+
+sudo dpkg -r blogger-desktop || exit 1
+echo "Blogger Desktop kaldırıldı!"
