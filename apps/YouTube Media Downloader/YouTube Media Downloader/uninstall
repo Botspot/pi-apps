@@ -1,0 +1,3 @@
+#!/bin/bash
+# Remove app package
+sudo dpkg -r yt-downloader || sudo apt purge -y yt-downloader
