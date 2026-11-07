@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "Downloading Katifetch package..."
+wget https://github.com/ximimoments/katifetch/releases/download/13.1/katifetch-13.1.deb -O /tmp/katifetch.deb || exit 1
+
+sudo apt install -y /tmp/katifetch.deb || exit 1
+
+rm -f /tmp/katifetch.deb
+
+echo "Katifetch has been successfully installed!"
