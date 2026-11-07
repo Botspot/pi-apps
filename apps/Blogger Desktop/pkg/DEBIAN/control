@@ -1,0 +1,8 @@
+Package: blogger-desktop
+Version: 1.0.0-1
+Section: utils
+Priority: optional
+Architecture: arm64
+Maintainer: Volkan Ozdemir <bilgi@volkan-ozdemir.com.tr>
+Depends: python3, python3-gi, gir1.2-gtk-3.0, gir1.2-webkit2-4.1
+Description: Accessible Blogger Desktop Application for Raspberry Pi OS

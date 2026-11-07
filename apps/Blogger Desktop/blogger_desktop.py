@@ -1,4 +1,5 @@
 import sys
+import os
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -55,12 +56,11 @@ class BloggerDesktopApp(Gtk.Window):
         self.web_context = WebKit2.WebContext.get_default()
         self.cookie_manager = self.web_context.get_cookie_manager()
         
-        data_dir = Gio.File.new_for_path(f"{sys.path[0]}/data")
-        if not data_dir.query_exists():
-            data_dir.make_directory_with_parents()
+        user_data_dir = os.path.expanduser("~/.local/share/blogger-desktop")
+        os.makedirs(user_data_dir, exist_ok=True)
 
         self.cookie_manager.set_persistent_storage(
-            f"{sys.path[0]}/data/cookies.sqlite",
+            os.path.join(user_data_dir, "cookies.sqlite"),
             WebKit2.CookiePersistentStorage.SQLITE
         )
 
