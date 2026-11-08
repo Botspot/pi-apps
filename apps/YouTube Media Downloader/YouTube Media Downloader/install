@@ -1,9 +1,0 @@
-#!/bin/bash
-# Install dependencies
-sudo apt update
-sudo apt install -y python3 python3-gi gir1.2-gtk-3.0 python3-pip ffmpeg at-spi2-core
-pip3 install --break-system-packages yt-dlp 2>/dev/null || pip3 install yt-dlp
-
-# Install app package
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-sudo dpkg -i "$DIR/youtube-media-downloader_1.0.1_all.deb" || sudo apt --fix-broken install -y
