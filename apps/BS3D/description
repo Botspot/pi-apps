@@ -1,0 +1,16 @@
+A bubble shooter in three dimensions: fire at a cluster of balls that hangs from a glass ceiling and sways under real physics.
+Match three or more balls of one colour to break them off, and everything that hung below them falls with them. There are 140 levels in 14 chapters, each in a 3D scene of its own, with music and sounds made for the game. You aim and shoot with the mouse.
+
+It needs a Raspberry Pi 5. The Pi draws a simpler picture than the Windows version (no shadows and no post effects, but every chapter keeps its scenery and its clouds), and the game lowers its resolution by itself if it cannot keep a smooth 60 frames per second.
+It runs best on the default desktop of Raspberry Pi OS (Wayland). On the older X11 desktop it is slower and drops to the lower resolution sooner.
+
+Online leaderboards are optional. They stay off until you choose a nickname and turn them on in Settings, and the whole game can be played offline.
+Your progress and settings are saved in ~/.local/share/BS3D, so updating or uninstalling the game keeps them.
+
+F12 saves a screenshot into ~/Pictures/BS3D.
+
+To run: Menu -> Games -> BS3D
+To run in a terminal: bs3d
+
+More about the game: https://bs3d.winphonew.eu
+Playing it without Pi-Apps, and the source code: https://github.com/AntoninPrazsky/BS3D#download-and-play
