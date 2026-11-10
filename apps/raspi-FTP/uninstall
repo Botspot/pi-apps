@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "raspiFTP kaldiriliyor..."
+sudo apt remove --purge -y raspi-ftp
+echo "raspiFTP sistemden kaldirildi."

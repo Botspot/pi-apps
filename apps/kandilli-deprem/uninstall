@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+echo "Kandilli Deprem Takip Kaldırılıyor... / Uninstalling Kandilli Earthquake Tracker..."
+sudo apt remove -y kandilli-deprem
+sudo apt autoremove -y
+echo "Kandilli Deprem Takip başarıyla kaldırıldı. / Successfully uninstalled."

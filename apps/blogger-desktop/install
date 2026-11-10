@@ -1,0 +1,18 @@
+#!/bin/bash
+# Blogger Desktop Kurulum Betiği
+
+DEB_URL="https://github.com/teknologvolkanozdemir/blogger-desktop/releases/download/v1.0/blogger-desktop_1.0.0_all.deb"
+TMP_DEB="/tmp/blogger-desktop_1.0.0_all.deb"
+
+echo "Blogger Desktop v1.0.0 kuruluyor..."
+sudo apt update
+sudo apt install -y python3 python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 lxterminal wget curl
+
+echo "Paket indiriliyor..."
+wget --no-check-certificate -O "$TMP_DEB" "$DEB_URL" || curl -L -o "$TMP_DEB" "$DEB_URL"
+
+echo "Sisteme kuruluyor..."
+sudo apt install -y "$TMP_DEB"
+rm -f "$TMP_DEB"
+
+echo "Blogger Desktop v1.0.0 başarıyla kuruldu!"

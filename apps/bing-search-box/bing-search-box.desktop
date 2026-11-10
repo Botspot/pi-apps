@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Bing Arama Kutusu
+Comment=Varsayılan web tarayıcınızda Bing ile arama yapın
+Exec=/usr/local/bin/bing-search-box
+Icon=edit-find
+Terminal=false
+Categories=Network;Utility;
+Keywords=Bing;Search;Arama;
+StartupNotify=true

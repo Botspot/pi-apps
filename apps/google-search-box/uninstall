@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "Google Search Box kaldiriliyor..."
+sudo apt remove --purge -y google-search-box
+echo "Google Search Box sistemden kaldirildi."

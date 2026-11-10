@@ -1,0 +1,6 @@
+#!/bin/bash
+# Blogger Desktop Kaldırma Betiği
+
+echo "Blogger Desktop kaldırılıyor..."
+sudo apt remove --purge -y blogger-desktop
+echo "Blogger Desktop sistemden tamamen kaldırıldı."

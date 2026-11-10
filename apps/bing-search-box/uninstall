@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "Bing Search Box kaldiriliyor..."
+sudo apt remove --purge -y bing-search-box
+echo "Bing Search Box sistemden kaldirildi."

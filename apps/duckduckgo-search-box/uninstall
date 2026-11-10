@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "duckduckgo-search-box kaldiriliyor..."
+sudo apt remove --purge -y duckduckgo-search-box
+echo "duckduckgo-search-box sistemden kaldirildi."

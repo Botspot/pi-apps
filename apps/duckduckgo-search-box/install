@@ -1,0 +1,18 @@
+#!/bin/bash
+# DuckDuckGo Arama Kutusu Kurulum Betigi
+
+DEB_URL="https://github.com/teknologvolkanozdemir/duckduckgo-search-box/releases/download/v1.0.0/duckduckgo-search-box_1.0.0_all.deb"
+TMP_DEB="/tmp/duckduckgo-search-box_1.0.0_all.deb"
+
+echo "Gerekli bagimliliklar kuruluyor..."
+sudo apt update
+sudo apt install -y python3 python3-gi gir1.2-gtk-3.0 speech-dispatcher wget curl
+
+echo "duckduckgo-search-box paketi indiriliyor..."
+wget --no-check-certificate -O "$TMP_DEB" "$DEB_URL" || curl -L -o "$TMP_DEB" "$DEB_URL"
+
+echo "Sisteme kuruluyor..."
+sudo apt install -y "$TMP_DEB"
+rm -f "$TMP_DEB"
+
+echo "duckduckgo-search-box v1.0.0 basariyla kuruldu!"

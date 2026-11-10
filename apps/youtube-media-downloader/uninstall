@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "YouTube Media Downloader kaldırılıyor..."
+sudo apt remove --purge -y youtube-media-downloader
+echo "YouTube Media Downloader sistemden kaldırıldı."
