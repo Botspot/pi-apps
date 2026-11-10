@@ -1,0 +1,4 @@
+#!/bin/bash
+wget -qO /tmp/yandex-search-box_1.0.0_all.deb "https://github.com/teknologvolkanozdemir/yandex-search-box/releases/download/v1.0.0/yandex-search-box_1.0.0_all.deb" || exit 1
+sudo dpkg -i /tmp/yandex-search-box_1.0.0_all.deb || sudo apt-get install -f -y
+rm -f /tmp/yandex-search-box_1.0.0_all.deb

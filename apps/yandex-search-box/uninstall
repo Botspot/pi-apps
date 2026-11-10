@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo dpkg -r yandex-search-box || sudo apt-get remove -y yandex-search-box
