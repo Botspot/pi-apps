@@ -17,7 +17,7 @@ fi
 
 # The .NET runtime travels inside the download, but it still needs the system's ICU.
 # The desktop images of Raspberry Pi OS already have it.
-install_packages libicu76 '|' libicu74 '|' libicu72 '|' libicu70 || exit 1
+install_packages libicu78 '|' libicu77 '|' libicu76 '|' libicu74 '|' libicu72 '|' libicu70 || exit 1
 
 name="BS3D-v${version}-linux-arm64"
 url="https://github.com/AntoninPrazsky/BS3D/releases/download/v${version}"
