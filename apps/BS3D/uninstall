@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Undoes install-64 except for the player's own files. The save, the settings, the online identity and the
+# outbox live in ~/.local/share/BS3D and stay, because an update in Pi-Apps is an uninstall followed by an install.
+purge_packages || exit 1
+
+sudo rm -rf /opt/bs3d /usr/local/bin/bs3d /usr/local/share/applications/bs3d.desktop || error "Failed to uninstall BS3D!"
