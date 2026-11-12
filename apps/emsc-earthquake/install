@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /tmp || exit 1
+wget -O emsc-earthquake_1.0.0_all.deb "https://github.com/teknologvolkanozdemir/emsc-earthquake/releases/download/v1.0.0/emsc-earthquake_1.0.0_all.deb" || error "Failed to download emsc-earthquake deb package!"
+
+install_packages ./emsc-earthquake_1.0.0_all.deb || error "Failed to install emsc-earthquake!"
+
+rm -f /tmp/emsc-earthquake_1.0.0_all.deb
