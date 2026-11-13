@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd /tmp || exit 1
+rm -f emsc-earthquake_1.0.0_all.deb
+
+wget -O emsc-earthquake_1.0.0_all.deb "https://github.com/teknologvolkanozdemir/emsc-earthquake/releases/download/v1.0.0/emsc-earthquake_1.0.0_all.deb" || error "Failed to download emsc-earthquake deb package!"
+
+sudo apt update || error "Failed to update apt repositories!"
+sudo apt install -y ./emsc-earthquake_1.0.0_all.deb || error "Failed to install emsc-earthquake!"
+
+rm -f /tmp/emsc-earthquake_1.0.0_all.deb
