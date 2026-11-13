@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sudo apt purge -y emsc-earthquake || exit 1
+sudo apt autoremove -y
