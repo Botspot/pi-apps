@@ -14,7 +14,8 @@ sed 's/\[theme_info\]/#slight edits to Spyder Dark made by @Botspot to improve c
   s/^name=Spyder Dark/name=Botspot Dark/g ;
   s/#131926/#080A10/g ;
   s/#2b2b43/#131926/g ;
-  s/#c80000/#ff2910/g' ./geany-themes/colorschemes/spyder-dark.conf > ./geany-themes/colorschemes/botspot-dark.conf || error "Failed to create botspot-dark remix theme"
+  s/#c80000/#ff2910/g ;
+  s/#0f0/#080A10;/g' ./geany-themes/colorschemes/spyder-dark.conf > ./geany-themes/colorschemes/botspot-dark.conf || error "Failed to create botspot-dark remix theme"
 
 #copy theme files
 mkdir -p ~/.config/geany/colorschemes
