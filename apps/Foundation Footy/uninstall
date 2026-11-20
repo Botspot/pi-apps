@@ -1,0 +1,4 @@
+#!/bin/bash
+# the game and its launcher; your settings, saves and recordings stay (they are the game's own data under ~/.local/share/godot)
+status "Removing Foundation Footy..."
+rm -rf "$HOME/.local/share/foundation-footy" "$HOME/.local/share/applications/foundation-footy.desktop" || error "Failed to remove the game!"
