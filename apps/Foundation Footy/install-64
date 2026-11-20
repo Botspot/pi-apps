@@ -1,0 +1,40 @@
+#!/bin/bash
+# Foundation Footy: the studio's Raspberry Pi (ARM64) build, from the
+# studio's release manifest for the Pi. It goes into the user's home so the
+# game can keep itself up to date (it checks for a new build at start:
+# Options > Game > Check for updates), not into /opt, which the game could
+# not write to.
+
+MANIFEST="https://fishers-ghost-studios-releases.s3.ap-southeast-2.amazonaws.com/foundation-footy/pi/latest.json"
+DIR="$HOME/.local/share/foundation-footy"
+
+status "Reading the current release..."
+read -r VERSION URL SHA < <(wget -qO- "$MANIFEST" | python3 -c '
+import json, sys
+m = json.load(sys.stdin)
+print(m["version"].replace(" ", "-"), m["url"], m["sha256"])') || error "Failed to read the release manifest!"
+[ -n "$URL" ] || error "The release manifest has no Raspberry Pi build in it!"
+
+status "Downloading Foundation Footy $VERSION..."
+wget -O /tmp/foundation-footy.zip "$URL" || error "Failed to download the game!"
+echo "$SHA  /tmp/foundation-footy.zip" | sha256sum -c --quiet - || error "The download does not match the release manifest's checksum!"
+
+status "Installing to $DIR..."
+mkdir -p "$DIR" || error "Failed to make $DIR!"
+unzip -o -q /tmp/foundation-footy.zip -d "$DIR" || error "Failed to unzip the game!"
+chmod +x "$DIR/foundation-footy.arm64" || error "Failed to make the game executable!"
+cp "$(dirname "$0")/icon-64.png" "$DIR/icon-64.png" || error "Failed to copy the icon!"
+rm -f /tmp/foundation-footy.zip
+
+status "Making the menu launcher..."
+mkdir -p "$HOME/.local/share/applications" || error "Failed to make the applications folder!"
+echo "[Desktop Entry]
+Type=Application
+Name=Foundation Footy
+Comment=Rugby league, 1908-1947
+Exec=$DIR/foundation-footy.arm64
+Path=$DIR
+Icon=$DIR/icon-64.png
+Terminal=false
+Categories=Game;SportsGame;
+StartupWMClass=Foundation Footy" > "$HOME/.local/share/applications/foundation-footy.desktop" || error "Failed to write the menu launcher!"
