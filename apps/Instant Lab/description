@@ -1,0 +1,11 @@
+Docker-based cybersecurity training lab for Raspberry Pi and Linux.
+
+Instant Lab provides an interactive terminal menu for authorized security
+training. It launches Parrot Security, Kali Linux, Nuclei, DVWA, OWASP Juice
+Shop, bWAPP, ELK, and Wazuh.
+
+To run in a terminal: instant-lab
+To run from the menu: Menu -> Education -> Instant Lab
+
+Docker Engine is required. Use only in an isolated lab against systems you own
+or are authorized to test.

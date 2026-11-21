@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+BIN_FILE="/usr/local/bin/instant-lab"
+DESKTOP_FILE="$HOME/.local/share/applications/instant-lab.desktop"
+APP_DIR="$HOME/.local/share/instant-lab"
+
+sudo rm -f "$BIN_FILE"
+rm -f "$DESKTOP_FILE"
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database \
+    "$HOME/.local/share/applications" \
+    >/dev/null 2>&1 || true
+fi
+
+purge_packages || exit 1
+
+echo "Instant Lab launcher removed."
+echo "Project files and lab data were preserved."
+
+exit 0
