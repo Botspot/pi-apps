@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pkill -f /opt/trackhop/ &>/dev/null && echo "Closing Trackhop before uninstalling..."
+
+purge_packages || exit 1
