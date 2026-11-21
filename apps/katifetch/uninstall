@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Uninstall the katifetch package cleanly using apt
+sudo apt purge -y katifetch || sudo apt remove -y katifetch
+
+echo "Katifetch has been successfully uninstalled."
