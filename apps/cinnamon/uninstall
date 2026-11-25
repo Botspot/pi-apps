@@ -1,0 +1,3 @@
+#!/bin/bash
+# Remove the cinnamon package; local settings in ~/.config/cinnamon are kept.
+purge_packages || exit 1

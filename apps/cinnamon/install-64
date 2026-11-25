@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pi-Apps installer for cinnamon on 64-bit ARM.
+version=1.0.0
+base="https://github.com/404henryyynotfound/cinnamon/releases/download/v${version}"
+deb="cinnamon-linux-arm64.deb"
+
+tmp="$(mktemp -d)" || error "Failed to create a temporary folder."
+cd "$tmp" || error "Failed to enter the temporary folder."
+
+wget "${base}/${deb}" || error "Failed to download cinnamon."
+wget "${base}/${deb}.sha256" || error "Failed to download the cinnamon checksum."
+sha256sum -c "${deb}.sha256" || error "cinnamon checksum verification failed."
+
+install_packages "${tmp}/${deb}" || error "Failed to install cinnamon."
+rm -rf "$tmp"
+
+echo "Launch cinnamon from the Office menu."

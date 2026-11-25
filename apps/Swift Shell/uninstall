@@ -1,0 +1,3 @@
+#!/bin/bash
+# Remove the SwiftShell package; installed packages in ~/.swift-shell are kept.
+purge_packages || exit 1
