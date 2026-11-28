@@ -1,0 +1,3 @@
+#!/bin/bash
+# Remove only the package installed by this app; user data is preserved.
+purge_packages || exit 1

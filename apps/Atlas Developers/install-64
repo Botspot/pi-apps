@@ -1,0 +1,18 @@
+#!/bin/bash
+# Pi-Apps installer for the Atlas Developers CLI and GUI on 64-bit ARM.
+version=1.0.4
+base="https://github.com/404henryyynotfound/atlas-developers/releases/download/v${version}"
+cli="atlas-developers-cli_${version}_arm64.deb"
+gui="atlas-gui-linux-arm64.deb"
+
+tmp="$(mktemp -d)" || error "Failed to create a temporary folder."
+cd "$tmp" || error "Failed to enter the temporary folder."
+
+for file in "$cli" "$gui"; do
+  wget "${base}/${file}" || error "Failed to download ${file}."
+  wget "${base}/${file}.sha256" || error "Failed to download the checksum for ${file}."
+done
+sha256sum -c "${cli}.sha256" "${gui}.sha256" || error "Atlas Developers checksum verification failed."
+
+install_packages "${tmp}/${cli}" "${tmp}/${gui}" || error "Failed to install Atlas Developers."
+rm -rf "$tmp"

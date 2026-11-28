@@ -1,0 +1,3 @@
+#!/bin/bash
+# Remove the CLI and GUI packages; project data in ~/.atlas-developers is kept.
+purge_packages || exit 1

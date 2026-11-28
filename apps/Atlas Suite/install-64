@@ -1,0 +1,15 @@
+#!/bin/bash
+# Pi-Apps installer for Atlas Suite on 64-bit ARM (Raspberry Pi OS 64-bit).
+version=1.0.0
+base="https://github.com/404henryyynotfound/atlas-developers/releases/download/suite-v${version}"
+file="atlas-suite-linux-arm64.deb"
+
+tmp="$(mktemp -d)" || error "Failed to create a temporary folder."
+cd "$tmp" || error "Failed to enter the temporary folder."
+
+wget "${base}/${file}" || error "Failed to download Atlas Suite."
+wget "${base}/${file}.sha256" || error "Failed to download the Atlas Suite checksum."
+sha256sum -c "${file}.sha256" || error "Atlas Suite checksum verification failed."
+
+install_packages "${tmp}/${file}" || error "Failed to install Atlas Suite."
+rm -rf "$tmp"
