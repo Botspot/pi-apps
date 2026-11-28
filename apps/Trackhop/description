@@ -1,0 +1,8 @@
+Keep your playlists in sync between music services, on your Pi.
+Trackhop copies and keeps playlists in step between Spotify, YouTube Music, TIDAL, Navidrome, Jellyfin, Plex, Last.fm and more: one way or both ways, on a schedule, with a report of what changed and of the songs it could not find. It runs in the background with an icon next to the clock and opens its page in its own window.
+
+Open source (AGPL-3.0). Beta: keep a copy of your set-up (Tools > Backup & restore).
+
+To run: Menu -> Sound & Video -> Trackhop
+To run in a terminal: /opt/trackhop/bin/Trackhop
+Guide: https://trackhop.org/guide/desktop
