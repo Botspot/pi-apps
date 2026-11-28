@@ -1,0 +1,11 @@
+#!/bin/bash
+
+purge_packages || exit 1
+remove_repofile_if_unused /etc/apt/sources.list.d/adoptium.list
+
+#remove game folder
+rm -rf "$HOME/.local/share/mtg-forge"
+
+#remove desktop menu entries
+rm -f "$HOME/.local/share/applications/Forge.desktop"
+rm -f "$HOME/.local/share/applications/Forge-Adventure.desktop"
