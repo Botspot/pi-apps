@@ -1,0 +1,10 @@
+Explore the IBM Palm Top PC 110 with a hardware atlas and experimental emulator.
+Browse circuit-board layers, schematics, and the history of this pocket-sized 1995 computer. The reference material works without importing any firmware.
+
+Try the included original boot demo without importing firmware. For personal emulation, import your own legally obtained compatible PC110 BIOS and raw disk image. IBM ROMs, PersonaWare, and Windows are not included. This edition bundles a PC110 QEMU backend. Original and English PersonaWare images booted and ran Calculator on a Pi 5; full guest compatibility is not claimed. Guest audio transport is included, but physical speaker output has not been validated on the Pi.
+
+64-bit only. Requires Raspberry Pi OS / Debian Bookworm or Trixie, or Ubuntu 22.04 (Jammy), 24.04 (Noble), or 26.04 (Resolute). Interactive testing used a 4 GB Pi 5 with Raspberry Pi OS Trixie. Other Pi models are not hardware-validated. 32-bit ARM is not supported.
+
+Includes a working media picker, resizable PCB-layer view and built-in offline schematic viewer. The visionOS spatial laptop is not part of this desktop edition.
+
+Launch from the Education menu as PC110 Atlas. Java is included. Uninstalling preserves imported media and preferences.
