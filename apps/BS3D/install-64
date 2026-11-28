@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Installs BS3D's own linux-arm64 release, unchanged, from https://github.com/AntoninPrazsky/BS3D/releases
+# Pi-Apps' updater (.github/workflows/updates/BS3D.sh) moves this line to the newest release.
+version=0.6.1
+
+# Only the Raspberry Pi 5 has been measured; the Pi 500 and the Compute Module 5 have the same BCM2712.
+# An older Pi or a Jetson is refused. A computer that cannot be identified, such as a build server, gets a warning.
+get_model &>/dev/null
+# shellcheck disable=SC2154 # model is set by get_model in Pi-Apps' api
+if [ "$SOC_ID" != bcm2712 ]; then
+  if [[ "$model" == *"Raspberry Pi"* ]] || [ -n "$jetson_model" ]; then
+    error "User error: BS3D needs a Raspberry Pi 5, and this is a ${model}. It has not been tested on older models yet."
+  fi
+  warning "BS3D has been tested on a Raspberry Pi 5 only, and this computer could not be identified as one (${model:-unknown model}). Installing anyway."
+fi
+
+# The .NET runtime travels inside the download, but it still needs the system's ICU.
+# The desktop images of Raspberry Pi OS already have it.
+install_packages libicu78 '|' libicu77 '|' libicu76 '|' libicu74 '|' libicu72 '|' libicu70 || exit 1
+
+name="BS3D-v${version}-linux-arm64"
+url="https://github.com/AntoninPrazsky/BS3D/releases/download/v${version}"
+
+# On disk rather than in /tmp: the download is about 400 MB, and Raspberry Pi OS Trixie keeps /tmp in memory
+tmp="$(mktemp -d /var/tmp/bs3d-install.XXXXXX)" || error "Failed to create a folder for the download!"
+# Removed however the script ends, a failed check included, so a broken download does not stay on the disk
+trap 'rm -rf "$tmp"' EXIT
+
+status "Downloading BS3D v${version}..."
+wget -O "${tmp}/${name}.tar.gz" "${url}/${name}.tar.gz" || error "Failed to download BS3D!"
+wget -O "${tmp}/SHA256SUMS" "${url}/SHA256SUMS" || error "Failed to download the checksums of BS3D!"
+
+status "Checking the download against the release's checksum..."
+(cd "$tmp" && grep "  ${name}.tar.gz$" SHA256SUMS | sha256sum --check --status) || error "The download of BS3D does not match its published checksum. Try installing it again."
+
+status "Installing BS3D to /opt/bs3d..."
+sudo rm -rf /opt/bs3d
+sudo mkdir -p /opt/bs3d || error "Failed to create /opt/bs3d!"
+sudo tar -xzf "${tmp}/${name}.tar.gz" -C /opt/bs3d --strip-components=1 --no-same-owner || error "Failed to extract BS3D to /opt/bs3d!"
+rm -rf "$tmp"
+sudo cp "$(dirname "$0")/icon-64.png" /opt/bs3d/bs3d.png || error "Failed to install the icon of BS3D!"
+
+# The terminal command
+sudo mkdir -p /usr/local/bin || error "Failed to create /usr/local/bin!"
+sudo ln -sf /opt/bs3d/BS3D /usr/local/bin/bs3d || error "Failed to create the bs3d command!"
+
+status "Adding BS3D to the applications menu..."
+sudo mkdir -p /usr/local/share/applications || error "Failed to create /usr/local/share/applications!"
+echo "[Desktop Entry]
+Type=Application
+Name=BS3D
+GenericName=Bubble Shooter 3D
+Comment=A bubble shooter in three dimensions
+Exec=/opt/bs3d/BS3D
+Icon=/opt/bs3d/bs3d.png
+Terminal=false
+Categories=Game;ArcadeGame;
+Keywords=bubble;shooter;puzzle;3D;" | sudo tee /usr/local/share/applications/bs3d.desktop >/dev/null || error "Failed to add BS3D to the applications menu!"
+
+status_green "BS3D is installed. Start it from Menu -> Games -> BS3D."
