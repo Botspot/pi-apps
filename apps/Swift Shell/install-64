@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pi-Apps installer for SwiftShell on 64-bit ARM.
+version=1.0.0
+base="https://github.com/404henryyynotfound/swift-shell/releases/download/v${version}"
+deb="swift-shell_${version}_arm64.deb"
+
+tmp="$(mktemp -d)" || error "Failed to create a temporary folder."
+cd "$tmp" || error "Failed to enter the temporary folder."
+
+wget "${base}/${deb}" || error "Failed to download SwiftShell."
+wget "${base}/${deb}.sha256" || error "Failed to download the SwiftShell checksum."
+sha256sum -c "${deb}.sha256" || error "SwiftShell checksum verification failed."
+
+install_packages "${tmp}/${deb}" || error "Failed to install SwiftShell."
+rm -rf "$tmp"
+
+echo "To get started: swift help && swift commands"

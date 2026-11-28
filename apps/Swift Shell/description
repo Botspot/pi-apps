@@ -1,0 +1,6 @@
+SwiftShell is a shell language that reads like code: variables, arrays, functions, loops, conditionals, pipelines and redirection, with real Unix commands.
+
+The `swift` command is the front door, with dozens of subcommands and a curated offline package registry (`swift install hello`, `swift registry`, `swift search`). `swiftshell` is available as an alias.
+
+To run the REPL: swift shell
+To see every command: swift commands
